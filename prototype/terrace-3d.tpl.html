@@ -208,7 +208,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 } }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
 
@@ -325,7 +325,29 @@ function build() {
         animated.leds.push(alongX ? box(lenL * 0.96, 0.012, 0.03, lm, (xa + xb) / 2, yTop - 0.075, za + off) : box(0.03, 0.012, lenL * 0.96, lm, xa + off, yTop - 0.075, (za + zb) / 2));
       }
     }
-    if (state.po.ledLouvres || state.po.ledGutter) {
+    // spot LEDs / LED lamps in louvres (option): points along evenly chosen louvres
+    for (const [sel, size] of [[state.po.spots, 0.035], [state.po.lamps, 0.07]]) {
+      if (!sel) continue;
+      const k = Math.min(n, sel.louvres * (opt.family === 'S500_DOUBLE' ? 2 : 1));
+      for (let j = 0; j < k; j++) {
+        const i = Math.round((j + 0.5) * n / k - 0.5), off = sp.post + step / 2 + i * step;
+        for (let q = 0; q < sel.perLouvre; q++) {
+          const t = -lenL / 2 + lenL * (q + 0.5) / sel.perLouvre;
+          animated.leds.push(alongX ? box(size, 0.012, size, M.led, (xa + xb) / 2 + t, yTop - 0.08, za + off) : box(size, 0.012, size, M.led, xa + off, yTop - 0.08, (za + zb) / 2 + t));
+        }
+      }
+    }
+    // spot LEDs in the crown (option): symmetric along the inner faces of the frame, split by side length
+    if (state.po.crownSpots > 0) {
+      const sides = [[xa, zb - sp.post - 0.005, xb, zb - sp.post - 0.005], [xa, za + sp.post + 0.005, xb, za + sp.post + 0.005], [xa + sp.post + 0.005, za, xa + sp.post + 0.005, zb], [xb - sp.post - 0.005, za, xb - sp.post - 0.005, zb]];
+      const lens = sides.map(([x1, z1, x2, z2]) => Math.hypot(x2 - x1, z2 - z1)), per = lens.reduce((a, b) => a + b, 0);
+      let left = state.po.crownSpots;
+      sides.forEach(([x1, z1, x2, z2], si) => {
+        const c = si === 3 ? left : Math.round(state.po.crownSpots * lens[si] / per); left -= c;
+        for (let q = 0; q < c; q++) { const t = (q + 0.5) / c; animated.leds.push(box(0.03, 0.01, 0.03, M.led, x1 + (x2 - x1) * t, H - sp.crown - 0.004, z1 + (z2 - z1) * t)); }
+      });
+    }
+    if (state.po.ledLouvres || state.po.ledGutter || state.po.spots || state.po.lamps || state.po.crownSpots) {
       const col = state.po.ledLouvres && state.po.ledLouvres.colour !== 'white' ? 0xc9a8ff : 0xffd9a0;
       const pl = new THREE.PointLight(col, 0, Math.max(xb - xa, zb - za) * 1.6, 2);
       pl.position.set((xa + xb) / 2, H - sp.crown - 0.2, (za + zb) / 2); root.add(pl); animated.lights = (animated.lights || []).concat(pl);
@@ -334,6 +356,17 @@ function build() {
   // posts
   const posts = postPositions(opt);
   for (const [x, z] of posts) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
+  // additional intermediate posts (option): on the front beams, widest modules first
+  const extra = intermediatePositions(opt, sp);
+  for (const [x, z] of extra) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
+  // vertical LED lamps (option, S500): on the inner face of the first posts, at half the post height
+  if (opt.family !== 'S400' && state.po.verticalLamps > 0) {
+    const zc = opt.depth / 2000;
+    posts.concat(extra).slice(0, state.po.verticalLamps).forEach(([x, z]) => {
+      const dz = z > zc ? -1 : 1;
+      animated.leds.push(box(0.03, 0.5, 0.012, M.led, x, (H - sp.crown) / 2, z + dz * (sp.post / 2 + 0.007)));
+    });
+  }
   // openings (sides) + their fillings
   for (const o of openings(opt, sp)) {
     const fill = state.fills[o.id] || 'none';
@@ -344,6 +377,18 @@ function build() {
   }
   applyAnim();
   renderLabels(opt);
+}
+
+function intermediatePositions(opt, sp) {
+  const k = state.po.intermediatePosts || 0;
+  if (!k) return [];
+  const front = Math.max(...opt.modules.map((m) => m.y + m.depth));
+  const row = opt.modules.filter((m) => m.y + m.depth === front).sort((a, b) => b.width - a.width);
+  const cnt = row.map(() => 0);
+  for (let i = 0; i < k; i++) cnt[i % row.length]++;
+  const out = [];
+  row.forEach((m, i) => { for (let j = 0; j < cnt[i]; j++) out.push([(m.x + m.width * (j + 1) / (cnt[i] + 1)) / 1000, front / 1000 - sp.post / 2 - 0.01]); });
+  return out;
 }
 
 function postPositions(opt) {
@@ -628,9 +673,9 @@ function renderEstimate() {
   const e = colorsEff(), coat = [], zipOps = [], zipReqs = [];
   let panelsCustomColour = false;
   const sys = o.family === 'S400' ? 'S400' : 'S500';
-  const op = DBCore.priceOptions(o, state.po, cat);
+  const op = DBCore.priceOptions(o, poFor(o), cat);
   {
-    const OPN = { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'Подсветка в ламелях', OPT_LED_GUTTER: 'Подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка конструкции под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб (BOX)', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке' };
+    const OPN = { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'Подсветка в ламелях', OPT_LED_GUTTER: 'Подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка конструкции под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб (BOX)', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'Точечные LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме (короне)', OPT_VERTICAL_LAMPS: 'Вертикальные LED-светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные промежуточные стойки' };
     const groups = {};
     for (const l of op.lines) { const k = l.code + (l.params.kind || ''); (groups[k] = groups[k] || []).push(l); }
     for (const ls of Object.values(groups)) {
@@ -646,10 +691,18 @@ function renderEstimate() {
       if (l0.code === 'OPT_HEATER_PREP') det = `${p.heaters} × ${eur(p.unit)} (кабели, отверстия, подключение)`;
       if (l0.code === 'OPT_INTERNAL_BOX') det = op.issues.some((i) => i.code === 'OPT_INTERNAL_BOX_FOR_HEATERS') ? 'обязателен для блоков обогревателей моделей 2 и 3' : '';
       if (l0.code === 'OPT_AUDIO') det = '2 колонки 25 Вт, Bluetooth-блок';
+      if (l0.code === 'OPT_SPOTS') det = `${p.perLouvre} ${plural(p.perLouvre, 'спот', 'спота', 'спотов')} в ламели × ${p.double ? p.louvres + '+' + p.louvres : p.louvres} ${plural(p.louvres, 'ламель', 'ламели', 'ламелей')}, 2 Вт, 3000/4000 K · ${byModule(ls)}`;
+      if (l0.code === 'OPT_LAMPS') det = `${p.perLouvre} ${plural(p.perLouvre, 'лампа', 'лампы', 'ламп')} в ламели × ${p.double ? p.louvres + '+' + p.louvres : p.louvres} ${plural(p.louvres, 'ламель', 'ламели', 'ламелей')}, 3 Вт · ${byModule(ls)}`;
+      if (l0.code === 'OPT_CROWN_SPOTS') det = `${p.points} ${plural(p.points, 'спот', 'спота', 'спотов')} ${o.family === 'S400' ? 'на перголу' : 'на модуль'}${p.billed !== p.points ? ` (по прайсу — ${p.billed})` : ''}, симметрично по сторонам · ${byModule(ls)}`;
+      if (l0.code === 'OPT_VERTICAL_LAMPS') det = `${p.points} шт.${p.billed !== p.points ? ` (по прайсу — ${p.billed})` : ''}, 4,6 Вт, 3000 K, на половине высоты стойки или 30 см от низа`;
+      if (l0.code === 'OPT_INTERMEDIATE_POST') det = `${p.qty} × ${eur(p.unit)} · высота до ${mm(p.height)} мм`;
       if (l0.code === 'OPT_SOCKET') det = `${p.kind === 'usb' ? 'USB' : '230 В'} × ${p.qty}`;
       html += `<tr><td>${OPN[l0.code]}<span class="s">${det}${l0.source ? ' · стр. ' + l0.source.page : ''}</span></td><td class="a">${eur(amt)}</td></tr>`;
     }
-    for (const i of op.issues.filter((i) => i.severity === 'block')) html += `<tr><td colspan="2"><div class="note">${i.code === 'OPT_POST_TOO_HIGH' ? 'Стойки выше 3 200 мм не производятся.' : 'Опция не производится для модуля ' + (i.params.module || '')}</div></td></tr>`;
+    for (const i of op.issues.filter((i) => i.severity === 'block')) html += `<tr><td colspan="2"><div class="note">${i.code === 'OPT_POST_TOO_HIGH' ? 'Стойки выше 3 200 мм не производятся.' : i.code === 'OPT_VERTICAL_LAMPS_MODEL' ? 'Вертикальные светильники — только для S500.' : 'Опция не производится для модуля ' + (i.params.module || '')}</div></td></tr>`;
+    if (op.issues.some((i) => i.code === 'OPT_CROWN_SPOTS_RECESS')) html += `<tr><td colspan="2"><div class="note">Споты в раме нельзя ставить над проёмом, где между стойками стоит Win Glass или ZIP. Уточнить расстановку — споты только на свободных сторонах.</div></td></tr>`;
+    const vp = op.issues.find((i) => i.code === 'OPT_VERTICAL_LAMPS_POSTS');
+    if (vp) html += `<tr><td colspan="2"><div class="note">Вертикальных светильников ${vp.params.lamps}, а стоек ${vp.params.posts} — на одну стойку ставится один светильник.</div></td></tr>`;
     if (op.issues.some((i) => i.code === 'OPT_MULTISENSOR_UNIT')) html += `<tr><td colspan="2"><div class="note">Мультидатчик работает только с блоком SW-TEL-TVPLA868CC3SB — при блоке на 1 мотор нужна замена (+229 € за модуль, уточнить).</div></td></tr>`;
     sides += op.total;
   }
@@ -812,6 +865,11 @@ function byModule(ls) {
   for (const l of ls) { const k = l.params.module + '|' + l.amount; g[k] = (g[k] || 0) + 1; }
   return Object.entries(g).map(([k, n]) => { const [m, a] = k.split('|'); return `${n > 1 ? n + ' × ' : ''}${eur(Number(a))} (${m})`; }).join(', ');
 }
+/** options as priced: crown spots clash with glass / ZIP in the recess; vertical lamps exist only for S500 */
+function poFor(o) {
+  const recess = Object.values(state.fills).some((f) => f === 'glass' || f === 'zip');
+  return { ...state.po, recessSides: recess, verticalLamps: o.family === 'S400' ? 0 : state.po.verticalLamps };
+}
 function optDelta(patch) { const o = state.options[state.optIndex]; if (!o) return 0; return DBCore.priceOptions(o, patch, cat).total; }
 function renderPergolaOptions() {
   const o = state.options[state.optIndex], po = state.po;
@@ -821,11 +879,19 @@ function renderPergolaOptions() {
   const hs = s500 ? [2800, 3200] : [2800, 3000, 3200];
   const heaters = cat.optionScalars.heaters[s500 ? 's500' : 's400'].sets;
   const ledN = po.ledLouvres ? po.ledLouvres.louvres : 5;
+  const spotN = po.spots ? po.spots.louvres : 5, lampN = po.lamps ? po.lamps.louvres : 4, dbl = o.family === 'S500_DOUBLE';
   $('popts').innerHTML = `
     <label>Высота стоек<select id="o-h">${hs.map((h) => `<option value="${h}" ${po.postHeight === h ? 'selected' : ''}>${h === 2800 ? 'до 2 800 мм — стандарт' : 'до ' + mm(h) + ' мм'} · ${pr(optDelta({ postHeight: h }))}</option>`).join('')}</select></label>
+    <label>Доп. промежуточные стойки<select id="o-ip">${[0, 1, 2, 3, 4, 5, 6].map((k) => `<option value="${k}" ${po.intermediatePosts === k ? 'selected' : ''}>${k ? k + ' шт. · +' + eur(optDelta({ intermediatePosts: k, postHeight: po.postHeight }) - optDelta({ postHeight: po.postHeight })) : 'нет'}</option>`).join('')}</select></label>
     <label>Подсветка в ламелях<span class="row2"><select id="o-led"><option value="">нет</option>${Object.entries(LEDC).map(([k, t]) => `<option value="${k}" ${po.ledLouvres && po.ledLouvres.colour === k ? 'selected' : ''}>LED-лента ${t} · ${pr(optDelta({ ledLouvres: { colour: k, louvres: ledN } }))}</option>`).join('')}</select>
       <select id="o-ledn" aria-label="Ламелей с подсветкой">${[3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${ledN === n ? 'selected' : ''}>${o.family === 'S500_DOUBLE' ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
     <label>Подсветка в желобе<select id="o-gut"><option value="">нет</option>${Object.entries(GUT).map(([k, t]) => `<option value="${k}" ${po.ledGutter === k ? 'selected' : ''}>${t} · ${pr(optDelta({ ledGutter: k }))}</option>`).join('')}</select></label>
+    <label>LED-споты в ламелях<span class="row2"><select id="o-spot"><option value="">нет</option>${[3, 4, 5].map((k) => `<option value="${k}" ${po.spots && po.spots.perLouvre === k ? 'selected' : ''}>${k} ${plural(k, 'спот', 'спота', 'спотов')} в ламели · ${pr(optDelta({ spots: { perLouvre: k, louvres: spotN } }))}</option>`).join('')}</select>
+      <select id="o-spotn" aria-label="Ламелей со спотами">${[3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${spotN === n ? 'selected' : ''}>${dbl ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
+    <label>LED-лампы в ламелях<span class="row2"><select id="o-lamp"><option value="">нет</option>${[2, 3, 4].map((k) => `<option value="${k}" ${po.lamps && po.lamps.perLouvre === k ? 'selected' : ''}>${k} ${plural(k, 'лампа', 'лампы', 'ламп')} в ламели · ${pr(optDelta({ lamps: { perLouvre: k, louvres: lampN } }))}</option>`).join('')}</select>
+      <select id="o-lampn" aria-label="Ламелей с лампами">${[2, 3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${lampN === n ? 'selected' : ''}>${dbl ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
+    <label>LED-споты в раме, ${o.family === 'S400' ? 'на перголу' : 'на модуль'}<select id="o-crown"><option value="0">нет</option>${[8, 10, 12, 14, 16, 18, 20, 22, 24, 26].map((k) => `<option value="${k}" ${po.crownSpots === k ? 'selected' : ''}>${k} ${plural(k, 'спот', 'спота', 'спотов')} · ${pr(optDelta({ crownSpots: k }))}</option>`).join('')}</select></label>
+    ${s500 ? `<label>Вертикальные светильники на стойках<select id="o-vert"><option value="0">нет</option>${[2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => `<option value="${k}" ${po.verticalLamps === k ? 'selected' : ''}>${k} шт. · ${pr(optDelta({ verticalLamps: k }))}</option>`).join('')}</select></label>` : ''}
     <label>Датчики погоды<select id="o-sen"><option value="">нет</option>${Object.entries(SEN).map(([k, t]) => `<option value="${k}" ${po.sensors === k ? 'selected' : ''}>${t} · ${pr(optDelta({ sensors: k }))}</option>`).join('')}</select></label>
     <label>Управление со смартфона<select id="o-smart"><option value="">нет (пульт перголы в цене)</option>${Object.entries(SMART).map(([k, t]) => `<option value="${k}" ${po.smart === k ? 'selected' : ''}>${t} · ${pr(optDelta({ smart: k }))}</option>`).join('')}</select></label>
     <label>Обогреватели<span class="row2"><select id="o-heat"><option value="">нет</option>${heaters.map((h) => `<option value="${h.id}" ${po.heaters && po.heaters.set === h.id ? 'selected' : ''}>${h.name} · ${eur(h.price)}</option>`).join('')}</select>
@@ -844,6 +910,13 @@ $('popts').addEventListener('change', (e) => {
   if (id === 'o-smart') po.smart = v || null;
   if (id === 'o-heat') po.heaters = v ? { set: v, qty: Math.max(1, Number($('o-heatq').value) || 1) } : null;
   if (id === 'o-heatq' && po.heaters) po.heaters.qty = Math.max(1, Number(v) || 1);
+  if (id === 'o-spot') po.spots = v ? { perLouvre: Number(v), louvres: Number($('o-spotn').value) } : null;
+  if (id === 'o-spotn') po.spots = { perLouvre: po.spots ? po.spots.perLouvre : 3, louvres: Number(v) };
+  if (id === 'o-lamp') po.lamps = v ? { perLouvre: Number(v), louvres: Number($('o-lampn').value) } : null;
+  if (id === 'o-lampn') po.lamps = { perLouvre: po.lamps ? po.lamps.perLouvre : 2, louvres: Number(v) };
+  if (id === 'o-crown') po.crownSpots = Number(v);
+  if (id === 'o-vert') po.verticalLamps = Number(v);
+  if (id === 'o-ip') po.intermediatePosts = Number(v);
   if (id === 'o-th') po.thermal = e.target.checked;
   if (id === 'o-au') po.audio = e.target.checked ? 1 : 0;
   if (id === 'o-sp') po.sockets.power = Math.max(0, Number(v) || 0);

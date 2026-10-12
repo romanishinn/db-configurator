@@ -89,6 +89,9 @@ export function pergolaSystems(c: Composition): PlacedModule[][] {
   return c.family === 'S400' ? c.modules.map((m) => [m]) : [c.modules];
 }
 
+/** page of a lighting table: S400 has one page, S500 louvre lighting on the first and crown / vertical on the second */
+const lightSource = (L: LightingScalars, inLouvres: boolean) => ({ file: L.source.file, page: L.source.page ?? L.source.pages![inLouvres ? 0 : 1]! });
+
 function lighting(cat: Catalog, model: string): LightingScalars {
   const L = (cat.optionScalars?.lighting as unknown as { [m: string]: LightingScalars } | undefined)?.[model];
   if (!L) throw new Error(`lighting scalars for ${model} missing`);
@@ -151,13 +154,13 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
         issues.push({ severity: 'block', code: `${code}_RANGE`, params: { module: ref, louvres: sel.louvres, max: axis[axis.length - 1]! } });
         continue;
       }
-      add(code, grid[i]!, { module: ref, perLouvre: sel.perLouvre, louvres: sel.louvres, double: dbl ? 1 : 0 }, L.source);
+      add(code, grid[i]!, { module: ref, perLouvre: sel.perLouvre, louvres: sel.louvres, double: dbl ? 1 : 0 }, lightSource(L, true));
       channels += 1; // ASSUMPTION: one remote channel per lighting type per module
     }
     if (o.crownSpots && o.crownSpots > 0) {
       const L = lighting(cat, model);
       const p = countPrice(L.crown, o.crownSpots);
-      add('OPT_CROWN_SPOTS', p.price, { module: ref, points: o.crownSpots, billed: p.billed }, L.source);
+      add('OPT_CROWN_SPOTS', p.price, { module: ref, points: o.crownSpots, billed: p.billed }, lightSource(L, false));
       channels += 1;
     }
     if (o.thermal) {
@@ -229,7 +232,7 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
     if (!L.vertical) issues.push({ severity: 'block', code: 'OPT_VERTICAL_LAMPS_MODEL', params: { model } });
     else {
       const p = countPrice(L.vertical, o.verticalLamps);
-      add('OPT_VERTICAL_LAMPS', p.price, { points: o.verticalLamps, billed: p.billed }, L.source);
+      add('OPT_VERTICAL_LAMPS', p.price, { points: o.verticalLamps, billed: p.billed }, lightSource(L, false));
       channels += 1;
       const posts = c.posts + (o.intermediatePosts ?? 0);
       if (o.verticalLamps > posts) issues.push({ severity: 'warn', code: 'OPT_VERTICAL_LAMPS_POSTS', params: { lamps: o.verticalLamps, posts } });

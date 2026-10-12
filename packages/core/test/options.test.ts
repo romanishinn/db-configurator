@@ -52,6 +52,8 @@ describe('pergola options — values from the catalogue pages', () => {
     const r = priceOptions(s400, { spots: { perLouvre: 3, louvres: 5 } }, cat);
     expect(sum(r, 'OPT_SPOTS')).toBe(3 * 1362);
     expect(r.channels).toBe(3);
+    expect(r.lines[0]!.source).toEqual({ file: 'WIN-CLIMATIC-S400-EN-07.2026.pdf', page: 24 });
+    expect(priceOptions(s500, { crownSpots: 8 }, cat).lines[0]!.source!.page).toBe(52);
   });
   it('S500 double: 4 LED lamps × 7 louvres per half = 8 670 € per module (p.51); 2 louvres billed at the first spots column 3', () => {
     expect(sum(priceOptions(dbl, { lamps: { perLouvre: 4, louvres: 7 } }, cat), 'OPT_LAMPS')).toBe(2 * 8670);
