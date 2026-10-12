@@ -73,20 +73,22 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .menu .same { font-size: 10.5px; font-weight: 600; color: #2f7d4f; background: #e6f3ea; border-radius: 3px; padding: 0 5px; margin-left: 4px; white-space: nowrap; }
 .align { font: inherit; font-size: 12px; margin-left: 6px; padding: 2px 8px; border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 4px; cursor: pointer; }
 .menu .sep { border-top: 1px solid #e2e6e9; margin: 4px 0 2px; }
-.menu.card { min-width: 280px; max-width: 300px; max-height: 70vh; overflow: auto; }
+.menu.card { min-width: 300px; max-width: 340px; max-height: 70vh; display: flex; flex-direction: column; padding: 0; }
+.menu .mbody { overflow: auto; flex: 1 1 auto; min-height: 0; padding: 0 10px; }
+.menu .mh { padding: 10px 10px 4px; border-bottom: 1px solid #e2e6e9; }
 .menu .mh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .menu .mh .t { flex: 1; }
 .menu .mx { border: 0; background: transparent; font-size: 22px; line-height: 1; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: #1c2226; }
 .menu .mx:hover, .menu .mx:focus-visible { background: #e1edf2; }
-.menu .mf { position: sticky; bottom: -8px; background: #fff; padding: 10px 0 0; }
+.menu .mf { padding: 10px; border-top: 1px solid #e2e6e9; background: #fff; border-radius: 0 0 6px 6px; }
 .menu .done { width: 100%; font: inherit; font-size: 15px; font-weight: 600; border: 0; border-radius: 22px; padding: 12px; background: #2c6a86; color: #fff; cursor: pointer; }
 @media (max-width: 700px) {
-  .menu.card { position: fixed; left: 8px !important; right: 8px; bottom: 8px; top: auto !important; width: auto; min-width: 0; max-width: none; max-height: 62vh; border-radius: 14px; z-index: 50; }
+  .menu.card { position: fixed; left: 8px !important; right: 8px; bottom: 8px; top: auto !important; width: auto; min-width: 0; max-width: none; max-height: 64vh; border-radius: 14px; z-index: 50; }
 }
-.menu .rrow { display: flex; flex-wrap: wrap; gap: 8px 6px; padding: 4px 2px 8px; }
-.menu .rc { display: grid; justify-items: center; gap: 4px; border: 0; background: transparent; cursor: pointer; font: inherit; color: #1c2226; width: 72px; padding: 2px; }
+.menu .rrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 4px; padding: 4px 0 10px; justify-items: center; }
+.menu .rc { display: grid; justify-items: center; align-content: start; gap: 4px; border: 0; background: transparent; cursor: pointer; font: inherit; color: #1c2226; width: 76px; padding: 2px; }
 .menu .rc .dot { width: 48px; height: 48px; border-radius: 50%; border: 1px solid #c9d1d6; display: grid; place-items: center; font-size: 17px; background: #f4f6f7; box-sizing: border-box; }
-.menu .rc .cap { text-align: center; line-height: 1.15; }
+.menu .rc .cap { text-align: center; line-height: 1.15; font-size: 11px; height: 26px; width: 76px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .menu .rc .cap { font-size: 11px; color: #5b666e; }
 .menu .rc[aria-current="true"] .dot { border: 2px solid #2c6a86; box-shadow: 0 0 0 2px #e1edf2; }
 .menu .rc[aria-current="true"] .cap { color: #1c2226; font-weight: 600; }
@@ -174,7 +176,6 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
       <label id="gopen-l" hidden>Стекло <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
-      <button type="button" id="gside" hidden title="Сторона парковки">парковка → вправо</button>
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
       <button type="button" id="louv-dir" aria-pressed="false" title="Ламели вдоль стены или от стены вперёд — та же таблица цен">⇄ Повернуть ламели</button>
       <span id="louv-info" class="muted"></span>
@@ -237,15 +238,21 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 6500, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassOpen: 0, glassSide: 'right' };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 6500, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, glassOpen: 0, glassSide: 'right' };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'front-1': 'zip', 'front-2': 'zip', 'right-0': 'verto' };
 
 /* ---------- side pricing ---------- */
 // ASSUMPTION: opening = module width minus one post (130 mm), height = 2800 mm minus the crown. Clearances to confirm with the manufacturer.
 function glassType(o) { return (o && state.glassOf[o.id]) || state.glass.type; }
+function glassCfg(o) { return state.glassCfg[o.id] || {}; }
+function setCfg(o, patch) { state.glassCfg[o.id] = { ...glassCfg(o), ...patch }; }
+/** Win Glass for an opening: the cheapest system that fits, unless the user picked another one (variant). */
 function glassFor(o) {
-  return DBCore.selectGlass({ width: Math.round(o.len * 1000), height: Math.round(o.h * 1000), thickness: DBCore.thicknessFor(glassType(o), cat) }, cat);
+  const r = DBCore.selectGlass({ width: Math.round(o.len * 1000), height: Math.round(o.h * 1000), thickness: DBCore.thicknessFor(glassType(o), cat) }, cat);
+  const v = glassCfg(o).variant, pick = v && r.options.find((x) => x.table === v);
+  if (pick) r.best = pick;
+  return r;
 }
 /** Win Glass glazing (p.9): name, 3D look (tint colour, opacity), menu label */
 const GLAZING = {
@@ -532,7 +539,7 @@ function addFill(o, fill) {
     // parking (catalogue, p.15): the stacked panels take the parking width on the chosen side; a double-side opening parks both ways
     const parkW = ((gs.best && gs.best.parkingWidth) || Math.round(pw * 1000 * 0.9)) / 1000;
     const dbl = gs.best && gs.best.opening === 'double';
-    const side = dbl ? 0 : (state.glassSide === 'left' ? -1 : 1);     // 0 = both sides
+    const side = dbl ? 0 : (glassCfg(o).side || state.glassSide) === 'left' ? -1 : 1;     // 0 = both sides
     const per = dbl ? Math.ceil(nP / 2) : nP;
     const slotW = parkW / per;
     const track = gs.best && gs.best.tracks === 6 ? [-0.03, 0, 0.03] : [-0.025, 0.025];
@@ -559,7 +566,7 @@ function addFill(o, fill) {
       // direction chevron: one per moving panel, pointing where the panel will park
       const ch = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.16, 14), chevMat);
       ch.rotation.z = (parkX - x) >= 0 ? -Math.PI / 2 : Math.PI / 2; ch.position.set(0, o.h - 0.24, 0.05); ch.visible = Math.abs(parkX - x) > 0.01; node.add(ch);
-      animated.glass.push({ node, closedX: x, parkX });
+      animated.glass.push({ node, closedX: x, parkX, id: o.id });
     }
   } else if (fill === 'verto') {
     // profiles 35 × 60 mm spread over the opening (count and gap from the engine)
@@ -601,7 +608,7 @@ function applyAnim() {
   }
   M.led.emissiveIntensity = state.evening ? 2.2 : 0; M.ledRgb.emissiveIntensity = state.evening ? 2.4 : 0; M.ledMix.emissiveIntensity = state.evening ? 2.2 : 0;
   for (const g of animated.glass || []) {
-    const t = state.glassOpen / 100;
+    const t = (state.glassCfg[g.id]?.open ?? state.glassOpen) / 100;
     g.node.position.x = g.closedX + (g.parkX - g.closedX) * t;
   }
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
@@ -693,27 +700,37 @@ function openMenu(o, e) {
 }
 function renderMenu(o) {
   const fill = state.fills[o.id] || 'none';
-  let html = `<div class="mh"><span class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</span><button type="button" class="mx" data-close="1" aria-label="Закрыть">×</button></div>
-    <div class="rrow">${Object.keys(FILL).map((k) => `<button type="button" class="rc" data-k="${k}" aria-current="${fill === k}"><span class="dot">${GLYPH[k]}</span><span class="cap">${SHORT[k]}</span></button>`).join('')}</div>`;
+  const head = `<div class="mh"><span class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</span><button type="button" class="mx" data-close="1" aria-label="Закрыть">×</button></div>`;
+  const rc = (attrs, glyph, cap, cur) => `<button type="button" class="rc" ${attrs} aria-current="${!!cur}"><span class="dot">${glyph}</span><span class="cap">${cap}</span></button>`;
+  let html = `<div class="t">Тип</div><div class="rrow">${Object.keys(FILL).map((k) => rc(`data-k="${k}"`, GLYPH[k], SHORT[k], fill === k)).join('')}</div>`;
   if (fill === 'glass') {
-    const gt = glassType(o), own = !!state.glassOf[o.id];
+    const gs = glassFor(o), gt = glassType(o), own = !!state.glassOf[o.id], cfg = glassCfg(o);
+    const dbl = !!(gs.best && gs.best.opening === 'double');
+    const side = cfg.side || state.glassSide, op = cfg.open ?? state.glassOpen;
     html += `<div class="t">Стекло</div><div class="rrow">${Object.entries(GLAZING).map(([k, g]) => `<button type="button" class="rc" data-gl="${k}" aria-current="${gt === k}"><span class="dot" style="background:#${g.col.toString(16).padStart(6, '0')}"></span><span class="cap">${GLS[k]}</span></button>`).join('')}</div>
-      <div class="t">Применить</div><div class="rrow">
-        <button type="button" class="rc" data-glscope="one" aria-current="${own}"><span class="dot">1</span><span class="cap">только этот</span></button>
-        <button type="button" class="rc" data-glscope="all" aria-current="${!own}"><span class="dot">∞</span><span class="cap">все проёмы</span></button></div>`;
+      <div class="t">Применить стекло</div><div class="rrow">${rc('data-glscope="one"', '1', 'этот проём', own)}${rc('data-glscope="all"', '∞', 'все проёмы', !own)}</div>`;
+    html += `<div class="t">Система: открывание и полотна</div>`;
+    html += gs.options.length
+      ? `<div class="rrow">${gs.options.map((x) => rc(`data-var="${x.table}"`, String(x.panels), `${x.opening === 'double' ? 'в обе' : 'в одну'} · ${x.tracks} напр.`, gs.best && gs.best.table === x.table)).join('')}</div>
+         <div class="sub">${gs.best ? eur(gs.best.price) + ' · ' + gs.best.panels + ' полотен · ' + gs.best.tracks + ' направляющих' : ''}${cfg.variant ? ' · выбрано вручную' : ' · самая дешёвая по размеру'}</div>`
+      : `<div class="note">Для этого размера Win Glass не производится</div>`;
+    html += `<div class="t">Парковка полотен</div><div class="rrow">${dbl
+      ? rc('data-park="both"', '↔', 'в обе стороны', true)
+      : rc('data-park="left"', '←', 'влево', side === 'left') + rc('data-park="right"', '→', 'вправо', side === 'right')}</div>`;
+    html += `<div class="t">Открытие</div><div class="rrow">${[[0, '▯', 'закрыто'], [50, '◫', 'наполовину'], [100, '▮', 'открыто']].map(([v, g, c]) => rc(`data-open="${v}"`, g, c, Math.abs(op - v) < 1)).join('')}</div>`;
   }
   if (fill === 'zip') {
-    const ctl = ctlOf(o.id), same = commonCtl(o.id);
-    html += `<div class="t">Управление скрином${same && same !== ctl ? '' : ''}</div><div class="rrow">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<button type="button" class="rc" data-ctl="${k}" aria-current="${ctl === k}"><span class="dot">${CTL_GLYPH[k] || '•'}</span><span class="cap">${c.name}</span></button>`).join('')}</div>
-      <div class="t">Применить управление</div><div class="rrow"><button type="button" class="rc" data-ctlall="1"><span class="dot">∞</span><span class="cap">ко всем скринам</span></button></div>
-      <div class="t">Ткань (проницаемость)</div><div class="rrow">${opennessList().map((of) => `<button type="button" class="rc" data-of="${of}" aria-current="${fabricOf().openness === of}"><span class="dot">${of}</span><span class="cap">${of} %</span></button>`).join('')}</div>`;
+    const ctl = ctlOf(o.id);
+    html += `<div class="t">Управление скрином</div><div class="rrow">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => rc(`data-ctl="${k}"`, CTL_GLYPH[k] || '•', c.name, ctl === k)).join('')}</div>
+      <div class="t">Применить управление</div><div class="rrow">${rc('data-ctlall="1"', '∞', 'все скрины', false)}</div>
+      <div class="t">Ткань (проницаемость)</div><div class="rrow">${opennessList().map((of) => rc(`data-of="${of}"`, of, of + ' %', fabricOf().openness === of)).join('')}</div>`;
   }
   if (fill === 'panels') {
-    html += `<div class="t">Ламели панелей</div>` + Object.entries(SLATS).map(([k, t]) => `<button type="button" data-slats="${k}" aria-current="${panelOpt(o.id).slats === k}">${t}${commonPanel(o.id) && commonPanel(o.id).slats === k ? ' <span class="same">как у других</span>' : ''}</button>`).join('')
-      + `<div class="t">Монтаж</div>` + Object.entries(PMOUNT).map(([k, t]) => `<button type="button" data-pmount="${k}" aria-current="${panelOpt(o.id).mount === k}">${t}${commonPanel(o.id) && commonPanel(o.id).mount === k ? ' <span class="same">как у других</span>' : ''}</button>`).join('');
+    const sl = panelOpt(o.id).slats, mt = panelOpt(o.id).mount;
+    html += `<div class="t">Ламели панелей</div><div class="rrow">${Object.entries(SLATS).map(([k, t]) => rc(`data-slats="${k}"`, k === 'fixed' ? '≡' : '⟋', t, sl === k)).join('')}</div>`;
+    html += `<div class="t">Монтаж</div><div class="rrow">${Object.entries(PMOUNT).map(([k, t]) => rc(`data-pmount="${k}"`, '•', t, mt === k)).join('')}</div>`;
   }
-  html += `<div class="mf"><button type="button" class="done" data-close="1">Готово</button></div>`;
-  menu.innerHTML = html;
+  menu.innerHTML = head + `<div class="mbody">${html}</div><div class="mf"><button type="button" class="done" data-close="1">Готово</button></div>`;
 }
 const CTL_GLYPH = { remote: '◉', smart: '◎', pergola: '▣', switch: '⏽', solar: '☼' };
 function onMenuClick(ev) {
@@ -724,6 +741,9 @@ function onMenuClick(ev) {
   if (b.dataset.ctl) { state.zipCtl[o.id] = b.dataset.ctl; renderEstimate(); return renderMenu(o); }
   if (b.dataset.ctlall) { const c = ctlOf(o.id); for (const [id, f] of Object.entries(state.fills)) if (f === 'zip') state.zipCtl[id] = c; renderEstimate(); return renderMenu(o); }
   if (b.dataset.of) { state.colors.fabric = fabricForOpenness(Number(b.dataset.of)); applyColors(); renderColors(); renderEstimate(); return renderMenu(o); }
+  if (b.dataset.var) { setCfg(o, { variant: b.dataset.var }); return again(); }
+  if (b.dataset.park) { setCfg(o, { side: b.dataset.park === 'left' ? 'left' : 'right' }); return again(); }
+  if (b.dataset.open) { setCfg(o, { open: Number(b.dataset.open) }); return again(); }
   if (b.dataset.gl) { if (state.glassOf[o.id]) state.glassOf[o.id] = b.dataset.gl; else state.glass.type = b.dataset.gl; return again(); }
   if (b.dataset.glscope) { if (b.dataset.glscope === 'one') state.glassOf[o.id] = glassType(o); else delete state.glassOf[o.id]; return again(); }
   if (b.dataset.slats || b.dataset.pmount) {
@@ -744,7 +764,7 @@ function openingById(id) {
 }
 function syncGlassControls() {
   const any = Object.values(state.fills).includes('glass');
-  $('gopen-l').hidden = !any; $('gside').hidden = !any;
+  $('gopen-l').hidden = !any;
 }
 function closeMenu() { if (menu) { menu.remove(); menu = null; menuAt = null; } }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
@@ -1116,8 +1136,7 @@ let t; const onDims = () => { clearTimeout(t); t = setTimeout(() => { state.widt
 $('w').addEventListener('input', onDims); $('d').addEventListener('input', onDims);
 $('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent = state.angle + '°'; applyAnim(); };
 $('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
-$('gopen').oninput = (e) => { state.glassOpen = +e.target.value; $('gopenv').textContent = state.glassOpen === 0 ? 'закрыто' : state.glassOpen === 100 ? 'открыто' : state.glassOpen + '%'; applyAnim(); };
-$('gside').onclick = () => { state.glassSide = state.glassSide === 'right' ? 'left' : 'right'; $('gside').textContent = 'парковка → ' + (state.glassSide === 'right' ? 'вправо' : 'влево'); build(); renderEstimate(); };
+$('gopen').oninput = (e) => { for (const c of Object.values(state.glassCfg)) delete c.open; state.glassOpen = +e.target.value; $('gopenv').textContent = state.glassOpen === 0 ? 'закрыто' : state.glassOpen === 100 ? 'открыто' : state.glassOpen + '%'; applyAnim(); };
 function renderLouvreInfo(cur, alt) {
   const wall = state.mount === 'wall';
   const dir = state.louvres === 'parallel' ? (wall ? 'вдоль стены' : 'вдоль ширины') : (wall ? 'от стены вперёд' : 'вдоль глубины');
