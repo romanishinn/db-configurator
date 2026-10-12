@@ -57,17 +57,18 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 .dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 10px 12px; font-size: 12.5px; }
-.toolbar label { display: flex; align-items: center; gap: 6px; }
+/* the three sliders share one grid: caption | track | value, so the tracks line up */
+.toolbar label { display: grid; grid-template-columns: 96px 110px 64px; align-items: center; gap: 6px; flex: 0 0 300px; }
 .toolbar label[hidden] { display: none; }
 /* glass slider sits on its own row, directly under Скрины */
 .toolbar #gopen-l:not([hidden]) { flex-basis: 100%; }
 .toolbar input[type=range] { width: 110px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 4px; padding: 4px 9px; cursor: pointer; }
-.toolbar #louv-info { color: #5b666e; }
+.toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; } /* own full-width row: its text length no longer moves the buttons */
 .toolbar #louv-info b { color: #1d6b3a; font-weight: 600; }
 .toolbar button[aria-pressed="true"] { background: #1c2226; color: #fff; border-color: #1c2226; }
 .hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
-@media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: auto; min-height: 0; } .vp { flex: none; height: 400px; } .toolbar #louv-info { flex-basis: 100%; } }
+@media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: auto; min-height: 0; } .vp { flex: none; height: 400px; }  }
 .menu { position: absolute; background: #fff; color: #1c2226; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); padding: 8px; display: grid; gap: 4px; min-width: 170px; z-index: 5; }
 .menu .t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #5b666e; padding: 2px 6px 4px; }
 .menu button { text-align: left; font: inherit; font-size: 13.5px; border: 0; background: transparent; color: #1c2226; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
@@ -186,7 +187,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
       <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
-      <button type="button" id="louv-dir" aria-pressed="false" title="Ламели вдоль стены или от стены вперёд — та же таблица цен">⇄ Повернуть ламели</button>
+      <button type="button" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен">⇄</button>
       <span id="louv-info" class="muted"></span>
       <span style="flex:1"></span>
       <button type="button" id="v-iso">3D</button>
