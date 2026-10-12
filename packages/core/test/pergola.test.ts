@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
-import { loadCatalog, pricePergola, coatingPercent } from '../src';
+import { pricePergola, coatingPercent } from '../src';
+import { loadCatalog } from '../src/node';
 
 const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
 
