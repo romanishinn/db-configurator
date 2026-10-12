@@ -165,7 +165,7 @@ def build():
                     continue
                 items.append({'brand': BRAND_OF_PAGE[pg], 'index': a['index'], 'name': a['name'], 'description': a['description'],
                               'price': a['price'], **c, 'source': {'file': SCREEN, 'page': pg}})
-    # TELECO units (any brand of wired motor; ASSUMPTION for YOODA/Somfy — catalogue names WIN SCREEN wired motors)
+    # TELECO units: any brand of wired motor (WIN CONTROL, YOODA, Somfy — confirmed by D&B Solutions, 12.10.2026)
     def teleco(file, page, fn):
         tx = fn(file, page)
         i = tx.find('WIRED MOTORS FOR WIN SCREEN')

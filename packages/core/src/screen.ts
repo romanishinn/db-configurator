@@ -126,8 +126,8 @@ export function selectScreen(req: ScreenRequest, cat: Catalog): ScreenResult {
  * How a screen is operated. Each mode fixes the motor type and the shared control devices of the chosen brand:
  * - remote:  radio motor + one remote for the project
  * - smart:   radio motor + one smart unit (WIN CONTROL Smart / YOODA Smart Home 3.0 / Somfy TaHoma Switch Pro)
- * - pergola: wired motor + TELECO central unit -> the pergola's 63-channel remote (S400 p.20 / S500 p.45;
- *            ASSUMPTION: also for YOODA/Somfy wired motors — the catalogue says "WIN SCREEN wired motors")
+ * - pergola: wired motor + TELECO central unit -> the pergola's 63-channel remote (S400 p.20 / S500 p.45);
+ *            works with YOODA and Somfy wired motors too (confirmed by D&B Solutions, 12.10.2026)
  * - switch:  wired motor + a wall switch per motor (YOODA, Somfy; WIN CONTROL lists no wired switch)
  * - solar:   solar radio motor (WIN CONTROL kit 20 Nm, Somfy RS100 Solar io 6–20 Nm) + remote
  */
