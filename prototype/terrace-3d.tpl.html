@@ -346,7 +346,7 @@ function gradTex(kind) {
 const glassMats = {};
 const chevMat = new THREE.MeshBasicMaterial({ color: 0xe07a3c });
 function glassMat(type) {
-  if (!glassMats[type]) { const g = GLAZING[type]; glassMats[type] = new THREE.MeshPhysicalMaterial({ color: g.col, roughness: 0.05, metalness: type === 'mirror' ? 0.6 : 0, transparent: true, opacity: g.op, side: THREE.DoubleSide }); }
+  if (!glassMats[type]) { const g = GLAZING[type]; glassMats[type] = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, metalness: type === 'mirror' ? 0.6 : 0, transparent: true, opacity: g.op, side: THREE.DoubleSide }); srgbCol(glassMats[type].color, '#' + g.col.toString(16).padStart(6, '0')); }
   return glassMats[type];
 }
 
@@ -1214,10 +1214,13 @@ function woodTexture(hex) {
   const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
   return (woodTex[hex] = t);
 }
+/** Three r128 keeps hex values as they are and then encodes them to sRGB again, which washes colours out.
+ *  Convert the hex to linear first, so a surface shows the same colour as its swatch. */
+function srgbCol(col, hex) { col.set(hex); col.convertSRGBToLinear(); return col; }
 function paint(mat, c) {
   if (c.finish === 'wood') { mat.map = woodTexture(c.hex); mat.color.set(0xffffff); mat.metalness = 0; mat.roughness = 0.75; }
   else {
-    mat.map = null; mat.color.set(c.hex);
+    mat.map = null; srgbCol(mat.color, c.hex);
     const f = { metallic: [0.55, 0.38], matt: [0.1, 0.78], structured: [0.12, 0.9] }[c.finish] || [0.15, 0.7];
     mat.metalness = f[0]; mat.roughness = f[1];
   }
@@ -1227,7 +1230,7 @@ function applyColors() {
   syncGlassControls();
   const e = colorsEff();
   paint(M.frame, colorOf(e.construction)); paint(M.louver, colorOf(e.roof)); paint(M.slide, colorOf(e.slide)); paint(M.zip, colorOf(e.zip));
-  M.fabric.color.set(state.colors.tone);
+  srgbCol(M.fabric.color, state.colors.tone);
   fabricLook();
 }
 const pergolaSys = () => { const o = state.options[state.optIndex]; return o && o.family === 'S400' ? 'S400' : 'S500'; };
