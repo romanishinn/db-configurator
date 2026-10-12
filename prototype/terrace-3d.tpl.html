@@ -92,6 +92,11 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .menu .rc .cap { font-size: 11px; color: #5b666e; }
 .menu .rc[aria-current="true"] .dot { border: 2px solid #2c6a86; box-shadow: 0 0 0 2px #e1edf2; }
 .menu .rc[aria-current="true"] .cap { color: #1c2226; font-weight: 600; }
+.menu .list { display: grid; gap: 6px; padding: 2px 0 8px; }
+.menu .li { display: grid; gap: 2px; text-align: left; font: inherit; font-size: 13.5px; color: #1c2226; background: #fff; border: 1px solid #c9d1d6; border-radius: 10px; padding: 9px 12px; cursor: pointer; }
+.menu .li .li-hint { font-size: 11.5px; color: #5b666e; }
+.menu .li[aria-current="true"] { background: #e1edf2; border-color: #2c6a86; font-weight: 600; }
+.menu .li:hover, .menu .li:focus-visible { background: #e1edf2; }
 .menu .ctl .d { display: block; font-size: 11.5px; color: #5b666e; font-weight: 400; }
 .zl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; font-size: 12px; color: var(--muted); margin-top: 4px; }
 .glz { display: grid; gap: 4px; }
@@ -238,7 +243,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 6500, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, glassOpen: 0, glassSide: 'right' };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 6500, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right' };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'front-1': 'zip', 'front-2': 'zip', 'right-0': 'verto' };
 
@@ -720,10 +725,12 @@ function renderMenu(o) {
     html += `<div class="t">Открытие</div><div class="rrow">${[[0, '▯', 'закрыто'], [50, '◫', 'наполовину'], [100, '▮', 'открыто']].map(([v, g, c]) => rc(`data-open="${v}"`, g, c, Math.abs(op - v) < 1)).join('')}</div>`;
   }
   if (fill === 'zip') {
-    const ctl = ctlOf(o.id);
-    html += `<div class="t">Управление скрином</div><div class="rrow">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => rc(`data-ctl="${k}"`, CTL_GLYPH[k] || '•', c.name, ctl === k)).join('')}</div>
-      <div class="t">Применить управление</div><div class="rrow">${rc('data-ctlall="1"', '∞', 'все скрины', false)}</div>
-      <div class="t">Ткань (проницаемость)</div><div class="rrow">${opennessList().map((of) => rc(`data-of="${of}"`, of, of + ' %', fabricOf().openness === of)).join('')}</div>`;
+    const ctl = ctlOf(o.id), fab = cat.fabrics.collections.find((f) => f.id === zipFabId(o)), own = !!state.zipFab[o.id];
+    html += `<div class="t">Ткань: проницаемость</div><div class="rrow">${opennessList().map((of) => rc(`data-of="${of}"`, String(of), of + ' %', fab.openness === of)).join('')}</div>
+      <div class="sub">${fab.name} · ${fab.eurPerM2 ? '+' + fab.eurPerM2 + ' €/м²' : 'в цене'}</div>
+      <div class="t">Применить ткань</div><div class="rrow">${rc('data-fscope="one"', '1', 'этот скрин', own)}${rc('data-fscope="all"', '∞', 'все скрины', !own)}</div>
+      <div class="t">Управление</div><div class="list">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<button type="button" class="li" data-ctl="${k}" aria-current="${ctl === k}"><span class="li-name">${c.name}</span><span class="li-hint">${c.hint}</span></button>`).join('')}</div>
+      <div class="list"><button type="button" class="li" data-ctlall="1"><span class="li-name">Применить управление ко всем скринам</span></button></div>`;
   }
   if (fill === 'panels') {
     const sl = panelOpt(o.id).slats, mt = panelOpt(o.id).mount;
@@ -739,8 +746,17 @@ function onMenuClick(ev) {
   const o = state.options[state.optIndex]?.modules ? openingById(menuAt.id) : null; if (!o) return closeMenu();
   const again = () => { build(); renderEstimate(); renderMenu(o); };
   if (b.dataset.ctl) { state.zipCtl[o.id] = b.dataset.ctl; renderEstimate(); return renderMenu(o); }
+  if (b.dataset.fscope) {
+    if (b.dataset.fscope === 'one') state.zipFab[o.id] = zipFabId(o); else for (const id of Object.keys(state.zipFab)) delete state.zipFab[id];
+    return again();
+  }
   if (b.dataset.ctlall) { const c = ctlOf(o.id); for (const [id, f] of Object.entries(state.fills)) if (f === 'zip') state.zipCtl[id] = c; renderEstimate(); return renderMenu(o); }
-  if (b.dataset.of) { state.colors.fabric = fabricForOpenness(Number(b.dataset.of)); applyColors(); renderColors(); renderEstimate(); return renderMenu(o); }
+  if (b.dataset.of) {
+    const of = Number(b.dataset.of);
+    if (state.zipFab[o.id]) state.zipFab[o.id] = fabricForOpenness(of, lastZipReqs.filter((r) => r._id === o.id));
+    else { state.colors.fabric = fabricForOpenness(of); applyColors(); renderColors(); }
+    renderEstimate(); return renderMenu(o);
+  }
   if (b.dataset.var) { setCfg(o, { variant: b.dataset.var }); return again(); }
   if (b.dataset.park) { setCfg(o, { side: b.dataset.park === 'left' ? 'left' : 'right' }); return again(); }
   if (b.dataset.open) { setCfg(o, { open: Number(b.dataset.open) }); return again(); }
@@ -906,14 +922,14 @@ function renderEstimate() {
       }
     } else if (f === 'zip') {
       const mode = ctlOf(op.id);
-      const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: state.colors.fabric, control: DBCore.MOTOR_FOR_MODE[mode], brand: state.brand, customMotor: { name: state.custom.name, price: state.custom.motor } };
+      const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), control: DBCore.MOTOR_FOR_MODE[mode], brand: state.brand, customMotor: { name: state.custom.name, price: state.custom.motor } };
       const r = DBCore.selectScreen(req, cat);
-      lastZipReqs.push(req);
+      lastZipReqs.push({ ...req, _id: op.id });
       zipReqs.push({ req, mode, sys: o.family === 'S400' ? 'p' + o.modules.indexOf(op.mod) : 'all' });
       const ctlSel = `<label class="zl">Управление<select class="zctl" data-zctl="${op.id}">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<option value="${k}" ${k === mode ? 'selected' : ''}>${c.name}</option>`).join('')}</select></label>`;
       if (r.best) {
         const b = r.best, fab = b.lines.find((l) => l.code === 'FABRIC_SURCHARGE');
-        zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0, mode, sys: zipReqs.at(-1).sys });
+        zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0, mode, sys: zipReqs.at(-1).sys, fid: req.fabric });
         sides += b.gridPrice + b.motor.price; coat.push({ system: 'SCREEN_ZIP', base: b.gridPrice, color: e.zip, label: 'zip' });
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${SCREEN_NAME[b.system]}, по прайсу ${mm(b.billed.width)} × ${mm(b.billed.height)} — ${eur(b.gridPrice)} · стр. ${cat.tables[b.system].source.page}<br>мотор ${motorName(b.motor)}, ${MOTOR_CTL[b.motor.control]}, ${b.motor.nm} Нм (нужно ${b.torqueNm} Нм) — ${eur(b.motor.price)}${b.motor.source ? ' · стр. ' + b.motor.source.page : ''}</span></td><td class="a">${eur(b.gridPrice + b.motor.price)}</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       } else {
@@ -976,13 +992,13 @@ function renderEstimate() {
   if (panelsCustomColour) { html += `<tr><td>Покраска Win Panels в цвет ${cname(e.slide)}<span class="s">в прайсе Win Panels есть цены для стандартных цветов и «под дерево»; % для других цветов уточнить у производителя</span></td><td class="a muted">уточнить</td></tr>`; }
   for (const l of cs.lines.filter((l) => l.code === 'COATING_MINIMUM')) html += `<tr><td>Минимальная партия покраски<span class="s">${cname(l.params.color)}: окраска ${eur(l.params.coated)}, минимум ${eur(l.params.minimum)}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
   sides += cs.total;
-  if (zipOps.length) {
-    const f = fabricOf();
-    if (f.eurPerM2) {
-      const fs = zipOps.reduce((a, z) => a + z.fabric, 0), m2 = zipOps.reduce((a, z) => a + z.m2, 0);
-      sides += fs;
-      html += `<tr><td>Ткань ${f.name} (OF ${f.openness} %), ${f.eurPerM2} €/м²<span class="s">${zipOps.length} скр., ${m2.toFixed(2).replace('.', ',')} м² · стр. ${cat.fabrics.source.pages[0]}</span></td><td class="a">${eur(fs)}</td></tr>`;
-    }
+  // one row per fabric used by the ZIP screens (each screen can have its own)
+  for (const fid of [...new Set(zipOps.map((z) => z.fid))]) {
+    const f = cat.fabrics.collections.find((x) => x.id === fid), grp = zipOps.filter((z) => z.fid === fid);
+    if (!f || !f.eurPerM2) continue;
+    const fs = grp.reduce((a, z) => a + z.fabric, 0), m2 = grp.reduce((a, z) => a + z.m2, 0);
+    sides += fs;
+    html += `<tr><td>Ткань ${f.name} (OF ${f.openness} %), ${f.eurPerM2} €/м²<span class="s">${grp.length} скр., ${m2.toFixed(2).replace('.', ',')} м² · стр. ${cat.fabrics.source.pages[0]}</span></td><td class="a">${eur(fs)}</td></tr>`;
   }
   {
     const systems = new Set(zipOps.map((z) => z.sys)).size;
@@ -1193,12 +1209,14 @@ function pctText(t) {
   return p ? `<span class="pc paid">+${p} %</span>` : '<span class="pc">в цене</span>';
 }
 let lastZipReqs = [];
+/** fabric of one ZIP screen: its own choice, or the project fabric */
+const zipFabId = (o) => (o && state.zipFab[o.id]) || state.colors.fabric;
 const OF_NAME = { 14: 'высокая проницаемость', 5: 'низкая проницаемость', 4: 'низкая проницаемость', 1: 'почти непрозрачная', 0: 'блэкаут, не просматривается' };
 const opennessList = () => [...new Set(cat.fabrics.collections.map((f) => f.openness))].sort((a, b) => b - a);
 /** Openness factor chosen -> the cheapest collection with it that every placed ZIP screen can be made of (else the cheapest one). */
-function fabricForOpenness(of) {
+function fabricForOpenness(of, reqs = lastZipReqs) {
   const list = cat.fabrics.collections.filter((f) => f.openness === of).sort((a, b) => a.eurPerM2 - b.eurPerM2);
-  return (list.find((f) => lastZipReqs.every((r) => DBCore.selectScreen({ ...r, fabric: f.id }, cat).best)) || list[0]).id;
+  return (list.find((f) => reqs.every((r) => DBCore.selectScreen({ ...r, fabric: f.id }, cat).best)) || list[0]).id;
 }
 /** 3D look of the fabric: OF 0 % is opaque, the more open, the more you see through */
 function fabricLook() {
