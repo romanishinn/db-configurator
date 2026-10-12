@@ -718,7 +718,7 @@ function renderMenu(o) {
     const dbl = !!(gs.best && gs.best.opening === 'double');
     const side = cfg.side || state.glassSide, op = cfg.open ?? state.glassOpen;
     html += `<div class="t">Цвет стекла</div><div class="rrow">${Object.entries(GLAZING).map(([k, g]) => `<button type="button" class="rc" data-gl="${k}" aria-current="${gt === k}"><span class="dot" style="background:#${g.col.toString(16).padStart(6, '0')}"></span><span class="cap">${GLS[k]}</span></button>`).join('')}</div>
-      <div class="t">Применить стекло</div><div class="rrow">${rc('data-glscope="one"', '1', 'этот проём', own)}${rc('data-glscope="all"', '∞', 'все проёмы', !own)}</div>`;
+`;
     // typology (price list p.15): every Win Glass system of this glass thickness; those that do not produce this size are greyed out
     const thick = DBCore.thicknessFor(gt, cat), wMm = Math.round(o.len * 1000), hMm = Math.round(o.h * 1000);
     const okIds = new Set(gs.options.map((x) => x.table));
@@ -727,14 +727,15 @@ function renderMenu(o) {
     html += `<div class="t">Типология Win Glass · ${thick} мм</div><div class="rrow">${sys.map((t) => {
       const m = t.meta, cap = `${m.opening === 'double' ? 'в обе' : 'в одну'} · ${m.tracks} напр.`;
       if (okIds.has(t.id)) return rc(`data-var="${t.id}"`, String(m.panels), cap, gs.best && gs.best.table === t.id);
-      return `<button type="button" class="rc" disabled aria-current="false"><span class="dot">${m.panels}</span><span class="cap">${cap}</span></button>`;
+      return `<button type="button" class="rc" disabled aria-current="false" title="Не производится для ${wMm} × ${hMm} мм"><span class="dot">✕</span><span class="cap">${cap}</span></button>`;
     }).join('')}</div>
       <div class="sub">${gs.best ? eur(gs.best.price) + ' · ' + gs.best.panels + ' полотен · ' + gs.best.tracks + ' направляющих' + (cfg.variant ? ' · выбрано вручную' : ' · самая дешёвая по размеру') : 'Для ' + wMm + ' × ' + hMm + ' мм Win Glass не производится'}</div>
-      ${sys.length > okIds.size ? `<div class="sub">Серые: не производятся для ${wMm} × ${hMm} мм</div>` : ''}`;
+      ${sys.length > okIds.size ? `<div class="sub">✕ — не производится для ${wMm} × ${hMm} мм</div>` : ''}`;
     html += `<div class="t">Парковка полотен</div><div class="rrow">${dbl
       ? rc('data-park="both"', '↔', 'в обе стороны', true)
       : rc('data-park="left"', '←', 'влево', side === 'left') + rc('data-park="right"', '→', 'вправо', side === 'right')}</div>`;
     html += `<div class="t">Открытие</div><div class="rrow">${[[0, '▯', 'закрыто'], [50, '◫', 'наполовину'], [100, '▮', 'открыто']].map(([v, g, c]) => rc(`data-open="${v}"`, g, c, Math.abs(op - v) < 1)).join('')}</div>`;
+    html += `<div class="t">Применить стекло</div><div class="rrow">${rc('data-glscope="one"', '1', 'этот проём', own)}${rc('data-glscope="all"', '∞', 'все проёмы', !own)}</div>`;
   }
   if (fill === 'zip') {
     const ctl = ctlOf(o.id), fab = cat.fabrics.collections.find((f) => f.id === zipFabId(o)), own = !!state.zipFab[o.id];
