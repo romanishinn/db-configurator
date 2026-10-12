@@ -1,0 +1,455 @@
+<title>3D-конфигуратор D&amp;B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 3D viewport dominates; left rail = terrace + composition options; right rail = estimate. Stacks on phones (viewport first). */
+:root {
+  --bg: #eef0f1; --panel: #ffffff; --ink: #1c2226; --muted: #5b666e; --line: #d6dadd;
+  --accent: #2c6a86; --accent-soft: #e1edf2; --good: #2f7d4f; --warn: #a3621b; --warn-soft: #fbf0e2;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #14181b; --panel: #1c2125; --ink: #e6e9eb; --muted: #9aa5ad; --line: #30373e;
+  --accent: #72b6d6; --accent-soft: #1d333e; --good: #6cc592; --warn: #e2a65c; --warn-soft: #3a2c1a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #14181b; --panel: #1c2125; --ink: #e6e9eb; --muted: #9aa5ad; --line: #30373e;
+  --accent: #72b6d6; --accent-soft: #1d333e; --good: #6cc592; --warn: #e2a65c; --warn-soft: #3a2c1a; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45; }
+.app { display: grid; grid-template-columns: 300px minmax(0, 1fr) 300px; gap: 14px; padding-inline: 16px; padding-block: 16px; min-height: 100vh; }
+@media (max-width: 1100px) { .app { grid-template-columns: 280px minmax(0, 1fr); } .est { grid-column: 1 / -1; } }
+@media (max-width: 760px) { .app { grid-template-columns: 1fr; } .stage { order: -1; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; min-width: 0; align-self: start; }
+h1 { font-family: var(--f-display); font-size: 19px; margin: 0 0 2px; letter-spacing: -0.01em; }
+h2 { font-family: var(--f-display); font-size: 14px; margin: 18px 0 10px; }
+.sub { color: var(--muted); font-size: 12.5px; margin: 0; }
+label.l { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
+.dims { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+input[type=number] { width: 100%; font-family: var(--f-mono); font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.seg button, .chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; cursor: pointer; display: grid; gap: 4px; }
+.opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.opt .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.opt .name { font-weight: 600; }
+.opt .price { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.opt .meta { color: var(--muted); font-size: 12.5px; }
+.opt .delta { color: var(--muted); font-family: var(--f-mono); font-size: 12px; }
+.tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tag { font-size: 11px; border-radius: 3px; padding: 1px 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.tag.cheapest { color: var(--good); border-color: var(--good); }
+.note { font-size: 12.5px; border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 7px 10px; border-radius: 4px; margin-top: 8px; }
+.stage { position: relative; min-height: 520px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: #cfd8de; }
+#view { position: absolute; inset: 0; }
+#view canvas { display: block; width: 100%; height: 100%; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
+.dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
+.toolbar { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; }
+.toolbar label { display: flex; align-items: center; gap: 6px; }
+.toolbar input[type=range] { width: 110px; accent-color: #2c6a86; }
+.toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 4px; padding: 4px 9px; cursor: pointer; }
+.toolbar button[aria-pressed="true"] { background: #1c2226; color: #fff; border-color: #1c2226; }
+.hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
+@media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { min-height: 460px; } }
+.menu { position: absolute; background: #fff; color: #1c2226; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); padding: 8px; display: grid; gap: 4px; min-width: 170px; z-index: 5; }
+.menu .t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #5b666e; padding: 2px 6px 4px; }
+.menu button { text-align: left; font: inherit; font-size: 13.5px; border: 0; background: transparent; color: #1c2226; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+.menu button:hover, .menu button:focus-visible { background: #e1edf2; }
+.menu button[aria-current="true"] { font-weight: 600; background: #e1edf2; }
+table.lines { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.lines td { padding: 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.lines td.a { text-align: right; font-family: var(--f-mono); white-space: nowrap; padding-left: 10px; font-variant-numeric: tabular-nums; }
+table.lines .s { display: block; font-size: 11.5px; color: var(--muted); }
+table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; font-size: 15px; }
+.muted { color: var(--muted); }
+.swatches { display: flex; gap: 8px; margin-top: 6px; }
+.sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+.sw[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+</style>
+
+<div class="app">
+  <aside class="panel" aria-labelledby="t1">
+    <h1 id="t1">Терраса</h1>
+    <p class="sub">Введите размер — система соберёт его из одной или нескольких пергол и сравнит варианты по цене.</p>
+    <div class="seg" role="group" aria-label="Установка">
+      <button type="button" id="mt-wall" aria-pressed="true">У стены</button>
+      <button type="button" id="mt-free" aria-pressed="false">Отдельностоящая</button>
+    </div>
+    <div class="dims">
+      <div><label class="l" for="w">Ширина вдоль стены, мм</label><input type="number" id="w" value="12000" step="100" min="1000"></div>
+      <div><label class="l" for="d">Глубина, мм</label><input type="number" id="d" value="2000" step="100" min="1000"></div>
+    </div>
+    <h2>Варианты компоновки</h2>
+    <div class="opts" id="opts"></div>
+    <div id="sugg"></div>
+    <h2>Цвет</h2>
+    <div class="swatches">
+      <button type="button" class="sw" id="c-anth" style="background:#383e42" aria-pressed="true" aria-label="04 антрацит, в цене"></button>
+      <button type="button" class="sw" id="c-white" style="background:#f1ece1" aria-pressed="false" aria-label="01 кремово-белый, в цене"></button>
+    </div>
+    <p class="sub" id="c-name" style="margin-top:6px">04 антрацит структурный — в цене</p>
+  </aside>
+
+  <section class="stage" aria-label="3D-вид">
+    <div id="view"></div>
+    <div class="labels" id="labels"></div>
+    <div class="hint" id="hint">Нажмите на проём между стойками, чтобы выбрать заполнение. Тяните мышью — вращение, колесо — масштаб.</div>
+    <div class="toolbar">
+      <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
+      <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
+      <button type="button" id="evening" aria-pressed="false">Вечер</button>
+      <span style="flex:1"></span>
+      <button type="button" id="v-iso">3D</button>
+      <button type="button" id="v-front">Спереди</button>
+      <button type="button" id="v-top">Сверху</button>
+    </div>
+  </section>
+
+  <aside class="panel est" aria-labelledby="t3">
+    <h1 id="t3">Расчёт</h1>
+    <p class="sub">Каталожные цены Sun Winner 07.2026, EUR нетто. Демо: заполнения сторон пока без цены.</p>
+    <table class="lines"><tbody id="lines"></tbody></table>
+    <div id="issues"></div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>/*CORE*/</script>
+<script>/*CATALOG*/</script>
+<script>
+const cat = DBCore.buildCatalog('sunwinner-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating);
+const $ = (id) => document.getElementById(id);
+const eur = (n) => n.toLocaleString('de-AT', { maximumFractionDigits: 0 }) + ' €';
+const mm = (n) => n.toLocaleString('de-AT') ;
+const FAM = { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная' };
+const TAG = { cheapest: 'Дешевле всего', equal: 'Ровные модули', fewest: 'Меньше модулей', family: '' };
+const FILL = { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Стекло Win Glass', verto: 'Win Verto', panels: 'Win Panels' };
+const COLORS = { anth: { hex: 0x383e42, name: '04 антрацит структурный — в цене' }, white: { hex: 0xf1ece1, name: '01 кремово-белый структурный — в цене' } };
+
+const state = { mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
+// Example fillings so the first view shows what the tool does (marked as example in the hint).
+const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
+
+/* ---------- three.js scene ---------- */
+const view = $('view');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.495; controls.minDistance = 3; controls.maxDistance = 60;
+const hemi = new THREE.HemisphereLight(0xdfe9f0, 0x8a8a80, 0.85); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 0.95);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
+scene.add(sun); scene.add(sun.target);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0xb9bdb5, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+let root = new THREE.Group(); scene.add(root);
+let pickables = [];
+let animated = { louvers: [], screens: [], leds: [] };
+
+const M = {
+  frame: new THREE.MeshStandardMaterial({ color: COLORS.anth.hex, roughness: 0.7, metalness: 0.15 }),
+  louver: new THREE.MeshStandardMaterial({ color: COLORS.anth.hex, roughness: 0.6, metalness: 0.15 }),
+  wall: new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.95 }),
+  deck: new THREE.MeshStandardMaterial({ color: 0x9c8f7d, roughness: 0.9 }),
+  fabric: new THREE.MeshStandardMaterial({ color: 0x2b2f31, roughness: 0.95, transparent: true, opacity: 0.78, side: THREE.DoubleSide }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0xcfe3ea, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.22, side: THREE.DoubleSide }),
+  rail: new THREE.MeshStandardMaterial({ color: 0x2a2e31, roughness: 0.5, metalness: 0.4 }),
+  led: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffe2b0, emissiveIntensity: 0 }),
+  pick: new THREE.MeshBasicMaterial({ color: 0x2c6a86, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }),
+};
+
+function box(w, h, d, mat, x, y, z, parent = root) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
+}
+
+const SPEC = {
+  S400: { post: 0.13, crown: 0.21, pitch: 0.2, louverW: 0.231, firstLouvers: 8, minD: 2.0 },
+  S500: { post: 0.13, crown: 0.24, pitch: 0.25, louverW: 0.286, firstLouvers: 6, minD: 2.0 },
+};
+const H = 2.8; // standard post height to the top of the crown, m
+
+function build() {
+  scene.remove(root); root = new THREE.Group(); scene.add(root);
+  pickables = []; animated = { louvers: [], screens: [], leds: [] };
+  const opt = state.options[state.optIndex];
+  if (!opt) { renderLabels(null); return; }
+  const fam = opt.family === 'S400' ? 'S400' : 'S500';
+  const sp = SPEC[fam];
+  const W = opt.modules.filter((m) => m.row === 0).reduce((a, m) => a + m.width, 0) / 1000;
+  const D = opt.depth / 1000;
+  // deck + wall
+  box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
+  if (state.mount === 'wall') box(W + 3, 3.6, 0.25, M.wall, W / 2, 1.8, -0.125);
+  const yTop = H, yC = H - sp.crown / 2;
+  for (const m of opt.modules) {
+    const x0 = m.x / 1000, z0 = m.y / 1000, w = m.width / 1000, d = m.depth / 1000;
+    const gap = opt.family === 'S400' && opt.modules.length > 1 ? 0.02 : 0; // separate S400 pergolas stand side by side
+    const xa = x0 + gap / 2, xb = x0 + w - gap / 2;
+    // crown (4 beams)
+    box(xb - xa, sp.crown, sp.post, M.frame, (xa + xb) / 2, yC, z0 + d - sp.post / 2);
+    box(xb - xa, sp.crown, sp.post, M.frame, (xa + xb) / 2, yC, z0 + sp.post / 2);
+    box(sp.post, sp.crown, d, M.frame, xa + sp.post / 2, yC, z0 + d / 2);
+    box(sp.post, sp.crown, d, M.frame, xb - sp.post / 2, yC, z0 + d / 2);
+    // LED strip along the inner front crown (lit in evening mode)
+    animated.leds.push(box(xb - xa - 0.3, 0.012, 0.02, M.led, (xa + xb) / 2, H - sp.crown + 0.01, z0 + d - sp.post - 0.012));
+    // louvres (instanced), pivot along the width
+    const n = Math.max(2, Math.round(sp.firstLouvers + (m.depth - 2000) / (sp.pitch * 1000)));
+    const lenL = xb - xa - 2 * sp.post - 0.02;
+    const geo = new THREE.BoxGeometry(lenL, 0.03, sp.louverW);
+    const inst = new THREE.InstancedMesh(geo, M.louver, n);
+    inst.castShadow = true; inst.receiveShadow = true;
+    const step = (d - 2 * sp.post) / n;
+    inst.userData = { n, x: (xa + xb) / 2, y: yTop - 0.05, z0: z0 + sp.post + step / 2, step };
+    root.add(inst); animated.louvers.push(inst);
+  }
+  // posts
+  const posts = postPositions(opt);
+  for (const [x, z] of posts) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
+  // openings (sides) + their fillings
+  for (const o of openings(opt, sp)) {
+    const fill = state.fills[o.id] || 'none';
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(o.len, o.h), M.pick.clone());
+    plane.position.set(o.cx, o.h / 2, o.cz); plane.rotation.y = o.rotY; plane.userData = { opening: o };
+    root.add(plane); pickables.push(plane);
+    addFill(o, fill);
+  }
+  applyAnim();
+  renderLabels(opt);
+}
+
+function postPositions(opt) {
+  const fam = opt.family === 'S400' ? 'S400' : 'S500';
+  const p = SPEC[fam].post / 2, out = [];
+  const rowsZ = [...new Set(opt.modules.map((m) => (m.y + m.depth) / 1000))]; // front line of every row
+  if (state.mount === 'free') rowsZ.unshift(0);
+  for (const z of rowsZ) {
+    const zz = z === 0 ? p : z - p;
+    if (opt.family === 'S400') {
+      for (const m of opt.modules.filter((mm) => (mm.y + mm.depth) / 1000 === z || (z === 0 && mm.y === 0))) {
+        out.push([m.x / 1000 + p + 0.01, zz], [(m.x + m.width) / 1000 - p - 0.01, zz]);
+      }
+    } else {
+      const xs = [0]; let acc = 0;
+      for (const m of opt.modules.filter((mm) => mm.row === 0)) { acc += m.width; xs.push(acc); }
+      xs.forEach((x, i) => out.push([i === 0 ? x / 1000 + p : i === xs.length - 1 ? x / 1000 - p : x / 1000, zz]));
+    }
+  }
+  return out;
+}
+
+function openings(opt, sp) {
+  const out = [], h = H - sp.crown;
+  const D = opt.depth / 1000;
+  const front = opt.modules.filter((m) => m.row === opt.rows - 1);
+  front.forEach((m, i) => out.push({ id: 'front-' + i, label: 'Спереди, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: D - sp.post / 2, rotY: 0, axis: 'x' }));
+  const W = front.reduce((a, m) => a + m.width, 0) / 1000;
+  for (let r = 0; r < opt.rows; r++) {
+    const m = opt.modules.find((mm) => mm.row === r);
+    const z = (m.y + m.depth / 2) / 1000, len = m.depth / 1000 - sp.post;
+    out.push({ id: 'left-' + r, label: 'Слева' + (opt.rows > 1 ? ', ряд ' + (r + 1) : ''), len, h, cx: sp.post / 2, cz: z, rotY: Math.PI / 2, axis: 'z' });
+    out.push({ id: 'right-' + r, label: 'Справа' + (opt.rows > 1 ? ', ряд ' + (r + 1) : ''), len, h, cx: W - sp.post / 2, cz: z, rotY: Math.PI / 2, axis: 'z' });
+  }
+  if (state.mount === 'free') {
+    opt.modules.filter((m) => m.row === 0).forEach((m, i) => out.push({ id: 'back-' + i, label: 'Сзади, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: sp.post / 2, rotY: 0, axis: 'x' }));
+  }
+  return out;
+}
+
+function addFill(o, fill) {
+  const g = new THREE.Group(); g.position.set(o.cx, 0, o.cz); g.rotation.y = o.rotY; root.add(g);
+  if (fill === 'zip') {
+    box(o.len, 0.13, 0.13, M.rail, 0, o.h - 0.065, 0, g); // cassette
+    box(0.04, o.h, 0.06, M.rail, -o.len / 2 + 0.02, o.h / 2, 0, g); box(0.04, o.h, 0.06, M.rail, o.len / 2 - 0.02, o.h / 2, 0, g);
+    const fab = new THREE.Mesh(new THREE.PlaneGeometry(o.len - 0.06, 1), M.fabric); fab.castShadow = true;
+    fab.userData = { top: o.h - 0.13, h: o.h - 0.13 }; g.add(fab); animated.screens.push(fab);
+    box(o.len - 0.06, 0.04, 0.05, M.rail, 0, 0, 0, g).userData.bar = fab; // bottom bar follows the fabric
+    animated.screens.push(g.children[g.children.length - 1]);
+  } else if (fill === 'glass') {
+    const nP = Math.max(3, Math.ceil(o.len / 1.4));
+    const pw = o.len / nP;
+    box(o.len, 0.05, 0.08, M.rail, 0, 0.025, 0, g); box(o.len, 0.05, 0.08, M.rail, 0, o.h - 0.025, 0, g);
+    for (let i = 0; i < nP; i++) {
+      const p = new THREE.Mesh(new THREE.BoxGeometry(pw + 0.04, o.h - 0.1, 0.01), M.glass);
+      p.position.set(-o.len / 2 + pw * (i + 0.5), o.h / 2, (i % 2 ? 0.02 : -0.02)); g.add(p);
+    }
+  } else if (fill === 'verto') {
+    const cnt = Math.floor(o.len / 0.09);
+    for (let i = 0; i < cnt; i++) box(0.035, o.h, 0.06, M.frame, -o.len / 2 + 0.045 + i * 0.09, o.h / 2, 0, g);
+  } else if (fill === 'panels') {
+    const nP = Math.max(2, Math.ceil(o.len / 1.8)), pw = o.len / nP;
+    for (let i = 0; i < nP; i++) {
+      const px = -o.len / 2 + pw * (i + 0.5);
+      box(pw - 0.02, 0.04, 0.05, M.frame, px, 0.05, 0, g); box(pw - 0.02, 0.04, 0.05, M.frame, px, o.h - 0.05, 0, g);
+      for (let s = 0.12; s < o.h - 0.08; s += 0.08) { const sl = box(pw - 0.06, 0.012, 0.084, M.frame, px, s, 0, g); sl.rotation.x = 0.8; }
+    }
+  }
+}
+
+function applyAnim() {
+  const a = THREE.MathUtils.degToRad(state.angle), mat = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
+  for (const inst of animated.louvers) {
+    const u = inst.userData;
+    q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), a);
+    for (let i = 0; i < u.n; i++) { mat.compose(new THREE.Vector3(u.x, u.y, u.z0 + i * u.step), q, s); inst.setMatrixAt(i, mat); }
+    inst.instanceMatrix.needsUpdate = true;
+  }
+  const k = state.drop / 100;
+  for (const o of animated.screens) {
+    if (o.geometry && o.geometry.type === 'PlaneGeometry') { const hh = Math.max(0.001, o.userData.h * k); o.scale.y = hh; o.position.y = o.userData.top - hh / 2; o.visible = k > 0.01; }
+    else if (o.userData.bar) { const f = o.userData.bar; o.position.y = f.userData.top - f.userData.h * k - 0.02; }
+  }
+  M.led.emissiveIntensity = state.evening ? 2.2 : 0;
+  scene.background = new THREE.Color(state.evening ? 0x1b2530 : 0xc5d1d9);
+  hemi.intensity = state.evening ? 0.25 : 0.85; sun.intensity = state.evening ? 0.12 : 0.95;
+}
+
+/* ---------- camera + labels ---------- */
+function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.modules.filter((m) => m.row === 0).reduce((a, m) => a + m.width, 0) / 1000, D: o.depth / 1000 }; }
+let lastView = 'iso', userMoved = false;
+function setView(kind) {
+  lastView = kind; userMoved = false;
+  const { W, D } = bounds(), c = new THREE.Vector3(W / 2, 1.2, D / 2);
+  const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
+  const dir = kind === 'front' ? new THREE.Vector3(0, 0.18, 1) : kind === 'top' ? new THREE.Vector3(0, 1, 0.002) : new THREE.Vector3(0.42, 0.5, 0.78);
+  dir.normalize();
+  // fit the whole terrace (plus a margin) into both the horizontal and the vertical field of view
+  const spanX = (W + 1.6) * (kind === 'iso' ? 0.95 : 1), spanY = kind === 'top' ? D + 1.6 : Math.max(H + 1.2, D * 0.9);
+  const dist = Math.max((spanX / 2) / Math.tan(hf / 2), (spanY / 2) / Math.tan(vf / 2)) + (kind === 'top' ? 0 : D / 2);
+  controls.target.copy(c);
+  camera.position.copy(c).addScaledVector(dir, dist);
+  sun.position.set(W / 2 - 6, 14, D + 8); sun.target.position.copy(c);
+  const sh = sun.shadow.camera, e = Math.max(W, D) / 2 + 3; sh.left = -e; sh.right = e; sh.top = e; sh.bottom = -e; sh.updateProjectionMatrix();
+  controls.maxDistance = dist * 2.5;
+  controls.update();
+}
+controls.addEventListener('start', () => { userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
+const labels = $('labels');
+let labelDefs = [];
+function renderLabels(opt) {
+  labels.innerHTML = ''; labelDefs = [];
+  if (!opt) return;
+  const { W, D } = bounds(), y = H + 0.25;
+  const add = (text, p, cls = '') => { const el = document.createElement('div'); el.className = 'dim ' + cls; el.textContent = text; labels.appendChild(el); labelDefs.push({ el, p: new THREE.Vector3(...p) }); };
+  add(mm(Math.round(W * 1000)) + ' мм', [W / 2, y + 0.8, D + 0.1], 'total');
+  if (opt.cols > 1) opt.modules.filter((m) => m.row === 0).forEach((m) => add(mm(m.width), [(m.x + m.width / 2) / 1000, y, D + 0.1]));
+  add(mm(opt.depth) + ' мм', [-0.35, y, D / 2], 'total');
+}
+const v = new THREE.Vector3();
+function placeLabels() {
+  const r = view.getBoundingClientRect();
+  for (const l of labelDefs) {
+    v.copy(l.p).project(camera);
+    const hidden = v.z > 1;
+    l.el.style.display = hidden ? 'none' : '';
+    l.el.style.left = ((v.x + 1) / 2) * r.width + 'px'; l.el.style.top = ((1 - v.y) / 2) * r.height + 'px';
+  }
+}
+function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); if (!userMoved && state.options.length) setView(lastView); }
+new ResizeObserver(resize).observe(view);
+(function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); placeLabels(); })();
+
+/* ---------- picking sides ---------- */
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+let menu = null, downAt = null, hovered = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointermove', (e) => {
+  const hit = pick(e); if (hovered && hovered !== hit) hovered.material.opacity = 0;
+  hovered = hit; if (hit) hit.material.opacity = 0.22; renderer.domElement.style.cursor = hit ? 'pointer' : 'grab';
+});
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const hit = pick(e); closeMenu(); if (hit) openMenu(hit.userData.opening, e);
+});
+function pick(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera); const hits = ray.intersectObjects(pickables, false); return hits[0] ? hits[0].object : null;
+}
+function openMenu(o, e) {
+  const r = view.getBoundingClientRect(); menu = document.createElement('div'); menu.className = 'menu';
+  menu.innerHTML = `<div class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</div>` + Object.entries(FILL).map(([k, t]) => `<button type="button" data-k="${k}" aria-current="${(state.fills[o.id] || 'none') === k}">${t}</button>`).join('');
+  menu.style.left = Math.min(e.clientX - r.left, r.width - 190) + 'px'; menu.style.top = Math.min(e.clientY - r.top, r.height - 220) + 'px';
+  menu.addEventListener('click', (ev) => { const k = ev.target.dataset.k; if (!k) return; state.fills[o.id] = k; closeMenu(); build(); renderEstimate(); });
+  view.parentElement.appendChild(menu); menu.querySelector('button').focus();
+}
+function closeMenu() { if (menu) { menu.remove(); menu = null; } }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+
+/* ---------- options + estimate ---------- */
+function recompute(resetFills) {
+  const req = { mount: state.mount, width: state.width, depth: state.depth };
+  const r = DBCore.compose(req, cat);
+  state.options = r.options; state.optIndex = 0;
+  if (resetFills) state.fills = {};
+  const opts = $('opts'), cheapest = r.options[0] ? r.options[0].total : 0;
+  opts.innerHTML = r.options.map((o, i) => {
+    const widths = o.modules.filter((m) => m.row === 0).map((m) => mm(m.width)).join(' + ');
+    const tags = o.tags.filter((t) => TAG[t]).map((t) => `<span class="tag ${t}">${TAG[t]}</span>`).join('');
+    const delta = i === 0 ? '' : `<span class="delta">+${eur(o.total - cheapest)}</span>`;
+    return `<button type="button" class="opt" data-i="${i}" aria-pressed="${i === 0}">
+      <span class="row"><span class="name">${FAM[o.family]} × ${o.modules.length}</span><span class="price">${eur(o.total)}</span></span>
+      <span class="meta">${widths}${o.rows > 1 ? ` · ${o.rows} ряда` : ''} · стоек: ${o.posts}</span>
+      <span class="row"><span class="tags">${tags}</span>${delta}</span></button>`;
+  }).join('');
+  const NAMES = { DEPTH_TOO_SMALL: 'Глубина меньше минимальной', WIDTH_TOO_SMALL: 'Ширина меньше минимальной', DEPTH_TOO_LARGE: 'Глубина больше возможной', WIDTH_TOO_LARGE: 'Ширина больше возможной', NO_COMBINATION: 'Такой размер не собирается из каталога' };
+  $('sugg').innerHTML = r.suggestions.map((s) => `<div class="note">${NAMES[s.code] || s.code}${s.params && s.params.suggested ? `. Можно сделать <button type="button" class="chip" data-fix="${s.code}" data-v="${s.params.suggested}">${mm(s.params.suggested)} мм</button>` : ''}</div>`).join('');
+  build(); setView('iso'); renderEstimate();
+}
+$('opts').addEventListener('click', (e) => {
+  const b = e.target.closest('.opt'); if (!b) return;
+  state.optIndex = Number(b.dataset.i); state.fills = {};
+  document.querySelectorAll('.opt').forEach((x) => x.setAttribute('aria-pressed', x === b));
+  build(); setView('iso'); renderEstimate();
+});
+$('sugg').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-fix]'); if (!b) return;
+  if (b.dataset.fix.startsWith('DEPTH')) { state.depth = Number(b.dataset.v); $('d').value = state.depth; } else { state.width = Number(b.dataset.v); $('w').value = state.width; }
+  recompute(true);
+});
+
+function renderEstimate() {
+  const o = state.options[state.optIndex], tb = $('lines');
+  if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; return; }
+  const ROLE = { single: 'отдельная пергола', base: 'базовый модуль', add: 'доп. модуль' };
+  let html = o.modules.map((m, i) => `<tr><td>${FAM[o.family]}, ${mm(m.width)} × ${mm(m.depth)}<span class="s">${ROLE[m.role]} · таблица ${m.table}</span></td><td class="a">${eur(m.price)}</td></tr>`).join('');
+  const fills = Object.entries(state.fills).filter(([, f]) => f !== 'none');
+  const ops = openings(o, SPEC[o.family === 'S400' ? 'S400' : 'S500']);
+  for (const [id, f] of fills) { const op = ops.find((x) => x.id === id); if (op) html += `<tr><td>${FILL[f]}<span class="s">${op.label}, ${mm(Math.round(op.len * 1000))} мм</span></td><td class="a muted">позже</td></tr>`; }
+  html += `<tr class="t"><td>Перголы по каталогу</td><td class="a">${eur(o.total)}</td></tr>`;
+  tb.innerHTML = html;
+  const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Глубина подогнана под шаг ламели.', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у Sun Winner.' };
+  $('issues').innerHTML = o.issues.map((i) => `<div class="note">${ISS[i.code] || i.code}${i.params && i.params.built ? ` Строим ${mm(i.params.built)} мм вместо ${mm(i.params.requested)} мм.` : ''}</div>`).join('');
+}
+
+/* ---------- inputs ---------- */
+function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(true); }
+$('mt-wall').onclick = () => setMount('wall'); $('mt-free').onclick = () => setMount('free');
+let t; const onDims = () => { clearTimeout(t); t = setTimeout(() => { state.width = Number($('w').value) || 0; state.depth = Number($('d').value) || 0; recompute(true); }, 350); };
+$('w').addEventListener('input', onDims); $('d').addEventListener('input', onDims);
+$('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent = state.angle + '°'; applyAnim(); };
+$('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
+$('evening').onclick = (e) => { state.evening = !state.evening; e.target.setAttribute('aria-pressed', state.evening); applyAnim(); };
+$('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top');
+function setColor(k) { state.color = k; M.frame.color.setHex(COLORS[k].hex); M.louver.color.setHex(COLORS[k].hex); $('c-anth').setAttribute('aria-pressed', k === 'anth'); $('c-white').setAttribute('aria-pressed', k === 'white'); $('c-name').textContent = COLORS[k].name; }
+$('c-anth').onclick = () => setColor('anth'); $('c-white').onclick = () => setColor('white');
+
+resize();
+recompute(true);
+state.fills = { ...EXAMPLE_FILLS }; build(); renderEstimate();
+$('hint').textContent = 'Пример: заполнения уже расставлены. Нажмите на проём между стойками, чтобы поменять.';
+</script>

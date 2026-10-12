@@ -5,3 +5,4 @@ dist/
 *.pdf
 __pycache__/
 .DS_Store
+prototype/dist/
