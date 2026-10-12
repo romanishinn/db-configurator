@@ -68,6 +68,8 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .menu button { text-align: left; font: inherit; font-size: 13.5px; border: 0; background: transparent; color: #1c2226; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
 .menu button:hover, .menu button:focus-visible { background: #e1edf2; }
 .menu button[aria-current="true"] { font-weight: 600; background: #e1edf2; }
+.menu .same { font-size: 10.5px; font-weight: 600; color: #2f7d4f; background: #e6f3ea; border-radius: 3px; padding: 0 5px; margin-left: 4px; white-space: nowrap; }
+.align { font: inherit; font-size: 12px; margin-left: 6px; padding: 2px 8px; border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 4px; cursor: pointer; }
 .menu .sep { border-top: 1px solid #e2e6e9; margin: 4px 0 2px; }
 .menu .ctl .d { display: block; font-size: 11.5px; color: #5b666e; font-weight: 400; }
 .zl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -482,9 +484,9 @@ function openMenu(o, e) {
   const r = view.getBoundingClientRect(); menu = document.createElement('div'); menu.className = 'menu';
   const fill = state.fills[o.id] || 'none';
   menu.innerHTML = `<div class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</div>` + Object.entries(FILL).map(([k, t]) => `<button type="button" data-k="${k}" aria-current="${fill === k}">${t}</button>`).join('')
-    + (fill === 'panels' ? `<div class="sep"></div><div class="t">Ламели панелей</div>` + Object.entries(SLATS).map(([k, t]) => `<button type="button" data-slats="${k}" aria-current="${panelOpt(o.id).slats === k}">${t}</button>`).join('')
-      + `<div class="t">Монтаж</div>` + Object.entries(PMOUNT).map(([k, t]) => `<button type="button" data-pmount="${k}" aria-current="${panelOpt(o.id).mount === k}">${t}</button>`).join('') : '')
-    + (fill === 'zip' ? `<div class="sep"></div><div class="t">Управление скрином</div>` + Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<button type="button" class="ctl" data-ctl="${k}" aria-current="${ctlOf(o.id) === k}">${c.name}<span class="d">${c.hint}</span></button>`).join('') : '');
+    + (fill === 'panels' ? `<div class="sep"></div><div class="t">Ламели панелей</div>` + Object.entries(SLATS).map(([k, t]) => `<button type="button" data-slats="${k}" aria-current="${panelOpt(o.id).slats === k}">${t}${commonPanel(o.id) && commonPanel(o.id).slats === k ? ' <span class="same">как у других</span>' : ''}</button>`).join('')
+      + `<div class="t">Монтаж</div>` + Object.entries(PMOUNT).map(([k, t]) => `<button type="button" data-pmount="${k}" aria-current="${panelOpt(o.id).mount === k}">${t}${commonPanel(o.id) && commonPanel(o.id).mount === k ? ' <span class="same">как у других</span>' : ''}</button>`).join('') : '')
+    + (fill === 'zip' ? `<div class="sep"></div><div class="t">Управление скрином</div>` + Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<button type="button" class="ctl" data-ctl="${k}" aria-current="${ctlOf(o.id) === k}">${c.name}${commonCtl(o.id) === k ? ' <span class="same">как у других скринов</span>' : ''}<span class="d">${c.hint}</span></button>`).join('') : '');
   menu.style.left = Math.min(e.clientX - r.left, r.width - 230) + 'px'; menu.style.top = Math.max(8, Math.min(e.clientY - r.top, r.height - (fill === 'zip' || fill === 'panels' ? 420 : 220))) + 'px';
   menu.addEventListener('click', (ev) => {
     const b = ev.target.closest('button'); if (!b) return;
@@ -493,7 +495,10 @@ function openMenu(o, e) {
       state.panelOpt[o.id] = { ...panelOpt(o.id), ...(b.dataset.slats ? { slats: b.dataset.slats } : { mount: b.dataset.pmount }) };
       build(); renderEstimate(); closeMenu(); openMenu(o, e); return;
     }
-    const k = b.dataset.k; state.fills[o.id] = k; build(); renderEstimate();
+    const k = b.dataset.k;
+    if (k === 'zip' && state.fills[o.id] !== 'zip') { const c = commonCtl(o.id); if (c) state.zipCtl[o.id] = c; }
+    if (k === 'panels' && state.fills[o.id] !== 'panels') { const c = commonPanel(o.id); if (c) state.panelOpt[o.id] = c; }
+    state.fills[o.id] = k; build(); renderEstimate();
     if (k === 'zip' || k === 'panels') { closeMenu(); openMenu(o, e); menu.querySelector(k === 'zip' ? '[data-ctl]' : '[data-slats]').focus(); } else closeMenu(); // pick the options right away
   });
   view.parentElement.appendChild(menu); menu.querySelector('button').focus();
@@ -554,6 +559,11 @@ const SLATS = { fixed: 'Неподвижные (45°)', rotating: 'Поворо�
 const PMOUNT = { sliding: 'Раздвижные (по направляющим)', fixed: 'Неподвижные' };
 const panelOpt = (id) => ({ slats: 'fixed', mount: 'sliding', ...(state.panelOpt[id] || {}) });
 const ctlOf = (id) => { const m = state.zipCtl[id] || 'remote'; return modesOf().includes(m) ? m : 'remote'; };
+// Same kind of element -> same settings: a newly placed ZIP / panel takes over what the other ones already use
+// (the most common choice); a deviating one is flagged in the estimate with a one-click "align".
+const mostCommon = (vals) => { const c = {}; let best = null; for (const v of vals) { c[v] = (c[v] || 0) + 1; if (!best || c[v] > c[best]) best = v; } return best; };
+const commonCtl = (exceptId) => mostCommon(Object.entries(state.fills).filter(([id, f]) => f === 'zip' && id !== exceptId).map(([id]) => ctlOf(id)));
+const commonPanel = (exceptId) => { const ids = Object.entries(state.fills).filter(([id, f]) => f === 'panels' && id !== exceptId).map(([id]) => id); if (!ids.length) return null; return { slats: mostCommon(ids.map((i) => panelOpt(i).slats)), mount: mostCommon(ids.map((i) => panelOpt(i).mount)) }; };
 const SCREEN_NAME = { 'zip110.adaptive': 'ZIP 110', 'zip130.adaptive': 'ZIP 130' };
 const MOTOR_CTL = { wired: 'проводной', radio: 'радио', solar: 'солнечный с панелью' };
 const motorName = (m) => m.brand === 'custom' ? (m.index === 'own motor' ? 'свой' : m.index) : `${BRANDS[m.brand].name}${m.model && m.model !== 'WIN CONTROL' ? ' ' + m.model.replace('WIN CONTROL ', '') : ''}${m.short ? ' (короткий)' : ''} ${m.index}`;
@@ -634,6 +644,14 @@ function renderEstimate() {
       html += `<tr><td>${FILL[f]}, ${op.label.toLowerCase()}<span class="s">${size}</span></td><td class="a muted">позже</td></tr>`;
     }
   }
+  const panelIds = Object.entries(state.fills).filter(([, f]) => f === 'panels').map(([id]) => id);
+  if (panelIds.length > 1) {
+    const key = (id) => panelOpt(id).slats + '/' + panelOpt(id).mount;
+    if (new Set(panelIds.map(key)).size > 1) {
+      const c = mostCommon(panelIds.map(key)), [sl, mt] = c.split('/');
+      html += `<tr><td colspan="2"><div class="note">У Win Panels разные настройки.<button type="button" class="align" data-align-panels="${c}">Сделать у всех: ${SLATS[sl].toLowerCase()}, ${PMOUNT[mt].toLowerCase()}</button></div></td></tr>`;
+    }
+  }
   // Win Verto corner connections: both sides of a pergola corner filled with Verto
   const corners = [['front-0', 'left-' + (o.rows - 1)], ['front-' + (o.cols - 1), 'right-' + (o.rows - 1)]].concat(state.mount === 'free' ? [['back-0', 'left-0'], ['back-' + (o.cols - 1), 'right-0']] : []);
   const nCorner = corners.filter(([a, b]) => state.fills[a] === 'verto' && state.fills[b] === 'verto').length;
@@ -674,6 +692,9 @@ function renderEstimate() {
       const page = l.source.also && o.family !== 'S400' ? `каталог S500, стр. ${l.source.also.page}` : l.code === 'CONTROL_PERGOLA_UNIT' ? `каталог S400, стр. ${l.source.page}` : `стр. ${l.source.page}`;
       html += `<tr><td>${p.brand !== 'any' && BRANDS[p.brand] && !p.name.includes('WIN CONTROL') ? BRANDS[p.brand].name + ' ' : ''}${p.name}${p.qty > 1 ? ' × ' + p.qty : ''}<span class="s">${CL[l.code]} · ${p.index}${l.code === 'CONTROL_REMOTE' ? ` · скринов: ${p.screens}` : ''}${l.code === 'CONTROL_PERGOLA_UNIT' ? ` · проводных моторов: ${p.motors}` : ''} · ${page}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
     }
+    const zipIds = Object.entries(state.fills).filter(([, f]) => f === 'zip').map(([id]) => id);
+    const modes = new Set(zipIds.map(ctlOf));
+    if (modes.size > 1) { const c = mostCommon(zipIds.map(ctlOf)); html += `<tr><td colspan="2"><div class="note">У ZIP-скринов разное управление (${[...modes].map((m) => CTL[m].name.toLowerCase()).join(', ')}).<button type="button" class="align" data-align-zip="${c}">Сделать у всех: ${CTL[c].name.toLowerCase()}</button></div></td></tr>`; }
     for (const i of cl.issues) html += `<tr><td colspan="2"><div class="note">Пульт на ${i.params.channels} канал(а), а скринов ${i.params.screens} — выберите пульт с большим числом каналов.</div></td></tr>`;
     sides += cl.total;
   }
@@ -713,6 +734,12 @@ $('c-name').addEventListener('input', (e) => { state.custom.name = e.target.valu
 $('c-motor').addEventListener('input', (e) => { state.custom.motor = Math.max(0, Number(e.target.value) || 0); renderEstimate(); });
 $('c-ctl').addEventListener('input', (e) => { state.custom.controls = Math.max(0, Number(e.target.value) || 0); renderEstimate(); });
 $('wind').addEventListener('change', (e) => { state.wind = e.target.checked; renderEstimate(); });
+$('lines').addEventListener('click', (e) => {
+  const b = e.target.closest('.align'); if (!b) return;
+  if (b.dataset.alignZip) for (const [id, f] of Object.entries(state.fills)) if (f === 'zip') state.zipCtl[id] = b.dataset.alignZip;
+  if (b.dataset.alignPanels) { const [slats, mount] = b.dataset.alignPanels.split('/'); for (const [id, f] of Object.entries(state.fills)) if (f === 'panels') state.panelOpt[id] = { slats, mount }; }
+  build(); renderEstimate();
+});
 $('lines').addEventListener('change', (e) => { const id = e.target.dataset.zctl; if (!id) return; state.zipCtl[id] = e.target.value; renderEstimate(); });
 function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(true); }
 $('mt-wall').onclick = () => setMount('wall'); $('mt-free').onclick = () => setMount('free');
