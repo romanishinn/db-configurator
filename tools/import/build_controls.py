@@ -109,6 +109,26 @@ def classify(a, brand):
     return None
 
 
+class _M:
+    def __init__(self, v): self.v = v
+    def group(self, _): return self.v
+
+
+def additional_remote_words(file, page):
+    """Reading A by word positions: the price printed to the right of 'Price for additional remote:' on the same line."""
+    with pdfplumber.open(os.path.join(SRC, file)) as d:
+        ws = d.pages[page - 1].extract_words(x_tolerance=1.5)
+    for i, w in enumerate(ws):
+        if w['text'] == 'remote:' and i >= 2 and ws[i - 1]['text'] == 'additional':
+            y = (w['top'] + w['bottom']) / 2
+            right = sorted([x for x in ws if abs((x['top'] + x['bottom']) / 2 - y) < 3 and x['x0'] > w['x1']], key=lambda x: x['x0'])
+            if len(right) >= 2 and right[0]['text'].isdigit() and right[1]['text'] == '€':
+                return _M(right[0]['text'])
+            if right and re.fullmatch(r'\d+€', right[0]['text']):
+                return _M(right[0]['text'][:-1])
+    return None
+
+
 def build():
     src = os.path.join(SRC, SCREEN)
     motors, items, problems = [], [], []
@@ -182,6 +202,22 @@ def build():
         {'brand': 'any', 'index': 'SW-TEL-TVPL4868AC4', 'kind': 'pergolaUnit4', 'name': 'TELECO central unit for 4 wired motors, wind sensor input', 'price': p4, 'motors': 4,
          'source': {'file': S400, 'page': 20, 'also': {'file': S500, 'page': 45}}},
     ]
+    # Pergola remote: TELECO 63-channel remote, 1 pc included in the pergola price; additional remote price.
+    # S400 p.19 and S500 p.44, both readings, both catalogues must agree.
+    rv = {}
+    for f, pg in ((S400, 19), (S500, 44)):
+        for n, fn in (('pp', pp), ('layout', lt)):
+            tx = fn(f, pg)
+            m = re.search(r'Price for additional remote:\s*(\d+) ?€', tx) if n == 'layout' else additional_remote_words(f, pg)
+            ch = re.search(r'(\d+)-channel remote control', tx)
+            inc = 'Included in the price of the pergola' in tx and 'TVNOON868BP63L' in tx
+            rv[(f, n)] = (int(m.group(1)) if m else None, int(ch.group(1)) if ch else None, inc)
+    if len(set(rv.values())) != 1 or None in next(iter(rv.values())):
+        problems.append(('pergola remote', rv))
+    add_price, channels, _ = next(iter(rv.values()))
+    items.append({'brand': 'any', 'index': 'SW-TEL-TVNOON868BP63L', 'kind': 'pergolaRemote', 'name': 'TELECO pergola remote, 63 channels (white; black SW-TEL-TVNOON868NP63L)',
+                  'price': 0, 'additionalPrice': add_price, 'channels': channels, 'includedWithPergola': 1,
+                  'source': {'file': S400, 'page': 19, 'also': {'file': S500, 'page': 44}}})
     # WIN CONTROL wind sensor (VERIFIED_BY_IMAGE: index/name from the page image, price from text)
     prices = []
     for fn in (pp, lt):

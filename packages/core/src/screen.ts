@@ -161,6 +161,12 @@ export interface ControlOptions {
   windSensors?: number;
   /** own controls for brand 'custom' (remotes, sensors…), EUR per project */
   customControls?: number;
+  /**
+   * Channels the pergola itself already takes on its included TELECO 63-channel remote (one per roof module —
+   * ASSUMPTION; LED, heaters etc. add theirs). When given, the pergola remote is planned: screens operated
+   * "from the pergola remote" take one channel each; above 63 channels an additional remote is added.
+   */
+  pergolaChannels?: number;
 }
 
 const lineOf = (it: ControlItem, qty: number, code: string, params: Record<string, string | number> = {}): Line => ({
@@ -186,7 +192,10 @@ export function screenControlLines(modes: ScreenControlMode[], opts: ControlOpti
       }
       if (r) {
         lines.push(lineOf(r, 1, 'CONTROL_REMOTE', { screens: radioRemote }));
-        if ((r.channels ?? 0) < radioRemote) issues.push({ severity: 'warn', code: 'REMOTE_TOO_FEW_CHANNELS', params: { channels: r.channels ?? 0, screens: radioRemote } });
+        if ((r.channels ?? 0) < radioRemote) {
+          const fit = all.filter((i) => !i.wall && (i.channels ?? 0) >= radioRemote)[0] ?? all.filter((i) => (i.channels ?? 0) >= radioRemote)[0];
+          issues.push({ severity: 'warn', code: 'REMOTE_TOO_FEW_CHANNELS', params: { channels: r.channels ?? 0, screens: radioRemote, suggest: fit?.index ?? '', suggestChannels: fit?.channels ?? 0, suggestPrice: fit?.price ?? 0 } });
+        }
       }
     }
     if (count('smart')) {
@@ -205,6 +214,19 @@ export function screenControlLines(modes: ScreenControlMode[], opts: ControlOpti
     if (n1 * u1.price > u4.price) { n4 += 1; n1 = 0; } // two or more single units cost more than one 4-motor unit
     if (n4) lines.push(lineOf(u4, n4, 'CONTROL_PERGOLA_UNIT', { motors: wired }));
     if (n1) lines.push(lineOf(u1, n1, 'CONTROL_PERGOLA_UNIT', { motors: wired }));
+  }
+  if (opts.pergolaChannels !== undefined) {
+    const pr = items(cat, 'any', 'pergolaRemote')[0];
+    if (pr) {
+      const used = opts.pergolaChannels + wired;
+      const cap = pr.channels ?? 63;
+      lines.push({ code: 'CONTROL_PERGOLA_REMOTE', params: { index: pr.index, name: pr.name, channels: cap, used, roof: opts.pergolaChannels, screens: wired }, amount: 0, source: pr.source });
+      const extra = Math.ceil(used / cap) - 1;
+      if (extra > 0) {
+        lines.push({ code: 'CONTROL_PERGOLA_REMOTE_EXTRA', params: { index: pr.index, name: pr.name, qty: extra, unit: pr.additionalPrice ?? 0 }, amount: round2(extra * (pr.additionalPrice ?? 0)), source: pr.source });
+        issues.push({ severity: 'warn', code: 'PERGOLA_REMOTE_FULL', params: { used, channels: cap, extra } });
+      }
+    }
   }
   if (opts.wind && modes.length && brand !== 'custom') {
     // radio screens need a radio sensor of the brand where the brand has one; wired-only projects take the cheapest

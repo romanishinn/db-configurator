@@ -140,3 +140,22 @@ describe('motor brands (Win Screen pp.47, 51–58)', () => {
     expect(screenControlLines(['remote'], { brand: 'custom', customControls: 150, wind: true }, cat).total).toBe(150);
   });
 });
+
+describe('pergola remote (TELECO 63 channels, included; additional 140 €, S400 p.19 / S500 p.44)', () => {
+  it('3 roofs + 2 screens on the pergola remote: 5 of 63 channels, nothing extra to buy', () => {
+    const r = screenControlLines(['pergola', 'pergola'], { pergolaChannels: 3 }, cat);
+    const pr = r.lines.find((l) => l.code === 'CONTROL_PERGOLA_REMOTE')!;
+    expect(pr.params).toMatchObject({ channels: 63, used: 5 });
+    expect(pr.amount).toBe(0);
+    expect(r.issues).toEqual([]);
+  });
+  it('more than 63 channels -> one additional remote 140 € and a warning', () => {
+    const r = screenControlLines(Array(62).fill('pergola'), { pergolaChannels: 4 }, cat);
+    expect(r.lines.find((l) => l.code === 'CONTROL_PERGOLA_REMOTE_EXTRA')!.amount).toBe(140);
+    expect(r.issues.map((i) => i.code)).toContain('PERGOLA_REMOTE_FULL');
+  });
+  it('a chosen radio remote with too few channels suggests the one that fits', () => {
+    const r = screenControlLines(Array(5).fill('remote'), { remote: 'WRC01-01-W' }, cat);
+    expect(r.issues[0]!.params).toMatchObject({ channels: 1, screens: 5, suggest: 'RC01-06-W', suggestChannels: 6, suggestPrice: 33 });
+  });
+});

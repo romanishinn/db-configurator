@@ -160,7 +160,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <label>Цена мотора, € <input type="number" id="c-motor" min="0" step="1" value="0"></label>
         <label>Управление на проект, € <input type="number" id="c-ctl" min="0" step="1" value="0"></label>
       </div>
-      <label id="remote-l">Пульт <select id="remote"></select></label>
+      <label id="remote-l">Пульт для радио-скринов <select id="remote"></select></label>
       <label><input type="checkbox" id="wind" checked><span id="wind-t">Датчик ветра</span></label>
     </div>
     <table class="lines"><tbody id="lines"></tbody></table>
@@ -542,11 +542,11 @@ $('sugg').addEventListener('click', (e) => {
 });
 
 const CTL = {
-  remote: { name: 'Радио + пульт', hint: 'радиомотор, один пульт на проект' },
+  pergola: { name: 'С пульта перголы', hint: 'пульт перголы уже есть (63 канала) · проводной мотор + блок TELECO' },
+  remote: { name: 'Радио + отдельный пульт', hint: 'радиомотор, один пульт для скринов на проект' },
   smart: { name: 'Радио + смартфон', hint: 'блок умного дома бренда, приложение' },
-  pergola: { name: 'С пульта перголы', hint: 'проводной мотор + блок TELECO' },
   switch: { name: 'Проводной + выключатель', hint: 'выключатель на стене у каждого скрина' },
-  solar: { name: 'Солнечная батарея', hint: 'без проводки, мотор с панелью' },
+  solar: { name: 'Солнечная батарея', hint: 'без проводки, мотор с панелью + пульт' },
 };
 const BRANDS = {
   yooda: { name: 'YOODA', tier: 'эконом', hint: 'радио 1-way 433 МГц, механические концевики (каталог стр. 99–106)' },
@@ -558,7 +558,8 @@ const modesOf = () => DBCore.brandModes(state.brand, cat);
 const SLATS = { fixed: 'Неподвижные (45°)', rotating: 'Поворотные (0–90°)' };
 const PMOUNT = { sliding: 'Раздвижные (по направляющим)', fixed: 'Неподвижные' };
 const panelOpt = (id) => ({ slats: 'fixed', mount: 'sliding', ...(state.panelOpt[id] || {}) });
-const ctlOf = (id) => { const m = state.zipCtl[id] || 'remote'; return modesOf().includes(m) ? m : 'remote'; };
+// Default: the pergola already comes with its remote, so a new screen is operated from it.
+const ctlOf = (id) => { const m = state.zipCtl[id] || 'pergola'; return modesOf().includes(m) ? m : modesOf()[0]; };
 // Same kind of element -> same settings: a newly placed ZIP / panel takes over what the other ones already use
 // (the most common choice); a deviating one is flagged in the estimate with a one-click "align".
 const mostCommon = (vals) => { const c = {}; let best = null; for (const v of vals) { c[v] = (c[v] || 0) + 1; if (!best || c[v] > c[best]) best = v; } return best; };
@@ -681,21 +682,32 @@ function renderEstimate() {
       html += `<tr><td>Ткань ${f.name}, ${f.eurPerM2} €/м²<span class="s">${zipOps.length} скр., ${m2.toFixed(2).replace('.', ',')} м² · стр. ${cat.fabrics.source.pages[0]}</span></td><td class="a">${eur(fs)}</td></tr>`;
     }
   }
-  if (zipOps.length) {
+  {
     const systems = new Set(zipOps.map((z) => z.sys)).size;
-    const cl = DBCore.screenControlLines(zipOps.map((z) => z.mode), { brand: state.brand, remote: state.remote || undefined, wind: state.wind, windSensors: systems, customControls: state.custom.controls }, cat);
+    const cl = DBCore.screenControlLines(zipOps.map((z) => z.mode), { brand: state.brand, remote: state.remote || undefined, wind: state.wind, windSensors: systems, customControls: state.custom.controls, pergolaChannels: o.modules.length }, cat);
     const CL = { CONTROL_REMOTE: 'пульт на проект', CONTROL_SMART: 'один блок на проект', CONTROL_PERGOLA_UNIT: 'скрины с пульта перголы', CONTROL_WIND_SENSOR: 'один на систему перголы со скринами', CONTROL_SWITCH: 'по одному на скрин' };
     for (const l of cl.lines.filter((l) => l.code === 'CONTROL_CUSTOM')) { html += `<tr><td>Управление — свой вариант<span class="s">пульты, датчики и т. п. на проект</span></td><td class="a">${eur(l.amount)}</td></tr>`; }
     cl.lines = cl.lines.filter((l) => l.code !== 'CONTROL_CUSTOM');
     for (const l of cl.lines) {
       const p = l.params;
+      if (l.code === 'CONTROL_PERGOLA_REMOTE') {
+        html += `<tr><td>Пульт перголы TELECO, ${p.channels} канала<span class="s">входит в цену перголы · занято ${p.used} из ${p.channels}: ${plural(p.roof, 'крыша', 'крыши', 'крыш')} × ${p.roof}${p.screens ? `, скрины × ${p.screens}` : ''} · ${p.index} · ${o.family === 'S400' ? 'каталог S400, стр. ' + l.source.page : 'каталог S500, стр. ' + l.source.also.page}</span></td><td class="a muted">в цене</td></tr>`;
+        continue;
+      }
+      if (l.code === 'CONTROL_PERGOLA_REMOTE_EXTRA') {
+        html += `<tr><td>Дополнительный пульт перголы TELECO${p.qty > 1 ? ' × ' + p.qty : ''}<span class="s">каналов одного пульта не хватает · ${eur(p.unit)} за пульт</span></td><td class="a">${eur(l.amount)}</td></tr>`;
+        continue;
+      }
       const page = l.source.also && o.family !== 'S400' ? `каталог S500, стр. ${l.source.also.page}` : l.code === 'CONTROL_PERGOLA_UNIT' ? `каталог S400, стр. ${l.source.page}` : `стр. ${l.source.page}`;
       html += `<tr><td>${p.brand !== 'any' && BRANDS[p.brand] && !p.name.includes('WIN CONTROL') ? BRANDS[p.brand].name + ' ' : ''}${p.name}${p.qty > 1 ? ' × ' + p.qty : ''}<span class="s">${CL[l.code]} · ${p.index}${l.code === 'CONTROL_REMOTE' ? ` · скринов: ${p.screens}` : ''}${l.code === 'CONTROL_PERGOLA_UNIT' ? ` · проводных моторов: ${p.motors}` : ''} · ${page}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
     }
     const zipIds = Object.entries(state.fills).filter(([, f]) => f === 'zip').map(([id]) => id);
     const modes = new Set(zipIds.map(ctlOf));
     if (modes.size > 1) { const c = mostCommon(zipIds.map(ctlOf)); html += `<tr><td colspan="2"><div class="note">У ZIP-скринов разное управление (${[...modes].map((m) => CTL[m].name.toLowerCase()).join(', ')}).<button type="button" class="align" data-align-zip="${c}">Сделать у всех: ${CTL[c].name.toLowerCase()}</button></div></td></tr>`; }
-    for (const i of cl.issues) html += `<tr><td colspan="2"><div class="note">Пульт на ${i.params.channels} канал(а), а скринов ${i.params.screens} — выберите пульт с большим числом каналов.</div></td></tr>`;
+    for (const i of cl.issues) {
+      if (i.code === 'REMOTE_TOO_FEW_CHANNELS') html += `<tr><td colspan="2"><div class="note">Пульту не хватает каналов: ${i.params.channels} ${plural(i.params.channels, 'канал', 'канала', 'каналов')}, а радио-скринов ${i.params.screens}. Доберите пульт побольше.${i.params.suggest ? `<button type="button" class="align" data-remote="${i.params.suggest}">Взять на ${i.params.suggestChannels} каналов — ${eur(i.params.suggestPrice)}</button>` : ''}</div></td></tr>`;
+      if (i.code === 'PERGOLA_REMOTE_FULL') html += `<tr><td colspan="2"><div class="note">На пульте перголы занято ${i.params.used} каналов из ${i.params.channels} — добавлен ещё пульт.</div></td></tr>`;
+    }
     sides += cl.total;
   }
   html += `<tr class="t"><td>Итого по каталогу${pending.length || unbuilt.length || panelsCustomColour ? `<span class="s">без ${[pending.length ? 'позиций «позже»' : '', unbuilt.length ? 'позиций «—»' : '', panelsCustomColour ? 'покраски «уточнить»' : ''].filter(Boolean).join(', ')}</span>` : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
@@ -736,6 +748,7 @@ $('c-ctl').addEventListener('input', (e) => { state.custom.controls = Math.max(0
 $('wind').addEventListener('change', (e) => { state.wind = e.target.checked; renderEstimate(); });
 $('lines').addEventListener('click', (e) => {
   const b = e.target.closest('.align'); if (!b) return;
+  if (b.dataset.remote) state.remote = b.dataset.remote;
   if (b.dataset.alignZip) for (const [id, f] of Object.entries(state.fills)) if (f === 'zip') state.zipCtl[id] = b.dataset.alignZip;
   if (b.dataset.alignPanels) { const [slats, mount] = b.dataset.alignPanels.split('/'); for (const [id, f] of Object.entries(state.fills)) if (f === 'panels') state.panelOpt[id] = { slats, mount }; }
   build(); renderEstimate();

@@ -909,6 +909,24 @@
    }
   },
   {
+   "brand": "any",
+   "index": "SW-TEL-TVNOON868BP63L",
+   "kind": "pergolaRemote",
+   "name": "TELECO pergola remote, 63 channels (white; black SW-TEL-TVNOON868NP63L)",
+   "price": 0,
+   "additionalPrice": 140,
+   "channels": 63,
+   "includedWithPergola": 1,
+   "source": {
+    "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+    "page": 19,
+    "also": {
+     "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+     "page": 44
+    }
+   }
+  },
+  {
    "brand": "wincontrol",
    "index": "WS-S02",
    "kind": "wind",

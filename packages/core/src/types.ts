@@ -109,7 +109,9 @@ export interface ScreenMotorData {
 export interface ControlItem {
   brand: MotorBrand | 'any';
   index: string;
-  kind: 'remote' | 'smart' | 'receiver' | 'pergolaUnit1' | 'pergolaUnit4' | 'wind' | 'switch';
+  kind: 'remote' | 'smart' | 'receiver' | 'pergolaUnit1' | 'pergolaUnit4' | 'pergolaRemote' | 'wind' | 'switch';
+  /** pergola remote: price of each additional remote (the first one comes with the pergola) */
+  additionalPrice?: number;
   name: string;
   description?: string;
   price: number;
