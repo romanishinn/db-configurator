@@ -1,0 +1,22 @@
+{
+  "source": "https://sunwinner.pl/wp-content/uploads/2026/07/Sun-Winner-kalkulator-doplat-lakierowania-EN-EUR-072026.html",
+  "note": "Percent of the catalogue price. Pergolas: [construction, roof, whole]. 'whole' applies when construction and roof get the same non-standard colour group.",
+  "groups": ["standard", "fine", "smooth", "ralAny", "ralMetallic", "structural", "structuralRal", "exclusive", "wood"],
+  "rates": {
+    "S400": {
+      "standard": [0, 0, 0], "fine": [5, 7, 8], "smooth": [5, 7, 8], "ralAny": [7, 9, 10],
+      "ralMetallic": [9, 12, 17], "structural": [9, 12, 17], "structuralRal": [9, 12, 17], "exclusive": [9, 12, 17],
+      "wood": [19, 25, 36]
+    },
+    "S500": {
+      "standard": [0, 0, 0], "fine": [5, 7, 9], "smooth": [5, 7, 9], "ralAny": [7, 9, 11],
+      "ralMetallic": [9, 11, 16], "structural": [9, 11, 16], "structuralRal": [9, 11, 16], "exclusive": [9, 11, 16],
+      "wood": [18, 23, 34]
+    },
+    "GLASS": { "standard": 0, "fine": 7, "smooth": 8, "ralAny": 10, "ralMetallic": 19, "structural": 19, "structuralRal": 19, "exclusive": 19, "wood": 40 },
+    "SCREEN_ZIP": { "standard": 0, "fine": 8, "smooth": 8, "ralAny": 10, "ralMetallic": 16, "structural": 16, "structuralRal": 16, "exclusive": 16, "wood": 40 },
+    "SCREEN_CABLE": { "standard": 0, "fine": 8, "smooth": 8, "ralAny": 10, "ralMetallic": 17, "structural": 17, "structuralRal": 17, "exclusive": 17, "wood": 44 },
+    "VERTO": { "standard": 0, "fine": 14, "smooth": 15, "ralAny": 17, "ralMetallic": 40, "structural": 40, "structuralRal": 40, "exclusive": 40, "wood": 100 }
+  },
+  "minimumCharge": { "default": 70, "wood": 140, "flashingAndAngles": 82 }
+}
