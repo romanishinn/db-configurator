@@ -90,6 +90,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .menu .rc .dot { width: 48px; height: 48px; border-radius: 50%; border: 1px solid #c9d1d6; display: grid; place-items: center; font-size: 17px; background: #f4f6f7; box-sizing: border-box; }
 .menu .rc .cap { text-align: center; line-height: 1.15; font-size: 11px; height: 26px; width: 76px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .menu .rc .cap { font-size: 11px; color: #5b666e; }
+.menu .rc:disabled { opacity: .38; cursor: not-allowed; }
 .menu .rc[aria-current="true"] .dot { border: 2px solid #2c6a86; box-shadow: 0 0 0 2px #e1edf2; }
 .menu .rc[aria-current="true"] .cap { color: #1c2226; font-weight: 600; }
 .menu .list { display: grid; gap: 6px; padding: 2px 0 8px; }
@@ -180,7 +181,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     <div class="toolbar">
       <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
-      <label id="gopen-l" hidden>Стекло <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
+      <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
       <button type="button" id="louv-dir" aria-pressed="false" title="Ламели вдоль стены или от стены вперёд — та же таблица цен">⇄ Повернуть ламели</button>
       <span id="louv-info" class="muted"></span>
@@ -712,13 +713,20 @@ function renderMenu(o) {
     const gs = glassFor(o), gt = glassType(o), own = !!state.glassOf[o.id], cfg = glassCfg(o);
     const dbl = !!(gs.best && gs.best.opening === 'double');
     const side = cfg.side || state.glassSide, op = cfg.open ?? state.glassOpen;
-    html += `<div class="t">Стекло</div><div class="rrow">${Object.entries(GLAZING).map(([k, g]) => `<button type="button" class="rc" data-gl="${k}" aria-current="${gt === k}"><span class="dot" style="background:#${g.col.toString(16).padStart(6, '0')}"></span><span class="cap">${GLS[k]}</span></button>`).join('')}</div>
+    html += `<div class="t">Цвет стекла</div><div class="rrow">${Object.entries(GLAZING).map(([k, g]) => `<button type="button" class="rc" data-gl="${k}" aria-current="${gt === k}"><span class="dot" style="background:#${g.col.toString(16).padStart(6, '0')}"></span><span class="cap">${GLS[k]}</span></button>`).join('')}</div>
       <div class="t">Применить стекло</div><div class="rrow">${rc('data-glscope="one"', '1', 'этот проём', own)}${rc('data-glscope="all"', '∞', 'все проёмы', !own)}</div>`;
-    html += `<div class="t">Система: открывание и полотна</div>`;
-    html += gs.options.length
-      ? `<div class="rrow">${gs.options.map((x) => rc(`data-var="${x.table}"`, String(x.panels), `${x.opening === 'double' ? 'в обе' : 'в одну'} · ${x.tracks} напр.`, gs.best && gs.best.table === x.table)).join('')}</div>
-         <div class="sub">${gs.best ? eur(gs.best.price) + ' · ' + gs.best.panels + ' полотен · ' + gs.best.tracks + ' направляющих' : ''}${cfg.variant ? ' · выбрано вручную' : ' · самая дешёвая по размеру'}</div>`
-      : `<div class="note">Для этого размера Win Glass не производится</div>`;
+    // typology (price list p.15): every Win Glass system of this glass thickness; those that do not produce this size are greyed out
+    const thick = DBCore.thicknessFor(gt, cat), wMm = Math.round(o.len * 1000), hMm = Math.round(o.h * 1000);
+    const okIds = new Set(gs.options.map((x) => x.table));
+    const sys = Object.values(cat.tables).filter((t) => t.id.startsWith('glass.') && t.meta && t.meta.thickness === thick)
+      .sort((a, b) => (a.meta.opening === b.meta.opening ? a.meta.panels - b.meta.panels : a.meta.opening === 'double' ? 1 : -1));
+    html += `<div class="t">Типология Win Glass · ${thick} мм</div><div class="rrow">${sys.map((t) => {
+      const m = t.meta, cap = `${m.opening === 'double' ? 'в обе' : 'в одну'} · ${m.tracks} напр.`;
+      if (okIds.has(t.id)) return rc(`data-var="${t.id}"`, String(m.panels), cap, gs.best && gs.best.table === t.id);
+      return `<button type="button" class="rc" disabled aria-current="false"><span class="dot">${m.panels}</span><span class="cap">${cap}</span></button>`;
+    }).join('')}</div>
+      <div class="sub">${gs.best ? eur(gs.best.price) + ' · ' + gs.best.panels + ' полотен · ' + gs.best.tracks + ' направляющих' + (cfg.variant ? ' · выбрано вручную' : ' · самая дешёвая по размеру') : 'Для ' + wMm + ' × ' + hMm + ' мм Win Glass не производится'}</div>
+      ${sys.length > okIds.size ? `<div class="sub">Серые: не производятся для ${wMm} × ${hMm} мм</div>` : ''}`;
     html += `<div class="t">Парковка полотен</div><div class="rrow">${dbl
       ? rc('data-park="both"', '↔', 'в обе стороны', true)
       : rc('data-park="left"', '←', 'влево', side === 'left') + rc('data-park="right"', '→', 'вправо', side === 'right')}</div>`;
