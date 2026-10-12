@@ -55,6 +55,8 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .toolbar label { display: flex; align-items: center; gap: 6px; }
 .toolbar input[type=range] { width: 110px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 4px; padding: 4px 9px; cursor: pointer; }
+.toolbar #louv-info { color: #5b666e; }
+.toolbar #louv-info b { color: #1d6b3a; font-weight: 600; }
 .toolbar button[aria-pressed="true"] { background: #1c2226; color: #fff; border-color: #1c2226; }
 .hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
 @media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: 480px; min-height: 0; } }
@@ -105,6 +107,8 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
+      <button type="button" id="louv-dir" aria-pressed="false" title="Ламели вдоль стены или от стены вперёд — та же таблица цен Sun Winner">⇄ Повернуть ламели</button>
+      <span id="louv-info" class="muted"></span>
       <span style="flex:1"></span>
       <button type="button" id="v-iso">3D</button>
       <button type="button" id="v-front">Спереди</button>
@@ -134,7 +138,7 @@ const TAG = { cheapest: 'Дешевле всего', equal: 'Ровные мод
 const FILL = { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Стекло Win Glass', verto: 'Win Verto', panels: 'Win Panels' };
 const COLORS = { anth: { hex: 0x383e42, name: '04 антрацит структурный — в цене' }, white: { hex: 0xf1ece1, name: '01 кремово-белый структурный — в цене' } };
 
-const state = { mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
+const state = { louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
 
@@ -197,7 +201,7 @@ function build() {
   if (!opt) { renderLabels(null); return; }
   const fam = opt.family === 'S400' ? 'S400' : 'S500';
   const sp = SPEC[fam];
-  const W = opt.modules.filter((m) => m.row === 0).reduce((a, m) => a + m.width, 0) / 1000;
+  const W = opt.width / 1000;
   const D = opt.depth / 1000;
   // deck + wall
   box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
@@ -205,23 +209,27 @@ function build() {
   const yTop = H, yC = H - sp.crown / 2;
   for (const m of opt.modules) {
     const x0 = m.x / 1000, z0 = m.y / 1000, w = m.width / 1000, d = m.depth / 1000;
-    const gap = opt.family === 'S400' && opt.modules.length > 1 ? 0.02 : 0; // separate S400 pergolas stand side by side
-    const xa = x0 + gap / 2, xb = x0 + w - gap / 2;
+    const gap = opt.family === 'S400' && opt.modules.length > 1 ? 0.02 : 0; // separate S400 pergolas stand next to each other
+    const xa = x0 + gap / 2, xb = x0 + w - gap / 2, za = z0 + gap / 2, zb = z0 + d - gap / 2;
     // crown (4 beams)
-    box(xb - xa, sp.crown, sp.post, M.frame, (xa + xb) / 2, yC, z0 + d - sp.post / 2);
-    box(xb - xa, sp.crown, sp.post, M.frame, (xa + xb) / 2, yC, z0 + sp.post / 2);
-    box(sp.post, sp.crown, d, M.frame, xa + sp.post / 2, yC, z0 + d / 2);
-    box(sp.post, sp.crown, d, M.frame, xb - sp.post / 2, yC, z0 + d / 2);
+    box(xb - xa, sp.crown, sp.post, M.frame, (xa + xb) / 2, yC, zb - sp.post / 2);
+    box(xb - xa, sp.crown, sp.post, M.frame, (xa + xb) / 2, yC, za + sp.post / 2);
+    box(sp.post, sp.crown, zb - za, M.frame, xa + sp.post / 2, yC, (za + zb) / 2);
+    box(sp.post, sp.crown, zb - za, M.frame, xb - sp.post / 2, yC, (za + zb) / 2);
     // LED strip along the inner front crown (lit in evening mode)
-    animated.leds.push(box(xb - xa - 0.3, 0.012, 0.02, M.led, (xa + xb) / 2, H - sp.crown + 0.01, z0 + d - sp.post - 0.012));
-    // louvres (instanced), pivot along the width
-    const n = Math.max(2, Math.round(sp.firstLouvers + (m.depth - 2000) / (sp.pitch * 1000)));
-    const lenL = xb - xa - 2 * sp.post - 0.02;
-    const geo = new THREE.BoxGeometry(lenL, 0.03, sp.louverW);
+    animated.leds.push(box(xb - xa - 0.3, 0.012, 0.02, M.led, (xa + xb) / 2, H - sp.crown + 0.01, zb - sp.post - 0.012));
+    // louvres (instanced): length = catalogue width, count from the projection (louvre pitch)
+    const n = Math.max(2, Math.round(sp.firstLouvers + (m.projection - 2000) / (sp.pitch * 1000)));
+    const alongX = m.louvreAxis === 'x';
+    const lenL = (alongX ? xb - xa : zb - za) - 2 * sp.post - 0.02;
+    const span = (alongX ? zb - za : xb - xa) - 2 * sp.post;
+    const geo = alongX ? new THREE.BoxGeometry(lenL, 0.03, sp.louverW) : new THREE.BoxGeometry(sp.louverW, 0.03, lenL);
     const inst = new THREE.InstancedMesh(geo, M.louver, n);
     inst.castShadow = true; inst.receiveShadow = true;
-    const step = (d - 2 * sp.post) / n;
-    inst.userData = { n, x: (xa + xb) / 2, y: yTop - 0.05, z0: z0 + sp.post + step / 2, step };
+    const step = span / n;
+    inst.userData = alongX
+      ? { n, axis: 'x', x: (xa + xb) / 2, y: yTop - 0.05, z: za + sp.post + step / 2, step }
+      : { n, axis: 'z', x: xa + sp.post + step / 2, y: yTop - 0.05, z: (za + zb) / 2, step };
     root.add(inst); animated.louvers.push(inst);
   }
   // posts
@@ -242,15 +250,21 @@ function build() {
 function postPositions(opt) {
   const fam = opt.family === 'S400' ? 'S400' : 'S500';
   const p = SPEC[fam].post / 2, out = [];
+  if (opt.family === 'S400') {
+    // every S400 is a separate pergola: 2 front posts, plus 2 back posts unless it hangs on the wall
+    for (const m of opt.modules) {
+      const xa = m.x / 1000 + p + 0.01, xb = (m.x + m.width) / 1000 - p - 0.01;
+      const zf = (m.y + m.depth) / 1000 - p - 0.01, zb = m.y / 1000 + p + 0.01;
+      out.push([xa, zf], [xb, zf]);
+      if (m.mount !== 'wall') out.push([xa, zb], [xb, zb]);
+    }
+    return out;
+  }
   const rowsZ = [...new Set(opt.modules.map((m) => (m.y + m.depth) / 1000))]; // front line of every row
   if (state.mount === 'free') rowsZ.unshift(0);
   for (const z of rowsZ) {
     const zz = z === 0 ? p : z - p;
-    if (opt.family === 'S400') {
-      for (const m of opt.modules.filter((mm) => (mm.y + mm.depth) / 1000 === z || (z === 0 && mm.y === 0))) {
-        out.push([m.x / 1000 + p + 0.01, zz], [(m.x + m.width) / 1000 - p - 0.01, zz]);
-      }
-    } else {
+    {
       const xs = [0]; let acc = 0;
       for (const m of opt.modules.filter((mm) => mm.row === 0)) { acc += m.width; xs.push(acc); }
       xs.forEach((x, i) => out.push([i === 0 ? x / 1000 + p : i === xs.length - 1 ? x / 1000 - p : x / 1000, zz]));
@@ -264,7 +278,7 @@ function openings(opt, sp) {
   const D = opt.depth / 1000;
   const front = opt.modules.filter((m) => m.row === opt.rows - 1);
   front.forEach((m, i) => out.push({ id: 'front-' + i, label: 'Спереди, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: D - sp.post / 2, rotY: 0, axis: 'x' }));
-  const W = front.reduce((a, m) => a + m.width, 0) / 1000;
+  const W = opt.width / 1000;
   for (let r = 0; r < opt.rows; r++) {
     const m = opt.modules.find((mm) => mm.row === r);
     const z = (m.y + m.depth / 2) / 1000, len = m.depth / 1000 - sp.post;
@@ -312,8 +326,11 @@ function applyAnim() {
   const a = THREE.MathUtils.degToRad(state.angle), mat = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
   for (const inst of animated.louvers) {
     const u = inst.userData;
-    q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), a);
-    for (let i = 0; i < u.n; i++) { mat.compose(new THREE.Vector3(u.x, u.y, u.z0 + i * u.step), q, s); inst.setMatrixAt(i, mat); }
+    q.setFromAxisAngle(u.axis === 'x' ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, -1), a);
+    for (let i = 0; i < u.n; i++) {
+      mat.compose(u.axis === 'x' ? new THREE.Vector3(u.x, u.y, u.z + i * u.step) : new THREE.Vector3(u.x + i * u.step, u.y, u.z), q, s);
+      inst.setMatrixAt(i, mat);
+    }
     inst.instanceMatrix.needsUpdate = true;
   }
   const k = state.drop / 100;
@@ -327,7 +344,7 @@ function applyAnim() {
 }
 
 /* ---------- camera + labels ---------- */
-function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.modules.filter((m) => m.row === 0).reduce((a, m) => a + m.width, 0) / 1000, D: o.depth / 1000 }; }
+function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.width / 1000, D: o.depth / 1000 }; }
 let lastView = 'iso', userMoved = false;
 function setView(kind) {
   lastView = kind; userMoved = false;
@@ -400,18 +417,21 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(
 
 /* ---------- options + estimate ---------- */
 function recompute(resetFills) {
-  const req = { mount: state.mount, width: state.width, depth: state.depth };
+  const req = { mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres };
   const r = DBCore.compose(req, cat);
+  const other = DBCore.compose({ ...req, louvres: state.louvres === 'parallel' ? 'perpendicular' : 'parallel' }, cat);
+  renderLouvreInfo(r.options[0], other.options[0]);
   state.options = r.options; state.optIndex = 0;
   if (resetFills) state.fills = {};
   const opts = $('opts'), cheapest = r.options[0] ? r.options[0].total : 0;
   opts.innerHTML = r.options.map((o, i) => {
-    const widths = o.modules.filter((m) => m.row === 0).map((m) => mm(m.width)).join(' + ');
+    const widths = o.modules.filter((m) => m.row === 0).map((m) => mm(m.width)).join(' + ') + (o.rows > 1 ? ' × ' + o.modules.filter((m) => m.col === 0).map((m) => mm(m.depth)).join(' + ') : '');
+    const lens = [...new Set(o.modules.map((m) => m.louvreLength))].map(mm).join('/');
     const tags = o.tags.filter((t) => TAG[t]).map((t) => `<span class="tag ${t}">${TAG[t]}</span>`).join('');
     const delta = i === 0 ? '' : `<span class="delta">+${eur(o.total - cheapest)}</span>`;
     return `<button type="button" class="opt" data-i="${i}" aria-pressed="${i === 0}">
       <span class="row"><span class="name">${FAM[o.family]} × ${o.modules.length}</span><span class="price">${eur(o.total)}</span></span>
-      <span class="meta">${widths}${o.rows > 1 ? ` · ${o.rows} ряда` : ''} · стоек: ${o.posts}</span>
+      <span class="meta">${widths} · ламели ${lens} мм · стоек: ${o.posts}</span>
       <span class="row"><span class="tags">${tags}</span>${delta}</span></button>`;
   }).join('');
   const NAMES = { DEPTH_TOO_SMALL: 'Глубина меньше минимальной', WIDTH_TOO_SMALL: 'Ширина меньше минимальной', DEPTH_TOO_LARGE: 'Глубина больше возможной', WIDTH_TOO_LARGE: 'Ширина больше возможной', NO_COMBINATION: 'Такой размер не собирается из каталога' };
@@ -434,7 +454,8 @@ function renderEstimate() {
   const o = state.options[state.optIndex], tb = $('lines');
   if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; return; }
   const ROLE = { single: 'отдельная пергола', base: 'базовый модуль', add: 'доп. модуль' };
-  let html = o.modules.map((m, i) => `<tr><td>${FAM[o.family]}, ${mm(m.width)} × ${mm(m.depth)}<span class="s">${ROLE[m.role]} · таблица ${m.table}</span></td><td class="a">${eur(m.price)}</td></tr>`).join('');
+  const MOUNT = { wall: '', free: ' · отдельностоящая', roof: '' };
+  let html = o.modules.map((m, i) => `<tr><td>${FAM[o.family]}, ${mm(m.width)} × ${mm(m.depth)}<span class="s">${ROLE[m.role]}${state.mount === 'wall' ? MOUNT[m.mount] : ''} · ламели ${mm(m.louvreLength)} мм, вылет ${mm(m.projection)} · таблица ${m.table}</span></td><td class="a">${eur(m.price)}</td></tr>`).join('');
   const fills = Object.entries(state.fills).filter(([, f]) => f !== 'none');
   const ops = openings(o, SPEC[o.family === 'S400' ? 'S400' : 'S500']);
   let sides = 0; const pending = [];
@@ -456,7 +477,7 @@ function renderEstimate() {
   }
   html += `<tr class="t"><td>Итого по каталогу${pending.length ? '<span class="s">без позиций «позже»</span>' : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
   tb.innerHTML = html;
-  const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Глубина подогнана под шаг ламели.', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у Sun Winner.' };
+  const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Размер подогнан под шаг ламелей (S400 — 200 мм).', S400_FREE_ROWS: 'Задний ряд S400 крепится к стене, передний — отдельностоящие перголы (4 стойки).', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у Sun Winner.' };
   $('issues').innerHTML = o.issues.map((i) => `<div class="note">${ISS[i.code] || i.code}${i.params && i.params.built ? ` Строим ${mm(i.params.built)} мм вместо ${mm(i.params.requested)} мм.` : ''}</div>`).join('');
 }
 
@@ -467,6 +488,18 @@ let t; const onDims = () => { clearTimeout(t); t = setTimeout(() => { state.widt
 $('w').addEventListener('input', onDims); $('d').addEventListener('input', onDims);
 $('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent = state.angle + '°'; applyAnim(); };
 $('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
+function renderLouvreInfo(cur, alt) {
+  const wall = state.mount === 'wall';
+  const dir = state.louvres === 'parallel' ? (wall ? 'вдоль стены' : 'вдоль ширины') : (wall ? 'от стены вперёд' : 'вдоль глубины');
+  let t = `Ламели ${dir}`;
+  if (cur && alt && Math.round(alt.total) !== Math.round(cur.total)) {
+    const d = alt.total - cur.total;
+    t += d < 0 ? ` · если повернуть: <b>−${eur(-d)}</b>` : ` · если повернуть: +${eur(d)}`;
+  } else if (!alt && cur) t += ' · повернуть нельзя: размер не собирается';
+  $('louv-info').innerHTML = t;
+  $('louv-dir').disabled = !alt && !!cur;
+}
+$('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 'perpendicular' : 'parallel'; e.currentTarget.setAttribute('aria-pressed', state.louvres === 'perpendicular'); recompute(true); };
 $('evening').onclick = (e) => { state.evening = !state.evening; e.target.setAttribute('aria-pressed', state.evening); applyAnim(); };
 $('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top');
 function setColor(k) { state.color = k; M.frame.color.setHex(COLORS[k].hex); M.louver.color.setHex(COLORS[k].hex); $('c-anth').setAttribute('aria-pressed', k === 'anth'); $('c-white').setAttribute('aria-pressed', k === 'white'); $('c-name').textContent = COLORS[k].name; }
