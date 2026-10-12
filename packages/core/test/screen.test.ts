@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
-import { coatingSurcharges, lookupGrid, priceScreenIn, selectScreen } from '../src';
+import { coatingSurcharges, lookupGrid, priceScreenIn, screenControlLines, selectScreen } from '../src';
 import { loadCatalog } from '../src/node';
 
 const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
@@ -74,5 +74,31 @@ describe('ZIP pricing on a pergola side', () => {
   it('ZIP coating % applies to the catalogue price of the screen with Soltis 7635 (Win Screen p.20 note)', () => {
     const b = selectScreen({ width: 3870, height: 2590 }, cat).best!;
     expect(coatingSurcharges([{ system: 'SCREEN_ZIP', base: b.gridPrice, color: '07' }], cat).total).toBe(114.64); // 8 % of 1433
+  });
+});
+
+describe('screen control (Win Screen p.47–49, TELECO S400 p.20 / S500 p.45)', () => {
+  it('solar kit 332 € (20 Nm) — only where 20 Nm is enough', () => {
+    expect(selectScreen({ width: 3870, height: 2590, control: 'solar' }, cat).best!.motor).toMatchObject({ control: 'solar', price: 332, nm: 20 });
+    expect(selectScreen({ width: 6820, height: 2560, fabric: 'serge-600', control: 'solar' }, cat).best).toBeNull(); // 30 Nm zone
+  });
+  it('one screen with remote: 6-channel handheld 33 € (cheapest handheld with enough channels)', () => {
+    const r = screenControlLines(['remote'], {}, cat);
+    expect(r.lines.map((l) => [l.params!.index, l.amount])).toEqual([['RC01-06-W', 33]]);
+  });
+  it('seven screens with remote -> 16-channel 39 €; chosen 1-channel wall switch warns', () => {
+    expect(screenControlLines(Array(7).fill('remote'), {}, cat).lines[0]!.params!.index).toBe('RC02-16-W');
+    expect(screenControlLines(['remote', 'remote'], { remote: 'WRC01-01-W' }, cat).issues[0]!.code).toBe('REMOTE_TOO_FEW_CHANNELS');
+  });
+  it('smart: one WIN CONTROL Smart unit 60 € for the project', () => {
+    expect(screenControlLines(['smart', 'smart'], {}, cat).total).toBe(60);
+  });
+  it('wired from the pergola remote: TELECO 1 motor 200 €, 2–4 motors one 4-unit 330 €, 5 motors 330 + 200', () => {
+    expect(screenControlLines(['pergola'], {}, cat).total).toBe(200);
+    expect(screenControlLines(['pergola', 'pergola'], {}, cat).total).toBe(330);
+    expect(screenControlLines(Array(5).fill('pergola'), {}, cat).total).toBe(530);
+  });
+  it('wind sensor WS-S02 84 €, once per project', () => {
+    expect(screenControlLines(['remote', 'pergola'], { wind: true }, cat).lines.map((l) => l.amount)).toEqual([33, 200, 84]);
   });
 });

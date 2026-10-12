@@ -1,0 +1,156 @@
+{
+ "source": {
+  "note": "Screen control accessories (07.2026): WIN CONTROL remotes, smart unit, solar motor kit, wind sensor,\nTELECO central units for wired screen motors (pergola catalogues).\n\nEvery price is read twice (pdfplumber text and pdftotext -layout, same index -> first price after it on the line)\nand both readings must agree. TELECO units must also agree between the S400 and S500 catalogues.\nMANUAL: the wind sensor row (Win Screen p.49) has no extractable index/name (drawn text); index, name and the\n'wired, 230 V' note were read from the page image; its price 84 € is taken from the page text (VERIFIED_BY_IMAGE)."
+ },
+ "items": [
+  {
+   "index": "RC01-06-W",
+   "kind": "remote",
+   "name": "Пульт WIN CONTROL 6-канальный, белый",
+   "price": 33,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   },
+   "channels": 6
+  },
+  {
+   "index": "RC01-06-B",
+   "kind": "remote",
+   "name": "Пульт WIN CONTROL 6-канальный, чёрный",
+   "price": 33,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   },
+   "channels": 6
+  },
+  {
+   "index": "RC02-16-W",
+   "kind": "remote",
+   "name": "Пульт WIN CONTROL 16-канальный с дисплеем, белый",
+   "price": 39,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   },
+   "channels": 16
+  },
+  {
+   "index": "RC02-16-B",
+   "kind": "remote",
+   "name": "Пульт WIN CONTROL 16-канальный с дисплеем, чёрный",
+   "price": 39,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   },
+   "channels": 16
+  },
+  {
+   "index": "WRC01-01-W",
+   "kind": "remote",
+   "name": "Настенный выключатель WIN CONTROL 1-канальный, белый",
+   "price": 27,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   },
+   "channels": 1
+  },
+  {
+   "index": "WRC01-01-B",
+   "kind": "remote",
+   "name": "Настенный выключатель WIN CONTROL 1-канальный, чёрный",
+   "price": 27,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   },
+   "channels": 1
+  },
+  {
+   "index": "WRC02-05-W",
+   "kind": "remote",
+   "name": "Настенный выключатель WIN CONTROL 5-канальный, белый",
+   "price": 34,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 49
+   },
+   "channels": 5
+  },
+  {
+   "index": "WRC02-05-B",
+   "kind": "remote",
+   "name": "Настенный выключатель WIN CONTROL 5-канальный, чёрный",
+   "price": 34,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 49
+   },
+   "channels": 5
+  },
+  {
+   "index": "WINCZ3.0",
+   "kind": "smart",
+   "name": "WIN CONTROL Smart — управление со смартфона (ZigBee 3.0)",
+   "price": 60,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "index": "EX-01-Z3.0",
+   "kind": "receiver",
+   "name": "Внешний радиоприёмник WIN CONTROL",
+   "price": 58,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "index": "SW-TEL-TVPRS868A04B",
+   "kind": "pergolaUnit1",
+   "name": "Блок TELECO на 1 проводной мотор (пульт перголы)",
+   "price": 200,
+   "motors": 1,
+   "source": {
+    "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+    "page": 20,
+    "also": {
+     "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+     "page": 45
+    }
+   }
+  },
+  {
+   "index": "SW-TEL-TVPL4868AC4",
+   "kind": "pergolaUnit4",
+   "name": "Блок TELECO на 4 проводных мотора (пульт перголы), вход датчика ветра",
+   "price": 330,
+   "motors": 4,
+   "source": {
+    "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+    "page": 20,
+    "also": {
+     "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+     "page": 45
+    }
+   }
+  },
+  {
+   "index": "WS-S02",
+   "kind": "wind",
+   "name": "Датчик ветра и солнца WIN CONTROL, проводной 230 V",
+   "price": 84,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 49
+   },
+   "verifiedByImage": true
+  }
+ ]
+}

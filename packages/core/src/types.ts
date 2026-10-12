@@ -91,7 +91,7 @@ export interface FabricData {
 
 export interface ScreenMotor {
   index: string;
-  control: 'wired' | 'radio';
+  control: 'wired' | 'radio' | 'solar';
   nm: number;
   price: number;
   minWidth: { adaptive: number; flush: number };
@@ -102,6 +102,16 @@ export interface ScreenMotorData {
   motors: ScreenMotor[];
 }
 
+export interface ControlItem {
+  index: string;
+  kind: 'remote' | 'smart' | 'receiver' | 'pergolaUnit1' | 'pergolaUnit4' | 'wind';
+  name: string;
+  price: number;
+  channels?: number;
+  motors?: number;
+  source: { file: string; page: number };
+}
+
 export interface Catalog {
   version: string;
   tables: Record<string, GridTable>;
@@ -109,4 +119,5 @@ export interface Catalog {
   colors?: ColorData;
   fabrics?: FabricData;
   screenMotors?: ScreenMotorData;
+  screenControls?: { items: ControlItem[] };
 }

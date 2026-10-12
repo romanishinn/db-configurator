@@ -74,6 +74,16 @@
     "adaptive": 742,
     "flush": 764
    }
+  },
+  {
+   "index": "SRZM45-20/17-EL/D-Z3.0 + SP-B-01",
+   "control": "solar",
+   "nm": 20,
+   "price": 332,
+   "minWidth": {
+    "adaptive": 810,
+    "flush": 832
+   }
   }
  ]
 }

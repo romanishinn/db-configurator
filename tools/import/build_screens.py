@@ -118,3 +118,5 @@ if __name__ == '__main__':
     for tid, (pg, title) in TABLES.items():
         build_table(pdf, tid, pg, title)
     build_motors(pdf)
+    import build_controls  # adds the solar kit to screen-motors.json and writes screen-controls.json
+    build_controls.build()

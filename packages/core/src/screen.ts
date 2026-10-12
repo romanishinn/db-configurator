@@ -1,7 +1,7 @@
 import { fabricSurcharge } from './colors';
 import { lookupGrid, NotProducedError, OutOfRangeError } from './grid';
 import { round2 } from './money';
-import type { Catalog, GridTable, Issue, Line, ScreenMotor } from './types';
+import type { Catalog, ControlItem, GridTable, Issue, Line, ScreenMotor } from './types';
 
 /**
  * Win Screen ZIP on a pergola side: adaptive box mounted in the opening.
@@ -10,7 +10,7 @@ import type { Catalog, GridTable, Issue, Line, ScreenMotor } from './types';
  */
 export type ScreenSystem = 'zip110.adaptive' | 'zip130.adaptive';
 export const SCREEN_SYSTEMS: ScreenSystem[] = ['zip110.adaptive', 'zip130.adaptive'];
-export type MotorControl = 'wired' | 'radio';
+export type MotorControl = 'wired' | 'radio' | 'solar';
 
 export interface ScreenRequest {
   width: number;
@@ -108,4 +108,60 @@ export function selectScreen(req: ScreenRequest, cat: Catalog): ScreenResult {
   }
   options.sort((a, b) => a.total - b.total);
   return { best: options[0] ?? null, options, issues: options.length ? [] : issues };
+}
+
+/**
+ * How a screen is operated. Each mode fixes the motor type and the shared control devices:
+ * - remote:  WIN CONTROL 2-way radio motor + one handheld/wall remote for the project
+ * - smart:   WIN CONTROL 2-way radio motor + one WIN CONTROL Smart unit (smartphone app, ZigBee 3.0)
+ * - pergola: WIN CONTROL wired motor + TELECO central unit -> operated with the pergola's 63-channel remote
+ *            (S400 p.20 / S500 p.45: unit for 1 motor or for 4 motors, the 4-motor unit has a wind sensor input)
+ * - solar:   WIN CONTROL solar radio motor kit with panel (20 Nm) + remote
+ */
+export type ScreenControlMode = 'remote' | 'smart' | 'pergola' | 'solar';
+export const MOTOR_FOR_MODE: Record<ScreenControlMode, MotorControl> = { remote: 'radio', smart: 'radio', pergola: 'wired', solar: 'solar' };
+
+export interface ControlOptions {
+  /** remote index; default: the cheapest handheld remote with enough channels */
+  remote?: string;
+  /** wind sensor (catalogue: without it the fabric warranty is void). ASSUMPTION: one sensor per project. */
+  wind?: boolean;
+}
+
+const item = (cat: Catalog, pred: (i: ControlItem) => boolean) => cat.screenControls?.items.find(pred);
+const lineOf = (it: ControlItem, qty: number, code: string, params: Record<string, string | number> = {}): Line => ({
+  code, params: { index: it.index, name: it.name, qty, unit: it.price, ...params }, amount: round2(it.price * qty), source: it.source,
+});
+
+/** Shared control devices for all screens of a project. */
+export function screenControlLines(modes: ScreenControlMode[], opts: ControlOptions, cat: Catalog): { lines: Line[]; total: number; issues: Issue[] } {
+  const lines: Line[] = [];
+  const issues: Issue[] = [];
+  const radioRemote = modes.filter((m) => m === 'remote' || m === 'solar').length;
+  if (radioRemote) {
+    const remotes = (cat.screenControls?.items ?? []).filter((i) => i.kind === 'remote');
+    let r = opts.remote ? remotes.find((i) => i.index === opts.remote) : undefined;
+    if (!r) r = remotes.filter((i) => i.index.startsWith('RC') && (i.channels ?? 0) >= radioRemote).sort((a, b) => a.price - b.price)[0];
+    if (r) {
+      lines.push(lineOf(r, 1, 'CONTROL_REMOTE', { screens: radioRemote }));
+      if ((r.channels ?? 0) < radioRemote) issues.push({ severity: 'warn', code: 'REMOTE_TOO_FEW_CHANNELS', params: { channels: r.channels ?? 0, screens: radioRemote } });
+    }
+  }
+  if (modes.includes('smart')) {
+    const s = item(cat, (i) => i.kind === 'smart');
+    if (s) lines.push(lineOf(s, 1, 'CONTROL_SMART'));
+  }
+  const wired = modes.filter((m) => m === 'pergola').length;
+  if (wired) {
+    const u1 = item(cat, (i) => i.kind === 'pergolaUnit1')!, u4 = item(cat, (i) => i.kind === 'pergolaUnit4')!;
+    let n4 = Math.floor(wired / 4), n1 = wired % 4;
+    if (n1 * u1.price > u4.price) { n4 += 1; n1 = 0; } // two or more single units cost more than one 4-motor unit
+    if (n4) lines.push(lineOf(u4, n4, 'CONTROL_PERGOLA_UNIT', { motors: wired }));
+    if (n1) lines.push(lineOf(u1, n1, 'CONTROL_PERGOLA_UNIT', { motors: wired }));
+  }
+  if (opts.wind && modes.length) {
+    const w = item(cat, (i) => i.kind === 'wind');
+    if (w) lines.push(lineOf(w, 1, 'CONTROL_WIND_SENSOR'));
+  }
+  return { lines, total: round2(lines.reduce((s, l) => s + l.amount, 0)), issues };
 }
