@@ -73,16 +73,23 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .menu .same { font-size: 10.5px; font-weight: 600; color: #2f7d4f; background: #e6f3ea; border-radius: 3px; padding: 0 5px; margin-left: 4px; white-space: nowrap; }
 .align { font: inherit; font-size: 12px; margin-left: 6px; padding: 2px 8px; border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 4px; cursor: pointer; }
 .menu .sep { border-top: 1px solid #e2e6e9; margin: 4px 0 2px; }
-.menu.card { min-width: 280px; max-width: 300px; }
+.menu.card { min-width: 280px; max-width: 300px; max-height: 70vh; overflow: auto; }
+.menu .mh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.menu .mh .t { flex: 1; }
+.menu .mx { border: 0; background: transparent; font-size: 22px; line-height: 1; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: #1c2226; }
+.menu .mx:hover, .menu .mx:focus-visible { background: #e1edf2; }
+.menu .mf { position: sticky; bottom: -8px; background: #fff; padding: 10px 0 0; }
+.menu .done { width: 100%; font: inherit; font-size: 15px; font-weight: 600; border: 0; border-radius: 22px; padding: 12px; background: #2c6a86; color: #fff; cursor: pointer; }
+@media (max-width: 700px) {
+  .menu.card { position: fixed; left: 8px !important; right: 8px; bottom: 8px; top: auto !important; width: auto; min-width: 0; max-width: none; max-height: 62vh; border-radius: 14px; z-index: 50; }
+}
 .menu .rrow { display: flex; flex-wrap: wrap; gap: 8px 6px; padding: 4px 2px 8px; }
-.menu .rc { display: grid; justify-items: center; gap: 3px; border: 0; background: transparent; cursor: pointer; font: inherit; color: #1c2226; min-width: 56px; padding: 2px; }
-.menu .rc .dot { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #c9d1d6; display: grid; place-items: center; font-size: 17px; background: #f4f6f7; }
+.menu .rc { display: grid; justify-items: center; gap: 4px; border: 0; background: transparent; cursor: pointer; font: inherit; color: #1c2226; width: 72px; padding: 2px; }
+.menu .rc .dot { width: 48px; height: 48px; border-radius: 50%; border: 1px solid #c9d1d6; display: grid; place-items: center; font-size: 17px; background: #f4f6f7; box-sizing: border-box; }
+.menu .rc .cap { text-align: center; line-height: 1.15; }
 .menu .rc .cap { font-size: 11px; color: #5b666e; }
 .menu .rc[aria-current="true"] .dot { border: 2px solid #2c6a86; box-shadow: 0 0 0 2px #e1edf2; }
 .menu .rc[aria-current="true"] .cap { color: #1c2226; font-weight: 600; }
-.menu .seg2 { display: flex; gap: 6px; margin: 0 0 6px; }
-.menu .seg2 button { flex: 1; font: inherit; font-size: 12px; border: 1px solid #c9d1d6; background: #fff; border-radius: 16px; padding: 5px 8px; cursor: pointer; color: #1c2226; }
-.menu .seg2 button[aria-pressed="true"] { background: #e1edf2; border-color: #2c6a86; font-weight: 600; }
 .menu .ctl .d { display: block; font-size: 11.5px; color: #5b666e; font-weight: 400; }
 .zl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; font-size: 12px; color: var(--muted); margin-top: 4px; }
 .glz { display: grid; gap: 4px; }
@@ -686,28 +693,32 @@ function openMenu(o, e) {
 }
 function renderMenu(o) {
   const fill = state.fills[o.id] || 'none';
-  let html = `<div class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</div>
+  let html = `<div class="mh"><span class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</span><button type="button" class="mx" data-close="1" aria-label="Закрыть">×</button></div>
     <div class="rrow">${Object.keys(FILL).map((k) => `<button type="button" class="rc" data-k="${k}" aria-current="${fill === k}"><span class="dot">${GLYPH[k]}</span><span class="cap">${SHORT[k]}</span></button>`).join('')}</div>`;
   if (fill === 'glass') {
     const gt = glassType(o), own = !!state.glassOf[o.id];
     html += `<div class="t">Стекло</div><div class="rrow">${Object.entries(GLAZING).map(([k, g]) => `<button type="button" class="rc" data-gl="${k}" aria-current="${gt === k}"><span class="dot" style="background:#${g.col.toString(16).padStart(6, '0')}"></span><span class="cap">${GLS[k]}</span></button>`).join('')}</div>
-      <div class="seg2"><button type="button" data-glscope="one" aria-pressed="${own}">только этот проём</button><button type="button" data-glscope="all" aria-pressed="${!own}">все проёмы</button></div>`;
+      <div class="t">Применить</div><div class="rrow">
+        <button type="button" class="rc" data-glscope="one" aria-current="${own}"><span class="dot">1</span><span class="cap">только этот</span></button>
+        <button type="button" class="rc" data-glscope="all" aria-current="${!own}"><span class="dot">∞</span><span class="cap">все проёмы</span></button></div>`;
   }
   if (fill === 'zip') {
     const ctl = ctlOf(o.id), same = commonCtl(o.id);
     html += `<div class="t">Управление скрином${same && same !== ctl ? '' : ''}</div><div class="rrow">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<button type="button" class="rc" data-ctl="${k}" aria-current="${ctl === k}"><span class="dot">${CTL_GLYPH[k] || '•'}</span><span class="cap">${c.name}</span></button>`).join('')}</div>
-      <div class="seg2"><button type="button" data-ctlall="1">ко всем скринам</button></div>
+      <div class="t">Применить управление</div><div class="rrow"><button type="button" class="rc" data-ctlall="1"><span class="dot">∞</span><span class="cap">ко всем скринам</span></button></div>
       <div class="t">Ткань (проницаемость)</div><div class="rrow">${opennessList().map((of) => `<button type="button" class="rc" data-of="${of}" aria-current="${fabricOf().openness === of}"><span class="dot">${of}</span><span class="cap">${of} %</span></button>`).join('')}</div>`;
   }
   if (fill === 'panels') {
     html += `<div class="t">Ламели панелей</div>` + Object.entries(SLATS).map(([k, t]) => `<button type="button" data-slats="${k}" aria-current="${panelOpt(o.id).slats === k}">${t}${commonPanel(o.id) && commonPanel(o.id).slats === k ? ' <span class="same">как у других</span>' : ''}</button>`).join('')
       + `<div class="t">Монтаж</div>` + Object.entries(PMOUNT).map(([k, t]) => `<button type="button" data-pmount="${k}" aria-current="${panelOpt(o.id).mount === k}">${t}${commonPanel(o.id) && commonPanel(o.id).mount === k ? ' <span class="same">как у других</span>' : ''}</button>`).join('');
   }
+  html += `<div class="mf"><button type="button" class="done" data-close="1">Готово</button></div>`;
   menu.innerHTML = html;
 }
 const CTL_GLYPH = { remote: '◉', smart: '◎', pergola: '▣', switch: '⏽', solar: '☼' };
 function onMenuClick(ev) {
   const b = ev.target.closest('button'); if (!b || !menuAt) return;
+  if (b.dataset.close) return closeMenu();
   const o = state.options[state.optIndex]?.modules ? openingById(menuAt.id) : null; if (!o) return closeMenu();
   const again = () => { build(); renderEstimate(); renderMenu(o); };
   if (b.dataset.ctl) { state.zipCtl[o.id] = b.dataset.ctl; renderEstimate(); return renderMenu(o); }
