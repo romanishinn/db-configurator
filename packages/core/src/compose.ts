@@ -46,6 +46,8 @@ export interface PlacedModule {
   mount: Mount;
   role: 'single' | 'base' | 'add';
   price: number;
+  /** grid price without surcharges (base for the coating percentage) */
+  gridPrice: number;
   table: string;
 }
 
@@ -256,7 +258,7 @@ function buildWithBase(spec: FamilySpec, req: TerraceRequest, louvres: LouvreDir
         x: par ? u0 : v0, y: par ? v0 : u0,
         width: par ? louvreLength : projection, depth: par ? projection : louvreLength,
         louvreLength, projection, louvreAxis: par ? 'x' : 'y', mount,
-        role, price: p.total, table: String(p.lines[0]?.params?.table ?? ''),
+        role, price: p.total, gridPrice: p.lines[0]?.amount ?? 0, table: String(p.lines[0]?.params?.table ?? ''),
       });
       u0 += louvreLength;
     });

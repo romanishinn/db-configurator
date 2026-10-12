@@ -4,6 +4,7 @@ import type { Catalog, ColorGroup, Issue, Line, PriceResult } from './types';
 
 export type PergolaModel = 'S400' | 'S500';
 export type Mount = 'wall' | 'free' | 'roof';
+export interface PergolaColor { construction: ColorGroup; roof: ColorGroup; same?: boolean }
 
 export interface PergolaConfig {
   model: PergolaModel;
@@ -14,7 +15,8 @@ export interface PergolaConfig {
   module?: 'base' | 'add' | 'addNoRoof';
   width: number;
   projection: number;
-  color?: { construction: ColorGroup; roof: ColorGroup };
+  /** coating groups of the construction and the roof (louvres); same = one colour on the whole pergola */
+  color?: PergolaColor;
 }
 
 /** S500: a projection off the 250 mm grid is possible for a surcharge (catalogue S500, p.14). */
@@ -102,9 +104,10 @@ export function pricePergola(c: PergolaConfig, cat: Catalog): PriceResult {
 
 /**
  * Pergola coating surcharge in %. Rates are [construction, roof, whole].
- * Same non-standard group on both parts -> the 'whole' rate (e.g. S400 fine: 8%, not 5% + 7%).
+ * One colour on construction and roof -> the 'whole' rate (e.g. S400 fine: 8%, not 5% + 7%).
+ * ASSUMPTION: two different colours (even of the same group) are two coatings -> construction + roof rates.
  */
-export function coatingPercent(model: PergolaModel, color: { construction: ColorGroup; roof: ColorGroup }, cat: Catalog): number {
+export function coatingPercent(model: PergolaModel, color: PergolaColor, cat: Catalog): number {
   const table = cat.coating.rates[model];
   if (!table) throw new Error(`no coating rates for ${model}`);
   const r = (g: ColorGroup) => {
@@ -112,6 +115,7 @@ export function coatingPercent(model: PergolaModel, color: { construction: Color
     if (!Array.isArray(v)) throw new Error(`coating rate ${model}.${g} must be [construction, roof, whole]`);
     return v;
   };
-  if (color.construction === color.roof) return r(color.construction)[2];
+  // 'whole' = one colour on the whole pergola. Without colour ids, the same group counts as one colour.
+  if (color.same ?? color.construction === color.roof) return r(color.construction)[2];
   return r(color.construction)[0] + r(color.roof)[1];
 }

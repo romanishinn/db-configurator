@@ -57,8 +57,42 @@ export interface CoatingData {
   minimumCharge: { default: number; wood: number; flashingAndAngles: number };
 }
 
+/** Powder-coating colour of the Sun Winner palette (colors.json). */
+export interface ColorEntry {
+  id: string;
+  name: string;
+  nameRu: string;
+  ral: string;
+  group: ColorGroup;
+  /** on-screen tone; for wood-like colours an approximate base tone (ASSUMPTION, visual only) */
+  hex: string;
+  finish: 'structured' | 'matt' | 'metallic' | 'wood';
+}
+
+export interface ColorData {
+  colors: ColorEntry[];
+  /** colours outside the palette, priced by group: any RAL, any metallic RAL, any structural colour */
+  customGroups: { group: ColorGroup; name: string; nameRu: string }[];
+}
+
+export interface FabricCollection {
+  id: string;
+  maker: string;
+  name: string;
+  /** openness factor, % */
+  openness: number;
+  eurPerM2: number;
+}
+
+export interface FabricData {
+  source: { file: string; pages: number[] };
+  collections: FabricCollection[];
+}
+
 export interface Catalog {
   version: string;
   tables: Record<string, GridTable>;
   coating: CoatingData;
+  colors?: ColorData;
+  fabrics?: FabricData;
 }

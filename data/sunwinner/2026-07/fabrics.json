@@ -1,0 +1,63 @@
+{
+ "source": {
+  "file": "WIN-SCREEN-EN-07.2026-.pdf",
+  "pages": [
+   20,
+   23,
+   26,
+   29,
+   32,
+   35,
+   38,
+   41,
+   44,
+   59
+  ],
+  "note": "Win Screen fabric surcharges (07.2026): EUR per m2 of the screen (width x height), by fabric collection.\n\nTwo independent readings of every \"SURCHARGES FOR FABRICS\" table in the Win Screen catalogue\n(pdfplumber text and pdftotext -layout). All tables in the catalogue must agree with each other,\notherwise the build stops.\nFabric colour cards are not in the price catalogue; the per-collection colour lists come later."
+ },
+ "unit": "EUR/m2",
+ "collections": [
+  {
+   "id": "soltis-7635",
+   "maker": "Serge Ferrari",
+   "name": "Soltis 7635",
+   "openness": 5,
+   "eurPerM2": 0
+  },
+  {
+   "id": "soltis-86",
+   "maker": "Serge Ferrari",
+   "name": "Soltis 86",
+   "openness": 14,
+   "eurPerM2": 10
+  },
+  {
+   "id": "serge-600",
+   "maker": "Copaco",
+   "name": "Serge 600",
+   "openness": 5,
+   "eurPerM2": 7
+  },
+  {
+   "id": "soltis-92",
+   "maker": "Serge Ferrari",
+   "name": "Soltis 92",
+   "openness": 4,
+   "eurPerM2": 15
+  },
+  {
+   "id": "serge-100",
+   "maker": "Copaco",
+   "name": "Serge 100",
+   "openness": 1,
+   "eurPerM2": 11
+  },
+  {
+   "id": "serge-600-bo-lunar",
+   "maker": "Copaco",
+   "name": "Serge 600 BO Lunar",
+   "openness": 0,
+   "eurPerM2": 46
+  }
+ ]
+}
