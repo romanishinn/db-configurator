@@ -1,5 +1,6 @@
 import { lookupGrid, NotProducedError, OutOfRangeError } from './grid';
-import type { Catalog, GridTable, Issue, SourceRef } from './types';
+import { round2 } from './money';
+import type { Catalog, GlazingType, GridTable, Issue, SourceRef } from './types';
 
 export type GlassOpening = 'single' | 'double';
 
@@ -83,4 +84,38 @@ function pageOf(t: GridTable, width: number): number {
   // 10- and 12-panel tables continue on a second page above these widths (pp.21–22/31–32 and 23–24/33–34)
   const boundary = t.id.endsWith('.10p') ? 10500 : 12500;
   return width > boundary ? pages[1]! : pages[0]!;
+}
+
+export interface GlazingResult {
+  type: GlazingType;
+  /** EUR per m², null if this glazing is not available in the thickness */
+  rate: number | null;
+  m2: number;
+  amount: number;
+  issues: Issue[];
+  source?: SourceRef;
+}
+
+/**
+ * Surcharge for a non-standard glazing (p.9): rate per m² × opening area.
+ * ASSUMPTION: the area is the opening width × height (the system size), not the net glass area.
+ */
+export function glazingSurcharge(type: GlazingType, thickness: 8 | 10, width: number, height: number, cat: Catalog): GlazingResult {
+  const g = cat.glazing;
+  const m2 = round2((width * height) / 1e6);
+  const t = g?.types.find((x) => x.id === type);
+  if (!g || !t) return { type, rate: null, m2, amount: 0, issues: [{ severity: 'block', code: 'GLAZING_UNKNOWN', params: { type } }] };
+  const rate = t.surcharge[String(thickness) as '8' | '10'];
+  const source = { file: g.source.file, page: g.source.page };
+  if (rate == null) {
+    const other = thickness === 8 ? 10 : 8;
+    return { type, rate: null, m2, amount: 0, source, issues: [{ severity: 'block', code: 'GLAZING_NOT_IN_THICKNESS', params: { type, thickness, available: t.surcharge[String(other) as '8' | '10'] != null ? other : 0 } }] };
+  }
+  return { type, rate, m2, amount: round2(rate * m2), source, issues: [] };
+}
+
+/** Glass thickness a glazing needs: 8 mm by default, 10 mm when the glazing exists only in 10 mm (mirror). */
+export function thicknessFor(type: GlazingType, cat: Catalog): 8 | 10 {
+  const t = cat.glazing?.types.find((x) => x.id === type);
+  return t && t.surcharge['8'] == null && t.surcharge['10'] != null ? 10 : 8;
 }

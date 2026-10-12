@@ -134,4 +134,14 @@ export interface Catalog {
   screenControls?: { items: ControlItem[] };
   /** scalar option prices (options-scalars.json) */
   optionScalars?: Record<string, unknown>;
+  /** Win Glass glazing surcharges per m² (glass-glazing.json) */
+  glazing?: GlazingData;
+}
+
+export type GlazingType = 'float' | 'diamant' | 'milk' | 'brown' | 'graphite' | 'black' | 'mirror';
+export interface GlazingData {
+  source: { file: string; page: number };
+  unit: 'EUR/m2';
+  /** surcharge per m² by glass thickness; null = not available in this thickness */
+  types: { id: GlazingType; surcharge: { '8': number | null; '10': number | null } }[];
 }

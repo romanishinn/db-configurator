@@ -65,5 +65,35 @@ def build():
         print(f'{tid}: {n} cells, monotonic issues {iss}')
     print('total', sum(n for _, n, _ in report))
 
+GLAZING = ['float', 'diamant', 'milk', 'brown', 'graphite', 'black', 'mirror']
+
+
+def glazing():
+    """Glazing surcharges per m² (p.9): two readings (pdfplumber text, pdftotext -layout) must agree; checked on the page image."""
+    import re, subprocess, pdfplumber
+    with pdfplumber.open(f'{SRC}/{FILE}') as d:
+        a = (d.pages[8].extract_text() or '').splitlines()
+    b = subprocess.run(['pdftotext', '-f', '9', '-l', '9', '-layout', f'{SRC}/{FILE}', '-'], capture_output=True, text=True, check=True).stdout.splitlines()
+    res = []
+    for lines in (a, b):
+        rows = []
+        for ln in lines:
+            if 'INCLUDED IN PRICE' in ln:  # surcharge rows: 8 mm, then 10 mm
+                tail = ln.split('INCLUDED IN PRICE', 1)[1]
+                vals = [0] + [None if t == 'OUT OF STOCK' else int(t) for t in re.findall(r'OUT OF STOCK|(?<!\d)\d+(?= ?€)', tail)]
+                rows.append(vals)
+        res.append(rows)
+    if res[0] != res[1] or len(res[0]) != 2 or any(len(r) != len(GLAZING) for r in res[0]):
+        raise SystemExit(f'glazing readings differ or incomplete: {res}')
+    s8, s10 = res[0]
+    out = {'source': {'file': FILE, 'page': 9}, 'unit': 'EUR/m2',
+           'types': [{'id': g, 'surcharge': {'8': s8[i], '10': s10[i]}} for i, g in enumerate(GLAZING)]}
+    with open('data/catalog/2026-07/glass-glazing.json', 'w') as f:
+        json.dump(out, f, separators=(',', ':'))
+    print('glazing 8 mm', s8, '10 mm', s10)
+
+
 if __name__ == '__main__':
-    build()
+    if '--glazing' not in sys.argv:
+        build()
+    glazing()

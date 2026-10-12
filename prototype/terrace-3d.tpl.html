@@ -75,6 +75,13 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .menu .sep { border-top: 1px solid #e2e6e9; margin: 4px 0 2px; }
 .menu .ctl .d { display: block; font-size: 11.5px; color: #5b666e; font-weight: 400; }
 .zl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.glz { display: grid; gap: 4px; }
+.glz .gl { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; font: inherit; font-size: 13px; text-align: left; background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; cursor: pointer; color: var(--ink); }
+.glz .gl .sw { width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--line); }
+.glz .gl[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.lightbox { border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px 8px; margin: 2px 0 6px; }
+.lightbox > summary { cursor: pointer; font-weight: 600; font-size: 13px; padding: 6px 0; list-style-position: inside; }
+.lightbox > label { margin-top: 6px; }
 .zctl { font: inherit; font-size: 12px; width: 100%; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); max-width: 100%; }
 .proj { display: grid; gap: 6px; margin: 10px 0 4px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 12.5px; }
 .proj label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; }
@@ -183,7 +190,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 <script>/*CORE*/</script>
 <script>/*CATALOG*/</script>
 <script>
-const cat = DBCore.buildCatalog('catalog-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating, { colors: CATALOG_JSON.colors, fabrics: CATALOG_JSON.fabrics, screenMotors: CATALOG_JSON.screenMotors, screenControls: CATALOG_JSON.screenControls, optionScalars: CATALOG_JSON.optionScalars });
+const cat = DBCore.buildCatalog('catalog-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating, { colors: CATALOG_JSON.colors, fabrics: CATALOG_JSON.fabrics, screenMotors: CATALOG_JSON.screenMotors, screenControls: CATALOG_JSON.screenControls, optionScalars: CATALOG_JSON.optionScalars, glazing: CATALOG_JSON.glazing });
 const $ = (id) => document.getElementById(id);
 const eur = (n) => n.toLocaleString('de-AT', { maximumFractionDigits: 0 }) + ' €';
 const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
@@ -204,20 +211,35 @@ const TARGETS = [
   { k: 'slide', name: 'Раздвижные системы', hint: 'профили Win Glass, Win Panels, Win Verto', sys: 'GLASS', link: 'как конструкция' },
   { k: 'zip', name: 'ZIP-скрины', hint: 'кассета, направляющие, нижний профиль', sys: 'SCREEN_ZIP', link: 'как конструкция' },
   { k: 'fabric', name: 'Ткань ZIP', hint: 'коллекция и оттенок' },
+  { k: 'glass', name: 'Стекло Win Glass', hint: 'тип остекления' },
 ];
 // Visual fabric tones only: the fabric colour codes come from the manufacturer's fabric cards (not in the price list).
 const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит'], ['#7f8387', 'серый'], ['#b9b6ae', 'светло-серый'], ['#e7e4dc', 'белый'], ['#c8b799', 'бежевый'], ['#8b7d6c', 'тауп'], ['#1e1f21', 'чёрный']];
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
 
 /* ---------- side pricing ---------- */
 // ASSUMPTION: opening = module width minus one post (130 mm), height = 2800 mm minus the crown. Clearances to confirm with the manufacturer.
 function glassFor(o) {
-  return DBCore.selectGlass({ width: Math.round(o.len * 1000), height: Math.round(o.h * 1000), thickness: 8 }, cat);
+  return DBCore.selectGlass({ width: Math.round(o.len * 1000), height: Math.round(o.h * 1000), thickness: DBCore.thicknessFor(state.glass.type, cat) }, cat);
+}
+/** Win Glass glazing (p.9): name, 3D look (tint colour, opacity), menu label */
+const GLAZING = {
+  float: { name: 'прозрачное (float)', col: 0xcfe3ea, op: 0.22 },
+  diamant: { name: 'Diamant, кристалл', col: 0xb7c3c8, op: 0.34 },
+  milk: { name: 'Milk, матовое', col: 0xeeeee8, op: 0.6 },
+  brown: { name: 'Brown, бронза', col: 0x6e4c3c, op: 0.42 },
+  graphite: { name: 'Graphite, графит', col: 0x3c4246, op: 0.5 },
+  black: { name: 'Black, затемнённое', col: 0x181b1e, op: 0.62 },
+  mirror: { name: 'Mirror, зеркальное (10 мм)', col: 0xaebfcc, op: 0.6 },
+};
+function glazingFor(o) {
+  const w = Math.round(o.len * 1000), h = Math.round(o.h * 1000);
+  return DBCore.glazingSurcharge(state.glass.type, DBCore.thicknessFor(state.glass.type, cat), w, h, cat);
 }
 const GLASS_OPEN = { single: 'в одну сторону', double: 'в обе стороны' };
 
@@ -257,8 +279,8 @@ const M = {
   ledRgb: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x8f5cff, emissiveIntensity: 0 }),
   ledMix: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffb4d8, emissiveIntensity: 0 }),
   heater: new THREE.MeshStandardMaterial({ color: 0x1e1f21, roughness: 0.5, metalness: 0.3, emissive: 0xff5a1f, emissiveIntensity: 0 }),
-  heatCone: new THREE.MeshBasicMaterial({ map: gradTex('cone'), transparent: true, depthWrite: false, side: THREE.DoubleSide }),
-  heatFloor: new THREE.MeshBasicMaterial({ map: gradTex('floor'), transparent: true, depthWrite: false }),
+  heatCone: new THREE.MeshBasicMaterial({ color: 0xff6a4a, transparent: true, opacity: 0.25, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }),
+  heatFloor: new THREE.MeshBasicMaterial({ map: gradTex('floor'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }),
   pick: new THREE.MeshBasicMaterial({ color: 0x2c6a86, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }),
 };
 
@@ -270,6 +292,12 @@ function gradTex(kind) {
   gr.addColorStop(0, 'rgba(255,110,70,0.55)'); gr.addColorStop(0.45, 'rgba(255,120,80,0.22)'); gr.addColorStop(1, 'rgba(255,140,100,0)');
   g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
   return new THREE.CanvasTexture(c);
+}
+
+const glassMats = {};
+function glassMat(type) {
+  if (!glassMats[type]) { const g = GLAZING[type]; glassMats[type] = new THREE.MeshPhysicalMaterial({ color: g.col, roughness: 0.05, metalness: type === 'mirror' ? 0.6 : 0, transparent: true, opacity: g.op, side: THREE.DoubleSide }); }
+  return glassMats[type];
 }
 
 function box(w, h, d, mat, x, y, z, parent = root) {
@@ -318,13 +346,15 @@ function build() {
       for (let k = 0; k < per; k++) {
         const hx = xa + (xb - xa) * (k + 1) / (per + 1), hy = H - sp.crown - 0.06, hz = zb - sp.post - 0.08;
         box(0.6, 0.07, 0.1, M.heater, hx, hy, hz);
-        // warm air: a soft red cone towards the seating area and a warm spot on the floor
-        const ch = hy - 0.6, cone = new THREE.Mesh(new THREE.ConeGeometry(1.0, ch, 32, 1, true), M.heatCone);
-        cone.position.set(hx, hy - 0.04 - ch / 2, hz - 0.45); cone.rotation.x = -0.25; cone.renderOrder = 2; root.add(cone);
-        const spot = new THREE.Mesh(new THREE.CircleGeometry(1.25, 40), M.heatFloor);
-        spot.rotation.x = -Math.PI / 2; spot.position.set(hx, 0.045, hz - 0.8); spot.renderOrder = 1; root.add(spot);
+        // warm air: a plume that starts at the heater, goes down and inward to the seating area
+        const TILT = 0.36, L = hy / Math.cos(TILT);           // apex at the heater, base on the floor
+        const plume = new THREE.Group(); plume.position.set(hx, hy - 0.06, hz); plume.rotation.x = TILT; root.add(plume);
+        const cg = new THREE.ConeGeometry(0.75, L, 32, 1, true); cg.translate(0, -L / 2, 0); // apex at origin, opens downward
+        const cone = new THREE.Mesh(cg, M.heatCone); cone.renderOrder = 2; plume.add(cone);
+        const spot = new THREE.Mesh(new THREE.CircleGeometry(0.85, 40), M.heatFloor);
+        spot.rotation.x = -Math.PI / 2; spot.position.set(hx, 0.045, hz - L * Math.sin(TILT)); spot.renderOrder = 1; root.add(spot);
         if ((animated.heat = animated.heat || []).length < 6) {
-          const pl = new THREE.PointLight(0xff5a3a, 0, 2.6, 2); pl.position.set(hx, hy - 0.3, hz - 0.3); root.add(pl); animated.heat.push(pl);
+          const pl = new THREE.PointLight(0xff6a4a, 0, 2.4, 2); pl.position.set(hx, hy - 0.5, hz - 0.5); root.add(pl); animated.heat.push(pl);
         }
       }
     }
@@ -473,11 +503,20 @@ function addFill(o, fill) {
   } else if (fill === 'glass') {
     const gs = glassFor(o);
     const nP = gs.best ? gs.best.panels : Math.max(3, Math.ceil(o.len / 1.4));
-    const pw = o.len / nP;
+    const pw = o.len / nP, gl = GLAZING[state.glass.type];
+    const mat = glassMat(state.glass.type);
+    // two guide tracks: top and bottom profiles (the panels run in them)
     box(o.len, 0.05, 0.08, M.slide, 0, 0.025, 0, g); box(o.len, 0.05, 0.08, M.slide, 0, o.h - 0.025, 0, g);
+    // panels alternate between the two tracks (front / back), each one framed so the sliding is readable
+    const track = gs.best && gs.best.tracks === 6 ? [-0.03, 0, 0.03] : [-0.025, 0.025];
     for (let i = 0; i < nP; i++) {
-      const p = new THREE.Mesh(new THREE.BoxGeometry(pw + 0.04, o.h - 0.1, 0.01), M.glass);
-      p.position.set(-o.len / 2 + pw * (i + 0.5), o.h / 2, (i % 2 ? 0.02 : -0.02)); g.add(p);
+      const x = -o.len / 2 + pw * (i + 0.5), z = track[i % track.length];
+      const p = new THREE.Mesh(new THREE.BoxGeometry(pw - 0.012, o.h - 0.1, 0.01), mat);
+      p.position.set(x, o.h / 2, z); p.renderOrder = 1; g.add(p);
+      const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(pw - 0.012, o.h - 0.1, 0.012)), new THREE.LineBasicMaterial({ color: 0x2b2f31 }));
+      edge.position.copy(p.position); g.add(edge);
+      // handle on every panel (knob at the middle height)
+      box(0.03, 0.22, 0.02, M.slide, x + (pw / 2 - 0.09) * (i % 2 ? -1 : 1), o.h * 0.5, z + 0.02, g);
     }
   } else if (fill === 'verto') {
     // profiles 35 × 60 mm spread over the opening (count and gap from the engine)
@@ -519,7 +558,7 @@ function applyAnim() {
   }
   M.led.emissiveIntensity = state.evening ? 2.2 : 0; M.ledRgb.emissiveIntensity = state.evening ? 2.4 : 0; M.ledMix.emissiveIntensity = state.evening ? 2.2 : 0;
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
-  for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.4 : 0.7;
+  for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.2 : 0.4;
   for (const pl of animated.lights || []) pl.intensity = state.evening ? 1.6 : 0;
   scene.background = new THREE.Color(state.evening ? 0x1b2530 : 0xc5d1d9);
   hemi.intensity = state.evening ? 0.25 : 0.85; sun.intensity = state.evening ? 0.12 : 0.95;
@@ -572,7 +611,7 @@ new ResizeObserver(resize).observe(view);
 (function loop(t) {
   requestAnimationFrame(loop);
   // heat shimmer: the warm glow breathes slowly
-  if (animated.heat && animated.heat.length) { const f = 0.85 + 0.15 * Math.sin((t || 0) / 450); M.heatCone.opacity = f; M.heatFloor.opacity = f; }
+  if (animated.heat && animated.heat.length) { const f = 0.85 + 0.15 * Math.sin((t || 0) / 450), k = state.evening ? 1.6 : 1; M.heatCone.opacity = 0.25 * f * k; M.heatFloor.opacity = 0.9 * f * k; }
   controls.update(); renderer.render(scene, camera); placeLabels(); })();
 
 /* ---------- picking sides ---------- */
@@ -625,7 +664,7 @@ function recompute(resetFills) {
   const other = DBCore.compose({ ...req, louvres: state.louvres === 'parallel' ? 'perpendicular' : 'parallel' }, cat);
   renderLouvreInfo(r.options[0], other.options[0]);
   state.options = r.options; state.optIndex = 0;
-  if (resetFills) state.fills = {};
+  // fills stay with their sides when the size or layout changes (openings that no longer exist are simply not drawn)
   const opts = $('opts'), cheapest = r.options[0] ? r.options[0].total : 0;
   opts.innerHTML = r.options.map((o, i) => {
     const widths = o.modules.filter((m) => m.row === 0).map((m) => mm(m.width)).join(' + ') + (o.rows > 1 ? ' × ' + o.modules.filter((m) => m.col === 0).map((m) => mm(m.depth)).join(' + ') : '');
@@ -643,7 +682,7 @@ function recompute(resetFills) {
 }
 $('opts').addEventListener('click', (e) => {
   const b = e.target.closest('.opt'); if (!b) return;
-  state.optIndex = Number(b.dataset.i); state.fills = {};
+  state.optIndex = Number(b.dataset.i);
   document.querySelectorAll('.opt').forEach((x) => x.setAttribute('aria-pressed', x === b));
   build(); setView('iso'); renderEstimate(); renderColors(); renderPergolaOptions();
 });
@@ -744,8 +783,11 @@ function renderEstimate() {
     if (f === 'glass') {
       const g = glassFor(op);
       if (g.best) {
-        sides += g.best.price; coat.push({ system: 'GLASS', base: g.best.price, color: e.slide, label: 'glass' });
-        html += `<tr><td>Win Glass, ${op.label.toLowerCase()}<span class="s">${size} · 8 мм, ${g.best.panels} ${plural(g.best.panels, 'полотно', 'полотна', 'полотен')}, ${g.best.tracks} направляющих, открывание ${GLASS_OPEN[g.best.opening]} · стр. ${g.best.source.page}</span></td><td class="a">${eur(g.best.price)}</td></tr>`;
+        const gz = glazingFor(op);
+        sides += g.best.price + gz.amount; coat.push({ system: 'GLASS', base: g.best.price, color: e.slide, label: 'glass' });
+        html += `<tr><td>Win Glass, ${op.label.toLowerCase()}<span class="s">${state.glass.type === 'float' ? '' : GLAZING[state.glass.type].name + ' · '}${DBCore.thicknessFor(state.glass.type, cat)} мм, ${g.best.panels} ${plural(g.best.panels, 'полотно', 'полотна', 'полотен')}, ${g.best.tracks} направляющих, открывание ${GLASS_OPEN[g.best.opening]} · стр. ${g.best.source.page}</span></td><td class="a">${eur(g.best.price)}</td></tr>`;
+        if (gz.amount) html += `<tr><td>Остекление ${GLAZING[state.glass.type].name}<span class="s">${eur(gz.rate)}/м² × ${gz.m2.toFixed(2).replace('.', ',')} м² · стр. ${gz.source.page}</span></td><td class="a">${eur(gz.amount)}</td></tr>`;
+        for (const i of gz.issues) html += `<tr><td colspan="2"><div class="note">${GLAZING[state.glass.type].name} не делается в ${DBCore.thicknessFor(state.glass.type, cat)} мм — выберите другое стекло.</div></td></tr>`;
       } else {
         html += `<tr><td>Win Glass, ${op.label.toLowerCase()}<span class="s">${size} · не производится${g.issues[0] && g.issues[0].params.maxHeight ? `, макс. высота ${mm(g.issues[0].params.maxHeight)} мм` : ''}</span></td><td class="a muted">—</td></tr>`;
       }
@@ -911,10 +953,13 @@ function renderPergolaOptions() {
   const hs = s500 ? [2800, 3200] : [2800, 3000, 3200];
   const heaters = cat.optionScalars.heaters[s500 ? 's500' : 's400'].sets;
   const ledN = po.ledLouvres ? po.ledLouvres.louvres : 5;
+  const litItems = [po.ledLouvres, po.ledGutter, po.spots, po.lamps, po.crownSpots, po.verticalLamps].filter(Boolean).length;
+  const litSum = optDelta({ ledLouvres: po.ledLouvres, ledGutter: po.ledGutter, spots: po.spots, lamps: po.lamps, crownSpots: po.crownSpots, verticalLamps: po.verticalLamps });
   const spotN = po.spots ? po.spots.louvres : 5, lampN = po.lamps ? po.lamps.louvres : 4, dbl = o.family === 'S500_DOUBLE';
   $('popts').innerHTML = `
     <label>Высота стоек<select id="o-h">${hs.map((h) => `<option value="${h}" ${po.postHeight === h ? 'selected' : ''}>${h === 2800 ? 'до 2 800 мм — стандарт' : 'до ' + mm(h) + ' мм'} · ${pr(optDelta({ postHeight: h }))}</option>`).join('')}</select></label>
     <label>Доп. промежуточные стойки<select id="o-ip">${[0, 1, 2, 3, 4, 5, 6].map((k) => `<option value="${k}" ${po.intermediatePosts === k ? 'selected' : ''}>${k ? k + ' шт. · +' + eur(optDelta({ intermediatePosts: k, postHeight: po.postHeight }) - optDelta({ postHeight: po.postHeight })) : 'нет'}</option>`).join('')}</select></label>
+    <details class="lightbox"${litItems ? ' open' : ''}><summary>Освещение${litItems ? ` · ${litItems} ${plural(litItems, 'вид', 'вида', 'видов')} · ${pr(litSum)}` : ' · нет'}</summary>
     <label>Подсветка в ламелях<span class="row2"><select id="o-led"><option value="">нет</option>${Object.entries(LEDC).map(([k, t]) => `<option value="${k}" ${po.ledLouvres && po.ledLouvres.colour === k ? 'selected' : ''}>LED-лента ${t} · ${pr(optDelta({ ledLouvres: { colour: k, louvres: ledN } }))}</option>`).join('')}</select>
       <select id="o-ledn" aria-label="Ламелей с подсветкой">${[3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${ledN === n ? 'selected' : ''}>${o.family === 'S500_DOUBLE' ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
     <label>Подсветка в желобе<select id="o-gut"><option value="">нет</option>${Object.entries(GUT).map(([k, t]) => `<option value="${k}" ${po.ledGutter === k ? 'selected' : ''}>${t} · ${pr(optDelta({ ledGutter: k }))}</option>`).join('')}</select></label>
@@ -924,6 +969,7 @@ function renderPergolaOptions() {
       <select id="o-lampn" aria-label="Ламелей с лампами">${[2, 3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${lampN === n ? 'selected' : ''}>${dbl ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
     <label>LED-споты в раме, ${o.family === 'S400' ? 'на перголу' : 'на модуль'}<select id="o-crown"><option value="0">нет</option>${[8, 10, 12, 14, 16, 18, 20, 22, 24, 26].map((k) => `<option value="${k}" ${po.crownSpots === k ? 'selected' : ''}>${k} ${plural(k, 'спот', 'спота', 'спотов')} · ${pr(optDelta({ crownSpots: k }))}</option>`).join('')}</select></label>
     ${s500 ? `<label>Вертикальные светильники на стойках<select id="o-vert"><option value="0">нет</option>${[2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => `<option value="${k}" ${po.verticalLamps === k ? 'selected' : ''}>${k} шт. · ${pr(optDelta({ verticalLamps: k }))}</option>`).join('')}</select></label>` : ''}
+    </details>
     <label>Датчики погоды<select id="o-sen"><option value="">нет</option>${Object.entries(SEN).map(([k, t]) => `<option value="${k}" ${po.sensors === k ? 'selected' : ''}>${t} · ${pr(optDelta({ sensors: k }))}</option>`).join('')}</select></label>
     <label>Управление со смартфона<select id="o-smart"><option value="">нет (пульт перголы в цене)</option>${Object.entries(SMART).map(([k, t]) => `<option value="${k}" ${po.smart === k ? 'selected' : ''}>${t} · ${pr(optDelta({ smart: k }))}</option>`).join('')}</select></label>
     <label>Обогреватели<span class="row2"><select id="o-heat"><option value="">нет</option>${heaters.map((h) => `<option value="${h.id}" ${po.heaters && po.heaters.set === h.id ? 'selected' : ''}>${h.name} · ${eur(h.price)}</option>`).join('')}</select>
@@ -1051,7 +1097,12 @@ function renderColors() {
   box.innerHTML = TARGETS.map((t) => {
     const open = state.colorOpen === t.k;
     let chip, val, pc;
-    if (t.k === 'fabric') {
+    if (t.k === 'glass') {
+      const gl = GLAZING[state.glass.type];
+      chip = `<span class="chip30" style="background:#${gl.col.toString(16).padStart(6, '0')}"></span>`;
+      val = gl.name;
+      pc = state.glass.type === 'float' ? '<span class="pc">в цене</span>' : `<span class="pc paid">+${cat.glazing.types.find((x) => x.id === state.glass.type).surcharge[String(DBCore.thicknessFor(state.glass.type, cat))]} €/м²</span>`;
+    } else if (t.k === 'fabric') {
       const f = fabricOf(), tone = FABRIC_TONES.find((x) => x[0] === state.colors.tone);
       chip = `<span class="chip30" style="background:${state.colors.tone}"></span>`;
       val = `${f.name} · OF ${f.openness} % · ${tone ? tone[1] : ''}`;
@@ -1066,6 +1117,13 @@ function renderColors() {
   }).join('');
 }
 function pickerBody(t) {
+  if (t.k === 'glass') {
+    const rows = Object.entries(GLAZING).map(([k, g]) => {
+      const rate = cat.glazing.types.find((x) => x.id === k).surcharge[String(DBCore.thicknessFor(k, cat))];
+      return `<button type="button" class="gl" data-gl="${k}" aria-pressed="${state.glass.type === k}"><span class="sw" style="background:#${g.col.toString(16).padStart(6, '0')}"></span><span>${g.name}</span><span class="pc ${rate ? 'paid' : ''}">${rate ? '+' + rate + ' €/м²' : 'в цене'}</span></button>`;
+    }).join('');
+    return `<p class="sub" style="margin:0 0 6px">Тип стекла для всех панелей Win Glass. Доплата = площадь проёма × €/м². Mirror — только 10 мм.</p><div class="glz">${rows}</div>`;
+  }
   if (t.k === 'fabric') {
     const curOf = fabricOf().openness;
     return `<div class="pg"><span>Проницаемость ткани (OF)</span></div>
@@ -1097,6 +1155,7 @@ $('clr').addEventListener('click', (e) => {
   if (hd) { state.colorOpen = state.colorOpen === hd.dataset.t ? null : hd.dataset.t; renderColors(); return; }
   const k = state.colorOpen; if (!k) return;
   const sw = e.target.closest('[data-c]'); if (sw) return setColor(k, sw.dataset.c);
+  const glb = e.target.closest('[data-gl]'); if (glb) { state.glass.type = glb.dataset.gl; build(); renderColors(); renderEstimate(); return; }
   const ofb = e.target.closest('[data-of]'); if (ofb) { state.colors.fabric = fabricForOpenness(Number(ofb.dataset.of)); applyColors(); renderColors(); renderEstimate(); return; }
   const tone = e.target.closest('[data-tone]'); if (tone) { state.colors.tone = tone.dataset.tone; applyColors(); renderColors(); return; }
 });

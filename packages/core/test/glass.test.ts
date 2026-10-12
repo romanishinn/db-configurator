@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
-import { selectGlass, lookupGrid } from '../src';
+import { glazingSurcharge, selectGlass, lookupGrid, thicknessFor } from '../src';
 import { loadCatalog } from '../src/node';
 
 const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
@@ -40,3 +40,20 @@ describe('glass selector', () => {
     expect(r.issues[0]!.code).toBe('GLASS_WIDTH_OUT_OF_RANGE');
   });
 });
+
+describe('Win Glass glazing surcharges (p.9, €/m² of the opening)', () => {
+  it('8 mm milk: 57 €/m², 3 × 2 m = 342 €; float is included in the price', () => {
+    expect(glazingSurcharge('milk', 8, 3000, 2000, cat).amount).toBe(342);
+    expect(glazingSurcharge('float', 8, 3000, 2000, cat).amount).toBe(0);
+  });
+  it('10 mm black: 125 €/m², 4 × 2.5 m = 1 250 €; 10 mm mirror 285 €/m²', () => {
+    expect(glazingSurcharge('black', 10, 4000, 2500, cat).amount).toBe(1250);
+    expect(glazingSurcharge('mirror', 10, 1000, 1000, cat).rate).toBe(285);
+  });
+  it('mirror exists only in 10 mm: 8 mm is blocked, the thickness is picked automatically', () => {
+    expect(glazingSurcharge('mirror', 8, 1000, 1000, cat).issues[0]!.code).toBe('GLAZING_NOT_IN_THICKNESS');
+    expect(thicknessFor('mirror', cat)).toBe(10);
+    expect(thicknessFor('brown', cat)).toBe(8);
+  });
+});
+
