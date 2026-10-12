@@ -1,0 +1,760 @@
+{
+ "source": "Sun Winner colour palette 07.2026.\n\nSources (transcribed, see URLs):\n- colour numbers, names, RAL and surcharge group: Sun Winner coating surcharge calculator 07.2026\n  https://sunwinner.pl/wp-content/uploads/2026/07/Sun-Winner-kalkulator-doplat-lakierowania-EN-EUR-072026.html\n- on-screen hex and wood-like names (01D–45D): Sun Winner online configurator https://konfiguratory.online/sunwinner/\nWood-like colours ship as textures there; the hex below is an approximate base tone per species (ASSUMPTION, visual only).",
+ "colors": [
+  {
+   "id": "01",
+   "name": "Cream white structured",
+   "nameRu": "Кремово-белый структурный",
+   "ral": "RAL 9010",
+   "group": "standard",
+   "hex": "#F4F4F0",
+   "finish": "structured"
+  },
+  {
+   "id": "04",
+   "name": "Anthracite structured ST-1",
+   "nameRu": "Антрацит структурный ST-1",
+   "ral": "RAL 7016",
+   "group": "standard",
+   "hex": "#383E42",
+   "finish": "structured"
+  },
+  {
+   "id": "02",
+   "name": "Brown metallic structured",
+   "nameRu": "Коричневый металлик структурный",
+   "ral": "",
+   "group": "fine",
+   "hex": "#5E4637",
+   "finish": "metallic"
+  },
+  {
+   "id": "03",
+   "name": "Silver metallic structured",
+   "nameRu": "Серебро металлик структурный",
+   "ral": "RAL 9006",
+   "group": "fine",
+   "hex": "#B9BDC2",
+   "finish": "metallic"
+  },
+  {
+   "id": "05",
+   "name": "Anthracite metallic structured ST-2",
+   "nameRu": "Антрацит металлик структурный ST-2",
+   "ral": "",
+   "group": "fine",
+   "hex": "#4A4C52",
+   "finish": "metallic"
+  },
+  {
+   "id": "06",
+   "name": "Anthracite metallic structured ST-3",
+   "nameRu": "Антрацит металлик структурный ST-3",
+   "ral": "DB 703",
+   "group": "fine",
+   "hex": "#55585C",
+   "finish": "metallic"
+  },
+  {
+   "id": "07",
+   "name": "Black structured",
+   "nameRu": "Чёрный структурный",
+   "ral": "RAL 9005",
+   "group": "fine",
+   "hex": "#0A0A0A",
+   "finish": "structured"
+  },
+  {
+   "id": "32",
+   "name": "Grey-beige structured matt",
+   "nameRu": "Серо-бежевый структурный мат",
+   "ral": "RAL 7039",
+   "group": "fine",
+   "hex": "#8D8576",
+   "finish": "matt"
+  },
+  {
+   "id": "33",
+   "name": "Elegant grey structured matt",
+   "nameRu": "Элегантный серый структурный мат",
+   "ral": "RAL 7043",
+   "group": "fine",
+   "hex": "#4D555A",
+   "finish": "matt"
+  },
+  {
+   "id": "34",
+   "name": "Warm stone structured metallic",
+   "nameRu": "Тёплый камень структурный металлик",
+   "ral": "",
+   "group": "fine",
+   "hex": "#A59B8B",
+   "finish": "metallic"
+  },
+  {
+   "id": "35",
+   "name": "Brown mood structured metallic",
+   "nameRu": "Коричневый структурный металлик",
+   "ral": "",
+   "group": "fine",
+   "hex": "#6D5848",
+   "finish": "metallic"
+  },
+  {
+   "id": "08",
+   "name": "White matt",
+   "nameRu": "Белый мат",
+   "ral": "RAL 9016",
+   "group": "smooth",
+   "hex": "#F8F8F6",
+   "finish": "matt"
+  },
+  {
+   "id": "09",
+   "name": "Cream matt",
+   "nameRu": "Кремовый мат",
+   "ral": "RAL 1013",
+   "group": "smooth",
+   "hex": "#EDE5D3",
+   "finish": "matt"
+  },
+  {
+   "id": "10",
+   "name": "Brown matt",
+   "nameRu": "Коричневый мат",
+   "ral": "RAL 8019",
+   "group": "smooth",
+   "hex": "#4A3B33",
+   "finish": "matt"
+  },
+  {
+   "id": "11",
+   "name": "Silver matt",
+   "nameRu": "Серебристый мат",
+   "ral": "RAL 9006",
+   "group": "smooth",
+   "hex": "#BCC0C4",
+   "finish": "matt"
+  },
+  {
+   "id": "12",
+   "name": "Anthracite matt",
+   "nameRu": "Антрацит мат",
+   "ral": "RAL 7016",
+   "group": "smooth",
+   "hex": "#383E42",
+   "finish": "matt"
+  },
+  {
+   "id": "13",
+   "name": "Black matt",
+   "nameRu": "Чёрный мат",
+   "ral": "RAL 9005",
+   "group": "smooth",
+   "hex": "#111111",
+   "finish": "matt"
+  },
+  {
+   "id": "36",
+   "name": "Classic silver metallic",
+   "nameRu": "Классическое серебро металлик",
+   "ral": "RAL 9022",
+   "group": "smooth",
+   "hex": "#AEB2B6",
+   "finish": "metallic"
+  },
+  {
+   "id": "37",
+   "name": "Champagne gold metallic",
+   "nameRu": "Шампань металлик",
+   "ral": "ANODA C31",
+   "group": "smooth",
+   "hex": "#C6B28B",
+   "finish": "metallic"
+  },
+  {
+   "id": "14",
+   "name": "Beige matt",
+   "nameRu": "Бежевый мат",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#D4C2A8",
+   "finish": "matt"
+  },
+  {
+   "id": "15",
+   "name": "Champagne gold matt",
+   "nameRu": "Шампань мат",
+   "ral": "ANODA C31",
+   "group": "exclusive",
+   "hex": "#C9B58D",
+   "finish": "matt"
+  },
+  {
+   "id": "16",
+   "name": "Gold matt",
+   "nameRu": "Золотой мат",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#B99642",
+   "finish": "matt"
+  },
+  {
+   "id": "17",
+   "name": "Gold olive matt",
+   "nameRu": "Золотая олива мат",
+   "ral": "ANODA C32",
+   "group": "exclusive",
+   "hex": "#94835C",
+   "finish": "matt"
+  },
+  {
+   "id": "18",
+   "name": "Copper bronze matt",
+   "nameRu": "Медная бронза мат",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#875A43",
+   "finish": "matt"
+  },
+  {
+   "id": "19",
+   "name": "Dark bronze matt",
+   "nameRu": "Тёмная бронза мат",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#4F3B32",
+   "finish": "matt"
+  },
+  {
+   "id": "20",
+   "name": "Silver matt (exclusive)",
+   "nameRu": "Серебро мат (эксклюзив)",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#BFC3C6",
+   "finish": "matt"
+  },
+  {
+   "id": "21",
+   "name": "Pearl white structured",
+   "nameRu": "Жемчужно-белый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#F4F2EC",
+   "finish": "structured"
+  },
+  {
+   "id": "22",
+   "name": "Cool white structured",
+   "nameRu": "Холодный белый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#F5F7F8",
+   "finish": "structured"
+  },
+  {
+   "id": "23",
+   "name": "Light beige structured",
+   "nameRu": "Светло-бежевый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#DCCFB7",
+   "finish": "structured"
+  },
+  {
+   "id": "24",
+   "name": "Beige structured",
+   "nameRu": "Бежевый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#C7B08D",
+   "finish": "structured"
+  },
+  {
+   "id": "25",
+   "name": "Blue-grey structured",
+   "nameRu": "Сине-серый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#7D8893",
+   "finish": "structured"
+  },
+  {
+   "id": "26",
+   "name": "Olive structured",
+   "nameRu": "Оливковый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#6F6A4A",
+   "finish": "structured"
+  },
+  {
+   "id": "27",
+   "name": "Grey-brown structured",
+   "nameRu": "Серо-коричневый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#76695C",
+   "finish": "structured"
+  },
+  {
+   "id": "28",
+   "name": "Brown structured",
+   "nameRu": "Коричневый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#6A4F3D",
+   "finish": "structured"
+  },
+  {
+   "id": "29",
+   "name": "Dark brown structured",
+   "nameRu": "Тёмно-коричневый структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#49372D",
+   "finish": "structured"
+  },
+  {
+   "id": "30",
+   "name": "Navy anthracite structured",
+   "nameRu": "Антрацит-индиго структурный",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#343B47",
+   "finish": "structured"
+  },
+  {
+   "id": "31",
+   "name": "Black structured (exclusive)",
+   "nameRu": "Чёрный структурный (эксклюзив)",
+   "ral": "",
+   "group": "exclusive",
+   "hex": "#111111",
+   "finish": "structured"
+  },
+  {
+   "id": "01D",
+   "name": "Natural OAK 2DS",
+   "nameRu": "Natural OAK 2DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#B8925F",
+   "finish": "wood"
+  },
+  {
+   "id": "02D",
+   "name": "Pine 8DS",
+   "nameRu": "Pine 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#D2B07A",
+   "finish": "wood"
+  },
+  {
+   "id": "03D",
+   "name": "Winschester 8DS",
+   "nameRu": "Winschester 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#8A6A47",
+   "finish": "wood"
+  },
+  {
+   "id": "04D",
+   "name": "Wenge 3DS",
+   "nameRu": "Wenge 3DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#3B2A20",
+   "finish": "wood"
+  },
+  {
+   "id": "05D",
+   "name": "Travertine 4DS",
+   "nameRu": "Travertine 4DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#CDBFA4",
+   "finish": "wood"
+  },
+  {
+   "id": "06D",
+   "name": "Acacia 4DS",
+   "nameRu": "Acacia 4DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A86B3C",
+   "finish": "wood"
+  },
+  {
+   "id": "07D",
+   "name": "Rovere 316 4DS",
+   "nameRu": "Rovere 316 4DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#9C7A55",
+   "finish": "wood"
+  },
+  {
+   "id": "08D",
+   "name": "Birch 4DS",
+   "nameRu": "Birch 4DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#DCC8A2",
+   "finish": "wood"
+  },
+  {
+   "id": "09D",
+   "name": "Natural OAK 14DS",
+   "nameRu": "Natural OAK 14DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#B8925F",
+   "finish": "wood"
+  },
+  {
+   "id": "10D",
+   "name": "Pine 4DS",
+   "nameRu": "Pine 4DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#D2B07A",
+   "finish": "wood"
+  },
+  {
+   "id": "11D",
+   "name": "Rovere 316 8DS",
+   "nameRu": "Rovere 316 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#9C7A55",
+   "finish": "wood"
+  },
+  {
+   "id": "12D",
+   "name": "Douglas 8DS",
+   "nameRu": "Douglas 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#B07A48",
+   "finish": "wood"
+  },
+  {
+   "id": "13D",
+   "name": "Acacia 8DS",
+   "nameRu": "Acacia 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A86B3C",
+   "finish": "wood"
+  },
+  {
+   "id": "14D",
+   "name": "Rovere P 8DS",
+   "nameRu": "Rovere P 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#9C7A55",
+   "finish": "wood"
+  },
+  {
+   "id": "15D",
+   "name": "Noce 301 8DS",
+   "nameRu": "Noce 301 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "16D",
+   "name": "Golden OAK 8DS",
+   "nameRu": "Golden OAK 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A8743A",
+   "finish": "wood"
+  },
+  {
+   "id": "17D",
+   "name": "Ciliegio 8DS",
+   "nameRu": "Ciliegio 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#8E4B2F",
+   "finish": "wood"
+  },
+  {
+   "id": "18D",
+   "name": "Apple 8DS",
+   "nameRu": "Apple 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#B9814E",
+   "finish": "wood"
+  },
+  {
+   "id": "19D",
+   "name": "Rovere P 7DS",
+   "nameRu": "Rovere P 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#9C7A55",
+   "finish": "wood"
+  },
+  {
+   "id": "20D",
+   "name": "Douglas 7DS",
+   "nameRu": "Douglas 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#B07A48",
+   "finish": "wood"
+  },
+  {
+   "id": "21D",
+   "name": "Amber OAK 9DS",
+   "nameRu": "Amber OAK 9DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#9A6430",
+   "finish": "wood"
+  },
+  {
+   "id": "22D",
+   "name": "Nut 9DS",
+   "nameRu": "Nut 9DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "23D",
+   "name": "Noce T 8DS",
+   "nameRu": "Noce T 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "24D",
+   "name": "Oak 8DS",
+   "nameRu": "Oak 8DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A9834F",
+   "finish": "wood"
+  },
+  {
+   "id": "25D",
+   "name": "Acacia 7DS",
+   "nameRu": "Acacia 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A86B3C",
+   "finish": "wood"
+  },
+  {
+   "id": "26D",
+   "name": "Rovere F 7DS",
+   "nameRu": "Rovere F 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#9C7A55",
+   "finish": "wood"
+  },
+  {
+   "id": "27D",
+   "name": "Nut 7DS",
+   "nameRu": "Nut 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "28D",
+   "name": "Golden OAK 7DS",
+   "nameRu": "Golden OAK 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A8743A",
+   "finish": "wood"
+  },
+  {
+   "id": "29D",
+   "name": "Ciliegio 7DS",
+   "nameRu": "Ciliegio 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#8E4B2F",
+   "finish": "wood"
+  },
+  {
+   "id": "30D",
+   "name": "Oak 7DS",
+   "nameRu": "Oak 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A9834F",
+   "finish": "wood"
+  },
+  {
+   "id": "31D",
+   "name": "Apple 7DS",
+   "nameRu": "Apple 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#B9814E",
+   "finish": "wood"
+  },
+  {
+   "id": "32D",
+   "name": "Noce B 7DS",
+   "nameRu": "Noce B 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "33D",
+   "name": "Nut 3DS",
+   "nameRu": "Nut 3DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "34D",
+   "name": "Noce T 7DS",
+   "nameRu": "Noce T 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "35D",
+   "name": "Radica 7DS",
+   "nameRu": "Radica 7DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#7A4A2E",
+   "finish": "wood"
+  },
+  {
+   "id": "36D",
+   "name": "Swamp OAK 3DS",
+   "nameRu": "Swamp OAK 3DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#5B4636",
+   "finish": "wood"
+  },
+  {
+   "id": "37D",
+   "name": "African WENGE 3DS",
+   "nameRu": "African WENGE 3DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#33241B",
+   "finish": "wood"
+  },
+  {
+   "id": "38D",
+   "name": "Ciliegio 5DS",
+   "nameRu": "Ciliegio 5DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#8E4B2F",
+   "finish": "wood"
+  },
+  {
+   "id": "39D",
+   "name": "Acacia 5DS",
+   "nameRu": "Acacia 5DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#A86B3C",
+   "finish": "wood"
+  },
+  {
+   "id": "40D",
+   "name": "Rovere F 5DS",
+   "nameRu": "Rovere F 5DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#9C7A55",
+   "finish": "wood"
+  },
+  {
+   "id": "41D",
+   "name": "Noce T 5DS",
+   "nameRu": "Noce T 5DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "42D",
+   "name": "Locarno APPLE 5DS",
+   "nameRu": "Locarno APPLE 5DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#B9814E",
+   "finish": "wood"
+  },
+  {
+   "id": "43D",
+   "name": "Noce T 6DS",
+   "nameRu": "Noce T 6DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6B4A33",
+   "finish": "wood"
+  },
+  {
+   "id": "44D",
+   "name": "Mahogany 6DS",
+   "nameRu": "Mahogany 6DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#6A2E22",
+   "finish": "wood"
+  },
+  {
+   "id": "45D",
+   "name": "African WENGE 6DS",
+   "nameRu": "African WENGE 6DS",
+   "ral": "",
+   "group": "wood",
+   "hex": "#33241B",
+   "finish": "wood"
+  }
+ ],
+ "customGroups": [
+  {
+   "group": "ralAny",
+   "name": "Any RAL (matt, semi-matt, gloss)",
+   "nameRu": "Любой RAL (мат, полумат, глянец)"
+  },
+  {
+   "group": "ralMetallic",
+   "name": "Any metallic RAL colour",
+   "nameRu": "Любой RAL металлик"
+  },
+  {
+   "group": "structural",
+   "name": "Any structural colour (non-metallic)",
+   "nameRu": "Любой структурный цвет"
+  }
+ ]
+}
