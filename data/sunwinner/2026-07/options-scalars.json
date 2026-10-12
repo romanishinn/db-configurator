@@ -1,0 +1,327 @@
+{
+ "s400.sensors": {
+  "values": [
+   102,
+   180,
+   60,
+   240,
+   342,
+   325
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 19
+  }
+ },
+ "s500.sensors": {
+  "values": [
+   102,
+   180,
+   60,
+   240,
+   342,
+   325
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 44
+  }
+ },
+ "s400.smart": {
+  "values": [
+   330,
+   510
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 20
+  }
+ },
+ "s500.smart": {
+  "values": [
+   330,
+   510
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 45
+  }
+ },
+ "s400.postHeight": {
+  "values": [
+   110,
+   159
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 17
+  }
+ },
+ "s500.postHeight": {
+  "values": [
+   155
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 42
+  }
+ },
+ "s400.intermediatePost": {
+  "values": [
+   390,
+   500,
+   549
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 17
+  }
+ },
+ "s500.intermediatePost": {
+  "values": [
+   478,
+   633
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 42
+  }
+ },
+ "s400.internalBox": {
+  "values": [
+   450
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 17
+  }
+ },
+ "s500.internalBox": {
+  "values": [
+   450
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 42
+  }
+ },
+ "s400.sideDrainage": {
+  "values": [
+   270
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 18
+  }
+ },
+ "s500.sideDrainage": {
+  "values": [
+   270
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 43
+  }
+ },
+ "s400.audio": {
+  "values": [
+   985
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 26
+  }
+ },
+ "s500.audio": {
+  "values": [
+   985
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 54
+  }
+ },
+ "s500.sockets": {
+  "values": [
+   245,
+   260
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 54
+  }
+ },
+ "s500.socketConnection": {
+  "values": [
+   90
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 54
+  }
+ },
+ "heaters": {
+  "s400": {
+   "sets": [
+    {
+     "id": "m1.single",
+     "name": "Модель 1, 1500 Вт (~10 м²): 1 обогреватель + 1 блок",
+     "heaters": 1,
+     "watts": 1500,
+     "channels": 1,
+     "price": 770,
+     "needsInternalBox": false
+    },
+    {
+     "id": "m1.double",
+     "name": "Модель 1, 4000 Вт (~25 м²): двойной + 2 блока",
+     "heaters": 1,
+     "watts": 4000,
+     "channels": 1,
+     "price": 1510,
+     "needsInternalBox": false
+    },
+    {
+     "id": "m1.pair",
+     "name": "Модель 1, 1500 Вт: 2 обогревателя + 1 блок (вкл. вместе)",
+     "heaters": 2,
+     "watts": 1500,
+     "channels": 1,
+     "price": 1360,
+     "needsInternalBox": false
+    },
+    {
+     "id": "m2.single",
+     "name": "Модель 2, 1500 Вт, регулировка мощности: 1 + 1 блок",
+     "heaters": 1,
+     "watts": 1500,
+     "channels": 1,
+     "price": 840,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m2.double",
+     "name": "Модель 2, 4000 Вт, регулировка мощности: двойной + 2 блока",
+     "heaters": 1,
+     "watts": 4000,
+     "channels": 1,
+     "price": 1680,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m2.pair",
+     "name": "Модель 2, 1500 Вт: 2 обогревателя + 2 блока",
+     "heaters": 2,
+     "watts": 1500,
+     "channels": 1,
+     "price": 1680,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m3.single",
+     "name": "Модель 3, 2000 Вт (~20 м²), керамическое стекло: 1 + 1 блок",
+     "heaters": 1,
+     "watts": 2000,
+     "channels": 1,
+     "price": 1140,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m3.pair",
+     "name": "Модель 3, 2000 Вт: 2 обогревателя + 2 блока (раздельные каналы)",
+     "heaters": 2,
+     "watts": 2000,
+     "channels": 2,
+     "price": 2280,
+     "needsInternalBox": true
+    }
+   ],
+   "preparation": 90,
+   "source": {
+    "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+    "page": 25
+   }
+  },
+  "s500": {
+   "sets": [
+    {
+     "id": "m1.single",
+     "name": "Модель 1, 1500 Вт (~10 м²): 1 обогреватель + 1 блок",
+     "heaters": 1,
+     "watts": 1500,
+     "channels": 1,
+     "price": 770,
+     "needsInternalBox": false
+    },
+    {
+     "id": "m1.double",
+     "name": "Модель 1, 4000 Вт (~25 м²): двойной + 2 блока",
+     "heaters": 1,
+     "watts": 4000,
+     "channels": 1,
+     "price": 1510,
+     "needsInternalBox": false
+    },
+    {
+     "id": "m1.pair",
+     "name": "Модель 1, 1500 Вт: 2 обогревателя + 1 блок (вкл. вместе)",
+     "heaters": 2,
+     "watts": 1500,
+     "channels": 1,
+     "price": 1360,
+     "needsInternalBox": false
+    },
+    {
+     "id": "m2.single",
+     "name": "Модель 2, 1500 Вт, регулировка мощности: 1 + 1 блок",
+     "heaters": 1,
+     "watts": 1500,
+     "channels": 1,
+     "price": 840,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m2.double",
+     "name": "Модель 2, 4000 Вт, регулировка мощности: двойной + 2 блока",
+     "heaters": 1,
+     "watts": 4000,
+     "channels": 1,
+     "price": 1680,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m2.pair",
+     "name": "Модель 2, 1500 Вт: 2 обогревателя + 2 блока",
+     "heaters": 2,
+     "watts": 1500,
+     "channels": 1,
+     "price": 1680,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m3.single",
+     "name": "Модель 3, 2000 Вт (~20 м²), керамическое стекло: 1 + 1 блок",
+     "heaters": 1,
+     "watts": 2000,
+     "channels": 1,
+     "price": 1140,
+     "needsInternalBox": true
+    },
+    {
+     "id": "m3.pair",
+     "name": "Модель 3, 2000 Вт: 2 обогревателя + 2 блока (раздельные каналы)",
+     "heaters": 2,
+     "watts": 2000,
+     "channels": 2,
+     "price": 2280,
+     "needsInternalBox": true
+    }
+   ],
+   "preparation": 90,
+   "source": {
+    "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+    "page": 53
+   }
+  }
+ }
+}

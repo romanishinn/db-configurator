@@ -132,4 +132,6 @@ export interface Catalog {
   fabrics?: FabricData;
   screenMotors?: ScreenMotorData;
   screenControls?: { items: ControlItem[] };
+  /** scalar option prices (options-scalars.json) */
+  optionScalars?: Record<string, unknown>;
 }

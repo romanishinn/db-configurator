@@ -7,4 +7,5 @@ export * from './glass';
 export * from './colors';
 export * from './screen';
 export * from './sides';
+export * from './options';
 export { round2 } from './money';

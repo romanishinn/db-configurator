@@ -11,5 +11,5 @@ export function loadCatalog(dir: string, version: string) {
     .map((f) => JSON.parse(readFileSync(join(tablesDir, f), 'utf8')) as GridTable);
   const json = <T>(name: string) => (existsSync(join(dir, name)) ? (JSON.parse(readFileSync(join(dir, name), 'utf8')) as T) : undefined);
   const coating = json<CoatingData>('coating.json')!;
-  return buildCatalog(version, tables, coating, { colors: json<ColorData>('colors.json'), fabrics: json<FabricData>('fabrics.json'), screenMotors: json<ScreenMotorData>('screen-motors.json'), screenControls: json<{ items: ControlItem[] }>('screen-controls.json') });
+  return buildCatalog(version, tables, coating, { colors: json<ColorData>('colors.json'), fabrics: json<FabricData>('fabrics.json'), screenMotors: json<ScreenMotorData>('screen-motors.json'), screenControls: json<{ items: ControlItem[] }>('screen-controls.json'), optionScalars: json<Record<string, unknown>>('options-scalars.json') });
 }
