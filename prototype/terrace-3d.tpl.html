@@ -73,13 +73,15 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 .muted { color: var(--muted); }
 .clr { display: grid; gap: 6px; }
 .ct { border: 1px solid var(--line); border-radius: 6px; }
-.ct > .hd { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left; font: inherit; color: inherit; background: transparent; border: 0; padding: 8px 10px; cursor: pointer; border-radius: 6px; }
+.ct > .hd { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto 16px; gap: 10px; align-items: center; width: 100%; text-align: left; font: inherit; color: inherit; background: transparent; border: 0; padding: 8px 10px; cursor: pointer; border-radius: 6px; }
 .ct > .hd:hover { background: var(--accent-soft); }
 .ct[data-open="true"] { border-color: var(--accent); }
 .ct .nm { display: block; font-weight: 600; font-size: 13px; }
 .ct .vl { display: block; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ct .pc { font-family: var(--f-mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
 .ct .pc.paid { color: var(--warn); }
+.ct .chev { width: 16px; height: 16px; color: var(--muted); transition: transform 0.15s ease; }
+.ct[data-open="true"] .chev { transform: rotate(180deg); color: var(--accent); }
 .chip30 { width: 30px; height: 30px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.18); }
 .body { padding: 2px 10px 10px; }
 .link { display: flex; gap: 6px; align-items: center; font-size: 12.5px; margin: 2px 0 8px; cursor: pointer; }
@@ -620,7 +622,7 @@ function renderColors() {
       val = (t.link && !state.colors[t.k] ? 'как конструкция · ' : '') + (c.custom ? c.nameRu : `${c.id} ${c.nameRu}${c.ral ? ' · ' + c.ral : ''}`);
       pc = t.k === 'construction' ? pctText(t) : t.k === 'roof' ? '' : pctText(t);
     }
-    return `<div class="ct" data-open="${open}"><button type="button" class="hd" data-t="${t.k}" aria-expanded="${open}">${chip}<span><span class="nm">${t.name}</span><span class="vl" title="${val}">${val}</span></span>${pc}</button>${open ? `<div class="body">${pickerBody(t)}</div>` : ''}</div>`;
+    return `<div class="ct" data-open="${open}"><button type="button" class="hd" data-t="${t.k}" aria-expanded="${open}">${chip}<span><span class="nm">${t.name}</span><span class="vl" title="${val}">${val}</span></span>${pc || '<span></span>'}<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>${open ? `<div class="body">${pickerBody(t)}</div>` : ''}</div>`;
   }).join('');
 }
 function pickerBody(t) {
