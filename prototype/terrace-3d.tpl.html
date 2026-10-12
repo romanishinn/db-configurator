@@ -161,10 +161,11 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 .custom label { display: flex; gap: 6px; align-items: center; font-size: 12.5px; }
 .custom input[type=text] { font: inherit; font-size: 12.5px; width: 100%; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); }
 .body select { font: inherit; font-size: 13px; width: 100%; padding: 5px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); }
+/*FUNNEL_CSS*/
 </style>
 
 <div class="app">
-  <aside class="panel" aria-labelledby="t1">
+  <aside class="panel pro-only" aria-labelledby="t1">
     <h1 id="t1">Терраса</h1>
     <p class="sub">Введите размер — система соберёт его из одной или нескольких пергол и сравнит варианты по цене.</p>
     <div class="seg" role="group" aria-label="Установка">
@@ -196,18 +197,18 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
       <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
-      <button type="button" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен">⇄</button>
-      <span id="louv-info" class="muted"></span>
-      <div id="clr-pop" class="clr-pop" hidden></div>
+      <button type="button" class="pro-only" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен">⇄</button>
+      <span id="louv-info" class="muted pro-only"></span>
+      <div id="clr-pop" class="clr-pop pro-only" hidden></div>
       <span style="flex:1"></span>
-      <button type="button" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span></button>
+      <button type="button" class="pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span></button>
       <button type="button" id="v-iso">3D</button>
       <button type="button" id="v-front">Спереди</button>
       <button type="button" id="v-top">Сверху</button>
     </div>
   </section>
 
-  <aside class="panel est" aria-labelledby="t3">
+  <aside class="panel est pro-only" aria-labelledby="t3">
     <h1 id="t3">Расчёт</h1>
     <p class="sub">Каталожные цены производителя 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass, ZIP-скрины, Win Verto и Win Panels — по прайсу.</p>
     <div class="proj" id="ctl-proj" hidden>
@@ -224,7 +225,9 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     <table class="lines"><tbody id="lines"></tbody></table>
     <div id="issues"></div>
   </aside>
+  <aside class="panel funnel cust-only" id="funnel" aria-live="polite"></aside>
 </div>
+<div id="quote" aria-hidden="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -671,9 +674,9 @@ function renderLabels(opt) {
   const { W, D } = bounds(), y = H + 0.25;
   const add = (text, p, cls = '') => { const el = document.createElement('div'); el.className = 'dim ' + cls; el.textContent = text; labels.appendChild(el); labelDefs.push({ el, p: new THREE.Vector3(...p) }); };
   // dimension labels on the ground in front of / beside the pergola, so they never cover the roof
-  add(mm(Math.round(W * 1000)) + ' мм', [W / 2, 0.02, D + 1.15], 'total');
+  add(mm(Math.round(W * 1000)) + ' ' + (window.MM_UNIT || 'мм'), [W / 2, 0.02, D + 1.15], 'total');
   if (opt.cols > 1) opt.modules.filter((m) => m.row === 0).forEach((m) => add(mm(m.width), [(m.x + m.width / 2) / 1000, 0.02, D + 0.3]));
-  add(mm(opt.depth) + ' мм', [-0.7, 0.02, D / 2], 'total');
+  add(mm(opt.depth) + ' ' + (window.MM_UNIT || 'мм'), [-0.7, 0.02, D / 2], 'total');
 }
 const v = new THREE.Vector3();
 function placeLabels() {
@@ -703,7 +706,9 @@ renderer.domElement.addEventListener('pointermove', (e) => {
 });
 renderer.domElement.addEventListener('pointerup', (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
-  const hit = pick(e); closeMenu(); if (hit) openMenu(hit.userData.opening, e);
+  const hit = pick(e); closeMenu();
+  if (hit && typeof window.onOpeningPick === 'function' && window.onOpeningPick(hit.userData.opening)) return; // customer mode handles it
+  if (hit) openMenu(hit.userData.opening, e);
 });
 function pick(e) {
   const r = renderer.domElement.getBoundingClientRect();
@@ -891,6 +896,9 @@ function renderEstimate() {
   if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; return; }
   const ROLE = { single: 'отдельная пергола', base: 'базовый модуль', add: 'доп. модуль' };
   const MOUNT = { wall: '', free: ' · отдельностоящая', roof: '' };
+  const Q = []; // structured lines: the customer view and the printable quote are built from these
+  for (const m of o.modules) Q.push({ k: 'module', fam: o.family, w: m.width, d: m.depth, a: m.price });
+  { const rest = o.total - o.modules.reduce((s, m) => s + m.price, 0); if (Math.abs(rest) > 0.5) Q.push({ k: 'moduleExtra', a: rest }); }
   let html = o.modules.map((m, i) => `<tr><td>${FAM[o.family]}, ${mm(m.width)} × ${mm(m.depth)}<span class="s">${ROLE[m.role]}${state.mount === 'wall' ? MOUNT[m.mount] : ''} · ламели ${mm(m.louvreLength)} мм, вылет ${mm(m.projection)} · таблица ${m.table}</span></td><td class="a">${eur(m.price)}</td></tr>`).join('');
   const fills = Object.entries(state.fills).filter(([, f]) => f !== 'none');
   const ops = openings(o, SPEC[o.family === 'S400' ? 'S400' : 'S500']);
@@ -924,7 +932,9 @@ function renderEstimate() {
       if (l0.code === 'OPT_INTERMEDIATE_POST') det = `${p.qty} × ${eur(p.unit)} · высота до ${mm(p.height)} мм`;
       if (l0.code === 'OPT_SOCKET') det = `${p.kind === 'usb' ? 'USB' : '230 В'} × ${p.qty}`;
       html += `<tr><td>${OPN[l0.code]}<span class="s">${det}${l0.source ? ' · стр. ' + l0.source.page : ''}</span></td><td class="a">${eur(amt)}</td></tr>`;
+      Q.push({ k: 'opt', code: l0.code, p, n, a: amt });
     }
+    for (const i of op.issues.filter((i) => i.severity === 'block')) Q.push({ k: 'optBlocked', code: i.code });
     for (const i of op.issues.filter((i) => i.severity === 'block')) html += `<tr><td colspan="2"><div class="note">${i.code === 'OPT_POST_TOO_HIGH' ? 'Стойки выше 3 200 мм не производятся.' : i.code === 'OPT_VERTICAL_LAMPS_MODEL' ? 'Вертикальные светильники — только для S500.' : 'Опция не производится для модуля ' + (i.params.module || '')}</div></td></tr>`;
     if (op.issues.some((i) => i.code === 'OPT_CROWN_SPOTS_RECESS')) html += `<tr><td colspan="2"><div class="note">Споты в раме нельзя ставить над проёмом, где между стойками стоит Win Glass или ZIP. Уточнить расстановку — споты только на свободных сторонах.</div></td></tr>`;
     const vp = op.issues.find((i) => i.code === 'OPT_VERTICAL_LAMPS_POSTS');
@@ -942,10 +952,12 @@ function renderEstimate() {
         const gz = glazingFor(op);
         sides += g.best.price + gz.amount; coat.push({ system: 'GLASS', base: g.best.price, color: e.slide, label: 'glass' });
         const gt = glassType(op);
+        Q.push({ k: 'glass', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000), panels: g.best.panels, opening: g.best.opening, glazing: gt, thick: DBCore.thicknessFor(gt, cat), glazingBlocked: gz.issues.length > 0, a: g.best.price + gz.amount });
         html += `<tr><td>Win Glass, ${op.label.toLowerCase()}<span class="s">${gt === 'float' ? '' : GLAZING[gt].name + ' · '}${DBCore.thicknessFor(gt, cat)} мм, ${g.best.panels} ${plural(g.best.panels, 'полотно', 'полотна', 'полотен')}, ${g.best.tracks} направляющих, открывание ${GLASS_OPEN[g.best.opening]} · стр. ${g.best.source.page}</span></td><td class="a">${eur(g.best.price)}</td></tr>`;
         if (gz.amount) html += `<tr><td>Остекление ${GLAZING[gt].name}<span class="s">${eur(gz.rate)}/м² × ${gz.m2.toFixed(2).replace('.', ',')} м² · стр. ${gz.source.page}</span></td><td class="a">${eur(gz.amount)}</td></tr>`;
         for (const i of gz.issues) html += `<tr><td colspan="2"><div class="note">${GLAZING[gt].name} не делается в ${DBCore.thicknessFor(gt, cat)} мм — выберите другое стекло.</div></td></tr>`;
       } else {
+        Q.push({ k: 'unbuilt', fill: 'glass', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000) });
         html += `<tr><td>Win Glass, ${op.label.toLowerCase()}<span class="s">${size} · не производится${g.issues[0] && g.issues[0].params.maxHeight ? `, макс. высота ${mm(g.issues[0].params.maxHeight)} мм` : ''}</span></td><td class="a muted">—</td></tr>`;
       }
     } else if (f === 'zip') {
@@ -959,19 +971,21 @@ function renderEstimate() {
         const b = r.best, fab = b.lines.find((l) => l.code === 'FABRIC_SURCHARGE');
         zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0, mode, sys: zipReqs.at(-1).sys, fid: req.fabric });
         sides += b.gridPrice + b.motor.price; coat.push({ system: 'SCREEN_ZIP', base: b.gridPrice, color: e.zip, label: 'zip' });
+        Q.push({ k: 'zip', id: op.id, w: req.width, h: req.height, fabric: req.fabric, mode, a: b.gridPrice + b.motor.price });
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${SCREEN_NAME[b.system]}, по прайсу ${mm(b.billed.width)} × ${mm(b.billed.height)} — ${eur(b.gridPrice)} · стр. ${cat.tables[b.system].source.page}<br>мотор ${motorName(b.motor)}, ${MOTOR_CTL[b.motor.control]}, ${b.motor.nm} Нм (нужно ${b.torqueNm} Нм) — ${eur(b.motor.price)}${b.motor.source ? ' · стр. ' + b.motor.source.page : ''}</span></td><td class="a">${eur(b.gridPrice + b.motor.price)}</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       } else {
-        unbuilt.push(op);
+        unbuilt.push(op); Q.push({ k: 'unbuilt', fill: 'zip', id: op.id, w: req.width, h: req.height });
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${screenWhyNot(r, req, mode)}</span></td><td class="a muted">—</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       }
     } else if (f === 'verto') {
       const v = DBCore.priceVerto(Math.round(op.len * 1000), Math.round(op.h * 1000), cat);
       if (v.ok) {
         sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.slide, label: 'verto' });
+        Q.push({ k: 'verto', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000), profiles: v.profiles, a: v.total });
         const ex = v.lines.find((l) => l.code === 'VERTO_ADDITIONAL');
         html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${size} · ${v.profiles} ${plural(v.profiles, 'профиль', 'профиля', 'профилей')} 35 × 60 мм, шаг ${v.spacing} мм, по прайсу высота ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
       } else {
-        unbuilt.push(op);
+        unbuilt.push(op); Q.push({ k: 'unbuilt', fill: 'verto', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000) });
         html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${size} · высота вне прайса (${mm(v.issues[0].params.min)}–${mm(v.issues[0].params.max)} мм)</span></td><td class="a muted">—</td></tr>`;
       }
     } else if (f === 'panels') {
@@ -979,15 +993,16 @@ function renderEstimate() {
       const pr = DBCore.pricePanels({ width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), slats: po.slats, mount: po.mount, wood }, cat);
       if (pr.ok) {
         sides += pr.total; panelsCustomColour = panelsCustomColour || (!wood && DBCore.colorGroup(e.slide, cat) !== 'standard');
+        Q.push({ k: 'panels', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000), panels: pr.panels, slats: po.slats, a: pr.total });
         const pl = pr.lines[0], rl = pr.lines.find((l) => l.code === 'PANELS_RAIL'), cl = pr.lines.find((l) => l.code === 'PANELS_CONNECTORS');
         html += `<tr><td>Win Panels, ${op.label.toLowerCase()}<span class="s">${size} · ${pr.panels} ${plural(pr.panels, 'панель', 'панели', 'панелей')} ${mm(pr.panelWidth)} мм, ламели ${po.slats === 'fixed' ? 'неподвижные' : 'поворотные'}${wood ? ', под дерево' : ''}, по прайсу ${mm(pl.params.width)} × ${mm(pl.params.height)} — ${pr.panels} × ${eur(pl.params.unit)}${rl ? `<br>раздвижная система: ${rl.params.tracks} ${plural(rl.params.tracks, 'направляющая', 'направляющие', 'направляющих')}, ${mm(rl.params.width)} мм — ${eur(rl.amount)}` : ''}${cl ? `<br>соединители рамы: ${cl.params.qty} × ${eur(cl.params.unit)}` : ''} · стр. ${pl.source.page}</span></td><td class="a">${eur(pr.total)}</td></tr>`;
       } else {
-        unbuilt.push(op);
+        unbuilt.push(op); Q.push({ k: 'unbuilt', fill: 'panels', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000) });
         const i = pr.issues[0];
         html += `<tr><td>Win Panels, ${op.label.toLowerCase()}<span class="s">${size} · ${i.code === 'PANELS_SIZE_OUT_OF_RANGE' ? `${i.params.axis === 'width' ? 'ширина' : 'высота'} вне прайса (${mm(i.params.min)}–${mm(i.params.max)} мм)` : i.code === 'PANELS_RAIL_OUT_OF_RANGE' ? `направляющие до ${mm(i.params.max)} мм` : 'слишком много панелей для 3 направляющих'}</span></td><td class="a muted">—</td></tr>`;
       }
     } else {
-      pending.push(f);
+      pending.push(f); Q.push({ k: 'pending', fill: f, id: op.id });
       html += `<tr><td>${FILL[f]}, ${op.label.toLowerCase()}<span class="s">${size}</span></td><td class="a muted">позже</td></tr>`;
     }
   }
@@ -1005,6 +1020,7 @@ function renderEstimate() {
   if (nCorner) {
     const cp = DBCore.vertoCornerPrice(cat), amt = nCorner * cp;
     sides += amt; coat.push({ system: 'VERTO', base: amt, color: e.slide, label: 'verto' });
+    Q.push({ k: 'corner', n: nCorner, a: amt });
     html += `<tr><td>Win Verto — угловое соединение${nCorner > 1 ? ' × ' + nCorner : ''}<span class="s">угол из двух профилей, ${eur(cp)} за угол · стр. ${cat.tables['verto.profiles'].source.page}</span></td><td class="a">${eur(amt)}</td></tr>`;
   }
   // colour surcharges (engine: per item %, logistics minimum per colour batch)
@@ -1015,9 +1031,12 @@ function renderEstimate() {
   const SYSN = { S400: 'перголы', S500: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'Win Verto' };
   for (const [k, v] of Object.entries(bySys)) {
     const what = k === 'GLASS' || k === 'VERTO' ? cname(e.slide) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
+    Q.push({ k: 'coat', sys: k, pct: v.pct, a: v.sum });
     html += `<tr><td>Покраска ${SYSN[k]}, ${v.pct} %<span class="s">${what} · от каталожной цены${v.n > 1 ? ', ' + v.n + ' поз.' : ''}</span></td><td class="a">${eur(v.sum)}</td></tr>`;
   }
+  if (panelsCustomColour) Q.push({ k: 'tbd', what: 'panelsColour' });
   if (panelsCustomColour) { html += `<tr><td>Покраска Win Panels в цвет ${cname(e.slide)}<span class="s">в прайсе Win Panels есть цены для стандартных цветов и «под дерево»; % для других цветов уточнить у производителя</span></td><td class="a muted">уточнить</td></tr>`; }
+  for (const l of cs.lines.filter((l) => l.code === 'COATING_MINIMUM')) Q.push({ k: 'coatMin', a: l.amount });
   for (const l of cs.lines.filter((l) => l.code === 'COATING_MINIMUM')) html += `<tr><td>Минимальная партия покраски<span class="s">${cname(l.params.color)}: окраска ${eur(l.params.coated)}, минимум ${eur(l.params.minimum)}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
   sides += cs.total;
   // one row per fabric used by the ZIP screens (each screen can have its own)
@@ -1025,13 +1044,14 @@ function renderEstimate() {
     const f = cat.fabrics.collections.find((x) => x.id === fid), grp = zipOps.filter((z) => z.fid === fid);
     if (!f || !f.eurPerM2) continue;
     const fs = grp.reduce((a, z) => a + z.fabric, 0), m2 = grp.reduce((a, z) => a + z.m2, 0);
-    sides += fs;
+    sides += fs; Q.push({ k: 'fabric', name: f.name, of: f.openness, n: grp.length, a: fs });
     html += `<tr><td>Ткань ${f.name} (OF ${f.openness} %), ${f.eurPerM2} €/м²<span class="s">${grp.length} скр., ${m2.toFixed(2).replace('.', ',')} м² · стр. ${cat.fabrics.source.pages[0]}</span></td><td class="a">${eur(fs)}</td></tr>`;
   }
   {
     const systems = new Set(zipOps.map((z) => z.sys)).size;
     const cl = DBCore.screenControlLines(zipOps.map((z) => z.mode), { brand: state.brand, remote: state.remote || undefined, wind: state.wind, windSensors: systems, customControls: state.custom.controls, pergolaChannels: o.modules.length + op.channels }, cat);
     const CL = { CONTROL_REMOTE: 'пульт на проект', CONTROL_SMART: 'один блок на проект', CONTROL_PERGOLA_UNIT: 'скрины с пульта перголы', CONTROL_WIND_SENSOR: 'один на систему перголы со скринами', CONTROL_SWITCH: 'по одному на скрин' };
+    for (const l of cl.lines) if (l.amount) Q.push({ k: 'control', code: l.code, name: l.params.name || '', qty: l.params.qty || 1, a: l.amount });
     for (const l of cl.lines.filter((l) => l.code === 'CONTROL_CUSTOM')) { html += `<tr><td>Управление — свой вариант<span class="s">пульты, датчики и т. п. на проект</span></td><td class="a">${eur(l.amount)}</td></tr>`; }
     cl.lines = cl.lines.filter((l) => l.code !== 'CONTROL_CUSTOM');
     for (const l of cl.lines) {
@@ -1059,6 +1079,8 @@ function renderEstimate() {
   }
   html += `<tr class="t"><td>Итого по каталогу${pending.length || unbuilt.length || panelsCustomColour ? `<span class="s">без ${[pending.length ? 'позиций «позже»' : '', unbuilt.length ? 'позиций «—»' : '', panelsCustomColour ? 'покраски «уточнить»' : ''].filter(Boolean).join(', ')}</span>` : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
   tb.innerHTML = html;
+  state.q = { lines: Q, total: o.total + sides, incomplete: pending.length + unbuilt.length + (panelsCustomColour ? 1 : 0), issues: o.issues.map((i) => i.code) };
+  if (typeof window.onEstimate === 'function') window.onEstimate();
   const anyRemote = zipOps.some((z) => z.mode === 'remote' || z.mode === 'solar');
   $('ctl-proj').hidden = !zipReqs.length;
   // brand comparison for the screens of this project: motors + control devices
@@ -1349,3 +1371,4 @@ recompute(true);
 state.fills = { ...EXAMPLE_FILLS }; syncGlassControls(); build(); renderEstimate();
 $('hint').textContent = 'Пример: заполнения уже расставлены. Нажмите на проём между стойками, чтобы поменять.';
 </script>
+<script>/*FUNNEL_JS*/</script>

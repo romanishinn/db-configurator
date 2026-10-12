@@ -10,6 +10,7 @@ d = 'data/catalog/2026-07'
 cat = {'tables': [json.load(open(f)) for f in sorted(glob.glob(d + '/tables/*.json'))], 'coating': json.load(open(d + '/coating.json')), 'colors': json.load(open(d + '/colors.json')), 'fabrics': json.load(open(d + '/fabrics.json')), 'screenMotors': json.load(open(d + '/screen-motors.json')), 'screenControls': json.load(open(d + '/screen-controls.json')), 'optionScalars': json.load(open(d + '/options-scalars.json')), 'glazing': json.load(open(d + '/glass-glazing.json'))}
 t = open('prototype/terrace-3d.tpl.html').read()
 t = t.replace('/*CORE*/', open('prototype/dist/dbcore.js').read()).replace('/*CATALOG*/', 'const CATALOG_JSON=' + json.dumps(cat, separators=(',', ':')) + ';')
+t = t.replace('/*FUNNEL_CSS*/', open('prototype/funnel.css').read()).replace('/*FUNNEL_JS*/', open('prototype/funnel.js').read())
 open('prototype/dist/terrace-3d.html', 'w').write(t)
 PY
 echo "built prototype/dist/terrace-3d.html"
