@@ -64,7 +64,9 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .toolbar #gopen-l:not([hidden]) { flex-basis: 100%; }
 .toolbar input[type=range] { width: 110px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 4px; padding: 4px 9px; cursor: pointer; }
-.toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; } /* own full-width row: its text length no longer moves the buttons */
+.toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; }
+/* phone: all five buttons on one row (no spacer), sliders stay in their own rows */
+@media (max-width: 760px) { .toolbar { gap: 8px; } .toolbar button { padding: 4px 6px; } .toolbar span[style] { display: none; } } /* own full-width row: its text length no longer moves the buttons */
 .toolbar #louv-info b { color: #1d6b3a; font-weight: 600; }
 .toolbar button[aria-pressed="true"] { background: #1c2226; color: #fff; border-color: #1c2226; }
 .hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
@@ -1320,6 +1322,6 @@ $('clr').addEventListener('change', (e) => {
 resize();
 applyColors(); renderColors();
 recompute(true);
-state.fills = { ...EXAMPLE_FILLS }; build(); renderEstimate();
+state.fills = { ...EXAMPLE_FILLS }; syncGlassControls(); build(); renderEstimate();
 $('hint').textContent = 'Пример: заполнения уже расставлены. Нажмите на проём между стойками, чтобы поменять.';
 </script>
