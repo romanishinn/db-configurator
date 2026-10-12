@@ -65,6 +65,13 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .toolbar input[type=range] { width: 110px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 4px; padding: 4px 9px; cursor: pointer; }
 .toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; }
+.toolbar .dots i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 1px; vertical-align: middle; }
+.toolbar .dots i:nth-child(1) { background: #8c9196; } .toolbar .dots i:nth-child(2) { background: #2c6a86; } .toolbar .dots i:nth-child(3) { background: #d9b26b; }
+.toolbar #clr-pop { flex: 0 0 100%; order: 6; border: 1px solid #c5ccd1; border-radius: 6px; padding: 8px 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 4px 14px; }
+.toolbar #clr-pop[hidden] { display: none; }
+.toolbar #clr-pop .row { display: flex; align-items: center; gap: 8px; background: none; border: 0; padding: 4px 0; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.toolbar #clr-pop .sw { display: inline-block; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #9aa4ab; flex: none; }
+.toolbar #clr-pop .nm { color: #5b666e; }
 /* phone: all five buttons on one row (no spacer), sliders stay in their own rows */
 @media (max-width: 760px) { .toolbar { gap: 8px; } .toolbar button { padding: 4px 6px; } .toolbar span[style] { display: none; } } /* own full-width row: its text length no longer moves the buttons */
 .toolbar #louv-info b { color: #1d6b3a; font-weight: 600; }
@@ -191,7 +198,9 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
       <button type="button" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен">⇄</button>
       <span id="louv-info" class="muted"></span>
+      <div id="clr-pop" class="clr-pop" hidden></div>
       <span style="flex:1"></span>
+      <button type="button" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span></button>
       <button type="button" id="v-iso">3D</button>
       <button type="button" id="v-front">Спереди</button>
       <button type="button" id="v-top">Сверху</button>
@@ -1185,6 +1194,8 @@ function renderLouvreInfo(cur, alt) {
 }
 $('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 'perpendicular' : 'parallel'; e.currentTarget.setAttribute('aria-pressed', state.louvres === 'perpendicular'); recompute(true); };
 $('evening').onclick = (e) => { state.evening = !state.evening; e.target.setAttribute('aria-pressed', state.evening); applyAnim(); };
+$('clr-btn').onclick = () => { const pop = $('clr-pop'); pop.hidden = !pop.hidden; $('clr-btn').setAttribute('aria-pressed', String(!pop.hidden)); renderColorPop(); };
+$('clr-pop').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; state.colorOpen = b.dataset.pick; renderColors(); $('clr').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 $('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top');
 /* ---------- colour picker ---------- */
 const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); const f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map((v) => f(v).toString(16).padStart(2, '0')).join(''); };
@@ -1244,7 +1255,17 @@ function fabricLook() {
   M.fabric.transparent = of !== 0; M.fabric.depthWrite = of === 0; M.fabric.needsUpdate = true;
 }
 function fabricOf() { return cat.fabrics.collections.find((f) => f.id === state.colors.fabric); }
+/** Colour popover: the colour of every construction part, current choice per part */
+function renderColorPop() {
+  const box = $('clr-pop'); if (!box || box.hidden) return;
+  const e = colorsEff();
+  const rows = TARGETS.filter((t) => t.k !== 'fabric' && t.k !== 'glass').map((t) => { const c = colorOf(e[t.k]); return { k: t.k, name: t.name, sw: c.hex, val: c.nameRu }; });
+  rows.push({ k: 'glass', name: 'Стекло Win Glass', sw: '#' + GLAZING[state.glass.type].col.toString(16).padStart(6, '0'), val: GLS[state.glass.type] });
+  rows.push({ k: 'fabric', name: 'Ткань ZIP', sw: state.colors.tone, val: fabricOf().name });
+  box.innerHTML = rows.map((r) => `<button type="button" class="row" data-pick="${r.k}"><span class="sw" style="background:${r.sw}"></span><span><span class="nm">${r.name}</span> · ${r.val}</span></button>`).join('');
+}
 function renderColors() {
+  renderColorPop();
   const e = colorsEff(), box = $('clr');
   box.innerHTML = TARGETS.map((t) => {
     const open = state.colorOpen === t.k;
