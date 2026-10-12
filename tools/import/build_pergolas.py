@@ -10,7 +10,7 @@ import pdfplumber
 from grid_chars import lines_of, PRICE
 
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
-OUT = 'data/sunwinner/2026-07/tables'
+OUT = 'data/catalog/2026-07/tables'
 S400 = 'WIN-CLIMATIC-S400-EN-07.2026.pdf'
 S500 = 'WIN-CLIMATIC-S500-EN-07.2026.pdf'
 

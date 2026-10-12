@@ -248,7 +248,7 @@ function buildWithBase(spec: FamilySpec, req: TerraceRequest, louvres: LouvreDir
       const role: PlacedModule['role'] = !spec.modular ? 'single' : vi === 0 && ui === baseCol ? 'base' : 'add';
       const col = par ? ui : vi, row = par ? vi : ui;
       // ASSUMPTION: S400 pergolas away from the wall are priced as freestanding; S500 additional modules
-      // keep the mount's tables (catalogue shows such grids, prices per module) — to confirm with Sun Winner.
+      // keep the mount's tables (catalogue shows such grids, prices per module) — to confirm with the manufacturer.
       const mount: Mount = req.mount === 'wall' && row > 0 && !spec.modular ? 'free' : req.mount;
       const p = priceModule(spec, mount, role, louvreLength, projection, cat);
       if (p.issues.some((i) => i.severity === 'block')) allIssues.push(...p.issues.filter((i) => i.severity === 'block'));

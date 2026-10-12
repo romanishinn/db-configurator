@@ -18,7 +18,7 @@ export interface ScreenRequest {
   /** fabric collection id (fabrics.json), default Soltis 7635 (in price) */
   fabric?: string;
   control?: MotorControl;
-  /** motor brand, default WIN CONTROL (Sun Winner); 'custom' = own motor at an own price */
+  /** motor brand, default WIN CONTROL (the manufacturer's own brand); 'custom' = own motor at an own price */
   brand?: MotorBrand;
   customMotor?: { name?: string; price?: number };
   /** omit to take the cheapest system that builds this size with this fabric */

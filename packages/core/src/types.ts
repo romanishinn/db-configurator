@@ -57,7 +57,7 @@ export interface CoatingData {
   minimumCharge: { default: number; wood: number; flashingAndAngles: number };
 }
 
-/** Powder-coating colour of the Sun Winner palette (colors.json). */
+/** Powder-coating colour of the manufacturer palette (colors.json). */
 export interface ColorEntry {
   id: string;
   name: string;

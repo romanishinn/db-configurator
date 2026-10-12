@@ -10,7 +10,7 @@ import pdfplumber
 
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
 FILE = 'WIN-SCREEN-EN-07.2026-.pdf'
-OUT = 'data/sunwinner/2026-07/fabrics.json'
+OUT = 'data/catalog/2026-07/fabrics.json'
 ROW = re.compile(r'(SERGE FERRARI|COPACO)\s+([A-Z0-9 ]+?)\s+\(OF (\d+)%\)\s+(IN PRICE|\d+\s?€)')
 
 

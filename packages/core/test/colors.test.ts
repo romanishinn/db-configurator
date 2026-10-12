@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { coatingPercentFor, coatingSurcharges, colorGroup, compose, fabricSurcharge, pricePergola, selectGlass } from '../src';
 import { loadCatalog } from '../src/node';
 
-const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
+const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
 
 describe('palette (coating calculator 07.2026)', () => {
   it('37 palette colours + 45 wood-like, groups as in the calculator', () => {

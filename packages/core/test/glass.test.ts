@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { selectGlass, lookupGrid } from '../src';
 import { loadCatalog } from '../src/node';
 
-const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
+const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
 const cell = (id: string, w: number, h: number) => lookupGrid(cat.tables[id]!, w, h).price;
 
 describe('Win Glass golden cells (read from the catalogue pages)', () => {

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { compose } from '../src';
 import { loadCatalog } from '../src/node';
 
-const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
+const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
 
 describe('composer: terrace 12000 × 2000, wall-mounted', () => {
   const { options } = compose({ mount: 'wall', width: 12000, depth: 2000 }, cat);

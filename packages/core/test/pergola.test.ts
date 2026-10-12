@@ -3,9 +3,9 @@ import { join } from 'node:path';
 import { pricePergola, coatingPercent } from '../src';
 import { loadCatalog } from '../src/node';
 
-const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
+const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
 
-// Golden values read directly from the Sun Winner 07.2026 catalogue pages.
+// Golden values read directly from the 07.2026 catalogue pages.
 describe('golden prices from the catalogue', () => {
   const cases: [string, Parameters<typeof pricePergola>[0], number][] = [
     ['S400 wall 3000×4000 (p.13)', { model: 'S400', mount: 'wall', width: 3000, projection: 4000 }, 8625],

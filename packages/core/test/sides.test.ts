@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { coatingSurcharges, lookupGrid, pricePanels, priceVerto } from '../src';
 import { loadCatalog } from '../src/node';
 
-const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
+const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
 
 describe('Win Verto (catalogue p.6)', () => {
   it('grid values from the page: 5 profiles × 1950 = 317 €, 40 × 3950 = 4 965 €, 21 × 2950 = 1 792 €', () => {

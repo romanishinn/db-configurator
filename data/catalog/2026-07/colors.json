@@ -1,5 +1,5 @@
 {
- "source": "Sun Winner colour palette 07.2026.\n\nSources (transcribed, see URLs):\n- colour numbers, names, RAL and surcharge group: Sun Winner coating surcharge calculator 07.2026\n  https://sunwinner.pl/wp-content/uploads/2026/07/Sun-Winner-kalkulator-doplat-lakierowania-EN-EUR-072026.html\n- on-screen hex and wood-like names (01D–45D): Sun Winner online configurator https://konfiguratory.online/sunwinner/\nWood-like colours ship as textures there; the hex below is an approximate base tone per species (ASSUMPTION, visual only).",
+ "source": "Colour palette 07.2026.\n\nSources (transcribed): the manufacturer's coating surcharge calculator 07.2026 (colour numbers, names, RAL and\nsurcharge group) and the manufacturer's online configurator (on-screen hex and wood-like names 01D–45D).\nSource links are kept in the private project notes, not in this public repository.\nWood-like colours ship as textures there; the hex below is an approximate base tone per species (ASSUMPTION, visual only).",
  "colors": [
   {
    "id": "01",

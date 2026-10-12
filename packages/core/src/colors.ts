@@ -47,7 +47,7 @@ export interface CoatingItem {
 
 /**
  * Coating surcharges for a whole project.
- * ASSUMPTION (open question to Sun Winner): the percentage applies to the catalogue price of each item;
+ * ASSUMPTION (open question to the manufacturer): the percentage applies to the catalogue price of each item;
  * the logistics minimum (70 €, wood-like 140 €, catalogue notes on every price list) is checked per colour,
  * i.e. per powder-coating batch over the whole project, and topped up when the batch is below it.
  */
@@ -58,13 +58,13 @@ export function coatingSurcharges(items: CoatingItem[], cat: Catalog): { lines: 
     const pct = coatingPercentFor(it.system, it.color, it.roofColor, cat);
     if (pct <= 0) continue;
     const amount = round2((it.base * pct) / 100);
-    lines.push({ code: 'COATING_SURCHARGE', params: { system: it.system, color: it.color, roof: it.roofColor ?? it.color, percent: pct, base: it.base, label: it.label ?? '' }, amount, source: { url: 'sunwinner coating calculator 07.2026' } });
+    lines.push({ code: 'COATING_SURCHARGE', params: { system: it.system, color: it.color, roof: it.roofColor ?? it.color, percent: pct, base: it.base, label: it.label ?? '' }, amount, source: { url: 'manufacturer coating calculator 07.2026' } });
     // a pergola with two colours is two batches; book the amount to the construction colour (roof share unknown)
     batch.set(it.color, (batch.get(it.color) ?? 0) + amount);
   }
   for (const [color, sum] of batch) {
     const min = colorGroup(color, cat) === 'wood' ? cat.coating.minimumCharge.wood : cat.coating.minimumCharge.default;
-    if (sum < min) lines.push({ code: 'COATING_MINIMUM', params: { color, minimum: min, coated: round2(sum) }, amount: round2(min - sum), source: { url: 'sunwinner price lists 07.2026, powder coating logistics minimum' } });
+    if (sum < min) lines.push({ code: 'COATING_MINIMUM', params: { color, minimum: min, coated: round2(sum) }, amount: round2(min - sum), source: { url: 'price lists 07.2026, powder coating logistics minimum' } });
   }
   return { lines, total: round2(lines.reduce((s, l) => s + l.amount, 0)) };
 }

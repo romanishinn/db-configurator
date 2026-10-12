@@ -16,7 +16,7 @@ from screen_grid import blocks_from_words, layout_rows, verify_order, torque_zon
 
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
 FILE = 'WIN-SCREEN-EN-07.2026-.pdf'
-OUT = 'data/sunwinner/2026-07'
+OUT = 'data/catalog/2026-07'
 TABLES = {
     'zip110.adaptive': (21, 'Win Screen ZIP 110 — адаптивный короб'),
     'zip130.adaptive': (24, 'Win Screen ZIP 130 — адаптивный короб'),

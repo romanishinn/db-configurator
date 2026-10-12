@@ -10,7 +10,7 @@ from grid_pos import verify_glass_page
 
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
 FILE = 'WIN-GLASS-NEW-2025-EN-07.2026.pdf'
-OUT = 'data/sunwinner/2026-07/tables'
+OUT = 'data/catalog/2026-07/tables'
 VERIFIED_BY_IMAGE = {(23, 1500), (24, 1500)}  # (page, height) rows read only by the ruling-lines parser
 
 # (thickness mm, tracks, opening, panels): pages (continuation pages extend the width range)

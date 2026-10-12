@@ -12,7 +12,7 @@ import pdfplumber
 
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
 VERTO, PANELS = 'WIN-VERTO-EN-07.2026.pdf', 'WIN-PANELS-EN-07.2026.pdf'
-OUT = 'data/sunwinner/2026-07/tables'
+OUT = 'data/catalog/2026-07/tables'
 EUR = re.compile(r'(?<!\d)(\d(?: \d{3})|\d{2,3}) ?€')
 
 

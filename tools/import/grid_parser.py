@@ -1,4 +1,4 @@
-"""Parse 2D price grids (pergola-style) from Sun Winner catalog pages.
+"""Parse 2D price grids (pergola-style) from the catalogue pages.
 
 Row format in `pdftotext -layout` output:
     <row key mm> [<louver count>] <price €> <price €> ...

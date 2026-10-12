@@ -12,7 +12,7 @@ import pdfplumber
 
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
 S400, S500 = 'WIN-CLIMATIC-S400-EN-07.2026.pdf', 'WIN-CLIMATIC-S500-EN-07.2026.pdf'
-OUT = 'data/sunwinner/2026-07'
+OUT = 'data/catalog/2026-07'
 EUR = re.compile(r'(?<!\d)(\d(?: \d{3})|\d{2,3}) ?€')
 LED_COLOURS = ['white', 'rgb', 'rgbw']
 GUTTER_TYPES = ['bwhite', 'brgb', 'brgbw', 'cwhitergb']

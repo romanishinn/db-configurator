@@ -1,6 +1,6 @@
 """Screen motors and control accessories of three brands (Win Screen catalogue 07.2026) + TELECO units.
 
-Brands (page logos checked on the page images): WIN CONTROL — Sun Winner's own (pp.47–49), YOODA (pp.51–53,
+Brands (page logos checked on the page images): WIN CONTROL — the manufacturer's own brand (pp.47–49), YOODA (pp.51–53,
 divider page 50), Somfy (pp.54–58, logo on p.54).
 
 Motors: reading A = bordered tables (pdfplumber, lines strategy; left table NM/RPM/PRICE/MODEL/INDEX, right table
@@ -19,7 +19,7 @@ import pdfplumber
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
 SCREEN = 'WIN-SCREEN-EN-07.2026-.pdf'
 S400, S500 = 'WIN-CLIMATIC-S400-EN-07.2026.pdf', 'WIN-CLIMATIC-S500-EN-07.2026.pdf'
-OUT = 'data/sunwinner/2026-07'
+OUT = 'data/catalog/2026-07'
 BRAND_OF_PAGE = {47: 'wincontrol', 48: 'wincontrol', 49: 'wincontrol', 51: 'yooda', 52: 'yooda', 53: 'yooda',
                  54: 'somfy', 55: 'somfy', 56: 'somfy', 57: 'somfy', 58: 'somfy'}
 MOTOR_PAGES = {51: 'wired', 52: 'radio', 54: 'wired', 56: 'radio', 57: 'solar'}

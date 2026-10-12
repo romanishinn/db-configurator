@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { brandModes, coatingSurcharges, lookupGrid, pickMotor, priceScreenIn, screenControlLines, selectScreen } from '../src';
 import { loadCatalog } from '../src/node';
 
-const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
+const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
 const cell = (t: string, w: number, h: number) => lookupGrid(cat.tables[t]!, w, h).price;
 
 describe('Win Screen ZIP grids (values read from the catalogue pages)', () => {

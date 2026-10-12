@@ -88,12 +88,12 @@ export function pricePergola(c: PergolaConfig, cat: Catalog): PriceResult {
   if (c.color) {
     const pct = coatingPercent(c.model, c.color, cat);
     if (pct > 0) {
-      // ASSUMPTION (open question to Sun Winner): the percentage applies to the base grid price only.
+      // ASSUMPTION (open question to the manufacturer): the percentage applies to the base grid price only.
       lines.push({
         code: 'COATING_SURCHARGE',
         params: { percent: pct, construction: c.color.construction, roof: c.color.roof },
         amount: round2((g.price * pct) / 100),
-        source: { url: 'sunwinner coating calculator 07.2026' },
+        source: { url: 'manufacturer coating calculator 07.2026' },
       });
     }
   }

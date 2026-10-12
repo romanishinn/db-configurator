@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { compose, priceOptions } from '../src';
 import { loadCatalog } from '../src/node';
 
-const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
+const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
 const opts = compose({ mount: 'wall', width: 12000, depth: 2000 }, cat).options;
 const s400 = opts.find((o) => o.family === 'S400')!; // 3 × 4000 × 2000, 6 posts
 const s500 = opts.find((o) => o.family === 'S500')!; // 3 modules, 4 posts

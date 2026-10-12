@@ -135,7 +135,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     <div class="popts" id="popts"></div>
     <h2>Цвета</h2>
     <div class="clr" id="clr"></div>
-    <p class="sub" style="margin-top:8px">Цвета на экране приблизительные, «под дерево» — условная текстура. Точный оттенок — по образцу Sun Winner.</p>
+    <p class="sub" style="margin-top:8px">Цвета на экране приблизительные, «под дерево» — условная текстура. Точный оттенок — по образцу производителя.</p>
   </aside>
 
   <section class="stage" aria-label="3D-вид">
@@ -148,7 +148,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
-      <button type="button" id="louv-dir" aria-pressed="false" title="Ламели вдоль стены или от стены вперёд — та же таблица цен Sun Winner">⇄ Повернуть ламели</button>
+      <button type="button" id="louv-dir" aria-pressed="false" title="Ламели вдоль стены или от стены вперёд — та же таблица цен">⇄ Повернуть ламели</button>
       <span id="louv-info" class="muted"></span>
       <span style="flex:1"></span>
       <button type="button" id="v-iso">3D</button>
@@ -159,7 +159,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 
   <aside class="panel est" aria-labelledby="t3">
     <h1 id="t3">Расчёт</h1>
-    <p class="sub">Каталожные цены Sun Winner 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass, ZIP-скрины, Win Verto и Win Panels — по прайсу.</p>
+    <p class="sub">Каталожные цены производителя 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass, ZIP-скрины, Win Verto и Win Panels — по прайсу.</p>
     <div class="proj" id="ctl-proj" hidden>
       <label>Моторы <select id="brand"></select></label>
       <p class="sub" id="brand-hint" style="margin:0"></p>
@@ -181,7 +181,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 <script>/*CORE*/</script>
 <script>/*CATALOG*/</script>
 <script>
-const cat = DBCore.buildCatalog('sunwinner-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating, { colors: CATALOG_JSON.colors, fabrics: CATALOG_JSON.fabrics, screenMotors: CATALOG_JSON.screenMotors, screenControls: CATALOG_JSON.screenControls, optionScalars: CATALOG_JSON.optionScalars });
+const cat = DBCore.buildCatalog('catalog-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating, { colors: CATALOG_JSON.colors, fabrics: CATALOG_JSON.fabrics, screenMotors: CATALOG_JSON.screenMotors, screenControls: CATALOG_JSON.screenControls, optionScalars: CATALOG_JSON.optionScalars });
 const $ = (id) => document.getElementById(id);
 const eur = (n) => n.toLocaleString('de-AT', { maximumFractionDigits: 0 }) + ' €';
 const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
@@ -203,7 +203,7 @@ const TARGETS = [
   { k: 'zip', name: 'ZIP-скрины', hint: 'кассета, направляющие, нижний профиль', sys: 'SCREEN_ZIP', link: 'как конструкция' },
   { k: 'fabric', name: 'Ткань ZIP', hint: 'коллекция и оттенок' },
 ];
-// Visual fabric tones only: the fabric colour codes come from the Sun Winner fabric cards (not in the price list).
+// Visual fabric tones only: the fabric colour codes come from the manufacturer's fabric cards (not in the price list).
 const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит'], ['#7f8387', 'серый'], ['#b9b6ae', 'светло-серый'], ['#e7e4dc', 'белый'], ['#c8b799', 'бежевый'], ['#8b7d6c', 'тауп'], ['#1e1f21', 'чёрный']];
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
@@ -213,7 +213,7 @@ const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, therm
 const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
 
 /* ---------- side pricing ---------- */
-// ASSUMPTION: opening = module width minus one post (130 mm), height = 2800 mm minus the crown. Sun Winner to confirm clearances.
+// ASSUMPTION: opening = module width minus one post (130 mm), height = 2800 mm minus the crown. Clearances to confirm with the manufacturer.
 function glassFor(o) {
   return DBCore.selectGlass({ width: Math.round(o.len * 1000), height: Math.round(o.h * 1000), thickness: 8 }, cat);
 }
@@ -587,7 +587,7 @@ const CTL = {
 };
 const BRANDS = {
   yooda: { name: 'YOODA', tier: 'эконом', hint: 'радио 1-way 433 МГц, механические концевики (каталог стр. 99–106)' },
-  wincontrol: { name: 'WIN CONTROL', tier: 'стандарт Sun Winner', hint: 'радио 2-way 868 МГц + ZigBee, электронные концевики, распознавание препятствий (стр. 93–98)' },
+  wincontrol: { name: 'WIN CONTROL', tier: 'стандарт', hint: 'радио 2-way 868 МГц + ZigBee, электронные концевики, распознавание препятствий (стр. 93–98)' },
   somfy: { name: 'Somfy', tier: 'премиум', hint: 'io 2-way 868 МГц, электронные концевики (стр. 107–116)' },
   custom: { name: 'Свой вариант', tier: 'своя цена', hint: 'свой мотор и управление по своей цене; нужный момент мотора показан у каждого скрина' },
 };
@@ -733,7 +733,7 @@ function renderEstimate() {
     const what = k === 'GLASS' || k === 'VERTO' ? cname(e.slide) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
     html += `<tr><td>Покраска ${SYSN[k]}, ${v.pct} %<span class="s">${what} · от каталожной цены${v.n > 1 ? ', ' + v.n + ' поз.' : ''}</span></td><td class="a">${eur(v.sum)}</td></tr>`;
   }
-  if (panelsCustomColour) { html += `<tr><td>Покраска Win Panels в цвет ${cname(e.slide)}<span class="s">в прайсе Win Panels есть цены для стандартных цветов и «под дерево»; % для других цветов уточнить у Sun Winner</span></td><td class="a muted">уточнить</td></tr>`; }
+  if (panelsCustomColour) { html += `<tr><td>Покраска Win Panels в цвет ${cname(e.slide)}<span class="s">в прайсе Win Panels есть цены для стандартных цветов и «под дерево»; % для других цветов уточнить у производителя</span></td><td class="a muted">уточнить</td></tr>`; }
   for (const l of cs.lines.filter((l) => l.code === 'COATING_MINIMUM')) html += `<tr><td>Минимальная партия покраски<span class="s">${cname(l.params.color)}: окраска ${eur(l.params.coated)}, минимум ${eur(l.params.minimum)}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
   sides += cs.total;
   if (zipOps.length) {
@@ -798,7 +798,7 @@ function renderEstimate() {
   $('wind').closest('label').hidden = state.brand === 'custom';
   const nSys = new Set(zipOps.map((z) => z.sys)).size;
   $('wind-t').innerHTML = `Датчик ветра — 1 на систему${nSys > 1 ? ` (${nSys} шт.)` : ''} <span class="muted">— без него гарантия на ткань не действует</span>`;
-  const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Размер подогнан под шаг ламелей (S400 — 200 мм).', S400_FREE_ROWS: 'Задний ряд S400 крепится к стене, передний — отдельностоящие перголы (4 стойки).', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у Sun Winner.' };
+  const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Размер подогнан под шаг ламелей (S400 — 200 мм).', S400_FREE_ROWS: 'Задний ряд S400 крепится к стене, передний — отдельностоящие перголы (4 стойки).', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у производителя.' };
   $('issues').innerHTML = o.issues.map((i) => `<div class="note">${ISS[i.code] || i.code}${i.params && i.params.built ? ` Строим ${mm(i.params.built)} мм вместо ${mm(i.params.requested)} мм.` : ''}</div>`).join('');
 }
 
@@ -949,12 +949,12 @@ function pickerBody(t) {
   if (t.k === 'fabric') {
     return `<label class="l" for="fab">Коллекция ткани</label><select id="fab">${cat.fabrics.collections.map((f) => `<option value="${f.id}" ${f.id === state.colors.fabric ? 'selected' : ''}>${f.name} (${f.maker}, OF ${f.openness} %) — ${f.eurPerM2 ? '+' + f.eurPerM2 + ' €/м²' : 'в цене'}</option>`).join('')}</select>
       <div class="pg"><span>Оттенок для 3D</span></div><div class="pal">${FABRIC_TONES.map(([h, n]) => `<button type="button" class="sw" data-tone="${h}" style="background:${h}" title="${n}" aria-label="${n}" aria-pressed="${state.colors.tone === h}"></button>`).join('')}</div>
-      <p class="sub" style="margin-top:6px">Код цвета ткани — по карте коллекции Sun Winner; доплата = ширина × высота × €/м².</p>`;
+      <p class="sub" style="margin-top:6px">Код цвета ткани — по карте коллекции производителя; доплата = ширина × высота × €/м².</p>`;
   }
   const cur = state.colors[t.k], eff = colorsEff()[t.k];
   const rate = (g) => { if (!t.sys) { const r = cat.coating.rates[pergolaSys()][g]; return r[0] || r[1] ? `${r[0]} / ${r[1]} / ${r[2]} %` : 'в цене'; } const r = cat.coating.rates[t.sys][g]; return r ? `+${r} %` : 'в цене'; };
   let html = t.link ? `<label class="link"><input type="checkbox" data-link="${t.k}" ${cur ? '' : 'checked'}> ${t.link}</label>` : '';
-  if (!t.sys) html += `<p class="sub" style="margin:0 0 4px">Доплата Sun Winner: конструкция / ламели / вся пергола одним цветом.</p>`;
+  if (!t.sys) html += `<p class="sub" style="margin:0 0 4px">Доплата за покраску: конструкция / ламели / вся пергола одним цветом.</p>`;
   for (const [g, title] of GROUPS) {
     const list = PALETTE.filter((c) => c.group === g);
     html += `<div class="pg"><span>${title}</span><span>${rate(g)}</span></div><div class="pal">${list.map((c) => `<button type="button" class="sw" data-c="${c.id}" style="background:${swatchBg(c)}" title="${c.id} ${c.nameRu}${c.ral ? ' · ' + c.ral : ''}" aria-label="${c.id} ${c.nameRu}" aria-pressed="${eff === c.id}"></button>`).join('')}</div>`;

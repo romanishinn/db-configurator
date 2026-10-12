@@ -1,4 +1,4 @@
-"""Char-level grid parser for Sun Winner catalogs.
+"""Char-level grid parser for the catalogues.
 
 pdfplumber chars -> lines (clustered by y) -> text with spacing by x-gap -> regex rows.
 Handles letter-spaced and tightly packed tables where pdftotext word order breaks.

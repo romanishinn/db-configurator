@@ -1,9 +1,8 @@
-"""Sun Winner colour palette 07.2026.
+"""Colour palette 07.2026.
 
-Sources (transcribed, see URLs):
-- colour numbers, names, RAL and surcharge group: Sun Winner coating surcharge calculator 07.2026
-  https://sunwinner.pl/wp-content/uploads/2026/07/Sun-Winner-kalkulator-doplat-lakierowania-EN-EUR-072026.html
-- on-screen hex and wood-like names (01D–45D): Sun Winner online configurator https://konfiguratory.online/sunwinner/
+Sources (transcribed): the manufacturer's coating surcharge calculator 07.2026 (colour numbers, names, RAL and
+surcharge group) and the manufacturer's online configurator (on-screen hex and wood-like names 01D–45D).
+Source links are kept in the private project notes, not in this public repository.
 Wood-like colours ship as textures there; the hex below is an approximate base tone per species (ASSUMPTION, visual only).
 """
 import json
@@ -85,5 +84,5 @@ out['customGroups'] = [
  {'group': 'ralMetallic', 'name': 'Any metallic RAL colour', 'nameRu': 'Любой RAL металлик'},
  {'group': 'structural', 'name': 'Any structural colour (non-metallic)', 'nameRu': 'Любой структурный цвет'},
 ]
-json.dump(out, open('data/sunwinner/2026-07/colors.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+json.dump(out, open('data/catalog/2026-07/colors.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(len(out['colors']), 'colours;', sum(c['group'] == 'wood' for c in out['colors']), 'wood')
