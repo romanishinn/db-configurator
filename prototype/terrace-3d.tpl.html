@@ -547,7 +547,6 @@ function addFill(o, fill) {
     const dbl = gs.best && gs.best.opening === 'double';
     const side = dbl ? 0 : (glassCfg(o).side || state.glassSide) === 'left' ? -1 : 1;     // 0 = both sides
     const per = dbl ? Math.ceil(nP / 2) : nP;
-    const slotW = parkW / per;
     const track = gs.best && gs.best.tracks === 6 ? [-0.03, 0, 0.03] : [-0.025, 0.025];
     for (const sd of dbl ? [-1, 1] : [side]) {
       const z0 = sd * (o.len / 2 - parkW / 2);
@@ -560,7 +559,11 @@ function addFill(o, fill) {
       const dist = dbl ? (i < per ? i : nP - 1 - i) : (side > 0 ? nP - 1 - i : i);
       const sd = dbl ? (i < per ? -1 : 1) : side;
       const slot = dbl ? (i < per ? per - 1 - dist : dist - per) : dist;
-      const parkX = sd * (o.len / 2 - parkW / 2) + (slot - (per - 1) / 2) * slotW;
+      // ASSUMPTION: parked panels stay inside the catalogue parking width (p.15). The first panel parks at the frame edge,
+      // the others step inward by the spare width and each sits in its own depth plane, so no panel leaves the opening.
+      const step = per > 1 ? Math.max(0, (parkW - pw) / (per - 1)) : 0;
+      const parkX = sd * (o.len / 2 - pw / 2) - sd * slot * step;
+      const parkZ = (slot - (per - 1) / 2) * 0.03;
       const node = new THREE.Group(); node.position.set(x, 0, z); g.add(node);
       const pm = new THREE.Mesh(new THREE.BoxGeometry(pw - 0.012, o.h - 0.1, 0.01), mat);
       pm.position.set(0, o.h / 2, 0); pm.renderOrder = 1; node.add(pm);
@@ -572,7 +575,7 @@ function addFill(o, fill) {
       // direction chevron: one per moving panel, pointing where the panel will park
       const ch = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.16, 14), chevMat);
       ch.rotation.z = (parkX - x) >= 0 ? -Math.PI / 2 : Math.PI / 2; ch.position.set(0, o.h - 0.24, 0.05); ch.visible = Math.abs(parkX - x) > 0.01; node.add(ch);
-      animated.glass.push({ node, closedX: x, parkX, id: o.id });
+      animated.glass.push({ node, closedX: x, parkX, closedZ: z, parkZ, pw, id: o.id });
     }
   } else if (fill === 'verto') {
     // profiles 35 × 60 mm spread over the opening (count and gap from the engine)
@@ -616,6 +619,7 @@ function applyAnim() {
   for (const g of animated.glass || []) {
     const t = (state.glassCfg[g.id]?.open ?? state.glassOpen) / 100;
     g.node.position.x = g.closedX + (g.parkX - g.closedX) * t;
+    g.node.position.z = g.closedZ + (g.parkZ - g.closedZ) * t;
   }
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
   for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.2 : 0.4;
