@@ -149,7 +149,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 
   <aside class="panel est" aria-labelledby="t3">
     <h1 id="t3">Расчёт</h1>
-    <p class="sub">Каталожные цены Sun Winner 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass и ZIP-скрины уже по прайсу; Win Verto и Win Panels — следующим шагом.</p>
+    <p class="sub">Каталожные цены Sun Winner 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass, ZIP-скрины, Win Verto и Win Panels — по прайсу.</p>
     <div class="proj" id="ctl-proj" hidden>
       <label>Моторы <select id="brand"></select></label>
       <p class="sub" id="brand-hint" style="margin:0"></p>
@@ -198,7 +198,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
+const state = { panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
 
@@ -373,14 +373,23 @@ function addFill(o, fill) {
       p.position.set(-o.len / 2 + pw * (i + 0.5), o.h / 2, (i % 2 ? 0.02 : -0.02)); g.add(p);
     }
   } else if (fill === 'verto') {
-    const cnt = Math.floor(o.len / 0.09);
-    for (let i = 0; i < cnt; i++) box(0.035, o.h, 0.06, M.slide, -o.len / 2 + 0.045 + i * 0.09, o.h / 2, 0, g);
+    // profiles 35 × 60 mm spread over the opening (count and gap from the engine)
+    const v = DBCore.priceVerto(Math.round(o.len * 1000), Math.round(o.h * 1000), cat);
+    const cnt = v.profiles, step = cnt > 1 ? (o.len - 0.035) / (cnt - 1) : 0;
+    for (let i = 0; i < cnt; i++) box(0.035, o.h, 0.06, M.slide, -o.len / 2 + 0.0175 + i * step, o.h / 2, 0, g);
   } else if (fill === 'panels') {
-    const nP = Math.max(2, Math.ceil(o.len / 1.8)), pw = o.len / nP;
+    const po = panelOpt(o.id);
+    const pr = DBCore.pricePanels({ width: Math.round(o.len * 1000), height: Math.round(o.h * 1000), slats: po.slats, mount: po.mount }, cat);
+    const nP = Math.max(1, pr.panels), pw = (pr.panelWidth || o.len * 1000 / nP) / 1000;
+    const span = o.len - pw; // panel centres spread over the opening (sliding panels overlap)
+    if (po.mount === 'sliding') { box(o.len, 0.05, 0.12, M.slide, 0, o.h - 0.025, 0, g); box(o.len, 0.02, 0.12, M.slide, 0, 0.01, 0, g); }
+    const slatTilt = po.slats === 'rotating' ? THREE.MathUtils.degToRad(state.angle * 0.66) : 0.8;
     for (let i = 0; i < nP; i++) {
-      const px = -o.len / 2 + pw * (i + 0.5);
-      box(pw - 0.02, 0.04, 0.05, M.slide, px, 0.05, 0, g); box(pw - 0.02, 0.04, 0.05, M.slide, px, o.h - 0.05, 0, g);
-      for (let s = 0.12; s < o.h - 0.08; s += 0.08) { const sl = box(pw - 0.06, 0.012, 0.084, M.slide, px, s, 0, g); sl.rotation.x = 0.8; }
+      const px = -o.len / 2 + pw / 2 + (nP > 1 ? span * i / (nP - 1) : span / 2);
+      const pz = po.mount === 'sliding' ? (i % Math.max(1, pr.tracks || 1)) * 0.035 - 0.035 : 0;
+      box(pw - 0.01, 0.04, 0.05, M.slide, px, 0.07, pz, g); box(pw - 0.01, 0.04, 0.05, M.slide, px, o.h - 0.07, pz, g);
+      box(0.04, o.h - 0.1, 0.05, M.slide, px - pw / 2 + 0.02, o.h / 2, pz, g); box(0.04, o.h - 0.1, 0.05, M.slide, px + pw / 2 - 0.02, o.h / 2, pz, g);
+      for (let s = 0.14; s < o.h - 0.1; s += 0.06) { const sl = box(pw - 0.09, 0.012, 0.084, M.slide, px, s, pz, g); sl.rotation.x = slatTilt; }
     }
   }
 }
@@ -473,13 +482,19 @@ function openMenu(o, e) {
   const r = view.getBoundingClientRect(); menu = document.createElement('div'); menu.className = 'menu';
   const fill = state.fills[o.id] || 'none';
   menu.innerHTML = `<div class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</div>` + Object.entries(FILL).map(([k, t]) => `<button type="button" data-k="${k}" aria-current="${fill === k}">${t}</button>`).join('')
+    + (fill === 'panels' ? `<div class="sep"></div><div class="t">Ламели панелей</div>` + Object.entries(SLATS).map(([k, t]) => `<button type="button" data-slats="${k}" aria-current="${panelOpt(o.id).slats === k}">${t}</button>`).join('')
+      + `<div class="t">Монтаж</div>` + Object.entries(PMOUNT).map(([k, t]) => `<button type="button" data-pmount="${k}" aria-current="${panelOpt(o.id).mount === k}">${t}</button>`).join('') : '')
     + (fill === 'zip' ? `<div class="sep"></div><div class="t">Управление скрином</div>` + Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<button type="button" class="ctl" data-ctl="${k}" aria-current="${ctlOf(o.id) === k}">${c.name}<span class="d">${c.hint}</span></button>`).join('') : '');
-  menu.style.left = Math.min(e.clientX - r.left, r.width - 230) + 'px'; menu.style.top = Math.max(8, Math.min(e.clientY - r.top, r.height - (fill === 'zip' ? 420 : 220))) + 'px';
+  menu.style.left = Math.min(e.clientX - r.left, r.width - 230) + 'px'; menu.style.top = Math.max(8, Math.min(e.clientY - r.top, r.height - (fill === 'zip' || fill === 'panels' ? 420 : 220))) + 'px';
   menu.addEventListener('click', (ev) => {
     const b = ev.target.closest('button'); if (!b) return;
     if (b.dataset.ctl) { state.zipCtl[o.id] = b.dataset.ctl; closeMenu(); renderEstimate(); return; }
+    if (b.dataset.slats || b.dataset.pmount) {
+      state.panelOpt[o.id] = { ...panelOpt(o.id), ...(b.dataset.slats ? { slats: b.dataset.slats } : { mount: b.dataset.pmount }) };
+      build(); renderEstimate(); closeMenu(); openMenu(o, e); return;
+    }
     const k = b.dataset.k; state.fills[o.id] = k; build(); renderEstimate();
-    if (k === 'zip') { closeMenu(); openMenu(o, e); menu.querySelector('[data-ctl]').focus(); } else closeMenu(); // ZIP: pick the control right away
+    if (k === 'zip' || k === 'panels') { closeMenu(); openMenu(o, e); menu.querySelector(k === 'zip' ? '[data-ctl]' : '[data-slats]').focus(); } else closeMenu(); // pick the options right away
   });
   view.parentElement.appendChild(menu); menu.querySelector('button').focus();
 }
@@ -535,6 +550,9 @@ const BRANDS = {
   custom: { name: 'Свой вариант', tier: 'своя цена', hint: 'свой мотор и управление по своей цене; нужный момент мотора показан у каждого скрина' },
 };
 const modesOf = () => DBCore.brandModes(state.brand, cat);
+const SLATS = { fixed: 'Неподвижные (45°)', rotating: 'Поворотные (0–90°)' };
+const PMOUNT = { sliding: 'Раздвижные (по направляющим)', fixed: 'Неподвижные' };
+const panelOpt = (id) => ({ slats: 'fixed', mount: 'sliding', ...(state.panelOpt[id] || {}) });
 const ctlOf = (id) => { const m = state.zipCtl[id] || 'remote'; return modesOf().includes(m) ? m : 'remote'; };
 const SCREEN_NAME = { 'zip110.adaptive': 'ZIP 110', 'zip130.adaptive': 'ZIP 130' };
 const MOTOR_CTL = { wired: 'проводной', radio: 'радио', solar: 'солнечный с панелью' };
@@ -560,6 +578,7 @@ function renderEstimate() {
   const ops = openings(o, SPEC[o.family === 'S400' ? 'S400' : 'S500']);
   let sides = 0; const pending = [], unbuilt = [];
   const e = colorsEff(), coat = [], zipOps = [], zipReqs = [];
+  let panelsCustomColour = false;
   const sys = o.family === 'S400' ? 'S400' : 'S500';
   for (const m of o.modules) coat.push({ system: sys, base: m.gridPrice, color: e.construction, roofColor: e.roof, label: 'pergola' });
   for (const [id, f] of fills) {
@@ -588,21 +607,52 @@ function renderEstimate() {
         unbuilt.push(op);
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${screenWhyNot(r, req, mode)}</span></td><td class="a muted">—</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       }
+    } else if (f === 'verto') {
+      const v = DBCore.priceVerto(Math.round(op.len * 1000), Math.round(op.h * 1000), cat);
+      if (v.ok) {
+        sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.slide, label: 'verto' });
+        const ex = v.lines.find((l) => l.code === 'VERTO_ADDITIONAL');
+        html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${size} · ${v.profiles} ${plural(v.profiles, 'профиль', 'профиля', 'профилей')} 35 × 60 мм, шаг ${v.spacing} мм, по прайсу высота ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
+      } else {
+        unbuilt.push(op);
+        html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${size} · высота вне прайса (${mm(v.issues[0].params.min)}–${mm(v.issues[0].params.max)} мм)</span></td><td class="a muted">—</td></tr>`;
+      }
+    } else if (f === 'panels') {
+      const po = panelOpt(op.id), wood = colorOf(e.slide).group === 'wood';
+      const pr = DBCore.pricePanels({ width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), slats: po.slats, mount: po.mount, wood }, cat);
+      if (pr.ok) {
+        sides += pr.total; panelsCustomColour = panelsCustomColour || (!wood && DBCore.colorGroup(e.slide, cat) !== 'standard');
+        const pl = pr.lines[0], rl = pr.lines.find((l) => l.code === 'PANELS_RAIL'), cl = pr.lines.find((l) => l.code === 'PANELS_CONNECTORS');
+        html += `<tr><td>Win Panels, ${op.label.toLowerCase()}<span class="s">${size} · ${pr.panels} ${plural(pr.panels, 'панель', 'панели', 'панелей')} ${mm(pr.panelWidth)} мм, ламели ${po.slats === 'fixed' ? 'неподвижные' : 'поворотные'}${wood ? ', под дерево' : ''}, по прайсу ${mm(pl.params.width)} × ${mm(pl.params.height)} — ${pr.panels} × ${eur(pl.params.unit)}${rl ? `<br>раздвижная система: ${rl.params.tracks} ${plural(rl.params.tracks, 'направляющая', 'направляющие', 'направляющих')}, ${mm(rl.params.width)} мм — ${eur(rl.amount)}` : ''}${cl ? `<br>соединители рамы: ${cl.params.qty} × ${eur(cl.params.unit)}` : ''} · стр. ${pl.source.page}</span></td><td class="a">${eur(pr.total)}</td></tr>`;
+      } else {
+        unbuilt.push(op);
+        const i = pr.issues[0];
+        html += `<tr><td>Win Panels, ${op.label.toLowerCase()}<span class="s">${size} · ${i.code === 'PANELS_SIZE_OUT_OF_RANGE' ? `${i.params.axis === 'width' ? 'ширина' : 'высота'} вне прайса (${mm(i.params.min)}–${mm(i.params.max)} мм)` : i.code === 'PANELS_RAIL_OUT_OF_RANGE' ? `направляющие до ${mm(i.params.max)} мм` : 'слишком много панелей для 3 направляющих'}</span></td><td class="a muted">—</td></tr>`;
+      }
     } else {
       pending.push(f);
       html += `<tr><td>${FILL[f]}, ${op.label.toLowerCase()}<span class="s">${size}</span></td><td class="a muted">позже</td></tr>`;
     }
+  }
+  // Win Verto corner connections: both sides of a pergola corner filled with Verto
+  const corners = [['front-0', 'left-' + (o.rows - 1)], ['front-' + (o.cols - 1), 'right-' + (o.rows - 1)]].concat(state.mount === 'free' ? [['back-0', 'left-0'], ['back-' + (o.cols - 1), 'right-0']] : []);
+  const nCorner = corners.filter(([a, b]) => state.fills[a] === 'verto' && state.fills[b] === 'verto').length;
+  if (nCorner) {
+    const cp = DBCore.vertoCornerPrice(cat), amt = nCorner * cp;
+    sides += amt; coat.push({ system: 'VERTO', base: amt, color: e.slide, label: 'verto' });
+    html += `<tr><td>Win Verto — угловое соединение${nCorner > 1 ? ' × ' + nCorner : ''}<span class="s">угол из двух профилей, ${eur(cp)} за угол · стр. ${cat.tables['verto.profiles'].source.page}</span></td><td class="a">${eur(amt)}</td></tr>`;
   }
   // colour surcharges (engine: per item %, logistics minimum per colour batch)
   const cs = DBCore.coatingSurcharges(coat, cat);
   const cname = (id) => { const c = colorOf(id); return c.custom ? c.nameRu : c.id + ' ' + (c.group === 'wood' ? c.nameRu : c.nameRu.toLowerCase()); };
   const bySys = {};
   for (const l of cs.lines.filter((l) => l.code === 'COATING_SURCHARGE')) { const k = l.params.system; (bySys[k] = bySys[k] || { sum: 0, pct: l.params.percent, n: 0 }); bySys[k].sum += l.amount; bySys[k].n++; }
-  const SYSN = { S400: 'перголы', S500: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов' };
+  const SYSN = { S400: 'перголы', S500: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'Win Verto' };
   for (const [k, v] of Object.entries(bySys)) {
-    const what = k === 'GLASS' ? cname(e.slide) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
+    const what = k === 'GLASS' || k === 'VERTO' ? cname(e.slide) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
     html += `<tr><td>Покраска ${SYSN[k]}, ${v.pct} %<span class="s">${what} · от каталожной цены${v.n > 1 ? ', ' + v.n + ' поз.' : ''}</span></td><td class="a">${eur(v.sum)}</td></tr>`;
   }
+  if (panelsCustomColour) { html += `<tr><td>Покраска Win Panels в цвет ${cname(e.slide)}<span class="s">в прайсе Win Panels есть цены для стандартных цветов и «под дерево»; % для других цветов уточнить у Sun Winner</span></td><td class="a muted">уточнить</td></tr>`; }
   for (const l of cs.lines.filter((l) => l.code === 'COATING_MINIMUM')) html += `<tr><td>Минимальная партия покраски<span class="s">${cname(l.params.color)}: окраска ${eur(l.params.coated)}, минимум ${eur(l.params.minimum)}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
   sides += cs.total;
   if (zipOps.length) {
@@ -627,7 +677,7 @@ function renderEstimate() {
     for (const i of cl.issues) html += `<tr><td colspan="2"><div class="note">Пульт на ${i.params.channels} канал(а), а скринов ${i.params.screens} — выберите пульт с большим числом каналов.</div></td></tr>`;
     sides += cl.total;
   }
-  html += `<tr class="t"><td>Итого по каталогу${pending.length || unbuilt.length ? `<span class="s">без ${[pending.length ? 'позиций «позже»' : '', unbuilt.length ? 'позиций «—»' : ''].filter(Boolean).join(' и ')}</span>` : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
+  html += `<tr class="t"><td>Итого по каталогу${pending.length || unbuilt.length || panelsCustomColour ? `<span class="s">без ${[pending.length ? 'позиций «позже»' : '', unbuilt.length ? 'позиций «—»' : '', panelsCustomColour ? 'покраски «уточнить»' : ''].filter(Boolean).join(', ')}</span>` : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
   tb.innerHTML = html;
   const anyRemote = zipOps.some((z) => z.mode === 'remote' || z.mode === 'solar');
   $('ctl-proj').hidden = !zipReqs.length;

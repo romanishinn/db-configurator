@@ -6,4 +6,5 @@ export * from './compose';
 export * from './glass';
 export * from './colors';
 export * from './screen';
+export * from './sides';
 export { round2 } from './money';
