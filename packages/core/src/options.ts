@@ -25,6 +25,30 @@ export interface PergolaOptions {
   postHeight?: number;
   internalBox?: number;
   sockets?: { power: number; usb: number };
+  /** spot LEDs in N louvres of every module, 3/4/5 spots per louvre (S500 double: N louvres per half) */
+  spots?: { perLouvre: number; louvres: number } | null;
+  /** 3 W LED lamps in N louvres of every module, 2/3/4 lamps per louvre */
+  lamps?: { perLouvre: number; louvres: number } | null;
+  /** spot LEDs in the crown (base profile), points per module */
+  crownSpots?: number;
+  /** a Win Glass or ZIP screen sits in the recess between the posts (no crown spots possible there) */
+  recessSides?: boolean;
+  /** S500 only: vertical LED lamps on the posts, points per project */
+  verticalLamps?: number;
+  /** additional intermediate / divider posts */
+  intermediatePosts?: number;
+}
+
+interface LightingGrid { [perLouvre: string]: number[] }
+interface CountTable { counts: number[]; prices: number[]; additional: number }
+export interface LightingScalars {
+  spots: { single: LightingGrid; double?: LightingGrid };
+  spotLouvres: number[];
+  lamps: { single: LightingGrid; double?: LightingGrid };
+  lampLouvres: number[];
+  crown: CountTable;
+  vertical?: CountTable;
+  source: { file: string; page?: number; pages?: number[] };
 }
 
 interface Scalar { values: number[]; source: { file: string; page: number } }
@@ -41,6 +65,15 @@ export interface OptionsResult {
   issues: Issue[];
 }
 
+/** Count tables (crown spots, vertical lamps): next tabulated amount; beyond the last one + additional point each.
+ * ASSUMPTION: an amount between two columns is billed at the next column (symmetric layout uses even counts). */
+export function countPrice(t: CountTable, n: number): { price: number; billed: number } {
+  const i = t.counts.findIndex((c) => c >= n);
+  if (i >= 0) return { price: t.prices[i]!, billed: t.counts[i]! };
+  const last = t.counts.length - 1;
+  return { price: t.prices[last]! + (n - t.counts[last]!) * t.additional, billed: n };
+}
+
 const modelOf = (c: Composition) => (c.family === 'S400' ? 's400' : 's500');
 const sc = (cat: Catalog, key: string) => (cat.optionScalars?.[key] as Scalar | undefined);
 
@@ -54,6 +87,12 @@ function lookupMin(t: GridTable, x: number, y: number, issues: Issue[]) {
 /** Pergola systems: separate S400 pergolas are separate systems; joined S500 modules form one. */
 export function pergolaSystems(c: Composition): PlacedModule[][] {
   return c.family === 'S400' ? c.modules.map((m) => [m]) : [c.modules];
+}
+
+function lighting(cat: Catalog, model: string): LightingScalars {
+  const L = (cat.optionScalars?.lighting as unknown as { [m: string]: LightingScalars } | undefined)?.[model];
+  if (!L) throw new Error(`lighting scalars for ${model} missing`);
+  return L;
 }
 
 export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): OptionsResult {
@@ -94,6 +133,32 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
         if (!(e instanceof OutOfRangeError)) throw e;
         issues.push({ severity: 'block', code: 'OPT_LED_GUTTER_RANGE', params: { module: ref } });
       }
+    }
+    for (const [key, sel, code] of [['spots', o.spots, 'OPT_SPOTS'], ['lamps', o.lamps, 'OPT_LAMPS']] as const) {
+      if (!sel || sel.louvres <= 0) continue;
+      const L = lighting(cat, model);
+      const grid = (dbl ? L[key].double : L[key].single)?.[String(sel.perLouvre)];
+      const axis = key === 'spots' ? L.spotLouvres : L.lampLouvres;
+      if (!grid) {
+        issues.push({ severity: 'block', code: `${code}_RANGE`, params: { module: ref, perLouvre: sel.perLouvre } });
+        continue;
+      }
+      // fewer louvres than the first column: billed at the first column (table minimum)
+      const billed = Math.max(sel.louvres, axis[0]!);
+      if (billed !== sel.louvres) issues.push({ severity: 'info', code: 'OPT_BILLED_AT_TABLE_MIN', params: { table: `lighting.${key}`, x: sel.louvres, billedX: billed } });
+      const i = axis.indexOf(billed);
+      if (i < 0) {
+        issues.push({ severity: 'block', code: `${code}_RANGE`, params: { module: ref, louvres: sel.louvres, max: axis[axis.length - 1]! } });
+        continue;
+      }
+      add(code, grid[i]!, { module: ref, perLouvre: sel.perLouvre, louvres: sel.louvres, double: dbl ? 1 : 0 }, L.source);
+      channels += 1; // ASSUMPTION: one remote channel per lighting type per module
+    }
+    if (o.crownSpots && o.crownSpots > 0) {
+      const L = lighting(cat, model);
+      const p = countPrice(L.crown, o.crownSpots);
+      add('OPT_CROWN_SPOTS', p.price, { module: ref, points: o.crownSpots, billed: p.billed }, L.source);
+      channels += 1;
     }
     if (o.thermal) {
       const t = tbl(`opt.${model}.thermal`);
@@ -157,6 +222,25 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
     const unit = model === 's400' ? (o.postHeight <= 3000 ? s.values[0]! : s.values[1]!) : s.values[0]!;
     if (o.postHeight > 3200) issues.push({ severity: 'block', code: 'OPT_POST_TOO_HIGH', params: { max: 3200 } });
     else if (c.posts > 0) add('OPT_POST_HEIGHT', unit * c.posts, { posts: c.posts, height: o.postHeight, unit }, s.source);
+  }
+  if (o.crownSpots && o.crownSpots > 0 && o.recessSides) issues.push({ severity: 'warn', code: 'OPT_CROWN_SPOTS_RECESS' });
+  if (o.verticalLamps && o.verticalLamps > 0) {
+    const L = lighting(cat, model);
+    if (!L.vertical) issues.push({ severity: 'block', code: 'OPT_VERTICAL_LAMPS_MODEL', params: { model } });
+    else {
+      const p = countPrice(L.vertical, o.verticalLamps);
+      add('OPT_VERTICAL_LAMPS', p.price, { points: o.verticalLamps, billed: p.billed }, L.source);
+      channels += 1;
+      const posts = c.posts + (o.intermediatePosts ?? 0);
+      if (o.verticalLamps > posts) issues.push({ severity: 'warn', code: 'OPT_VERTICAL_LAMPS_POSTS', params: { lamps: o.verticalLamps, posts } });
+    }
+  }
+  if (o.intermediatePosts && o.intermediatePosts > 0) {
+    const s = sc(cat, `${model}.intermediatePost`)!;
+    const h = o.postHeight ?? 2800;
+    // S400: up to 2800 / 2801–3000 / 3001–3200; S500: up to 2800 / 2801–3200
+    const unit = model === 's400' ? (h <= 2800 ? s.values[0]! : h <= 3000 ? s.values[1]! : s.values[2]!) : h <= 2800 ? s.values[0]! : s.values[1]!;
+    if (h <= 3200) add('OPT_INTERMEDIATE_POST', unit * o.intermediatePosts, { qty: o.intermediatePosts, height: h, unit }, s.source);
   }
   if (o.sockets && model === 's500' && (o.sockets.power || o.sockets.usb)) {
     const s = sc(cat, 's500.sockets')!;

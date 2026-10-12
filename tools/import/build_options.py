@@ -207,10 +207,55 @@ def build_heaters():
     return out
 
 
+def price_lines(file, page):
+    """Both readings: lines carrying € amounts -> lists of prices (pdfplumber text, pdftotext layout)."""
+    a = [[int(p.replace(' ', '')) for p in EUR.findall(l)] for l in text_pp(file, page).splitlines() if '€' in l]
+    b = [[int(p.replace(' ', '')) for p in EUR.findall(l)] for l in layout_lines(file, page) if '€' in l]
+    return [x for x in a if x], [x for x in b if x]
+
+
+def build_lighting():
+    """Spot LEDs and LED lamps in louvres, spots in the crown, vertical LED lamp (S500).
+    S500 p.51/52: both readings must agree. S400 p.24: the '4 spots' prices and the crown spot prices are not in the
+    page's text layer (drawn); on the page image they equal the S500 values, and every S400 value that IS text equals
+    S500 'single' too -> taken from S500 (VERIFIED_BY_IMAGE, checked 12.10.2026)."""
+    a, b = price_lines(S500, 51)
+    if a != b or [len(x) for x in a] != [15, 15, 18, 18]:
+        raise SystemExit(f'S500 p.51 readings differ {a} {b}')
+    sp_single, sp_double, la_single, la_double = a
+    a2, b2 = price_lines(S500, 52)
+    if a2 != b2 or [len(x) for x in a2] != [10, 11]:
+        raise SystemExit(f'S500 p.52 readings differ {a2} {b2}')
+    vertical, crown = a2
+    a4, b4 = price_lines(S400, 24)
+    if a4 != b4 or [len(x) for x in a4] != [10, 18]:
+        raise SystemExit(f'S400 p.24 readings differ {a4} {b4}')
+    s400_spots_text, s400_lamps = a4
+    if s400_spots_text != sp_single[:5] + sp_single[10:] or s400_lamps != la_single:
+        raise SystemExit('S400 spot/lamp prices differ from S500 single — the image-verified copy would be wrong')
+    split = lambda v, n: [v[i:i + n] for i in range(0, len(v), n)]
+    spots = lambda v: dict(zip(['3', '4', '5'], split(v, 5)))
+    lamps = lambda v: dict(zip(['2', '3', '4'], split(v, 6)))
+    out = {
+        's500': {'spots': {'single': spots(sp_single), 'double': spots(sp_double)}, 'spotLouvres': [3, 4, 5, 6, 7],
+                 'lamps': {'single': lamps(la_single), 'double': lamps(la_double)}, 'lampLouvres': [2, 3, 4, 5, 6, 7],
+                 'crown': {'counts': list(range(8, 27, 2)), 'prices': crown[:10], 'additional': crown[10]},
+                 'vertical': {'counts': list(range(2, 11)), 'prices': vertical[:9], 'additional': vertical[9]},
+                 'source': {'file': S500, 'pages': [51, 52]}},
+        's400': {'spots': {'single': spots(sp_single)}, 'spotLouvres': [3, 4, 5, 6, 7],
+                 'lamps': {'single': lamps(s400_lamps)}, 'lampLouvres': [2, 3, 4, 5, 6, 7],
+                 'crown': {'counts': list(range(8, 27, 2)), 'prices': crown[:10], 'additional': crown[10]},
+                 'source': {'file': S400, 'page': 24}, 'verifiedByImage': ['spots.single.4', 'crown']},
+    }
+    print('lighting: spots/lamps single+double, crown', crown, 'vertical', vertical)
+    return out
+
+
 if __name__ == '__main__':
     build_grids()
     sc = build_scalars()
     sc['heaters'] = build_heaters()
+    sc['lighting'] = build_lighting()
     print('heaters', [(x['id'], x['price']) for x in sc['heaters']['s400']['sets']], 'prep', sc['heaters']['s400']['preparation'])
     for k, v in sc.items():
         print(k, v.get('values', '...'), 'p', v.get('source', {}).get('page', ''))
