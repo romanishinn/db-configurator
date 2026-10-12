@@ -2,7 +2,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildCatalog } from './catalog';
-import type { CoatingData, ColorData, FabricData, GridTable } from './types';
+import type { CoatingData, ColorData, FabricData, GridTable, ScreenMotorData } from './types';
 
 export function loadCatalog(dir: string, version: string) {
   const tablesDir = join(dir, 'tables');
@@ -11,5 +11,5 @@ export function loadCatalog(dir: string, version: string) {
     .map((f) => JSON.parse(readFileSync(join(tablesDir, f), 'utf8')) as GridTable);
   const json = <T>(name: string) => (existsSync(join(dir, name)) ? (JSON.parse(readFileSync(join(dir, name), 'utf8')) as T) : undefined);
   const coating = json<CoatingData>('coating.json')!;
-  return buildCatalog(version, tables, coating, { colors: json<ColorData>('colors.json'), fabrics: json<FabricData>('fabrics.json') });
+  return buildCatalog(version, tables, coating, { colors: json<ColorData>('colors.json'), fabrics: json<FabricData>('fabrics.json'), screenMotors: json<ScreenMotorData>('screen-motors.json') });
 }

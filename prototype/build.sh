@@ -7,7 +7,7 @@ npx -y esbuild@0.24.0 packages/core/src/index.ts --bundle --format=iife --global
 python3 - <<'PY'
 import json, glob
 d = 'data/sunwinner/2026-07'
-cat = {'tables': [json.load(open(f)) for f in sorted(glob.glob(d + '/tables/*.json'))], 'coating': json.load(open(d + '/coating.json')), 'colors': json.load(open(d + '/colors.json')), 'fabrics': json.load(open(d + '/fabrics.json'))}
+cat = {'tables': [json.load(open(f)) for f in sorted(glob.glob(d + '/tables/*.json'))], 'coating': json.load(open(d + '/coating.json')), 'colors': json.load(open(d + '/colors.json')), 'fabrics': json.load(open(d + '/fabrics.json')), 'screenMotors': json.load(open(d + '/screen-motors.json'))}
 t = open('prototype/terrace-3d.tpl.html').read()
 t = t.replace('/*CORE*/', open('prototype/dist/dbcore.js').read()).replace('/*CATALOG*/', 'const CATALOG_JSON=' + json.dumps(cat, separators=(',', ':')) + ';')
 open('prototype/dist/terrace-3d.html', 'w').write(t)

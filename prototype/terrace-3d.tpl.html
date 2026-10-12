@@ -135,7 +135,8 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 
   <aside class="panel est" aria-labelledby="t3">
     <h1 id="t3">Расчёт</h1>
-    <p class="sub">Каталожные цены Sun Winner 07.2026, EUR нетто, без доставки и монтажа. Перголы и стекло уже по прайсу, скрины и панели — следующим шагом.</p>
+    <p class="sub">Каталожные цены Sun Winner 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass и ZIP-скрины уже по прайсу; Win Verto и Win Panels — следующим шагом.</p>
+    <div class="seg" id="motor-seg" role="group" aria-label="Моторы скринов" style="flex-wrap:nowrap;margin:10px 0 6px" hidden><span class="muted" style="font-size:12.5px;align-self:center">Моторы скринов:</span><button type="button" data-m="wired" aria-pressed="true">Проводные</button><button type="button" data-m="radio" aria-pressed="false">Радио</button></div>
     <table class="lines"><tbody id="lines"></tbody></table>
     <div id="issues"></div>
   </aside>
@@ -146,7 +147,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 <script>/*CORE*/</script>
 <script>/*CATALOG*/</script>
 <script>
-const cat = DBCore.buildCatalog('sunwinner-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating, { colors: CATALOG_JSON.colors, fabrics: CATALOG_JSON.fabrics });
+const cat = DBCore.buildCatalog('sunwinner-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating, { colors: CATALOG_JSON.colors, fabrics: CATALOG_JSON.fabrics, screenMotors: CATALOG_JSON.screenMotors });
 const $ = (id) => document.getElementById(id);
 const eur = (n) => n.toLocaleString('de-AT', { maximumFractionDigits: 0 }) + ' €';
 const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
@@ -173,7 +174,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
+const state = { motor: 'wired', colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
 
@@ -487,6 +488,17 @@ $('sugg').addEventListener('click', (e) => {
   recompute(true);
 });
 
+const SCREEN_NAME = { 'zip110.adaptive': 'ZIP 110', 'zip130.adaptive': 'ZIP 130' };
+const MOTOR_CTL = { wired: 'проводной', radio: 'радио 2-way' };
+function screenWhyNot(r, req) {
+  const fw = r.issues.find((i) => i.code === 'FABRIC_MAX_WIDTH'), fh = r.issues.find((i) => i.code === 'FABRIC_MAX_HEIGHT');
+  const ok = cat.fabrics.collections.filter((c) => DBCore.selectScreen({ ...req, fabric: c.id }, cat).best).map((c) => c.name);
+  const f = fabricOf().name;
+  if ((fw || fh) && ok.length) return `ткань ${f}: ${fw ? 'макс. ширина ' + mm(fw.params.maxWidth) : 'макс. высота ' + mm(fh.params.maxHeight)} мм. Можно с тканью: ${ok.join(', ')}`;
+  const oor = r.issues.find((i) => i.code === 'SCREEN_SIZE_OUT_OF_RANGE');
+  if (oor) return `вне размеров ZIP: ${oor.params.axis === 'width' ? 'ширина' : 'высота'} ${mm(oor.params.min)}–${mm(oor.params.max)} мм`;
+  return 'такой размер ZIP не производится';
+}
 function renderEstimate() {
   const o = state.options[state.optIndex], tb = $('lines');
   if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; return; }
@@ -495,7 +507,7 @@ function renderEstimate() {
   let html = o.modules.map((m, i) => `<tr><td>${FAM[o.family]}, ${mm(m.width)} × ${mm(m.depth)}<span class="s">${ROLE[m.role]}${state.mount === 'wall' ? MOUNT[m.mount] : ''} · ламели ${mm(m.louvreLength)} мм, вылет ${mm(m.projection)} · таблица ${m.table}</span></td><td class="a">${eur(m.price)}</td></tr>`).join('');
   const fills = Object.entries(state.fills).filter(([, f]) => f !== 'none');
   const ops = openings(o, SPEC[o.family === 'S400' ? 'S400' : 'S500']);
-  let sides = 0; const pending = [];
+  let sides = 0; const pending = [], unbuilt = [];
   const e = colorsEff(), coat = [], zipOps = [];
   const sys = o.family === 'S400' ? 'S400' : 'S500';
   for (const m of o.modules) coat.push({ system: sys, base: m.gridPrice, color: e.construction, roofColor: e.roof, label: 'pergola' });
@@ -510,8 +522,19 @@ function renderEstimate() {
       } else {
         html += `<tr><td>Win Glass, ${op.label.toLowerCase()}<span class="s">${size} · не производится${g.issues[0] && g.issues[0].params.maxHeight ? `, макс. высота ${mm(g.issues[0].params.maxHeight)} мм` : ''}</span></td><td class="a muted">—</td></tr>`;
       }
+    } else if (f === 'zip') {
+      const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: state.colors.fabric, control: state.motor };
+      const r = DBCore.selectScreen(req, cat);
+      if (r.best) {
+        const b = r.best, fab = b.lines.find((l) => l.code === 'FABRIC_SURCHARGE');
+        zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0 });
+        sides += b.gridPrice + b.motor.price; coat.push({ system: 'SCREEN_ZIP', base: b.gridPrice, color: e.zip, label: 'zip' });
+        html += `<tr><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${SCREEN_NAME[b.system]}, по прайсу ${mm(b.billed.width)} × ${mm(b.billed.height)} — ${eur(b.gridPrice)} · стр. ${cat.tables[b.system].source.page}<br>мотор WIN CONTROL ${MOTOR_CTL[b.motor.control]} ${b.motor.nm} Нм (нужно ${b.torqueNm} Нм) — ${eur(b.motor.price)} · стр. ${cat.screenMotors.source.page}</span></td><td class="a">${eur(b.gridPrice + b.motor.price)}</td></tr>`;
+      } else {
+        unbuilt.push(op);
+        html += `<tr><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${screenWhyNot(r, req)}</span></td><td class="a muted">—</td></tr>`;
+      }
     } else {
-      if (f === 'zip') zipOps.push(op);
       pending.push(f);
       html += `<tr><td>${FILL[f]}, ${op.label.toLowerCase()}<span class="s">${size}</span></td><td class="a muted">позже</td></tr>`;
     }
@@ -521,31 +544,31 @@ function renderEstimate() {
   const cname = (id) => { const c = colorOf(id); return c.custom ? c.nameRu : c.id + ' ' + (c.group === 'wood' ? c.nameRu : c.nameRu.toLowerCase()); };
   const bySys = {};
   for (const l of cs.lines.filter((l) => l.code === 'COATING_SURCHARGE')) { const k = l.params.system; (bySys[k] = bySys[k] || { sum: 0, pct: l.params.percent, n: 0 }); bySys[k].sum += l.amount; bySys[k].n++; }
-  const SYSN = { S400: 'перголы', S500: 'перголы', GLASS: 'Win Glass' };
+  const SYSN = { S400: 'перголы', S500: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов' };
   for (const [k, v] of Object.entries(bySys)) {
-    const what = k === 'GLASS' ? cname(e.slide) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
+    const what = k === 'GLASS' ? cname(e.slide) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
     html += `<tr><td>Покраска ${SYSN[k]}, ${v.pct} %<span class="s">${what} · от каталожной цены${v.n > 1 ? ', ' + v.n + ' поз.' : ''}</span></td><td class="a">${eur(v.sum)}</td></tr>`;
   }
   for (const l of cs.lines.filter((l) => l.code === 'COATING_MINIMUM')) html += `<tr><td>Минимальная партия покраски<span class="s">${cname(l.params.color)}: окраска ${eur(l.params.coated)}, минимум ${eur(l.params.minimum)}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
   sides += cs.total;
   if (zipOps.length) {
-    const zp = DBCore.coatingPercentFor('SCREEN_ZIP', e.zip, undefined, cat);
-    if (zp) html += `<tr><td>Покраска ZIP-скринов, ${zp} %<span class="s">${cname(e.zip)} · считается от цены скринов</span></td><td class="a muted">позже</td></tr>`;
     const f = fabricOf();
     if (f.eurPerM2) {
-      let fs = 0, m2 = 0;
-      for (const op of zipOps) { const l = DBCore.fabricSurcharge(Math.round(op.len * 1000), Math.round(op.h * 1000), f.id, cat); fs += l.amount; m2 += l.params.m2; }
+      const fs = zipOps.reduce((a, z) => a + z.fabric, 0), m2 = zipOps.reduce((a, z) => a + z.m2, 0);
       sides += fs;
       html += `<tr><td>Ткань ${f.name}, ${f.eurPerM2} €/м²<span class="s">${zipOps.length} скр., ${m2.toFixed(2).replace('.', ',')} м² · стр. ${cat.fabrics.source.pages[0]}</span></td><td class="a">${eur(fs)}</td></tr>`;
     }
   }
-  html += `<tr class="t"><td>Итого по каталогу${pending.length ? '<span class="s">без позиций «позже»</span>' : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
+  html += `<tr class="t"><td>Итого по каталогу${pending.length || unbuilt.length ? `<span class="s">без ${[pending.length ? 'позиций «позже»' : '', unbuilt.length ? 'позиций «—»' : ''].filter(Boolean).join(' и ')}</span>` : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
   tb.innerHTML = html;
+  $('motor-seg').hidden = !fills.some(([, f]) => f === 'zip');
+  $('motor-seg').querySelectorAll('[data-m]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.m === state.motor));
   const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Размер подогнан под шаг ламелей (S400 — 200 мм).', S400_FREE_ROWS: 'Задний ряд S400 крепится к стене, передний — отдельностоящие перголы (4 стойки).', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у Sun Winner.' };
   $('issues').innerHTML = o.issues.map((i) => `<div class="note">${ISS[i.code] || i.code}${i.params && i.params.built ? ` Строим ${mm(i.params.built)} мм вместо ${mm(i.params.requested)} мм.` : ''}</div>`).join('');
 }
 
 /* ---------- inputs ---------- */
+$('motor-seg').addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (!b) return; state.motor = b.dataset.m; renderEstimate(); });
 function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(true); }
 $('mt-wall').onclick = () => setMount('wall'); $('mt-free').onclick = () => setMount('free');
 let t; const onDims = () => { clearTimeout(t); t = setTimeout(() => { state.width = Number($('w').value) || 0; state.depth = Number($('d').value) || 0; recompute(true); }, 350); };

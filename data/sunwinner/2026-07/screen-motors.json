@@ -1,0 +1,79 @@
+{
+ "source": {
+  "file": "WIN-SCREEN-EN-07.2026-.pdf",
+  "page": 47,
+  "note": "WIN CONTROL motors, EUR net, added to the screen price"
+ },
+ "motors": [
+  {
+   "index": "WSM45-6/17-EL/D",
+   "control": "wired",
+   "nm": 6,
+   "price": 149,
+   "minWidth": {
+    "adaptive": 546,
+    "flush": 568
+   }
+  },
+  {
+   "index": "WZM45-10/17-EL/D",
+   "control": "wired",
+   "nm": 10,
+   "price": 132,
+   "minWidth": {
+    "adaptive": 742,
+    "flush": 764
+   }
+  },
+  {
+   "index": "WZM45-20/17-EL/D",
+   "control": "wired",
+   "nm": 20,
+   "price": 134,
+   "minWidth": {
+    "adaptive": 742,
+    "flush": 764
+   }
+  },
+  {
+   "index": "WZM45-30/17-EL/D",
+   "control": "wired",
+   "nm": 30,
+   "price": 134,
+   "minWidth": {
+    "adaptive": 742,
+    "flush": 764
+   }
+  },
+  {
+   "index": "RZM45-10/17-EL/D-Z3.0",
+   "control": "radio",
+   "nm": 10,
+   "price": 160,
+   "minWidth": {
+    "adaptive": 742,
+    "flush": 764
+   }
+  },
+  {
+   "index": "RZM45-20/17-EL/D-Z3.0",
+   "control": "radio",
+   "nm": 20,
+   "price": 156,
+   "minWidth": {
+    "adaptive": 742,
+    "flush": 764
+   }
+  },
+  {
+   "index": "RZM45-30/17-EL/D-Z3.0",
+   "control": "radio",
+   "nm": 30,
+   "price": 163,
+   "minWidth": {
+    "adaptive": 742,
+    "flush": 764
+   }
+  }
+ ]
+}

@@ -89,10 +89,24 @@ export interface FabricData {
   collections: FabricCollection[];
 }
 
+export interface ScreenMotor {
+  index: string;
+  control: 'wired' | 'radio';
+  nm: number;
+  price: number;
+  minWidth: { adaptive: number; flush: number };
+}
+
+export interface ScreenMotorData {
+  source: { file: string; page: number };
+  motors: ScreenMotor[];
+}
+
 export interface Catalog {
   version: string;
   tables: Record<string, GridTable>;
   coating: CoatingData;
   colors?: ColorData;
   fabrics?: FabricData;
+  screenMotors?: ScreenMotorData;
 }
