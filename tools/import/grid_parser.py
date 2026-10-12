@@ -4,10 +4,12 @@ Row format in `pdftotext -layout` output:
     <row key mm> [<louver count>] <price €> <price €> ...
 Header: a line with >=3 ascending 4-digit widths and no euro sign.
 """
-import re, subprocess, json, sys
+import re, subprocess, json, sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+from common import header_widths
 
 PRICE = re.compile(r'(\d{1,3}(?: \d{3})*) ?€')
-ROW = re.compile(r'^\s*(\d{4})\s+(?:(\d{1,2})\s+)?(?=\d{1,3}(?: \d{3})* ?€)')
+ROW = re.compile(r'^\s*(\d{4,5})\s+(?:(\d{1,2})\s+)?(?=\d{1,3}(?: \d{3})* ?€)')
 
 def page_text(pdf, page):
     return subprocess.run(['pdftotext', '-f', str(page), '-l', str(page), '-layout', pdf, '-'],
@@ -15,12 +17,9 @@ def page_text(pdf, page):
 
 def find_header(lines, upto):
     for i in range(upto - 1, -1, -1):
-        ln = lines[i]
-        if '€' in ln:
-            continue
-        nums = [int(n) for n in re.findall(r'(?<!\d)(\d{4})(?!\d)', ln)]
-        if len(nums) >= 3 and nums == sorted(nums) and all(1000 <= n <= 20000 for n in nums):
-            return nums
+        h = header_widths(lines[i])
+        if h:
+            return h
     return None
 
 def parse_grid(pdf, page):

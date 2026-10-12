@@ -3,11 +3,13 @@
 pdfplumber chars -> lines (clustered by y) -> text with spacing by x-gap -> regex rows.
 Handles letter-spaced and tightly packed tables where pdftotext word order breaks.
 """
-import re, json, sys
+import re, json, sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+from common import header_widths
 import pdfplumber
 
 PRICE = re.compile(r'(\d{1,3}(?: \d{3})*) ?€')
-ROW = re.compile(r'^\s*(\d{4})\s+(?:(\d{1,2})\s+)?(?=\d{1,3}(?: \d{3})* ?€)')
+ROW = re.compile(r'^\s*(\d{4,5})\s+(?:(\d{1,2})\s+)?(?=\d{1,3}(?: \d{3})* ?€)')
 
 def lines_of(page, ytol=2.5):
     chars = sorted(page.chars, key=lambda c: ((c['top'] + c['bottom']) / 2, c['x0']))
@@ -48,10 +50,9 @@ def parse(pdf_path, page_no, bbox=None):
                          'prices': [int(p.replace(' ', '')) for p in PRICE.findall(s[m.end():])]})
     if first_i is not None:
         for y, x, s in reversed(lines[:first_i]):
-            if '€' in s: continue
-            nums = [int(n) for n in re.findall(r'(?<!\d)(\d{4})(?!\d)', s)]
-            if len(nums) >= 3 and nums == sorted(nums):
-                header = nums; break
+            header = header_widths(s)
+            if header:
+                break
     return {'columns': header, 'rows': rows}
 
 if __name__ == '__main__':

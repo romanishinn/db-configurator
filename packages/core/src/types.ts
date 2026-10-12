@@ -9,13 +9,14 @@ export interface GridTable {
   title: string;
   kind: 'grid2d';
   currency: 'EUR';
-  source: { file: string; page: number };
+  source: { file: string; page: number; pages?: number[] };
   x: Axis;
   y: Axis;
   rounding: 'ceil';
   louvers: (number | null)[] | null;
-  /** prices[yIndex][xIndex], catalogue net EUR */
-  prices: number[][];
+  /** prices[yIndex][xIndex], catalogue net EUR; null = this size is not produced (ragged tables, Win Glass) */
+  prices: (number | null)[][];
+  meta?: Record<string, unknown>;
 }
 
 export type Severity = 'block' | 'warn' | 'info';

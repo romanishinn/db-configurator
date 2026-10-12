@@ -9,8 +9,9 @@ def merged(pdf, page):
     cols = a['columns'] or b['columns']
     if a['columns'] and b['columns'] and a['columns'] != b['columns']:
         raise SystemExit(f'p{page}: header mismatch {a["columns"]} vs {b["columns"]}')
-    ra = {r['key']: r for r in a['rows'] if len(r['prices']) == len(cols)}
-    rb = {r['key']: r for r in b['rows'] if len(r['prices']) == len(cols)}
+    # Rows may carry extra prices from a side table to the right (Win Glass profiles): keep the first len(cols).
+    trim = lambda rs: {r['key']: {**r, 'prices': r['prices'][:len(cols)]} for r in rs if len(r['prices']) >= len(cols)}
+    ra, rb = trim(a['rows']), trim(b['rows'])
     rows, conflicts, single = {}, [], []
     for k in sorted(set(ra) | set(rb)):
         if k in ra and k in rb:
@@ -25,5 +26,5 @@ if __name__ == '__main__':
     pdf = sys.argv[1]
     for pg in map(int, sys.argv[2:]):
         cols, rows, conf, single = merged(pdf, pg)
-        print(f'p{pg}: cols={len(cols)} rows={len(rows)} keys={min(rows)}..{max(rows)} conflicts={len(conf)} only-one-parser={single}')
+        print(f'p{pg}: cols={len(cols)} {cols[0]}..{cols[-1]} rows={len(rows)} keys={sorted(rows)} conflicts={len(conf)} only-one-parser={single}')
         for c in conf: print('   CONFLICT', c)

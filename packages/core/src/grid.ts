@@ -6,6 +6,12 @@ export class OutOfRangeError extends Error {
   }
 }
 
+export class NotProducedError extends Error {
+  constructor(public readonly x: number, public readonly y: number) {
+    super(`size ${x}×${y} is not produced in this table`);
+  }
+}
+
 /** Smallest grid value >= v (catalogue rule: sizes between steps are billed at the next step). */
 export function ceilBucket(values: number[], v: number, axis: 'x' | 'y'): { value: number; index: number } {
   const min = values[0]!;
@@ -18,7 +24,8 @@ export function ceilBucket(values: number[], v: number, axis: 'x' | 'y'): { valu
 export function lookupGrid(t: GridTable, x: number, y: number) {
   const bx = ceilBucket(t.x.values, x, 'x');
   const by = ceilBucket(t.y.values, y, 'y');
-  const price = t.prices[by.index]![bx.index]!;
+  const price = t.prices[by.index]![bx.index];
+  if (price === null || price === undefined) throw new NotProducedError(bx.value, by.value);
   return {
     price,
     x: bx.value,
