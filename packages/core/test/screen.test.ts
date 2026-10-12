@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
-import { coatingSurcharges, lookupGrid, priceScreenIn, screenControlLines, selectScreen } from '../src';
+import { brandModes, coatingSurcharges, lookupGrid, pickMotor, priceScreenIn, screenControlLines, selectScreen } from '../src';
 import { loadCatalog } from '../src/node';
 
 const cat = loadCatalog(join(__dirname, '../../../data/sunwinner/2026-07'), 'sunwinner-2026-07');
@@ -80,6 +80,7 @@ describe('ZIP pricing on a pergola side', () => {
 describe('screen control (Win Screen p.47–49, TELECO S400 p.20 / S500 p.45)', () => {
   it('solar kit 332 € (20 Nm) — only where 20 Nm is enough', () => {
     expect(selectScreen({ width: 3870, height: 2590, control: 'solar' }, cat).best!.motor).toMatchObject({ control: 'solar', price: 332, nm: 20 });
+    expect(selectScreen({ width: 3870, height: 2590, control: 'solar', brand: 'yooda' }, cat).best).toBeNull();
     expect(selectScreen({ width: 6820, height: 2560, fabric: 'serge-600', control: 'solar' }, cat).best).toBeNull(); // 30 Nm zone
   });
   it('one screen with remote: 6-channel handheld 33 € (cheapest handheld with enough channels)', () => {
@@ -98,7 +99,44 @@ describe('screen control (Win Screen p.47–49, TELECO S400 p.20 / S500 p.45)', 
     expect(screenControlLines(['pergola', 'pergola'], {}, cat).total).toBe(330);
     expect(screenControlLines(Array(5).fill('pergola'), {}, cat).total).toBe(530);
   });
-  it('wind sensor WS-S02 84 €, once per project', () => {
+  it('wind sensor: one per pergola system — WIN CONTROL WS-S02 84 €', () => {
     expect(screenControlLines(['remote', 'pergola'], { wind: true }, cat).lines.map((l) => l.amount)).toEqual([33, 200, 84]);
+    expect(screenControlLines(['remote', 'remote'], { wind: true, windSensors: 2 }, cat).lines.at(-1)!.amount).toBe(168);
+  });
+});
+
+describe('motor brands (Win Screen pp.47, 51–58)', () => {
+  // 3870 × 2590 on ZIP 110 = 10 Nm zone
+  it('cheapest motor per brand for a 10 Nm radio screen: YOODA 107 €, WIN CONTROL 156 € (20 Nm), Somfy Altus RS 50 io 280 €', () => {
+    expect(pickMotor(cat, 'yooda', 'radio', 10, 3870)).toMatchObject({ index: 'SW-Y1201015', price: 107 });
+    expect(pickMotor(cat, 'wincontrol', 'radio', 10, 3870)).toMatchObject({ index: 'RZM45-20/17-EL/D-Z3.0', price: 156 });
+    expect(pickMotor(cat, 'somfy', 'radio', 10, 3870)).toMatchObject({ model: 'Altus RS 50 io', price: 280 });
+  });
+  it('wired 10 Nm: YOODA 58 €, Somfy LT 50/12 140 €; narrow roller (700 mm) needs the YOODA short motor 83 €', () => {
+    expect(pickMotor(cat, 'yooda', 'wired', 10, 3870)!.price).toBe(58);
+    expect(pickMotor(cat, 'somfy', 'wired', 10, 3870)).toMatchObject({ model: 'LT 50/12', price: 140 });
+    expect(pickMotor(cat, 'yooda', 'wired', 10, 600)).toMatchObject({ index: 'SW-Y1211110', price: 83 });
+  });
+  it('Somfy solar RS100 Solar io: 10 Nm 556 €, 15 Nm 730 €', () => {
+    expect(pickMotor(cat, 'somfy', 'solar', 8, 3870)!.price).toBe(556);
+    expect(pickMotor(cat, 'somfy', 'solar', 15, 3870)!.price).toBe(730);
+  });
+  it('modes per brand: YOODA has no solar, WIN CONTROL no wired wall switch', () => {
+    expect(brandModes('yooda', cat)).toEqual(['remote', 'smart', 'pergola', 'switch']);
+    expect(brandModes('wincontrol', cat)).toEqual(['remote', 'smart', 'pergola', 'solar']);
+    expect(brandModes('somfy', cat)).toEqual(['remote', 'smart', 'pergola', 'switch', 'solar']);
+  });
+  it('YOODA project: 2 radio screens -> Artistic 5 white 43 €, Smart Home 3.0 350 €, radio wind sensor Meteo-B 107 €', () => {
+    const r = screenControlLines(['remote', 'remote', 'smart'], { brand: 'yooda', wind: true }, cat);
+    expect(r.lines.map((l) => [l.params!.index, l.amount])).toEqual([['SW-Y1701105', 43], ['SW-Y1197006', 350], ['SW-Y1611627', 107]]);
+  });
+  it('Somfy: wired with wall switches -> Inis WT 14 € per motor; wired-only wind sensor Soliris WT 92 €, with radio Eolis io 190 €', () => {
+    expect(screenControlLines(['switch', 'switch'], { brand: 'somfy', wind: true }, cat).lines.map((l) => [l.params!.index, l.amount])).toEqual([['SW-S1800511', 28], ['SW-S9101473', 92]]);
+    expect(screenControlLines(['remote'], { brand: 'somfy', wind: true }, cat).lines.map((l) => [l.params!.index, l.amount])).toEqual([['SW-S1870312', 71], ['SW-S1816092', 190]]);
+  });
+  it('own variant: own motor price per screen, own controls per project, required torque still shown', () => {
+    const b = selectScreen({ width: 3870, height: 2590, brand: 'custom', control: 'radio', customMotor: { name: 'Becker', price: 200 } }, cat).best!;
+    expect(b.motor).toMatchObject({ index: 'Becker', price: 200, nm: 10 });
+    expect(screenControlLines(['remote'], { brand: 'custom', customControls: 150, wind: true }, cat).total).toBe(150);
   });
 });

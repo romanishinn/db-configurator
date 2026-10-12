@@ -1,88 +1,818 @@
 {
  "source": {
-  "file": "WIN-SCREEN-EN-07.2026-.pdf",
-  "page": 47,
-  "note": "WIN CONTROL motors, EUR net, added to the screen price"
+  "note": "Screen motors and control accessories of three brands (Win Screen catalogue 07.2026) + TELECO units.\n\nBrands (page logos checked on the page images): WIN CONTROL — Sun Winner's own (pp.47–49), YOODA (pp.51–53,\ndivider page 50), Somfy (pp.54–58, logo on p.54).\n\nMotors: reading A = bordered tables (pdfplumber, lines strategy; left table NM/RPM/PRICE/MODEL/INDEX, right table\nmin. roller widths, rows matched by their vertical position, merged MODEL/RPM cells filled down within a block);\nreading B = pdftotext -layout (index -> first price on the same line, last two 3-digit numbers = min widths).\nBoth must agree for every motor; a field missing in B (Somfy solar kit price printed on the battery line) is\nchecked against pdfplumber text order instead (index line followed by the kit price).\nAccessories: reading A = table rows [index, name, description, (frequency), warranty, price]; reading B = layout\nline of the index -> first price after it. Both must agree.\nTELECO central units (pergola catalogues S400 p.20 = S500 p.45) and the WIN CONTROL wind sensor WS-S02\n(Win Screen p.49, index/name read from the page image, price from the text: VERIFIED_BY_IMAGE) as before."
  },
  "motors": [
   {
+   "brand": "wincontrol",
    "index": "WSM45-6/17-EL/D",
+   "model": "WIN CONTROL",
    "control": "wired",
    "nm": 6,
    "price": 149,
    "minWidth": {
     "adaptive": 546,
     "flush": 568
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
    }
   },
   {
+   "brand": "wincontrol",
    "index": "WZM45-10/17-EL/D",
+   "model": "WIN CONTROL",
    "control": "wired",
    "nm": 10,
    "price": 132,
    "minWidth": {
     "adaptive": 742,
     "flush": 764
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
    }
   },
   {
+   "brand": "wincontrol",
    "index": "WZM45-20/17-EL/D",
+   "model": "WIN CONTROL",
    "control": "wired",
    "nm": 20,
    "price": 134,
    "minWidth": {
     "adaptive": 742,
     "flush": 764
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
    }
   },
   {
+   "brand": "wincontrol",
    "index": "WZM45-30/17-EL/D",
+   "model": "WIN CONTROL",
    "control": "wired",
    "nm": 30,
    "price": 134,
    "minWidth": {
     "adaptive": 742,
     "flush": 764
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
    }
   },
   {
+   "brand": "wincontrol",
    "index": "RZM45-10/17-EL/D-Z3.0",
+   "model": "WIN CONTROL",
    "control": "radio",
    "nm": 10,
    "price": 160,
    "minWidth": {
     "adaptive": 742,
     "flush": 764
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
    }
   },
   {
+   "brand": "wincontrol",
    "index": "RZM45-20/17-EL/D-Z3.0",
+   "model": "WIN CONTROL",
    "control": "radio",
    "nm": 20,
    "price": 156,
    "minWidth": {
     "adaptive": 742,
     "flush": 764
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
    }
   },
   {
+   "brand": "wincontrol",
    "index": "RZM45-30/17-EL/D-Z3.0",
+   "model": "WIN CONTROL",
    "control": "radio",
    "nm": 30,
    "price": 163,
    "minWidth": {
     "adaptive": 742,
     "flush": 764
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
    }
   },
   {
+   "brand": "wincontrol",
    "index": "SRZM45-20/17-EL/D-Z3.0 + SP-B-01",
+   "model": "WIN CONTROL Solar",
    "control": "solar",
    "nm": 20,
    "price": 332,
    "minWidth": {
     "adaptive": 810,
     "flush": 832
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 47
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1211010",
+   "model": "45S",
+   "rpm": "15",
+   "control": "wired",
+   "nm": 10,
+   "short": false,
+   "price": 58,
+   "minWidth": {
+    "adaptive": 645,
+    "flush": 667
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1211110",
+   "model": "45S",
+   "rpm": "15",
+   "control": "wired",
+   "nm": 10,
+   "short": true,
+   "price": 83,
+   "minWidth": {
+    "adaptive": 515,
+    "flush": 537
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1212010",
+   "model": "45S",
+   "rpm": "15",
+   "control": "wired",
+   "nm": 20,
+   "short": false,
+   "price": 63,
+   "minWidth": {
+    "adaptive": 645,
+    "flush": 667
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1213510",
+   "model": "45S",
+   "rpm": "15",
+   "control": "wired",
+   "nm": 30,
+   "short": false,
+   "price": 71,
+   "minWidth": {
+    "adaptive": 715,
+    "flush": 737
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1201015",
+   "model": "45R",
+   "rpm": "15",
+   "control": "radio",
+   "nm": 10,
+   "short": false,
+   "price": 107,
+   "minWidth": {
+    "adaptive": 785,
+    "flush": 807
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1201015SS",
+   "model": "45R",
+   "rpm": "15",
+   "control": "radio",
+   "nm": 10,
+   "short": true,
+   "price": 175,
+   "minWidth": {
+    "adaptive": 670,
+    "flush": 692
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1202015",
+   "model": "45R",
+   "rpm": "15",
+   "control": "radio",
+   "nm": 20,
+   "short": false,
+   "price": 111,
+   "minWidth": {
+    "adaptive": 785,
+    "flush": 807
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1203015",
+   "model": "45R",
+   "rpm": "15",
+   "control": "radio",
+   "nm": 30,
+   "short": false,
+   "price": 126,
+   "minWidth": {
+    "adaptive": 810,
+    "flush": 832
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1035193",
+   "model": "LT 50/12",
+   "rpm": "12",
+   "control": "wired",
+   "nm": 8,
+   "short": false,
+   "price": 119,
+   "minWidth": {
+    "adaptive": 683,
+    "flush": 705
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1037826",
+   "model": "LT 50/12",
+   "rpm": "12",
+   "control": "wired",
+   "nm": 10,
+   "short": false,
+   "price": 140,
+   "minWidth": {
+    "adaptive": 683,
+    "flush": 705
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1041647",
+   "model": "LT 50/12",
+   "rpm": "12",
+   "control": "wired",
+   "nm": 20,
+   "short": false,
+   "price": 192,
+   "minWidth": {
+    "adaptive": 703,
+    "flush": 725
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S11045033",
+   "model": "LT 50/12",
+   "rpm": "12",
+   "control": "wired",
+   "nm": 30,
+   "short": false,
+   "price": 249,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1032375",
+   "model": "LT 50/17",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 6,
+   "short": false,
+   "price": 214,
+   "minWidth": {
+    "adaptive": 680,
+    "flush": 702
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1110296",
+   "model": "Maestria 50 WT",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 6,
+   "short": false,
+   "price": 226,
+   "minWidth": {
+    "adaptive": 733,
+    "flush": 755
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1110293",
+   "model": "Maestria 50 WT",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 6,
+   "short": false,
+   "price": 242,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1111214",
+   "model": "Maestria 50 WT",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 10,
+   "short": false,
+   "price": 257,
+   "minWidth": {
+    "adaptive": 733,
+    "flush": 755
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1111211",
+   "model": "Maestria 50 WT",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 10,
+   "short": false,
+   "price": 269,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1112341",
+   "model": "Maestria 50 WT",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 15,
+   "short": false,
+   "price": 273,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1114290",
+   "model": "Maestria 50 WT",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 25,
+   "short": false,
+   "price": 287,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1116299",
+   "model": "Maestria 50 WT",
+   "rpm": "17",
+   "control": "wired",
+   "nm": 35,
+   "short": false,
+   "price": 371,
+   "minWidth": {
+    "adaptive": 833,
+    "flush": 855
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 54
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1134061",
+   "model": "Altus RS 50 io",
+   "rpm": "12",
+   "control": "radio",
+   "nm": 6,
+   "short": false,
+   "price": 230,
+   "minWidth": {
+    "adaptive": 733,
+    "flush": 755
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1134062",
+   "model": "Altus RS 50 io",
+   "rpm": "12",
+   "control": "radio",
+   "nm": 10,
+   "short": false,
+   "price": 280,
+   "minWidth": {
+    "adaptive": 733,
+    "flush": 755
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1134063",
+   "model": "Altus RS 50 io",
+   "rpm": "12",
+   "control": "radio",
+   "nm": 20,
+   "short": false,
+   "price": 318,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1134064",
+   "model": "Altus RS 50 io",
+   "rpm": "12",
+   "control": "radio",
+   "nm": 30,
+   "short": false,
+   "price": 343,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1033318",
+   "model": "Sunilus SCR io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 6,
+   "short": false,
+   "price": 304,
+   "minWidth": {
+    "adaptive": 755,
+    "flush": 755
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1038090",
+   "model": "Sunilus SCR io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 10,
+   "short": false,
+   "price": 334,
+   "minWidth": {
+    "adaptive": 755,
+    "flush": 755
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1039815",
+   "model": "Sunilus SCR io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 15,
+   "short": false,
+   "price": 346,
+   "minWidth": {
+    "adaptive": 833,
+    "flush": 855
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1110271",
+   "model": "Maestria+ 50 io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 6,
+   "short": false,
+   "price": 300,
+   "minWidth": {
+    "adaptive": 783,
+    "flush": 805
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1110274",
+   "model": "Maestria+ 50 io",
+   "rpm": "32",
+   "control": "radio",
+   "nm": 6,
+   "short": false,
+   "price": 364,
+   "minWidth": {
+    "adaptive": 833,
+    "flush": 855
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1111194",
+   "model": "Maestria+ 50 io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 10,
+   "short": false,
+   "price": 312,
+   "minWidth": {
+    "adaptive": 833,
+    "flush": 855
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1111191",
+   "model": "Maestria+ 50 io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 10,
+   "short": false,
+   "price": 373,
+   "minWidth": {
+    "adaptive": 833,
+    "flush": 855
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1112321",
+   "model": "Maestria+ 50 io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 15,
+   "short": false,
+   "price": 323,
+   "minWidth": {
+    "adaptive": 833,
+    "flush": 855
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1114280",
+   "model": "Maestria+ 50 io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 25,
+   "short": false,
+   "price": 355,
+   "minWidth": {
+    "adaptive": 833,
+    "flush": 855
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1116287",
+   "model": "Maestria+ 50 io",
+   "rpm": "17",
+   "control": "radio",
+   "nm": 35,
+   "short": false,
+   "price": 438,
+   "minWidth": {
+    "adaptive": 853,
+    "flush": 875
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 56
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1242115",
+   "model": "RS100 Solar io 6/15",
+   "rpm": "15",
+   "control": "solar",
+   "nm": 6,
+   "short": false,
+   "price": 534,
+   "minWidth": {
+    "adaptive": 609,
+    "flush": 631
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 57
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1242116",
+   "model": "RS100 Solar io 10/12",
+   "rpm": "51",
+   "control": "solar",
+   "nm": 10,
+   "short": false,
+   "price": 556,
+   "minWidth": {
+    "adaptive": 622,
+    "flush": 644
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 57
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1242117",
+   "model": "RS100 Solar io 15/12",
+   "rpm": null,
+   "control": "solar",
+   "nm": 15,
+   "short": false,
+   "price": 730,
+   "minWidth": {
+    "adaptive": 622,
+    "flush": 644
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 57
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1242118",
+   "model": "RS100 Solar io 20/12",
+   "rpm": null,
+   "control": "solar",
+   "nm": 20,
+   "short": false,
+   "price": 838,
+   "minWidth": {
+    "adaptive": 643,
+    "flush": 665
+   },
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 57
    }
   }
  ]

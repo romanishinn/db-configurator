@@ -1,10 +1,17 @@
-"""Screen control accessories (07.2026): WIN CONTROL remotes, smart unit, solar motor kit, wind sensor,
-TELECO central units for wired screen motors (pergola catalogues).
+"""Screen motors and control accessories of three brands (Win Screen catalogue 07.2026) + TELECO units.
 
-Every price is read twice (pdfplumber text and pdftotext -layout, same index -> first price after it on the line)
-and both readings must agree. TELECO units must also agree between the S400 and S500 catalogues.
-MANUAL: the wind sensor row (Win Screen p.49) has no extractable index/name (drawn text); index, name and the
-'wired, 230 V' note were read from the page image; its price 84 € is taken from the page text (VERIFIED_BY_IMAGE).
+Brands (page logos checked on the page images): WIN CONTROL — Sun Winner's own (pp.47–49), YOODA (pp.51–53,
+divider page 50), Somfy (pp.54–58, logo on p.54).
+
+Motors: reading A = bordered tables (pdfplumber, lines strategy; left table NM/RPM/PRICE/MODEL/INDEX, right table
+min. roller widths, rows matched by their vertical position, merged MODEL/RPM cells filled down within a block);
+reading B = pdftotext -layout (index -> first price on the same line, last two 3-digit numbers = min widths).
+Both must agree for every motor; a field missing in B (Somfy solar kit price printed on the battery line) is
+checked against pdfplumber text order instead (index line followed by the kit price).
+Accessories: reading A = table rows [index, name, description, (frequency), warranty, price]; reading B = layout
+line of the index -> first price after it. Both must agree.
+TELECO central units (pergola catalogues S400 p.20 = S500 p.45) and the WIN CONTROL wind sensor WS-S02
+(Win Screen p.49, index/name read from the page image, price from the text: VERIFIED_BY_IMAGE) as before.
 """
 import json, os, re, subprocess
 import pdfplumber
@@ -12,105 +19,186 @@ import pdfplumber
 SRC = os.environ.get('SW_PDF_DIR', '/mnt/user-data/uploads/Price')
 SCREEN = 'WIN-SCREEN-EN-07.2026-.pdf'
 S400, S500 = 'WIN-CLIMATIC-S400-EN-07.2026.pdf', 'WIN-CLIMATIC-S500-EN-07.2026.pdf'
-OUT = 'data/sunwinner/2026-07/screen-controls.json'
-
-ITEMS = [  # (file, page, index, kind, name RU)
-    (SCREEN, 48, 'RC01-06-W', 'remote', 'Пульт WIN CONTROL 6-канальный, белый'),
-    (SCREEN, 48, 'RC01-06-B', 'remote', 'Пульт WIN CONTROL 6-канальный, чёрный'),
-    (SCREEN, 48, 'RC02-16-W', 'remote', 'Пульт WIN CONTROL 16-канальный с дисплеем, белый'),
-    (SCREEN, 48, 'RC02-16-B', 'remote', 'Пульт WIN CONTROL 16-канальный с дисплеем, чёрный'),
-    (SCREEN, 48, 'WRC01-01-W', 'remote', 'Настенный выключатель WIN CONTROL 1-канальный, белый'),
-    (SCREEN, 48, 'WRC01-01-B', 'remote', 'Настенный выключатель WIN CONTROL 1-канальный, чёрный'),
-    (SCREEN, 49, 'WRC02-05-W', 'remote', 'Настенный выключатель WIN CONTROL 5-канальный, белый'),
-    (SCREEN, 49, 'WRC02-05-B', 'remote', 'Настенный выключатель WIN CONTROL 5-канальный, чёрный'),
-    (SCREEN, 48, 'WINCZ3.0', 'smart', 'WIN CONTROL Smart — управление со смартфона (ZigBee 3.0)'),
-    (SCREEN, 48, 'EX-01-Z3.0', 'receiver', 'Внешний радиоприёмник WIN CONTROL'),
-    (S400, 20, 'SW-TEL-TVPRS868A04B', 'pergolaUnit1', 'Блок TELECO на 1 проводной мотор (пульт перголы)'),
-    (S400, 20, 'SW-TEL-TVPL4868AC4', 'pergolaUnit4', 'Блок TELECO на 4 проводных мотора (пульт перголы), вход датчика ветра'),
-]
-CHANNELS = {'RC01-06': 6, 'RC02-16': 16, 'WRC01-01': 1, 'WRC02-05': 5}
-VERIFIED_BY_IMAGE = {'WS-S02': {'file': SCREEN, 'page': 49, 'kind': 'wind', 'name': 'Датчик ветра и солнца WIN CONTROL, проводной 230 V'}}
+OUT = 'data/sunwinner/2026-07'
+BRAND_OF_PAGE = {47: 'wincontrol', 48: 'wincontrol', 49: 'wincontrol', 51: 'yooda', 52: 'yooda', 53: 'yooda',
+                 54: 'somfy', 55: 'somfy', 56: 'somfy', 57: 'somfy', 58: 'somfy'}
+MOTOR_PAGES = {51: 'wired', 52: 'radio', 54: 'wired', 56: 'radio', 57: 'solar'}
+ACCESSORY_PAGES = [48, 49, 51, 52, 53, 55, 58]
+PRICE = re.compile(r'(\d{1,4}) ?€')
+INDEX = re.compile(r'\b(SW-[A-Z0-9-]+|[A-Z]{1,4}\d{2}-\d{2}-[WB]|WINCZ3\.0|EX-01-Z3\.0)\b')
 
 
-def text_pp(file, page):
-    with pdfplumber.open(os.path.join(SRC, file)) as d:
-        return d.pages[page - 1].extract_text() or ''
-
-
-def text_layout(file, page):
+def layout(file, page):
     t = subprocess.run(['pdftotext', '-f', str(page), '-l', str(page), '-layout', os.path.join(SRC, file), '-'], capture_output=True, text=True, check=True).stdout
-    return '\n'.join(re.sub(r' {2,}', ' ', ln) for ln in t.splitlines())
+    return [re.sub(r' {2,}', ' ', ln) for ln in t.splitlines()]
 
 
-def price_after(text, index):
-    """First 'NN €' after the index on the same line; for the TELECO block (prices printed at the block end) the
-    prices in order of appearance are matched separately."""
-    for ln in text.splitlines():
-        i = ln.find(index)
-        if i >= 0:
-            m = re.search(r'(\d{1,4}) ?€', ln[i + len(index):])
-            if m:
-                return int(m.group(1))
+def layout_index_map(lines):
+    out = {}
+    for ln in lines:
+        for m in INDEX.finditer(ln):
+            idx = m.group(1)
+            p = PRICE.search(ln[m.end():])
+            mins = re.findall(r'(?<![\d,.])(\d{3})(?![\d,.])', ln[m.end():])
+            before = PRICE.findall(ln[:m.start()])
+            out.setdefault(idx, {'price': int(p.group(1)) if p else None, 'before': int(before[-1]) if before else None,
+                                 'mins': [int(x) for x in mins[-2:]] if len(mins) >= 2 else None})
+    return out
+
+
+def motors_from_tables(page):
+    tables = page.find_tables({'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'})
+    left = next(t for t in tables if 'INDEX' in [(c or '').strip() for c in t.extract()[0]])
+    rows = left.extract()
+    hdr = [(c or '').strip() for c in rows[0]]
+    col = {k: hdr.index(k) for k in ('NM', 'RPM', 'PRICE', 'MODEL', 'INDEX')}
+    # right table: min widths are its last two columns; match rows by top coordinate
+    right = [t for t in tables if t is not left and len(t.extract()[0]) >= 4]
+    mins_by_y = {}
+    for t in right:
+        for r, cells in zip(t.rows, t.extract()):
+            vals = [(c or '').strip() for c in cells]
+            if len(vals) >= 2 and re.fullmatch(r'\d{3}', vals[-1]) and re.fullmatch(r'\d{3}', vals[-2]):
+                mins_by_y[round(r.bbox[1])] = [int(vals[-2]), int(vals[-1])]
+    out, model, rpm = [], None, None
+    for r, cells in zip(left.rows, rows):
+        v = [(c or '').replace('\n', ' ').strip() for c in cells]
+        if not any(v):
+            model = rpm = None  # blank separator row = new block
+            continue
+        if v[col['INDEX']] in ('', 'INDEX') or v[col['NM']] in ('', '-', 'NM'):
+            continue
+        model = v[col['MODEL']] or model
+        rpm = v[col['RPM']] or rpm
+        p = PRICE.search(v[col['PRICE']])
+        y = round(r.bbox[1])
+        mins = mins_by_y.get(y) or next((m for yy, m in mins_by_y.items() if abs(yy - y) <= 2), None)
+        nm_txt = v[col['NM']]
+        out.append({'index': v[col['INDEX']], 'nm': int(re.match(r'\d+', nm_txt).group()), 'short': 'short' in nm_txt,
+                    'rpm': rpm, 'model': model, 'price': int(p.group(1)) if p else None, 'mins': mins})
+    return out
+
+
+def accessories_from_tables(page):
+    out = []
+    for t in page.find_tables({'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'}):
+        for cells in t.extract():
+            v = [(c or '').replace('\n', ' ').strip() for c in cells]
+            v = [x for x in v if x]
+            if len(v) < 4 or not INDEX.fullmatch(v[0]) or not PRICE.fullmatch(v[-1]):
+                continue
+            freq = next((x for x in v if 'Mhz' in x), '')
+            out.append({'index': v[0], 'name': v[1], 'description': v[2], 'frequency': freq, 'price': int(PRICE.fullmatch(v[-1]).group(1))})
+    return out
+
+
+def classify(a, brand):
+    n, d = a['name'], a['description']
+    text = (n + ' ' + d).lower()
+    ch = re.search(r'(\d+)-channel', d) or re.search(r'(\d+)-channel', n)
+    if 'smart home' in text or 'tahoma' in text or a['index'] == 'WINCZ3.0':
+        return {'kind': 'smart'}
+    if 'wind' in text and 'smoove' not in text and 'charger' not in text:
+        return {'kind': 'wind', 'radio': bool(a['frequency'])}
+    if ch and ('remote' in text or 'transmitter' in text or 'wall switch' in text):
+        return {'kind': 'remote', 'channels': int(ch.group(1)), 'wall': 'wall' in text and 'wall mount' not in text}
+    if not a['frequency'] and ('rocker switch' in text or ('switch' in text and ('inis' in text or 'smoove' in text) and 'timer' not in text)):
+        return {'kind': 'switch'}
+    if a['index'] == 'EX-01-Z3.0':
+        return {'kind': 'receiver'}
     return None
 
 
-def teleco(text):
-    """TELECO block: two indices on one line, prices '200 €' / '330 €' appear later in the block, in order."""
-    i = text.find('WIRED MOTORS FOR WIN SCREEN')
-    block = text[i:i + 2500]
-    prices = [int(p) for p in re.findall(r'(\d{3}) ?€', block)]
-    return prices[:2]
-
-
 def build():
-    items = []
-    for file, page, idx, kind, name in ITEMS:
-        if kind.startswith('pergolaUnit'):
-            continue
-        a, b = price_after(text_pp(file, page), idx), price_after(text_layout(file, page), idx)
-        if a is None or a != b:
-            raise SystemExit(f'{idx} p{page}: readings differ {a} vs {b}')
-        it = {'index': idx, 'kind': kind, 'name': name, 'price': a, 'source': {'file': file, 'page': page}}
-        ch = CHANNELS.get(idx[:-2])
-        if ch:
-            it['channels'] = ch
-        items.append(it)
-    t = {f: {r: teleco(fn(f, p)) for r, fn in (('pp', text_pp), ('layout', text_layout))} for f, p in ((S400, 20), (S500, 45))}
-    vals = {tuple(v) for d in t.values() for v in d.values()}
-    if len(vals) != 1 or len(next(iter(vals))) != 2:
-        raise SystemExit(f'TELECO prices differ: {t}')
-    p1, p4 = next(iter(vals))
-    for (file, page, idx, kind, name), price in zip([x for x in ITEMS if x[3].startswith('pergolaUnit')], (p1, p4)):
-        items.append({'index': idx, 'kind': kind, 'name': name, 'price': price, 'motors': 1 if kind == 'pergolaUnit1' else 4,
-                      'source': {'file': file, 'page': page, 'also': {'file': S500, 'page': 45}}})
-    # wind sensor: price from the page text (single '€' under WEATHER AUTOMATION), index/name from the image
-    for idx, v in VERIFIED_BY_IMAGE.items():
-        prices = []
-        for fn in (text_pp, text_layout):
-            tx = fn(v['file'], v['page'])
-            j = tx.find('WEATHER AUTOMATION')
-            prices.append([int(p) for p in re.findall(r'(\d{2,4}) ?€', tx[j:])])
-        if prices[0] != prices[1] or len(prices[0]) != 1:
-            raise SystemExit(f'{idx}: expected one price under WEATHER AUTOMATION, got {prices}')
-        items.append({'index': idx, 'kind': v['kind'], 'name': v['name'], 'price': prices[0][0], 'source': {'file': v['file'], 'page': v['page']}, 'verifiedByImage': True})
-    # solar motor kit (p.47): motor + panel
-    reads = []
-    for fn in (text_pp, text_layout):
-        m = re.search(r'(\d{3}) ?€ MOTOR ZIP (SRZM45-(\d+)/17-EL/D-Z3\.0) \+.*?SP-B-01.*?(\d{3}) (\d{3})', fn(SCREEN, 47))
-        reads.append(m.groups() if m else None)
-    if reads[0] != reads[1] or not reads[0]:
-        raise SystemExit(f'solar kit readings differ: {reads}')
-    price, idx, nm, ma, mf = reads[0]
-    solar = {'index': idx + ' + SP-B-01', 'control': 'solar', 'nm': int(nm), 'price': int(price), 'minWidth': {'adaptive': int(ma), 'flush': int(mf)}}
-    out = {'source': {'note': __doc__.strip()}, 'items': items}
-    with open(OUT, 'w') as f:
-        json.dump(out, f, ensure_ascii=False, indent=1)
-    # add the solar kit to the motor list
-    mp = 'data/sunwinner/2026-07/screen-motors.json'
-    m = json.load(open(mp))
-    m['motors'] = [x for x in m['motors'] if x['control'] != 'solar'] + [solar]
-    json.dump(m, open(mp, 'w'), ensure_ascii=False, indent=1)
-    print(f'{len(items)} control items; TELECO {p1}/{p4} € (S400 p.20 = S500 p.45); solar kit {solar["price"]} € {solar["nm"]} Nm')
+    src = os.path.join(SRC, SCREEN)
+    motors, items, problems = [], [], []
+    # WIN CONTROL motors (p.47): rows "NM PRICE ... INDEX ... minA minF" in both readings
+    wm = re.compile(r'(?:^|\s)(\d{1,2})(?: \(short\))?\s+(?:17\s+)?(\d{2,3}) ?€.*?\b((?:WS|W|R)Z?M45-\d+/17-EL/D(?:-Z3\.0)?)\b.*?(\d{3})\s+(\d{3})\s*$')
+    with pdfplumber.open(src) as d:
+        a = [m.groups() for m in (wm.search(ln) for ln in (d.pages[46].extract_text() or '').splitlines()) if m]
+    b = [m.groups() for m in (wm.search(ln) for ln in layout(SCREEN, 47)) if m]
+    if a != b or len(a) != 7:
+        problems.append(('wincontrol motors', a, b))
+    for nm, price, idx, ma, mf in a:
+        motors.append({'brand': 'wincontrol', 'index': idx, 'model': 'WIN CONTROL', 'control': 'radio' if idx.startswith('R') else 'wired',
+                       'nm': int(nm), 'price': int(price), 'minWidth': {'adaptive': int(ma), 'flush': int(mf)}, 'source': {'file': SCREEN, 'page': 47}})
+    kit = [re.search(r'(\d{3}) ?€ MOTOR ZIP (SRZM45-(\d+)/17-EL/D-Z3\.0) \+.*?SP-B-01.*?(\d{3}) (\d{3})', t) for t in
+           ('\n'.join(l for l in layout(SCREEN, 47)), pdfplumber.open(src).pages[46].extract_text())]
+    if not all(kit) or kit[0].groups() != kit[1].groups():
+        problems.append(('wincontrol solar kit', kit))
+    price, idx, nm, ma, mf = kit[0].groups()
+    motors.append({'brand': 'wincontrol', 'index': idx + ' + SP-B-01', 'model': 'WIN CONTROL Solar', 'control': 'solar', 'nm': int(nm), 'price': int(price),
+                   'minWidth': {'adaptive': int(ma), 'flush': int(mf)}, 'source': {'file': SCREEN, 'page': 47}})
+    # YOODA and Somfy motors
+    with pdfplumber.open(src) as d:
+        for pg, control in MOTOR_PAGES.items():
+            A = motors_from_tables(d.pages[pg - 1])
+            B = layout_index_map(layout(SCREEN, pg))
+            text_lines = (d.pages[pg - 1].extract_text() or '').splitlines()
+            for m in A:
+                bb = B.get(m['index'])
+                if not bb:
+                    problems.append((pg, m['index'], 'missing in layout'))
+                    continue
+                bprice = bb['before']  # motor rows print the price before the index
+                if bprice is None and control == 'solar':
+                    # kit price printed on the following battery line: index line, then 'NNN €' as the next price
+                    i = next(k for k, ln in enumerate(text_lines) if m['index'] in ln)
+                    nxt = next((PRICE.search(ln) for ln in text_lines[i + 1:i + 4] if PRICE.search(ln)), None)
+                    bprice = int(nxt.group(1)) if nxt else None
+                if m['price'] != bprice or m['mins'] != bb['mins']:
+                    problems.append((pg, m['index'], m['price'], bprice, m['mins'], bb['mins']))
+                    continue
+                motors.append({'brand': BRAND_OF_PAGE[pg], 'index': m['index'], 'model': m['model'], 'rpm': m['rpm'], 'control': control,
+                               'nm': m['nm'], 'short': m['short'], 'price': m['price'], 'minWidth': {'adaptive': m['mins'][0], 'flush': m['mins'][1]},
+                               'source': {'file': SCREEN, 'page': pg}})
+        # accessories
+        for pg in ACCESSORY_PAGES:
+            B = layout_index_map(layout(SCREEN, pg))
+            for a in accessories_from_tables(d.pages[pg - 1]):
+                c = classify(a, BRAND_OF_PAGE[pg])
+                if not c:
+                    continue
+                bb = B.get(a['index'])
+                if not bb or bb['price'] != a['price']:
+                    problems.append((pg, a['index'], a['price'], bb and bb['price']))
+                    continue
+                items.append({'brand': BRAND_OF_PAGE[pg], 'index': a['index'], 'name': a['name'], 'description': a['description'],
+                              'price': a['price'], **c, 'source': {'file': SCREEN, 'page': pg}})
+    # TELECO units (any brand of wired motor; ASSUMPTION for YOODA/Somfy — catalogue names WIN SCREEN wired motors)
+    def teleco(file, page, fn):
+        tx = fn(file, page)
+        i = tx.find('WIRED MOTORS FOR WIN SCREEN')
+        return [int(p) for p in re.findall(r'(\d{3}) ?€', tx[i:i + 2500])][:2]
+    pp = lambda f, p: pdfplumber.open(os.path.join(SRC, f)).pages[p - 1].extract_text() or ''
+    lt = lambda f, p: '\n'.join(layout(f, p))
+    tv = {(f, n): teleco(f, p, fn) for f, p in ((S400, 20), (S500, 45)) for n, fn in (('pp', pp), ('layout', lt))}
+    if len({tuple(v) for v in tv.values()}) != 1:
+        problems.append(('teleco', tv))
+    p1, p4 = next(iter(tv.values()))
+    items += [
+        {'brand': 'any', 'index': 'SW-TEL-TVPRS868A04B', 'kind': 'pergolaUnit1', 'name': 'TELECO central unit for 1 wired motor', 'price': p1, 'motors': 1,
+         'source': {'file': S400, 'page': 20, 'also': {'file': S500, 'page': 45}}},
+        {'brand': 'any', 'index': 'SW-TEL-TVPL4868AC4', 'kind': 'pergolaUnit4', 'name': 'TELECO central unit for 4 wired motors, wind sensor input', 'price': p4, 'motors': 4,
+         'source': {'file': S400, 'page': 20, 'also': {'file': S500, 'page': 45}}},
+    ]
+    # WIN CONTROL wind sensor (VERIFIED_BY_IMAGE: index/name from the page image, price from text)
+    prices = []
+    for fn in (pp, lt):
+        tx = fn(SCREEN, 49)
+        j = tx.find('WEATHER AUTOMATION')
+        prices.append([int(p) for p in re.findall(r'(\d{2,4}) ?€', tx[j:])])
+    if prices[0] != prices[1] or len(prices[0]) != 1:
+        problems.append(('WS-S02', prices))
+    items.append({'brand': 'wincontrol', 'index': 'WS-S02', 'kind': 'wind', 'radio': False, 'name': 'WIN CONTROL wired wind and sun sensor',
+                  'description': 'Wired wind and sun sensor, 230 V AC', 'price': prices[0][0], 'source': {'file': SCREEN, 'page': 49}, 'verifiedByImage': True})
+    if problems:
+        raise SystemExit('readings disagree:\n' + '\n'.join(map(str, problems)))
+    json.dump({'source': {'note': __doc__.strip()}, 'motors': motors}, open(f'{OUT}/screen-motors.json', 'w'), ensure_ascii=False, indent=1)
+    json.dump({'source': {'note': __doc__.strip()}, 'items': items}, open(f'{OUT}/screen-controls.json', 'w'), ensure_ascii=False, indent=1)
+    from collections import Counter
+    print(f'motors: {Counter((m["brand"], m["control"]) for m in motors)}')
+    print(f'items: {Counter((i["brand"], i["kind"]) for i in items)}')
 
 
 if __name__ == '__main__':

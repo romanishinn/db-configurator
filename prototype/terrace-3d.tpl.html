@@ -18,6 +18,7 @@
   --bg: #14181b; --panel: #1c2125; --ink: #e6e9eb; --muted: #9aa5ad; --line: #30373e;
   --accent: #72b6d6; --accent-soft: #1d333e; --good: #6cc592; --warn: #e2a65c; --warn-soft: #3a2c1a; color-scheme: dark; }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45; }
 .app { display: grid; grid-template-columns: 300px minmax(0, 1fr) 300px; gap: 14px; padding-inline: 16px; padding-block: 16px; min-height: 100vh; }
 @media (max-width: 1100px) { .app { grid-template-columns: 280px minmax(0, 1fr); } .est { grid-column: 1 / -1; } }
@@ -27,7 +28,8 @@ h1 { font-family: var(--f-display); font-size: 19px; margin: 0 0 2px; letter-spa
 h2 { font-family: var(--f-display); font-size: 14px; margin: 18px 0 10px; }
 .sub { color: var(--muted); font-size: 12.5px; margin: 0; }
 label.l { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
-.dims { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.dims { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; align-items: end; }
+.dims label.l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 input[type=number] { width: 100%; font-family: var(--f-mono); font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; }
 input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .seg { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
@@ -45,13 +47,14 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .tag { font-size: 11px; border-radius: 3px; padding: 1px 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
 .tag.cheapest { color: var(--good); border-color: var(--good); }
 .note { font-size: 12.5px; border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 7px 10px; border-radius: 4px; margin-top: 8px; }
-.stage { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); height: calc(100vh - 32px); min-height: 520px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: #cfd8de; align-self: start; }
+.stage { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); height: calc(100vh - 32px); min-height: 520px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); align-self: start; display: flex; flex-direction: column; }
+.vp { position: relative; flex: 1; min-height: 0; background: #cfd8de; }
 #view { position: absolute; inset: 0; }
 #view canvas { display: block; width: 100%; height: 100%; }
 .labels { position: absolute; inset: 0; pointer-events: none; }
 .dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 .dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
-.toolbar { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 10px 12px; font-size: 12.5px; }
 .toolbar label { display: flex; align-items: center; gap: 6px; }
 .toolbar input[type=range] { width: 110px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 4px; padding: 4px 9px; cursor: pointer; }
@@ -59,7 +62,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .toolbar #louv-info b { color: #1d6b3a; font-weight: 600; }
 .toolbar button[aria-pressed="true"] { background: #1c2226; color: #fff; border-color: #1c2226; }
 .hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
-@media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: 480px; min-height: 0; } }
+@media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: auto; min-height: 0; } .vp { flex: none; height: 400px; } .toolbar #louv-info { flex-basis: 100%; } }
 .menu { position: absolute; background: #fff; color: #1c2226; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); padding: 8px; display: grid; gap: 4px; min-width: 170px; z-index: 5; }
 .menu .t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #5b666e; padding: 2px 6px 4px; }
 .menu button { text-align: left; font: inherit; font-size: 13.5px; border: 0; background: transparent; color: #1c2226; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
@@ -71,6 +74,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .zctl { font: inherit; font-size: 12px; width: 100%; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); max-width: 100%; }
 .proj { display: grid; gap: 6px; margin: 10px 0 4px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 12.5px; }
 .proj label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; }
+.proj input[type=text], .proj input[type=number] { font: inherit; font-size: 12.5px; width: 100%; min-width: 0; padding: 3px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); }
 .proj select { font: inherit; font-size: 12.5px; width: 100%; min-width: 0; padding: 3px 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); }
 table.lines { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.lines td { padding: 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -113,7 +117,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <button type="button" id="mt-free" aria-pressed="false">Отдельностоящая</button>
     </div>
     <div class="dims">
-      <div><label class="l" for="w">Ширина вдоль стены, мм</label><input type="number" id="w" value="12000" step="100" min="1000"></div>
+      <div><label class="l" for="w" id="w-l" title="Вдоль стены">Ширина, мм</label><input type="number" id="w" value="12000" step="100" min="1000"></div>
       <div><label class="l" for="d">Глубина, мм</label><input type="number" id="d" value="2000" step="100" min="1000"></div>
     </div>
     <h2>Варианты компоновки</h2>
@@ -125,9 +129,11 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
   </aside>
 
   <section class="stage" aria-label="3D-вид">
-    <div id="view"></div>
-    <div class="labels" id="labels"></div>
-    <div class="hint" id="hint">Нажмите на проём между стойками, чтобы выбрать заполнение. Тяните мышью — вращение, колесо — масштаб.</div>
+    <div class="vp">
+      <div id="view"></div>
+      <div class="labels" id="labels"></div>
+      <div class="hint" id="hint">Нажмите на проём между стойками, чтобы выбрать заполнение. Тяните мышью — вращение, колесо — масштаб.</div>
+    </div>
     <div class="toolbar">
       <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
@@ -145,8 +151,15 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     <h1 id="t3">Расчёт</h1>
     <p class="sub">Каталожные цены Sun Winner 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass и ZIP-скрины уже по прайсу; Win Verto и Win Panels — следующим шагом.</p>
     <div class="proj" id="ctl-proj" hidden>
-      <label>Пульт <select id="remote"></select></label>
-      <label><input type="checkbox" id="wind" checked><span>Датчик ветра WS-S02 <span class="muted">— без него гарантия на ткань не действует</span></span></label>
+      <label>Моторы <select id="brand"></select></label>
+      <p class="sub" id="brand-hint" style="margin:0"></p>
+      <div id="custom" hidden style="display:grid;gap:6px">
+        <label>Мотор <input type="text" id="c-name" placeholder="название, напр. Becker"></label>
+        <label>Цена мотора, € <input type="number" id="c-motor" min="0" step="1" value="0"></label>
+        <label>Управление на проект, € <input type="number" id="c-ctl" min="0" step="1" value="0"></label>
+      </div>
+      <label id="remote-l">Пульт <select id="remote"></select></label>
+      <label><input type="checkbox" id="wind" checked><span id="wind-t">Датчик ветра</span></label>
     </div>
     <table class="lines"><tbody id="lines"></tbody></table>
     <div id="issues"></div>
@@ -185,7 +198,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
+const state = { brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 12000, depth: 2000, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {} };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'zip', 'front-1': 'glass', 'front-2': 'zip', 'right-0': 'verto' };
 
@@ -326,16 +339,17 @@ function openings(opt, sp) {
   const out = [], h = H - sp.crown;
   const D = opt.depth / 1000;
   const front = opt.modules.filter((m) => m.row === opt.rows - 1);
-  front.forEach((m, i) => out.push({ id: 'front-' + i, label: 'Спереди, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: D - sp.post / 2, rotY: 0, axis: 'x' }));
+  front.forEach((m, i) => out.push({ mod: m, id: 'front-' + i, label: 'Спереди, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: D - sp.post / 2, rotY: 0, axis: 'x' }));
   const W = opt.width / 1000;
   for (let r = 0; r < opt.rows; r++) {
     const m = opt.modules.find((mm) => mm.row === r);
+    const mr = opt.modules.filter((mm) => mm.row === r).at(-1);
     const z = (m.y + m.depth / 2) / 1000, len = m.depth / 1000 - sp.post;
-    out.push({ id: 'left-' + r, label: 'Слева' + (opt.rows > 1 ? ', ряд ' + (r + 1) : ''), len, h, cx: sp.post / 2, cz: z, rotY: Math.PI / 2, axis: 'z' });
-    out.push({ id: 'right-' + r, label: 'Справа' + (opt.rows > 1 ? ', ряд ' + (r + 1) : ''), len, h, cx: W - sp.post / 2, cz: z, rotY: Math.PI / 2, axis: 'z' });
+    out.push({ mod: m, id: 'left-' + r, label: 'Слева' + (opt.rows > 1 ? ', ряд ' + (r + 1) : ''), len, h, cx: sp.post / 2, cz: z, rotY: Math.PI / 2, axis: 'z' });
+    out.push({ mod: mr, id: 'right-' + r, label: 'Справа' + (opt.rows > 1 ? ', ряд ' + (r + 1) : ''), len, h, cx: W - sp.post / 2, cz: z, rotY: Math.PI / 2, axis: 'z' });
   }
   if (state.mount === 'free') {
-    opt.modules.filter((m) => m.row === 0).forEach((m, i) => out.push({ id: 'back-' + i, label: 'Сзади, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: sp.post / 2, rotY: 0, axis: 'x' }));
+    opt.modules.filter((m) => m.row === 0).forEach((m, i) => out.push({ mod: m, id: 'back-' + i, label: 'Сзади, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: sp.post / 2, rotY: 0, axis: 'x' }));
   }
   return out;
 }
@@ -419,9 +433,10 @@ function renderLabels(opt) {
   if (!opt) return;
   const { W, D } = bounds(), y = H + 0.25;
   const add = (text, p, cls = '') => { const el = document.createElement('div'); el.className = 'dim ' + cls; el.textContent = text; labels.appendChild(el); labelDefs.push({ el, p: new THREE.Vector3(...p) }); };
-  add(mm(Math.round(W * 1000)) + ' мм', [W / 2, y + 0.8, D + 0.1], 'total');
-  if (opt.cols > 1) opt.modules.filter((m) => m.row === 0).forEach((m) => add(mm(m.width), [(m.x + m.width / 2) / 1000, y, D + 0.1]));
-  add(mm(opt.depth) + ' мм', [-0.35, y, D / 2], 'total');
+  // dimension labels on the ground in front of / beside the pergola, so they never cover the roof
+  add(mm(Math.round(W * 1000)) + ' мм', [W / 2, 0.02, D + 1.15], 'total');
+  if (opt.cols > 1) opt.modules.filter((m) => m.row === 0).forEach((m) => add(mm(m.width), [(m.x + m.width / 2) / 1000, 0.02, D + 0.3]));
+  add(mm(opt.depth) + ' мм', [-0.7, 0.02, D / 2], 'total');
 }
 const v = new THREE.Vector3();
 function placeLabels() {
@@ -458,7 +473,7 @@ function openMenu(o, e) {
   const r = view.getBoundingClientRect(); menu = document.createElement('div'); menu.className = 'menu';
   const fill = state.fills[o.id] || 'none';
   menu.innerHTML = `<div class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</div>` + Object.entries(FILL).map(([k, t]) => `<button type="button" data-k="${k}" aria-current="${fill === k}">${t}</button>`).join('')
-    + (fill === 'zip' ? `<div class="sep"></div><div class="t">Управление скрином</div>` + Object.entries(CTL).map(([k, c]) => `<button type="button" class="ctl" data-ctl="${k}" aria-current="${ctlOf(o.id) === k}">${c.name}<span class="d">${c.hint}</span></button>`).join('') : '');
+    + (fill === 'zip' ? `<div class="sep"></div><div class="t">Управление скрином</div>` + Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<button type="button" class="ctl" data-ctl="${k}" aria-current="${ctlOf(o.id) === k}">${c.name}<span class="d">${c.hint}</span></button>`).join('') : '');
   menu.style.left = Math.min(e.clientX - r.left, r.width - 230) + 'px'; menu.style.top = Math.max(8, Math.min(e.clientY - r.top, r.height - (fill === 'zip' ? 420 : 220))) + 'px';
   menu.addEventListener('click', (ev) => {
     const b = ev.target.closest('button'); if (!b) return;
@@ -507,16 +522,26 @@ $('sugg').addEventListener('click', (e) => {
 });
 
 const CTL = {
-  remote: { name: 'Радио + пульт', hint: 'радиомотор WIN CONTROL, пульт на проект', short: 'радио + пульт' },
-  smart: { name: 'Радио + смартфон', hint: 'WIN CONTROL Smart, приложение (ZigBee 3.0)', short: 'радио + смартфон' },
-  pergola: { name: 'С пульта перголы', hint: 'проводной мотор + блок TELECO', short: 'с пульта перголы' },
-  solar: { name: 'Солнечная батарея', hint: 'без проводки, мотор 20 Нм с панелью', short: 'солнечная батарея' },
+  remote: { name: 'Радио + пульт', hint: 'радиомотор, один пульт на проект' },
+  smart: { name: 'Радио + смартфон', hint: 'блок умного дома бренда, приложение' },
+  pergola: { name: 'С пульта перголы', hint: 'проводной мотор + блок TELECO' },
+  switch: { name: 'Проводной + выключатель', hint: 'выключатель на стене у каждого скрина' },
+  solar: { name: 'Солнечная батарея', hint: 'без проводки, мотор с панелью' },
 };
-const ctlOf = (id) => state.zipCtl[id] || 'remote';
+const BRANDS = {
+  yooda: { name: 'YOODA', tier: 'эконом', hint: 'радио 1-way 433 МГц, механические концевики (каталог стр. 99–106)' },
+  wincontrol: { name: 'WIN CONTROL', tier: 'стандарт Sun Winner', hint: 'радио 2-way 868 МГц + ZigBee, электронные концевики, распознавание препятствий (стр. 93–98)' },
+  somfy: { name: 'Somfy', tier: 'премиум', hint: 'io 2-way 868 МГц, электронные концевики (стр. 107–116)' },
+  custom: { name: 'Свой вариант', tier: 'своя цена', hint: 'свой мотор и управление по своей цене; нужный момент мотора показан у каждого скрина' },
+};
+const modesOf = () => DBCore.brandModes(state.brand, cat);
+const ctlOf = (id) => { const m = state.zipCtl[id] || 'remote'; return modesOf().includes(m) ? m : 'remote'; };
 const SCREEN_NAME = { 'zip110.adaptive': 'ZIP 110', 'zip130.adaptive': 'ZIP 130' };
-const MOTOR_CTL = { wired: 'проводной', radio: 'радио 2-way', solar: 'солнечный (с панелью)' };
+const MOTOR_CTL = { wired: 'проводной', radio: 'радио', solar: 'солнечный с панелью' };
+const motorName = (m) => m.brand === 'custom' ? (m.index === 'own motor' ? 'свой' : m.index) : `${BRANDS[m.brand].name}${m.model && m.model !== 'WIN CONTROL' ? ' ' + m.model.replace('WIN CONTROL ', '') : ''}${m.short ? ' (короткий)' : ''} ${m.index}`;
 function screenWhyNot(r, req, mode) {
-  if (r.issues.some((i) => i.code === 'SCREEN_NO_MOTOR') && mode === 'solar') return 'солнечный мотор только до 20 Нм — для этого размера нужен больший момент; выберите другое управление';
+  const nm = r.issues.find((i) => i.code === 'SCREEN_NO_MOTOR');
+  if (nm) return `у ${BRANDS[state.brand].name} нет ${MOTOR_CTL[nm.params.control]} мотора на ${nm.params.torque} Нм для этого размера — выберите другое управление или бренд`;
   const fw = r.issues.find((i) => i.code === 'FABRIC_MAX_WIDTH'), fh = r.issues.find((i) => i.code === 'FABRIC_MAX_HEIGHT');
   const ok = cat.fabrics.collections.filter((c) => DBCore.selectScreen({ ...req, fabric: c.id }, cat).best).map((c) => c.name);
   const f = fabricOf().name;
@@ -534,7 +559,7 @@ function renderEstimate() {
   const fills = Object.entries(state.fills).filter(([, f]) => f !== 'none');
   const ops = openings(o, SPEC[o.family === 'S400' ? 'S400' : 'S500']);
   let sides = 0; const pending = [], unbuilt = [];
-  const e = colorsEff(), coat = [], zipOps = [];
+  const e = colorsEff(), coat = [], zipOps = [], zipReqs = [];
   const sys = o.family === 'S400' ? 'S400' : 'S500';
   for (const m of o.modules) coat.push({ system: sys, base: m.gridPrice, color: e.construction, roofColor: e.roof, label: 'pergola' });
   for (const [id, f] of fills) {
@@ -550,14 +575,15 @@ function renderEstimate() {
       }
     } else if (f === 'zip') {
       const mode = ctlOf(op.id);
-      const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: state.colors.fabric, control: DBCore.MOTOR_FOR_MODE[mode] };
+      const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: state.colors.fabric, control: DBCore.MOTOR_FOR_MODE[mode], brand: state.brand, customMotor: { name: state.custom.name, price: state.custom.motor } };
       const r = DBCore.selectScreen(req, cat);
-      const ctlSel = `<label class="zl">Управление<select class="zctl" data-zctl="${op.id}">${Object.entries(CTL).map(([k, c]) => `<option value="${k}" ${k === mode ? 'selected' : ''}>${c.name}</option>`).join('')}</select></label>`;
+      zipReqs.push({ req, mode, sys: o.family === 'S400' ? 'p' + o.modules.indexOf(op.mod) : 'all' });
+      const ctlSel = `<label class="zl">Управление<select class="zctl" data-zctl="${op.id}">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<option value="${k}" ${k === mode ? 'selected' : ''}>${c.name}</option>`).join('')}</select></label>`;
       if (r.best) {
         const b = r.best, fab = b.lines.find((l) => l.code === 'FABRIC_SURCHARGE');
-        zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0, mode });
+        zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0, mode, sys: zipReqs.at(-1).sys });
         sides += b.gridPrice + b.motor.price; coat.push({ system: 'SCREEN_ZIP', base: b.gridPrice, color: e.zip, label: 'zip' });
-        html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${SCREEN_NAME[b.system]}, по прайсу ${mm(b.billed.width)} × ${mm(b.billed.height)} — ${eur(b.gridPrice)} · стр. ${cat.tables[b.system].source.page}<br>мотор WIN CONTROL ${MOTOR_CTL[b.motor.control]} ${b.motor.nm} Нм (нужно ${b.torqueNm} Нм) — ${eur(b.motor.price)} · стр. ${cat.screenMotors.source.page}</span></td><td class="a">${eur(b.gridPrice + b.motor.price)}</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
+        html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${SCREEN_NAME[b.system]}, по прайсу ${mm(b.billed.width)} × ${mm(b.billed.height)} — ${eur(b.gridPrice)} · стр. ${cat.tables[b.system].source.page}<br>мотор ${motorName(b.motor)}, ${MOTOR_CTL[b.motor.control]}, ${b.motor.nm} Нм (нужно ${b.torqueNm} Нм) — ${eur(b.motor.price)}${b.motor.source ? ' · стр. ' + b.motor.source.page : ''}</span></td><td class="a">${eur(b.gridPrice + b.motor.price)}</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       } else {
         unbuilt.push(op);
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${screenWhyNot(r, req, mode)}</span></td><td class="a muted">—</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
@@ -588,12 +614,15 @@ function renderEstimate() {
     }
   }
   if (zipOps.length) {
-    const cl = DBCore.screenControlLines(zipOps.map((z) => z.mode), { remote: state.remote || undefined, wind: state.wind }, cat);
-    const CL = { CONTROL_REMOTE: 'пульт на проект', CONTROL_SMART: 'один блок на проект', CONTROL_PERGOLA_UNIT: 'скрины с пульта перголы', CONTROL_WIND_SENSOR: 'один на проект' };
+    const systems = new Set(zipOps.map((z) => z.sys)).size;
+    const cl = DBCore.screenControlLines(zipOps.map((z) => z.mode), { brand: state.brand, remote: state.remote || undefined, wind: state.wind, windSensors: systems, customControls: state.custom.controls }, cat);
+    const CL = { CONTROL_REMOTE: 'пульт на проект', CONTROL_SMART: 'один блок на проект', CONTROL_PERGOLA_UNIT: 'скрины с пульта перголы', CONTROL_WIND_SENSOR: 'один на систему перголы со скринами', CONTROL_SWITCH: 'по одному на скрин' };
+    for (const l of cl.lines.filter((l) => l.code === 'CONTROL_CUSTOM')) { html += `<tr><td>Управление — свой вариант<span class="s">пульты, датчики и т. п. на проект</span></td><td class="a">${eur(l.amount)}</td></tr>`; }
+    cl.lines = cl.lines.filter((l) => l.code !== 'CONTROL_CUSTOM');
     for (const l of cl.lines) {
       const p = l.params;
       const page = l.source.also && o.family !== 'S400' ? `каталог S500, стр. ${l.source.also.page}` : l.code === 'CONTROL_PERGOLA_UNIT' ? `каталог S400, стр. ${l.source.page}` : `стр. ${l.source.page}`;
-      html += `<tr><td>${p.name}${p.qty > 1 ? ' × ' + p.qty : ''}<span class="s">${CL[l.code]} · ${p.index}${l.code === 'CONTROL_REMOTE' ? ` · скринов: ${p.screens}` : ''}${l.code === 'CONTROL_PERGOLA_UNIT' ? ` · проводных моторов: ${p.motors}` : ''} · ${page}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
+      html += `<tr><td>${p.brand !== 'any' && BRANDS[p.brand] && !p.name.includes('WIN CONTROL') ? BRANDS[p.brand].name + ' ' : ''}${p.name}${p.qty > 1 ? ' × ' + p.qty : ''}<span class="s">${CL[l.code]} · ${p.index}${l.code === 'CONTROL_REMOTE' ? ` · скринов: ${p.screens}` : ''}${l.code === 'CONTROL_PERGOLA_UNIT' ? ` · проводных моторов: ${p.motors}` : ''} · ${page}</span></td><td class="a">${eur(l.amount)}</td></tr>`;
     }
     for (const i of cl.issues) html += `<tr><td colspan="2"><div class="note">Пульт на ${i.params.channels} канал(а), а скринов ${i.params.screens} — выберите пульт с большим числом каналов.</div></td></tr>`;
     sides += cl.total;
@@ -601,16 +630,38 @@ function renderEstimate() {
   html += `<tr class="t"><td>Итого по каталогу${pending.length || unbuilt.length ? `<span class="s">без ${[pending.length ? 'позиций «позже»' : '', unbuilt.length ? 'позиций «—»' : ''].filter(Boolean).join(' и ')}</span>` : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
   tb.innerHTML = html;
   const anyRemote = zipOps.some((z) => z.mode === 'remote' || z.mode === 'solar');
-  $('ctl-proj').hidden = !zipOps.length;
-  $('remote').closest('label').hidden = !anyRemote;
-  $('remote').innerHTML = `<option value="">авто — по числу скринов</option>` + cat.screenControls.items.filter((i) => i.kind === 'remote').map((i) => `<option value="${i.index}" ${i.index === state.remote ? 'selected' : ''}>${i.name.replace('WIN CONTROL ', '')} — ${eur(i.price)}</option>`).join('');
+  $('ctl-proj').hidden = !zipReqs.length;
+  // brand comparison for the screens of this project: motors + control devices
+  const costFor = (brand) => {
+    let sum = 0;
+    const modes = [];
+    for (const z of zipReqs) {
+      const md = DBCore.brandModes(brand, cat).includes(z.mode) ? z.mode : 'remote';
+      const r = DBCore.selectScreen({ ...z.req, brand, control: DBCore.MOTOR_FOR_MODE[md] }, cat);
+      if (!r.best) return null;
+      sum += r.best.motor.price; modes.push(md);
+    }
+    return sum + DBCore.screenControlLines(modes, { brand, wind: state.wind, windSensors: new Set(zipReqs.map((z) => z.sys)).size, customControls: state.custom.controls }, cat).total;
+  };
+  $('brand').innerHTML = DBCore.MOTOR_BRANDS.map((k) => { const c = k === 'custom' ? null : costFor(k); return `<option value="${k}" ${k === state.brand ? 'selected' : ''}>${BRANDS[k].name} — ${BRANDS[k].tier}${c != null ? ' · ' + eur(c) : k === 'custom' ? '' : ' · не для всех размеров'}</option>`; }).join('');
+  $('brand-hint').textContent = BRANDS[state.brand].hint + (zipReqs.length ? ' · сумма в списке = моторы и управление для скринов проекта' : '');
+  $('custom').hidden = state.brand !== 'custom';
+  $('remote-l').hidden = !anyRemote || state.brand === 'custom';
+  $('remote').innerHTML = `<option value="">авто — по числу скринов</option>` + cat.screenControls.items.filter((i) => i.kind === 'remote' && i.brand === state.brand).map((i) => `<option value="${i.index}" ${i.index === state.remote ? 'selected' : ''}>${i.name.replace('WIN CONTROL - ', '')}${i.wall ? ' (настенный)' : ''} — ${eur(i.price)}</option>`).join('');
   $('wind').checked = state.wind;
+  $('wind').closest('label').hidden = state.brand === 'custom';
+  const nSys = new Set(zipOps.map((z) => z.sys)).size;
+  $('wind-t').innerHTML = `Датчик ветра — 1 на систему${nSys > 1 ? ` (${nSys} шт.)` : ''} <span class="muted">— без него гарантия на ткань не действует</span>`;
   const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Размер подогнан под шаг ламелей (S400 — 200 мм).', S400_FREE_ROWS: 'Задний ряд S400 крепится к стене, передний — отдельностоящие перголы (4 стойки).', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у Sun Winner.' };
   $('issues').innerHTML = o.issues.map((i) => `<div class="note">${ISS[i.code] || i.code}${i.params && i.params.built ? ` Строим ${mm(i.params.built)} мм вместо ${mm(i.params.requested)} мм.` : ''}</div>`).join('');
 }
 
 /* ---------- inputs ---------- */
 $('remote').addEventListener('change', (e) => { state.remote = e.target.value; renderEstimate(); });
+$('brand').addEventListener('change', (e) => { state.brand = e.target.value; state.remote = ''; renderEstimate(); });
+$('c-name').addEventListener('input', (e) => { state.custom.name = e.target.value; renderEstimate(); });
+$('c-motor').addEventListener('input', (e) => { state.custom.motor = Math.max(0, Number(e.target.value) || 0); renderEstimate(); });
+$('c-ctl').addEventListener('input', (e) => { state.custom.controls = Math.max(0, Number(e.target.value) || 0); renderEstimate(); });
 $('wind').addEventListener('change', (e) => { state.wind = e.target.checked; renderEstimate(); });
 $('lines').addEventListener('change', (e) => { const id = e.target.dataset.zctl; if (!id) return; state.zipCtl[id] = e.target.value; renderEstimate(); });
 function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(true); }

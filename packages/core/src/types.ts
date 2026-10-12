@@ -89,8 +89,13 @@ export interface FabricData {
   collections: FabricCollection[];
 }
 
+export type MotorBrand = 'wincontrol' | 'yooda' | 'somfy' | 'custom';
+
 export interface ScreenMotor {
+  brand: MotorBrand;
   index: string;
+  model?: string;
+  short?: boolean;
   control: 'wired' | 'radio' | 'solar';
   nm: number;
   price: number;
@@ -98,18 +103,23 @@ export interface ScreenMotor {
 }
 
 export interface ScreenMotorData {
-  source: { file: string; page: number };
-  motors: ScreenMotor[];
+  motors: (ScreenMotor & { source: { file: string; page: number } })[];
 }
 
 export interface ControlItem {
+  brand: MotorBrand | 'any';
   index: string;
-  kind: 'remote' | 'smart' | 'receiver' | 'pergolaUnit1' | 'pergolaUnit4' | 'wind';
+  kind: 'remote' | 'smart' | 'receiver' | 'pergolaUnit1' | 'pergolaUnit4' | 'wind' | 'switch';
   name: string;
+  description?: string;
   price: number;
   channels?: number;
+  /** remote: wall-mounted transmitter (otherwise handheld) */
+  wall?: boolean;
+  /** wind sensor: radio (otherwise wired) */
+  radio?: boolean;
   motors?: number;
-  source: { file: string; page: number };
+  source: { file: string; page: number; also?: { file: string; page: number } };
 }
 
 export interface Catalog {

@@ -1,7 +1,7 @@
 import { fabricSurcharge } from './colors';
 import { lookupGrid, NotProducedError, OutOfRangeError } from './grid';
 import { round2 } from './money';
-import type { Catalog, ControlItem, GridTable, Issue, Line, ScreenMotor } from './types';
+import type { Catalog, ControlItem, GridTable, Issue, Line, MotorBrand, ScreenMotor } from './types';
 
 /**
  * Win Screen ZIP on a pergola side: adaptive box mounted in the opening.
@@ -18,6 +18,9 @@ export interface ScreenRequest {
   /** fabric collection id (fabrics.json), default Soltis 7635 (in price) */
   fabric?: string;
   control?: MotorControl;
+  /** motor brand, default WIN CONTROL (Sun Winner); 'custom' = own motor at an own price */
+  brand?: MotorBrand;
+  customMotor?: { name?: string; price?: number };
   /** omit to take the cheapest system that builds this size with this fabric */
   system?: ScreenSystem;
 }
@@ -45,6 +48,13 @@ export interface ScreenResult {
 }
 
 const DEFAULT_FABRIC = 'soltis-7635';
+
+/** Cheapest motor of the brand and control type with enough torque for the size and fitting the roller width. */
+export function pickMotor(cat: Catalog, brand: MotorBrand, control: MotorControl, nm: number, width: number): ScreenMotor | undefined {
+  return (cat.screenMotors?.motors ?? [])
+    .filter((m) => m.brand === brand && m.control === control && m.nm >= nm && m.minWidth.adaptive <= width)
+    .sort((a, b) => a.price - b.price || a.nm - b.nm)[0];
+}
 
 export function priceScreenIn(system: ScreenSystem, req: ScreenRequest, cat: Catalog): { option: ScreenOption | null; issues: Issue[] } {
   const t = cat.tables[system] as (GridTable & { meta: ScreenMeta }) | undefined;
@@ -79,15 +89,17 @@ export function priceScreenIn(system: ScreenSystem, req: ScreenRequest, cat: Cat
   const xi = t.x.values.indexOf(g.x), yi = t.y.values.indexOf(g.y);
   const nm = t.meta.torqueNm[yi]![xi]!;
   const control = req.control ?? 'wired';
-  const motors = (cat.screenMotors?.motors ?? []).filter((m) => m.control === control && m.nm >= nm && m.minWidth.adaptive <= req.width).sort((a, b) => a.price - b.price || a.nm - b.nm);
-  const motor = motors[0];
+  const brand = req.brand ?? 'wincontrol';
+  const motor = brand === 'custom'
+    ? { brand, index: req.customMotor?.name || 'own motor', control, nm, price: req.customMotor?.price ?? 0, minWidth: { adaptive: 0, flush: 0 } } as ScreenMotor
+    : pickMotor(cat, brand, control, nm, req.width);
   if (!motor) {
-    issues.push({ severity: 'block', code: 'SCREEN_NO_MOTOR', params: { system, torque: nm, control } });
+    issues.push({ severity: 'block', code: 'SCREEN_NO_MOTOR', params: { system, torque: nm, control, brand } });
     return { option: null, issues };
   }
   const lines: Line[] = [
     { code: 'SCREEN_BASE', params: { system, width: g.x, height: g.y }, amount: g.price, source: g.source },
-    { code: 'SCREEN_MOTOR', params: { index: motor.index, nm: motor.nm, required: nm, control }, amount: motor.price, source: { file: cat.screenMotors!.source.file, page: cat.screenMotors!.source.page } },
+    { code: 'SCREEN_MOTOR', params: { brand: motor.brand, index: motor.index, model: motor.model ?? '', nm: motor.nm, required: nm, control }, amount: motor.price, source: (motor as { source?: { file: string; page: number } }).source },
   ];
   const f = fabricSurcharge(req.width, req.height, fabric, cat);
   if (f.amount > 0) lines.push(f);
@@ -111,57 +123,95 @@ export function selectScreen(req: ScreenRequest, cat: Catalog): ScreenResult {
 }
 
 /**
- * How a screen is operated. Each mode fixes the motor type and the shared control devices:
- * - remote:  WIN CONTROL 2-way radio motor + one handheld/wall remote for the project
- * - smart:   WIN CONTROL 2-way radio motor + one WIN CONTROL Smart unit (smartphone app, ZigBee 3.0)
- * - pergola: WIN CONTROL wired motor + TELECO central unit -> operated with the pergola's 63-channel remote
- *            (S400 p.20 / S500 p.45: unit for 1 motor or for 4 motors, the 4-motor unit has a wind sensor input)
- * - solar:   WIN CONTROL solar radio motor kit with panel (20 Nm) + remote
+ * How a screen is operated. Each mode fixes the motor type and the shared control devices of the chosen brand:
+ * - remote:  radio motor + one remote for the project
+ * - smart:   radio motor + one smart unit (WIN CONTROL Smart / YOODA Smart Home 3.0 / Somfy TaHoma Switch Pro)
+ * - pergola: wired motor + TELECO central unit -> the pergola's 63-channel remote (S400 p.20 / S500 p.45;
+ *            ASSUMPTION: also for YOODA/Somfy wired motors — the catalogue says "WIN SCREEN wired motors")
+ * - switch:  wired motor + a wall switch per motor (YOODA, Somfy; WIN CONTROL lists no wired switch)
+ * - solar:   solar radio motor (WIN CONTROL kit 20 Nm, Somfy RS100 Solar io 6–20 Nm) + remote
  */
-export type ScreenControlMode = 'remote' | 'smart' | 'pergola' | 'solar';
-export const MOTOR_FOR_MODE: Record<ScreenControlMode, MotorControl> = { remote: 'radio', smart: 'radio', pergola: 'wired', solar: 'solar' };
+export type ScreenControlMode = 'remote' | 'smart' | 'pergola' | 'switch' | 'solar';
+export const MOTOR_FOR_MODE: Record<ScreenControlMode, MotorControl> = { remote: 'radio', smart: 'radio', pergola: 'wired', switch: 'wired', solar: 'solar' };
+export const MOTOR_BRANDS: MotorBrand[] = ['yooda', 'wincontrol', 'somfy', 'custom'];
 
-export interface ControlOptions {
-  /** remote index; default: the cheapest handheld remote with enough channels */
-  remote?: string;
-  /** wind sensor (catalogue: without it the fabric warranty is void). ASSUMPTION: one sensor per project. */
-  wind?: boolean;
+const items = (cat: Catalog, brand: MotorBrand | 'any', kind: ControlItem['kind']) =>
+  (cat.screenControls?.items ?? []).filter((i) => i.brand === brand && i.kind === kind).sort((a, b) => a.price - b.price);
+
+/** Control modes the brand's catalogue supports. */
+export function brandModes(brand: MotorBrand, cat: Catalog): ScreenControlMode[] {
+  if (brand === 'custom') return ['remote', 'smart', 'pergola', 'switch', 'solar'];
+  const has = (c: MotorControl) => (cat.screenMotors?.motors ?? []).some((m) => m.brand === brand && m.control === c);
+  const out: ScreenControlMode[] = [];
+  if (has('radio') && items(cat, brand, 'remote').length) out.push('remote');
+  if (has('radio') && items(cat, brand, 'smart').length) out.push('smart');
+  if (has('wired') && items(cat, 'any', 'pergolaUnit4').length) out.push('pergola');
+  if (has('wired') && items(cat, brand, 'switch').length) out.push('switch');
+  if (has('solar') && items(cat, brand, 'remote').length) out.push('solar');
+  return out;
 }
 
-const item = (cat: Catalog, pred: (i: ControlItem) => boolean) => cat.screenControls?.items.find(pred);
+export interface ControlOptions {
+  brand?: MotorBrand;
+  /** remote index; default: the cheapest handheld remote of the brand with enough channels */
+  remote?: string;
+  /** wind sensors (catalogue: without one the fabric warranty is void) */
+  wind?: boolean;
+  /** number of wind sensors: one per pergola system that has screens */
+  windSensors?: number;
+  /** own controls for brand 'custom' (remotes, sensors…), EUR per project */
+  customControls?: number;
+}
+
 const lineOf = (it: ControlItem, qty: number, code: string, params: Record<string, string | number> = {}): Line => ({
-  code, params: { index: it.index, name: it.name, qty, unit: it.price, ...params }, amount: round2(it.price * qty), source: it.source,
+  code, params: { index: it.index, name: it.name, brand: it.brand, qty, unit: it.price, ...params }, amount: round2(it.price * qty), source: it.source,
 });
 
 /** Shared control devices for all screens of a project. */
 export function screenControlLines(modes: ScreenControlMode[], opts: ControlOptions, cat: Catalog): { lines: Line[]; total: number; issues: Issue[] } {
+  const brand = opts.brand ?? 'wincontrol';
   const lines: Line[] = [];
   const issues: Issue[] = [];
-  const radioRemote = modes.filter((m) => m === 'remote' || m === 'solar').length;
-  if (radioRemote) {
-    const remotes = (cat.screenControls?.items ?? []).filter((i) => i.kind === 'remote');
-    let r = opts.remote ? remotes.find((i) => i.index === opts.remote) : undefined;
-    if (!r) r = remotes.filter((i) => i.index.startsWith('RC') && (i.channels ?? 0) >= radioRemote).sort((a, b) => a.price - b.price)[0];
-    if (r) {
-      lines.push(lineOf(r, 1, 'CONTROL_REMOTE', { screens: radioRemote }));
-      if ((r.channels ?? 0) < radioRemote) issues.push({ severity: 'warn', code: 'REMOTE_TOO_FEW_CHANNELS', params: { channels: r.channels ?? 0, screens: radioRemote } });
+  const count = (m: ScreenControlMode) => modes.filter((x) => x === m).length;
+  if (brand === 'custom') {
+    if ((opts.customControls ?? 0) > 0) lines.push({ code: 'CONTROL_CUSTOM', params: { screens: modes.length }, amount: round2(opts.customControls!) });
+  } else {
+    const radioRemote = count('remote') + count('solar');
+    if (radioRemote) {
+      const all = items(cat, brand, 'remote');
+      let r = opts.remote ? all.find((i) => i.index === opts.remote) : undefined;
+      if (!r) r = all.filter((i) => !i.wall && (i.channels ?? 0) >= radioRemote)[0] ?? all.filter((i) => (i.channels ?? 0) >= radioRemote)[0];
+      if (!r) {
+        r = [...all].sort((a, b) => (b.channels ?? 0) - (a.channels ?? 0))[0];
+      }
+      if (r) {
+        lines.push(lineOf(r, 1, 'CONTROL_REMOTE', { screens: radioRemote }));
+        if ((r.channels ?? 0) < radioRemote) issues.push({ severity: 'warn', code: 'REMOTE_TOO_FEW_CHANNELS', params: { channels: r.channels ?? 0, screens: radioRemote } });
+      }
+    }
+    if (count('smart')) {
+      const s = items(cat, brand, 'smart')[0];
+      if (s) lines.push(lineOf(s, 1, 'CONTROL_SMART'));
+    }
+    if (count('switch')) {
+      const sw = items(cat, brand, 'switch')[0];
+      if (sw) lines.push(lineOf(sw, count('switch'), 'CONTROL_SWITCH'));
     }
   }
-  if (modes.includes('smart')) {
-    const s = item(cat, (i) => i.kind === 'smart');
-    if (s) lines.push(lineOf(s, 1, 'CONTROL_SMART'));
-  }
-  const wired = modes.filter((m) => m === 'pergola').length;
+  const wired = count('pergola');
   if (wired) {
-    const u1 = item(cat, (i) => i.kind === 'pergolaUnit1')!, u4 = item(cat, (i) => i.kind === 'pergolaUnit4')!;
+    const u1 = items(cat, 'any', 'pergolaUnit1')[0]!, u4 = items(cat, 'any', 'pergolaUnit4')[0]!;
     let n4 = Math.floor(wired / 4), n1 = wired % 4;
     if (n1 * u1.price > u4.price) { n4 += 1; n1 = 0; } // two or more single units cost more than one 4-motor unit
     if (n4) lines.push(lineOf(u4, n4, 'CONTROL_PERGOLA_UNIT', { motors: wired }));
     if (n1) lines.push(lineOf(u1, n1, 'CONTROL_PERGOLA_UNIT', { motors: wired }));
   }
-  if (opts.wind && modes.length) {
-    const w = item(cat, (i) => i.kind === 'wind');
-    if (w) lines.push(lineOf(w, 1, 'CONTROL_WIND_SENSOR'));
+  if (opts.wind && modes.length && brand !== 'custom') {
+    // radio screens need a radio sensor of the brand where the brand has one; wired-only projects take the cheapest
+    const anyRadio = modes.some((m) => MOTOR_FOR_MODE[m] !== 'wired');
+    const sensors = items(cat, brand, 'wind');
+    const w = (anyRadio ? sensors.find((i) => i.radio) : undefined) ?? sensors[0];
+    if (w) lines.push(lineOf(w, Math.max(1, opts.windSensors ?? 1), 'CONTROL_WIND_SENSOR'));
   }
   return { lines, total: round2(lines.reduce((s, l) => s + l.amount, 0)), issues };
 }

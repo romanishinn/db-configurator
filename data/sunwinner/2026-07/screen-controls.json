@@ -1,120 +1,886 @@
 {
  "source": {
-  "note": "Screen control accessories (07.2026): WIN CONTROL remotes, smart unit, solar motor kit, wind sensor,\nTELECO central units for wired screen motors (pergola catalogues).\n\nEvery price is read twice (pdfplumber text and pdftotext -layout, same index -> first price after it on the line)\nand both readings must agree. TELECO units must also agree between the S400 and S500 catalogues.\nMANUAL: the wind sensor row (Win Screen p.49) has no extractable index/name (drawn text); index, name and the\n'wired, 230 V' note were read from the page image; its price 84 € is taken from the page text (VERIFIED_BY_IMAGE)."
+  "note": "Screen motors and control accessories of three brands (Win Screen catalogue 07.2026) + TELECO units.\n\nBrands (page logos checked on the page images): WIN CONTROL — Sun Winner's own (pp.47–49), YOODA (pp.51–53,\ndivider page 50), Somfy (pp.54–58, logo on p.54).\n\nMotors: reading A = bordered tables (pdfplumber, lines strategy; left table NM/RPM/PRICE/MODEL/INDEX, right table\nmin. roller widths, rows matched by their vertical position, merged MODEL/RPM cells filled down within a block);\nreading B = pdftotext -layout (index -> first price on the same line, last two 3-digit numbers = min widths).\nBoth must agree for every motor; a field missing in B (Somfy solar kit price printed on the battery line) is\nchecked against pdfplumber text order instead (index line followed by the kit price).\nAccessories: reading A = table rows [index, name, description, (frequency), warranty, price]; reading B = layout\nline of the index -> first price after it. Both must agree.\nTELECO central units (pergola catalogues S400 p.20 = S500 p.45) and the WIN CONTROL wind sensor WS-S02\n(Win Screen p.49, index/name read from the page image, price from the text: VERIFIED_BY_IMAGE) as before."
  },
  "items": [
   {
-   "index": "RC01-06-W",
-   "kind": "remote",
-   "name": "Пульт WIN CONTROL 6-канальный, белый",
-   "price": 33,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 48
-   },
-   "channels": 6
-  },
-  {
-   "index": "RC01-06-B",
-   "kind": "remote",
-   "name": "Пульт WIN CONTROL 6-канальный, чёрный",
-   "price": 33,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 48
-   },
-   "channels": 6
-  },
-  {
-   "index": "RC02-16-W",
-   "kind": "remote",
-   "name": "Пульт WIN CONTROL 16-канальный с дисплеем, белый",
-   "price": 39,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 48
-   },
-   "channels": 16
-  },
-  {
-   "index": "RC02-16-B",
-   "kind": "remote",
-   "name": "Пульт WIN CONTROL 16-канальный с дисплеем, чёрный",
-   "price": 39,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 48
-   },
-   "channels": 16
-  },
-  {
-   "index": "WRC01-01-W",
-   "kind": "remote",
-   "name": "Настенный выключатель WIN CONTROL 1-канальный, белый",
-   "price": 27,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 48
-   },
-   "channels": 1
-  },
-  {
-   "index": "WRC01-01-B",
-   "kind": "remote",
-   "name": "Настенный выключатель WIN CONTROL 1-канальный, чёрный",
-   "price": 27,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 48
-   },
-   "channels": 1
-  },
-  {
-   "index": "WRC02-05-W",
-   "kind": "remote",
-   "name": "Настенный выключатель WIN CONTROL 5-канальный, белый",
-   "price": 34,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 49
-   },
-   "channels": 5
-  },
-  {
-   "index": "WRC02-05-B",
-   "kind": "remote",
-   "name": "Настенный выключатель WIN CONTROL 5-канальный, чёрный",
-   "price": 34,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 49
-   },
-   "channels": 5
-  },
-  {
-   "index": "WINCZ3.0",
-   "kind": "smart",
-   "name": "WIN CONTROL Smart — управление со смартфона (ZigBee 3.0)",
-   "price": 60,
-   "source": {
-    "file": "WIN-SCREEN-EN-07.2026-.pdf",
-    "page": 48
-   }
-  },
-  {
+   "brand": "wincontrol",
    "index": "EX-01-Z3.0",
-   "kind": "receiver",
-   "name": "Внешний радиоприёмник WIN CONTROL",
+   "name": "WIN CONTROL - EXTERNAL RADIO RECEIVER",
+   "description": "Radio control unit / Waterproof radio receiver Frequency: 868 MHz + Zigbee 3.0 Power supply: 230V AC / 120V AC",
    "price": 58,
+   "kind": "receiver",
    "source": {
     "file": "WIN-SCREEN-EN-07.2026-.pdf",
     "page": 48
    }
   },
   {
+   "brand": "wincontrol",
+   "index": "WINCZ3.0",
+   "name": "WIN CONTROL - SMART CONTROL UNIT",
+   "description": "Smart control unit communicating with WIN CONTROL motors via ZigBee 3.0 Power supply: DC 5V / 1A via USB-C (power adapter and cable included)",
+   "price": 60,
+   "kind": "smart",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC01-06-W",
+   "name": "WIN CONTROL - 6-channel remote, white",
+   "description": "6-channel remote / Handheld transmitter, LED indicators for channel activation, white",
+   "price": 33,
+   "kind": "remote",
+   "channels": 6,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC01-06-B",
+   "name": "WIN CONTROL - 6-channel remote, black",
+   "description": "6-channel remote / Handheld transmitter, LED indicators for channel activation, black",
+   "price": 33,
+   "kind": "remote",
+   "channels": 6,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC03-06-W",
+   "name": "WIN CONTROL - 6-channel remote, white",
+   "description": "6-channel remote / Handheld transmitter, LED indicators for channel activation, white",
+   "price": 33,
+   "kind": "remote",
+   "channels": 6,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC03-06-B",
+   "name": "WIN CONTROL - 6-channel remote, black",
+   "description": "6-channel remote / Handheld transmitter, LED indicators for channel activation, black",
+   "price": 33,
+   "kind": "remote",
+   "channels": 6,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC02-16-W",
+   "name": "WIN CONTROL - 16-channel remote, white",
+   "description": "16-channel remote / Handheld transmitter, LCD display, white",
+   "price": 39,
+   "kind": "remote",
+   "channels": 16,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC02-16-B",
+   "name": "WIN CONTROL - 16-channel remote, black",
+   "description": "16-channel remote / Handheld transmitter, LCD display, black",
+   "price": 39,
+   "kind": "remote",
+   "channels": 16,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC04-16-W",
+   "name": "WIN CONTROL - 16-channel remote, white",
+   "description": "16-channel remote / Handheld transmitter, LCD display, white",
+   "price": 39,
+   "kind": "remote",
+   "channels": 16,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "RC04-16-B",
+   "name": "WIN CONTROL - 16-channel remote, black",
+   "description": "16-channel remote / Handheld transmitter, LCD display, black",
+   "price": 39,
+   "kind": "remote",
+   "channels": 16,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC01-01-W",
+   "name": "WIN CONTROL - 1-channel wall-mounted remote, white",
+   "description": "1-channel wall-mounted remote / Wall transmitter LED indicators for channel activation, white",
+   "price": 27,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC01-01-B",
+   "name": "WIN CONTROL - 1-channel remote, black",
+   "description": "1-channel wall-mounted remote / Wall transmitter LED indicators for channel activation, black",
+   "price": 27,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC04-06-W",
+   "name": "WIN CONTROL - 16-channel wall-mounted remote, white",
+   "description": "16-channel wall-mounted remote / Wall transmitter LED indicators for channel activation, white",
+   "price": 39,
+   "kind": "remote",
+   "channels": 16,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC04-06-B",
+   "name": "WIN CONTROL - 16-channel remote, black",
+   "description": "16-channel wall-mounted remote / Wall transmitter LED indicators for channel activation, black",
+   "price": 39,
+   "kind": "remote",
+   "channels": 16,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 48
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC02-05-W",
+   "name": "WIN CONTROL - 5-channel wall-mounted remote, white",
+   "description": "5-channel wall-mounted remote / Wall transmitter LED indicators for channel activation, white",
+   "price": 34,
+   "kind": "remote",
+   "channels": 5,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 49
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC02-05-B",
+   "name": "WIN CONTROL - 5-channel wall-mounted remote, black",
+   "description": "5-channel wall-mounted remote / Wall transmitter LED indicators for channel activation, white",
+   "price": 34,
+   "kind": "remote",
+   "channels": 5,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 49
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC04-01-W",
+   "name": "WIN CONTROL - 1 -channel wall-mounted remote, black",
+   "description": "1-channel wall-mounted remote control / Wall- mounted transmitter LED indicators showing active channel White",
+   "price": 35,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 49
+   }
+  },
+  {
+   "brand": "wincontrol",
+   "index": "WRC04-01-B",
+   "name": "WIN CONTROL - 1 -channel wall-mounted remote, black",
+   "description": "1-channel wall-mounted remote control / Wall- mounted transmitter LED indicators showing active channel Black",
+   "price": 35,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 49
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y667102",
+   "name": "Rocker switch, stable",
+   "description": "Flush-mounted rocker switch, stable",
+   "price": 12,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y667114",
+   "name": "Rocker switch, stable, beige",
+   "description": "Flush-mounted rocker switch, stable, beige",
+   "price": 12,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y667116",
+   "name": "rocker switch, stable, silver",
+   "description": "Flush-mounted rocker switch, stable, silver",
+   "price": 12,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y667112",
+   "name": "Rocker switch, stable, anthracite",
+   "description": "Flush-mounted rocker switch, stable, anthracite",
+   "price": 12,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y667113",
+   "name": "Rocker switch, stable, brown",
+   "description": "Flush-mounted rocker switch, stable, brown",
+   "price": 12,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y667121",
+   "name": "Rocker switch, stable, black",
+   "description": "Flush-mounted rocker switch, stable, black",
+   "price": 12,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 51
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1701115",
+   "name": "Artistic 15 white",
+   "description": "15-channel remote, white",
+   "price": 49,
+   "kind": "remote",
+   "channels": 15,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1701115B",
+   "name": "Artistic 15 black",
+   "description": "15-channel remote, black",
+   "price": 49,
+   "kind": "remote",
+   "channels": 15,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1702702",
+   "name": "Magnetic Pro 15",
+   "description": "15-channel remote",
+   "price": 62,
+   "kind": "remote",
+   "channels": 15,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1701101",
+   "name": "Artistic 1 white",
+   "description": "1-channel remote, white",
+   "price": 38,
+   "kind": "remote",
+   "channels": 1,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1701101B",
+   "name": "Artistic 1 black",
+   "description": "1-channel remote, black",
+   "price": 40,
+   "kind": "remote",
+   "channels": 1,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1702700",
+   "name": "Magnetic Pro",
+   "description": "1-channel remote",
+   "price": 41,
+   "kind": "remote",
+   "channels": 1,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1701116",
+   "name": "Artistic 1",
+   "description": "1-channel remote with timer",
+   "price": 61,
+   "kind": "remote",
+   "channels": 1,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1723299",
+   "name": "Pixel 99 white",
+   "description": "99-channel remote with timer, white",
+   "price": 195,
+   "kind": "remote",
+   "channels": 99,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1723299B",
+   "name": "Pixel 99 black",
+   "description": "99-channel remote with timer, black",
+   "price": 195,
+   "kind": "remote",
+   "channels": 99,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1701105",
+   "name": "Artistic 5 white",
+   "description": "5-channel remote",
+   "price": 43,
+   "kind": "remote",
+   "channels": 5,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1702705",
+   "name": "Magnetic Pro 5",
+   "description": "5-channel remote with timer",
+   "price": 77,
+   "kind": "remote",
+   "channels": 5,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 52
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1711315",
+   "name": "Aura 1",
+   "description": "1-channel wall-mounted remote",
+   "price": 34,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1712770",
+   "name": "Magnetic Pro 1",
+   "description": "1-channel wall-mounted remote",
+   "price": 61,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1611224",
+   "name": "Aura 1",
+   "description": "1-channel wall-mounted remote with timer",
+   "price": 66,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1611225",
+   "name": "Aura 5",
+   "description": "5-channel wall-mounted remote with timer",
+   "price": 77,
+   "kind": "remote",
+   "channels": 5,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1711299",
+   "name": "Aura 15",
+   "description": "15-channel wall-mounted remote",
+   "price": 55,
+   "kind": "remote",
+   "channels": 15,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1712773",
+   "name": "Magnetic Pro 15",
+   "description": "15-channel wall-mounted remote",
+   "price": 92,
+   "kind": "remote",
+   "channels": 15,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1711316",
+   "name": "Aura 2",
+   "description": "2-channel wall-mounted remote",
+   "price": 40,
+   "kind": "remote",
+   "channels": 2,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1611627",
+   "name": "Meteo-B",
+   "description": "Wind and sun sensor, 230V",
+   "price": 107,
+   "kind": "wind",
+   "radio": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1611278H",
+   "name": "Meteo",
+   "description": "Wind and sun sensor, 230V",
+   "price": 153,
+   "kind": "wind",
+   "radio": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1611800H",
+   "name": "Meteo Sol",
+   "description": "Wind-sun sensor with battery, YSH",
+   "price": 163,
+   "kind": "wind",
+   "radio": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "yooda",
+   "index": "SW-Y1197006",
+   "name": "YOODA Smart Home 3.0",
+   "description": "Smart Home 3.0 control unit, white",
+   "price": 350,
+   "kind": "smart",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 53
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1800511",
+   "name": "Inis WT",
+   "description": "Switch with surface-mounted box (with latching function)",
+   "price": 14,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 55
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1800513",
+   "name": "Inis 80x80",
+   "description": "Flush-mounted switch (with latching function)",
+   "price": 25,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 55
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1800519",
+   "name": "Smoove Uno WT",
+   "description": "Flush-mounted switch (with latching function)",
+   "price": 25,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 55
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1800506",
+   "name": "Smoove Duo WT",
+   "description": "Flush-mounted switch (with latching function)",
+   "price": 40,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 55
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1800505",
+   "name": "Smoove Duo WT 5P",
+   "description": "Five-position flush-mounted switch",
+   "price": 43,
+   "kind": "switch",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 55
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S9101473",
+   "name": "Soliris WT",
+   "description": "Sun and wind sensor",
+   "price": 92,
+   "kind": "wind",
+   "radio": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 55
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1870312",
+   "name": "Situo 1 io Pure II",
+   "description": "1-channel remote with wall mount",
+   "price": 71,
+   "kind": "remote",
+   "channels": 1,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1870722",
+   "name": "Situo 1 A/M io Pure II EE",
+   "description": "1-channel remote",
+   "price": 109,
+   "kind": "remote",
+   "channels": 1,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1870363",
+   "name": "Situo 1 Variation io Pure II",
+   "description": "1-channel remote",
+   "price": 120,
+   "kind": "remote",
+   "channels": 1,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1811003",
+   "name": "Smoove 1 io Pure Shine",
+   "description": "1-channel wall switch with Pure frame, touch-sensitive buttons, battery-powered",
+   "price": 79,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1811014",
+   "name": "Smoove 1 A/M io Silver Shine",
+   "description": "1-channel wall switch with Silver frame, touch-sensitive buttons, battery-powered, manual and automatic mode",
+   "price": 96,
+   "kind": "remote",
+   "channels": 1,
+   "wall": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1870328",
+   "name": "Situo 5 io Pure II",
+   "description": "5-channel remote with wall mount",
+   "price": 109,
+   "kind": "remote",
+   "channels": 5,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1816084",
+   "name": "Eolis WireFree io",
+   "description": "Bidirectional wireless wind sensor, battery-powered, wall-mounted on the building façade",
+   "price": 198,
+   "kind": "wind",
+   "radio": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1816092",
+   "name": "Eolis io",
+   "description": "Wired wind sensor, 230V powered, wall-mounted on the building façade",
+   "price": 190,
+   "kind": "wind",
+   "radio": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1870532",
+   "name": "Soliris 230V io",
+   "description": "Wired sun and wind sensor, 230V powered, wall-mounted on the building façade, without power cable",
+   "price": 263,
+   "kind": "wind",
+   "radio": true,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1871289",
+   "name": "Ysia Patio io (Pure)",
+   "description": "16-channel remote control with wall mount and color LCD display, white",
+   "price": 194,
+   "kind": "remote",
+   "channels": 16,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1871290",
+   "name": "Ysia Patio io (Anthracite)",
+   "description": "16-channel remote control with wall mount and color LCD display, anthracite",
+   "price": 194,
+   "kind": "remote",
+   "channels": 16,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1805251",
+   "name": "NINA io",
+   "description": "60-channel remote with touchscreen display",
+   "price": 334,
+   "kind": "remote",
+   "channels": 60,
+   "wall": false,
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "somfy",
+   "index": "SW-S1870594",
+   "name": "TaHoma® Switch Pro",
+   "description": "TaHoma switch",
+   "price": 232,
+   "kind": "smart",
+   "source": {
+    "file": "WIN-SCREEN-EN-07.2026-.pdf",
+    "page": 58
+   }
+  },
+  {
+   "brand": "any",
    "index": "SW-TEL-TVPRS868A04B",
    "kind": "pergolaUnit1",
-   "name": "Блок TELECO на 1 проводной мотор (пульт перголы)",
+   "name": "TELECO central unit for 1 wired motor",
    "price": 200,
    "motors": 1,
    "source": {
@@ -127,9 +893,10 @@
    }
   },
   {
+   "brand": "any",
    "index": "SW-TEL-TVPL4868AC4",
    "kind": "pergolaUnit4",
-   "name": "Блок TELECO на 4 проводных мотора (пульт перголы), вход датчика ветра",
+   "name": "TELECO central unit for 4 wired motors, wind sensor input",
    "price": 330,
    "motors": 4,
    "source": {
@@ -142,9 +909,12 @@
    }
   },
   {
+   "brand": "wincontrol",
    "index": "WS-S02",
    "kind": "wind",
-   "name": "Датчик ветра и солнца WIN CONTROL, проводной 230 V",
+   "radio": false,
+   "name": "WIN CONTROL wired wind and sun sensor",
+   "description": "Wired wind and sun sensor, 230 V AC",
    "price": 84,
    "source": {
     "file": "WIN-SCREEN-EN-07.2026-.pdf",
