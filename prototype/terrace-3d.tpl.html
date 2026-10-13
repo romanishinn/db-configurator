@@ -702,7 +702,7 @@ function renderLabels(opt) {
   // dimension labels on the ground in front of / beside the pergola, so they never cover the roof
   add(mm(Math.round(W * 1000)) + ' ' + (window.MM_UNIT || 'мм'), [W / 2, 0.02, D + 1.15], 'total');
   if (opt.cols > 1) opt.modules.filter((m) => m.row === 0).forEach((m) => add(mm(m.width), [(m.x + m.width / 2) / 1000, 0.02, D + 0.3]));
-  add(mm(opt.depth) + ' ' + (window.MM_UNIT || 'мм'), [-0.7, 0.02, D / 2], 'total');
+  add(mm(opt.depth) + ' ' + (window.MM_UNIT || 'мм'), [-0.7, 0.02, D * 0.22], 'total'); // off the middle, where the side's "+" sits
 }
 const v = new THREE.Vector3();
 function placeLabels() {

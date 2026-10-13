@@ -32,6 +32,7 @@
       snapped: (b, r) => `Wegen des Lamellenrasters wird ${b} m statt ${r} m gebaut.`, multiRow: 'Mehrere Reihen in der Tiefe – den Preis bestätigen wir mit Ihrer Anfrage.',
       // step 2
       s2: 'Welche Seiten möchten Sie schließen?', s2l: 'Jede Seite kann offen bleiben oder Sonnen-, Wind- oder Sichtschutz bekommen. Sie können auch im 3D-Bild auf eine Seite tippen.',
+      fillsS: { none: 'Offen', zip: 'ZIP', glass: 'Glas', verto: 'Lamellen', panels: 'Paneele' },
       allSides: 'Alle Seiten', fills: { none: 'Offen', zip: 'ZIP-Screen', glass: 'Schiebeglas', verto: 'Lamellenwand', panels: 'Schiebepaneele' },
       legend: { zip: 'Stoffbehang in seitlichen Führungen, motorisch – Sonnen- und Sichtschutz.', glass: 'Glas-Schiebeelemente (Win Glass) – Schutz vor Wind und Regen.', verto: 'Feste Aluminiumprofile (Win Verto) – Sichtschutz, Luft kommt durch.', panels: 'Aluminium-Lamellenpaneele auf Schienen (Win Panels) – verschiebbar.' },
       sides: { front: 'Vorne', left: 'Links', right: 'Rechts', back: 'Hinten' }, field: 'Feld', row: 'Reihe',
@@ -107,6 +108,7 @@
       suggFix: (v) => `Change to ${v} m`,
       snapped: (b, r) => `Because of the louvre spacing, ${b} m is built instead of ${r} m.`, multiRow: 'Several rows in depth – we confirm the price with your request.',
       s2: 'Which sides would you like to close?', s2l: 'Each side can stay open or get sun, wind or privacy protection. You can also tap a side in the 3D view.',
+      fillsS: { none: 'Open', zip: 'ZIP', glass: 'Glass', verto: 'Louvres', panels: 'Panels' },
       allSides: 'All sides', fills: { none: 'Open', zip: 'ZIP screen', glass: 'Sliding glass', verto: 'Louvre wall', panels: 'Sliding panels' },
       legend: { zip: 'Fabric blind in side guides, motorised – sun and privacy protection.', glass: 'Sliding glass panels (Win Glass) – shelter from wind and rain.', verto: 'Fixed aluminium profiles (Win Verto) – privacy, air still flows.', panels: 'Aluminium louvre panels on rails (Win Panels) – slide aside.' },
       sides: { front: 'Front', left: 'Left', right: 'Right', back: 'Back' }, field: 'bay', row: 'row',
@@ -160,7 +162,7 @@
       mm: 'mm',
     },
     ru: {
-      steps: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Предложение'],
+      steps: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Итог'],
       next: 'Далее', back: 'Назад', toOffer: 'К предложению', send: 'Отправить запрос',
       pro: 'Pro', proTitle: 'Расширенный режим для менеджера', toCust: 'Режим клиента',
       intro: 'Пергола с ламелями за 5 шагов. Ориентировочная цена сразу, без обязательств и без регистрации.',
@@ -178,6 +180,7 @@
       suggFix: (v) => `Изменить на ${v} м`,
       snapped: (b, r) => `Из-за шага ламелей строится ${b} м вместо ${r} м.`, multiRow: 'Несколько рядов в глубину – цену подтвердим по запросу.',
       s2: 'Какие стороны закрыть?', s2l: 'Каждая сторона может остаться открытой или получить защиту от солнца, ветра или взглядов. Можно нажать на сторону прямо на 3D.',
+      fillsS: { none: 'Открыто', zip: 'ZIP', glass: 'Стекло', verto: 'Ламели', panels: 'Панели' },
       allSides: 'Все стороны', fills: { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Раздвижное стекло', verto: 'Ламельная стена', panels: 'Раздвижные панели' },
       legend: { zip: 'Ткань в боковых направляющих, с мотором – от солнца и взглядов.', glass: 'Раздвижные стеклянные полотна (Win Glass) – от ветра и дождя.', verto: 'Неподвижные алюминиевые профили (Win Verto) – от взглядов, воздух проходит.', panels: 'Алюминиевые ламельные панели на направляющих (Win Panels) – сдвигаются.' },
       sides: { front: 'Спереди', left: 'Слева', right: 'Справа', back: 'Сзади' }, field: 'проём', row: 'ряд',
@@ -186,7 +189,7 @@
       notMade: 'В таком размере не производится – выберите другой вариант.', later: 'цена по запросу',
       fabric: 'Ткань ZIP-скринов', ofName: { 14: 'Лёгкая, хорошо видно наружу', 5: 'От солнца и взглядов', 4: 'От солнца и взглядов, чуть плотнее', 1: 'Почти непрозрачная', 0: 'Блэкаут' },
       perM2: '€/м²', zipCtl: 'Управление с пульта перголы.',
-      glassTint: 'Стекло', tints: { float: 'Прозрачное', diamant: 'Сверхпрозрачное', milk: 'Матовое', brown: 'Бронза', graphite: 'Графит', black: 'Чёрное', mirror: 'Зеркальное' }, tintNa: 'только 10 мм',
+      glassTint: 'Стекло', tints: { float: 'Прозрачное', diamant: 'Особо прозрачное', milk: 'Матовое', brown: 'Бронза', graphite: 'Графит', black: 'Чёрное', mirror: 'Зеркальное' }, tintNa: 'только 10 мм',
       s3: 'Что сделает уютнее?', s3l: 'Всё по желанию. Выбирайте только то, чем будете пользоваться, – многое потом добавить сложнее.',
       light: 'Свет', lightD: 'Для вечеров на террасе', lights: { none: 'Без света', white: 'LED-лента, тёплый белый', rgbw: 'LED-лента, цветная (RGBW)', spots: 'LED-споты' },
       heat: 'Тепло', heatD: 'Обогреватели под крышей', heats: { none: 'Нет', 'm1.single': '1 обогреватель 1,5 кВт (~10 м²)', 'm1.pair': '2 обогревателя 1,5 кВт', 'm1.double': 'Двойной 4 кВт (~25 м²)', other: 'Комплект обогревателей' },
@@ -201,7 +204,7 @@
       grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты' },
       notIncl: 'Не входит в цену', notInclList: ['Доставка и монтаж', 'Фундамент и подключение электричества', 'Разрешения, если нужны'],
       incomplete: 'Некоторые позиции в таком размере не производятся и не вошли в цену.',
-      print: 'Распечатать предложение или сохранить PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Скопировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
+      print: 'Распечатать или сохранить PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
       saveFile: 'Сохранить в файл', openFile: 'Открыть файл',
       formT: 'Ваш запрос', name: 'Имя', email: 'E-mail', phone: 'Телефон (необязательно)', place: 'Индекс и город монтажа', when: 'Когда планируете?',
       whens: ['Как можно скорее', 'Через 1–3 месяца', 'Позже в этом году', 'Пока просто смотрю'],
@@ -320,14 +323,14 @@
   function quoteLines() {
     const o = curOpt(), t = L(), out = [];
     if (!o) return out;
-    const sz = (w, h) => `${metres(w)} × ${metres(h)} m`;
+    const sz = (w, h) => `${metres(w)} × ${metres(h)} ${t.m}`;
     for (const l of q().lines) {
       if (l.k === 'module') out.push({ g: 'pergola', t: `${t.pergola} ${t.fam[l.fam]}`, d: sz(l.w, l.d), a: l.a });
       else if (l.k === 'moduleExtra') out.push({ g: 'pergola', t: `${t.pergola} – ${t.extra}`, d: '', a: l.a });
       else if (l.k === 'opt') {
         let d = '';
         const p = l.p || {};
-        if (l.code === 'OPT_POST_HEIGHT') d = `≤ ${metres(p.height)} m`;
+        if (l.code === 'OPT_POST_HEIGHT') d = `≤ ${metres(p.height)} ${t.m}`;
         if (l.code === 'OPT_HEATERS') d = (t.heats[p.set] || t.heats.other) + (p.qty > 1 ? ' × ' + p.qty : '');
         if (l.code === 'OPT_SENSOR') d = t.weathers[p.sensor] || '';
         if (l.code === 'OPT_SMART') d = t.apps[p.unit] || '';
@@ -375,7 +378,7 @@
   }
   function bar(t, o) {
     const total = q().total, ok = !!o && total > 0;
-    const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross} · ${t.net} ${fe(total)}</span>` : `<b>—</b><span>${t.priceNa}</span>`;
+    const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     const nextLabel = step === 3 ? t.toOffer : step === 4 ? t.send : t.next + ': ' + t.steps[step + 1];
     return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1">${t.back}</button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${esc(nextLabel)}${step < 4 ? ' →' : ''}</button></div>`;
   }
@@ -391,19 +394,19 @@
     const dim = (k, label, v) => `<div class="f-dim"><label for="f-${k}">${label}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="f-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
     h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
     const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6500, 3500], [8000, 4000]];
-    h += `<div class="f-h3"><span>${t.presets}</span></div><div class="f-chips">${presets.map(([w, d]) => `<button type="button" class="f-chip" data-preset="${w}x${d}" aria-pressed="${state.width === w && state.depth === d}">${metres(w).replace(/,00|\.00/, '')} × ${metres(d).replace(/,00|\.00/, '')} m</button>`).join('')}</div>`;
+    h += `<div class="f-h3"><span>${t.presets}</span></div><div class="f-chips">${presets.map(([w, d]) => `<button type="button" class="f-chip" data-preset="${w}x${d}" aria-pressed="${state.width === w && state.depth === d}">${metres(w).replace(/,00|\.00/, '')} × ${metres(d).replace(/,00|\.00/, '')} ${t.m}</button>`).join('')}</div>`;
     // size problems: plain-language fix buttons
     const r = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres }, cat);
     for (const s of r.suggestions) h += `<div class="f-note">${t.sugg[s.code] || s.code}${s.params && s.params.suggested ? ` <button type="button" class="f-link" data-fix="${s.code}" data-v="${s.params.suggested}">${t.suggFix(metres(s.params.suggested))}</button>` : ''}</div>`;
     if (!o) return h;
     // post height
     const s500 = o.family !== 'S400', hs = s500 ? [2800, 3200] : [2800, 3000, 3200];
-    h += `<div class="f-h3"><span>${t.height}</span></div><div class="f-chips">${hs.map((x) => { const d = optDelta({ postHeight: x }); return `<button type="button" class="f-chip" data-h="${x}" aria-pressed="${state.po.postHeight === x}">≤ ${metres(x)} m${x === 2800 ? ' · ' + t.heightStd : ''}<span class="pr">${plusE(d)}</span></button>`; }).join('')}</div>`;
+    h += `<div class="f-h3"><span>${t.height}</span></div><div class="f-chips">${hs.map((x) => { const d = optDelta({ postHeight: x }); return `<button type="button" class="f-chip" data-h="${x}" aria-pressed="${state.po.postHeight === x}">≤ ${metres(x)} ${t.m}${x === 2800 ? ' · ' + t.heightStd : ''}<span class="pr">${plusE(d)}</span></button>`; }).join('')}</div>`;
     // layout: recommended first, alternatives folded away
     const opts = state.options, cheapest = opts[0].total;
     const lay = (x, i) => {
       const widths = x.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ');
-      return `<button type="button" data-opt="${i}" aria-pressed="${i === state.optIndex}"><span><b>${t.modules(x.modules.length)}</b>${i === 0 ? `<span class="f-badge">${t.cheapest}</span>` : ''}<span class="m">${widths} m · ${t.fam[x.family]} · ${t.posts(x.posts)}</span></span><span class="pr">${i === 0 ? fe(gross(x.total)) : '+' + fe(gross(x.total - cheapest))}</span></button>`;
+      return `<button type="button" data-opt="${i}" aria-pressed="${i === state.optIndex}"><span><b>${t.modules(x.modules.length)}</b>${i === 0 ? `<span class="f-badge">${t.cheapest}</span>` : ''}<span class="m">${widths} ${t.m} · ${t.fam[x.family]} · ${t.posts(x.posts)}</span></span><span class="pr">${i === 0 ? fe(gross(x.total)) : '+' + fe(gross(x.total - cheapest))}</span></button>`;
     };
     h += `<div class="f-h3"><span>${t.layout}</span></div><div class="f-lay">${lay(opts[0], 0)}${state.optIndex > 0 ? lay(opts[state.optIndex], state.optIndex) : ''}</div>`;
     const rest = opts.map((x, i) => [x, i]).filter(([, i]) => i !== 0 && i !== state.optIndex);
@@ -431,8 +434,8 @@
     h += `<div class="f-sides">`;
     for (const op of ops) {
       const f = state.fills[op.id] || 'none', amt = sideAmount(op.id), bad = q().lines.some((l) => l.k === 'unbuilt' && l.id === op.id);
-      h += `<div class="f-side${focusId === op.id ? ' hl' : ''}" data-side="${op.id}"><div class="top"><span class="nm">${sideLabel(op.id, o)}<small>${metres(Math.round(op.len * 1000))} m</small></span><span class="pr">${f === 'none' ? '' : bad ? '—' : '+' + fe(gross(amt))}</span></div>
-        <div class="f-fills" role="group">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fills[k]}</button>`).join('')}</div>`;
+      h += `<div class="f-side${focusId === op.id ? ' hl' : ''}" data-side="${op.id}"><div class="top"><span class="nm">${sideLabel(op.id, o)}<small>${metres(Math.round(op.len * 1000))} ${t.m}</small></span><span class="pr">${f === 'none' ? '' : bad ? '—' : '+' + fe(gross(amt))}</span></div>
+        <div class="f-fills" role="group">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
       if (f === 'glass' && !bad) {
         const g = glassFor(op), dbl = g.best && g.best.opening === 'double', cfg = glassCfg(op), side = cfg.side || state.glassSide;
         const isOpen = (cfg.open ?? state.glassOpen) > 0;
@@ -569,7 +572,7 @@
   }
 
   /* ---------- request e-mail and quote ---------- */
-  function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} m` : ''; } // as built (louvre spacing may round the size)
+  function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} ${L().m}` : ''; } // as built (louvre spacing may round the size)
   function mailText() {
     const t = L(), lines = quoteLines(), total = q().total;
     const parts = [t.mailHi, '', `${t.qFacts.size}: ${sizeText()} (${state.mount === 'wall' ? t.wall : t.free})`];
@@ -608,8 +611,8 @@
     const comfort = lines.filter((l) => l.g === 'comfort').map((l) => l.t).join(', ') || t.none;
     const facts = [
       [t.qFacts.size, `${sizeText()} · ${state.mount === 'wall' ? t.wall : t.free}`],
-      [t.qFacts.model, `${t.pergola} ${t.fam[o.family]} · ${t.modules(o.modules.length)} (${o.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ')} m) · ${t.posts(o.posts)}`],
-      [t.qFacts.height, `≤ ${metres(state.po.postHeight)} m`],
+      [t.qFacts.model, `${t.pergola} ${t.fam[o.family]} · ${t.modules(o.modules.length)} (${o.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ')} ${t.m}) · ${t.posts(o.posts)}`],
+      [t.qFacts.height, `≤ ${metres(state.po.postHeight)} ${t.m}`],
       [t.qFacts.sides, ops.length ? ops.map((x) => `${sideLabel(x.id, o)}: ${t.fills[state.fills[x.id]]}`).join('; ') : t.open],
       [t.qFacts.colours, `${t.frame}: ${cname(e.construction)}${state.colors.roof ? '; ' + t.roof + ': ' + cname(e.roof) : ''}`],
       [t.qFacts.comfort, comfort],
@@ -789,8 +792,14 @@
     }
     // nearest first; a button that would sit on top of a nearer one (e.g. front and back in the front view) is hidden
     list.sort((a, c) => a.z - c.z);
+    // dimension labels stay readable: a button that would cover one moves up above it
+    const dims = [...document.querySelectorAll('#labels .dim')].filter((d) => d.style.display !== 'none').map((d) => {
+      const x = parseFloat(d.style.left), y = parseFloat(d.style.top), w = d.offsetWidth / 2 + 18, h = d.offsetHeight / 2 + 18;
+      return { l: x - w, r: x + w, t: y - h, b: y + h };
+    });
     const shown = [];
     for (const it of list) {
+      for (const d of dims) if (it.x > d.l && it.x < d.r && it.y > d.t && it.y < d.b) it.y = d.t - 2;
       const hide = it.off || shown.some((s) => Math.hypot(s.x - it.x, s.y - it.y) < 34);
       it.b.style.display = hide ? 'none' : '';
       if (!hide) { shown.push(it); it.b.style.left = it.x + 'px'; it.b.style.top = it.y + 'px'; }
