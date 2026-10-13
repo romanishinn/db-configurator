@@ -152,3 +152,19 @@ body.cust #hint { max-width: 340px; }
 .q .foot { margin-top: 8px; font-size: 9pt; color: #444; border-top: 1px solid #ccc; padding-top: 6px; word-break: break-all; }
 .q tr { break-inside: avoid; }
 .q a { color: #1c4f66; }
+
+/* 3D call to action: "+" buttons on the sides and a hint pill */
+body.cust #hint { display: none !important; }
+#hotspots { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.hs { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; background: var(--accent); color: #fff; font: 600 22px/1 var(--f-body); box-shadow: 0 2px 10px rgba(0,0,0,.28); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.hs.filled { background: #fff; color: var(--accent); border-color: var(--accent); font-size: 16px; width: 30px; height: 30px; }
+.hs.on { box-shadow: 0 0 0 4px rgba(44,106,134,.35), 0 2px 10px rgba(0,0,0,.28); }
+.hs:hover { transform: translate(-50%, -50%) scale(1.1); }
+.hs.pulse::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; border: 2px solid var(--accent); animation: hsPulse 1.6s ease-out infinite; pointer-events: none; }
+@keyframes hsPulse { from { transform: scale(.75); opacity: .9; } to { transform: scale(1.55); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hs.pulse::after { animation: none; } }
+#f-cta { position: absolute; top: 12px; left: 12px; right: 12px; margin: 0 auto; width: fit-content; max-width: calc(100% - 24px); z-index: 3; font: 600 13.5px/1.35 var(--f-body); color: #fff; background: var(--accent); border: 0; border-radius: 999px; padding: 9px 16px 9px 12px; box-shadow: 0 4px 14px rgba(0,0,0,.2); cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: left; }
+#f-cta .hand { font-size: 17px; animation: ctaNod 1.8s ease-in-out infinite; display: inline-block; }
+@keyframes ctaNod { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { #f-cta .hand { animation: none; } }
+@media (max-width: 760px) { #f-cta { font-size: 12.5px; padding: 7px 12px 7px 10px; top: 8px; } .hs { width: 32px; height: 32px; font-size: 20px; } }

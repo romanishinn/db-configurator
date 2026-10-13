@@ -197,7 +197,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
       <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
       <button type="button" id="evening" aria-pressed="false">Вечер</button>
-      <button type="button" class="pro-only" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен">⇄</button>
+      <button type="button" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен">⇄</button>
       <span id="louv-info" class="muted pro-only"></span>
       <div id="clr-pop" class="clr-pop pro-only" hidden></div>
       <span style="flex:1"></span>
@@ -659,10 +659,20 @@ function setView(kind) {
   const spanX = (W + 1.6) * (kind === 'iso' ? 0.95 : 1), spanY = kind === 'top' ? D + 1.6 : Math.max(H + 1.2, D * 0.9);
   const dist = Math.max((spanX / 2) / Math.tan(hf / 2), (spanY / 2) / Math.tan(vf / 2)) + (kind === 'top' ? 0 : D / 2);
   controls.target.copy(c);
-  camera.position.copy(c).addScaledVector(dir, dist);
+  // check the real projection: the pergola and its dimension labels must fit the frame with a margin
+  // (narrow phone frames cut the corners otherwise); step back until they do
+  const pts = [];
+  for (const x of [-0.9, W + 0.3]) for (const y of [0, H + 0.25]) for (const z of [-0.2, D + 1.35]) pts.push(new THREE.Vector3(x, y, z));
+  let d = dist;
+  for (let i = 0; i < 30; i++) {
+    camera.position.copy(c).addScaledVector(dir, d); camera.lookAt(c); camera.updateMatrixWorld();
+    const m = Math.max(...pts.map((p) => { const v = p.clone().project(camera); return Math.max(Math.abs(v.x), Math.abs(v.y)); }));
+    if (m <= 0.86) break;
+    d *= 1.06;
+  }
   sun.position.set(W / 2 - 6, 14, D + 8); sun.target.position.copy(c);
   const sh = sun.shadow.camera, e = Math.max(W, D) / 2 + 3; sh.left = -e; sh.right = e; sh.top = e; sh.bottom = -e; sh.updateProjectionMatrix();
-  controls.maxDistance = dist * 2.5;
+  controls.maxDistance = d * 2.5;
   controls.update();
 }
 controls.addEventListener('start', () => { userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });

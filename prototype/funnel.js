@@ -25,7 +25,7 @@
       presets: 'Häufige Größen', height: 'Stützenhöhe', heightStd: 'Standard', incl: 'inklusive',
       layout: 'Aufteilung', recommended: 'Empfehlung', cheapest: 'günstigste', modules: (n) => n === 1 ? '1 Modul' : n + ' Module', posts: (n) => n + ' Stützen',
       otherLayouts: (n) => n === 1 ? '1 weitere Aufteilung' : n + ' weitere Aufteilungen',
-      louvTip: (s) => `Tipp: Lamellen quer drehen – gleiche Fläche, ${s} günstiger.`, louvDo: 'Übernehmen',
+      louvTip: (s) => `Tipp: Lamellen quer drehen – gleiche Fläche, ${s} günstiger.`, louvDo: 'Übernehmen', louvDir: 'Lamellenrichtung', louvNa: 'nicht möglich',
       louvNow: (d) => `Lamellen laufen ${d}.`, louvPar: 'parallel zur Hauswand', louvPerp: 'von der Hauswand weg', louvParF: 'entlang der Breite', louvPerpF: 'entlang der Tiefe',
       sugg: { DEPTH_TOO_SMALL: 'Die Tiefe ist kleiner als möglich.', WIDTH_TOO_SMALL: 'Die Breite ist kleiner als möglich.', DEPTH_TOO_LARGE: 'Die Tiefe ist größer als möglich.', WIDTH_TOO_LARGE: 'Die Breite ist größer als möglich.', NO_COMBINATION: 'Diese Größe lässt sich nicht bauen.' },
       suggFix: (v) => `Auf ${v} m ändern`,
@@ -35,7 +35,8 @@
       allSides: 'Alle Seiten', fills: { none: 'Offen', zip: 'ZIP-Screen', glass: 'Schiebeglas', verto: 'Lamellenwand', panels: 'Schiebepaneele' },
       legend: { zip: 'Stoffbehang in seitlichen Führungen, motorisch – Sonnen- und Sichtschutz.', glass: 'Glas-Schiebeelemente (Win Glass) – Schutz vor Wind und Regen.', verto: 'Feste Aluminiumprofile (Win Verto) – Sichtschutz, Luft kommt durch.', panels: 'Aluminium-Lamellenpaneele auf Schienen (Win Panels) – verschiebbar.' },
       sides: { front: 'Vorne', left: 'Links', right: 'Rechts', back: 'Hinten' }, field: 'Feld', row: 'Reihe',
-      park: 'Glas parkt', parkL: '← links', parkR: 'rechts →', parkBoth: 'zu beiden Seiten',
+      park: 'Glas', parkL: '← links', parkR: 'rechts →', parkBoth: '↔ offen', shut: 'zu',
+      cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Lamellenwand', hsOpen: 'Seite wählen',
       notMade: 'In dieser Größe nicht lieferbar – andere Variante wählen.', later: 'Preis auf Anfrage',
       fabric: 'Stoff der ZIP-Screens', ofName: { 14: 'Luftig, viel Durchsicht', 5: 'Sonnen- und Sichtschutz', 4: 'Sicht- und Sonnenschutz, etwas dichter', 1: 'Fast blickdicht', 0: 'Verdunkelung' },
       perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.',
@@ -73,7 +74,7 @@
         ['Wie geht es nach der Anfrage weiter?', 'Wir besprechen die Details mit Ihnen und vereinbaren bei Bedarf einen Termin für das Aufmaß. Danach erhalten Sie ein verbindliches Angebot.'],
       ],
       hint: 'Ziehen zum Drehen. Tippen Sie auf eine Seite, um sie zu schließen.',
-      tb: { ang: 'Lamellen', drop: 'Screens', gopen: 'Glas', evening: 'Abend', front: 'Vorne', top: 'Oben', closed: 'zu', open: 'offen' },
+      tb: { ang: 'Lamellen', drop: 'Screens', gopen: 'Glas', evening: 'Abend', front: 'Vorne', top: 'Oben', closed: 'zu', open: 'offen', louv: 'Lamellenrichtung drehen' },
       // quote
       qTitle: 'Richtpreisangebot', qNo: 'Nr.', qDate: 'Datum', qConfig: 'Ihre Konfiguration', qPrice: 'Preis', qItem: 'Position', qNet: 'Summe netto', qVat: 'USt. 20 %', qGross: 'Gesamt inkl. USt.',
       qFacts: { size: 'Größe', mount: 'Montage', model: 'Modell', height: 'Stützenhöhe', sides: 'Seiten', colours: 'Farben', comfort: 'Komfort' },
@@ -100,7 +101,7 @@
       presets: 'Common sizes', height: 'Post height', heightStd: 'standard', incl: 'included',
       layout: 'Layout', recommended: 'Recommended', cheapest: 'lowest price', modules: (n) => n === 1 ? '1 module' : n + ' modules', posts: (n) => n + ' posts',
       otherLayouts: (n) => n === 1 ? '1 other layout' : n + ' other layouts',
-      louvTip: (s) => `Tip: turn the louvres – same area, ${s} less.`, louvDo: 'Apply',
+      louvTip: (s) => `Tip: turn the louvres – same area, ${s} less.`, louvDo: 'Apply', louvDir: 'Louvre direction', louvNa: 'not possible',
       louvNow: (d) => `Louvres run ${d}.`, louvPar: 'parallel to the wall', louvPerp: 'away from the wall', louvParF: 'along the width', louvPerpF: 'along the depth',
       sugg: { DEPTH_TOO_SMALL: 'The depth is below the minimum.', WIDTH_TOO_SMALL: 'The width is below the minimum.', DEPTH_TOO_LARGE: 'The depth is above the maximum.', WIDTH_TOO_LARGE: 'The width is above the maximum.', NO_COMBINATION: 'This size cannot be built.' },
       suggFix: (v) => `Change to ${v} m`,
@@ -109,7 +110,8 @@
       allSides: 'All sides', fills: { none: 'Open', zip: 'ZIP screen', glass: 'Sliding glass', verto: 'Louvre wall', panels: 'Sliding panels' },
       legend: { zip: 'Fabric blind in side guides, motorised – sun and privacy protection.', glass: 'Sliding glass panels (Win Glass) – shelter from wind and rain.', verto: 'Fixed aluminium profiles (Win Verto) – privacy, air still flows.', panels: 'Aluminium louvre panels on rails (Win Panels) – slide aside.' },
       sides: { front: 'Front', left: 'Left', right: 'Right', back: 'Back' }, field: 'bay', row: 'row',
-      park: 'Glass parks', parkL: '← left', parkR: 'right →', parkBoth: 'to both sides',
+      park: 'Glass', parkL: '← left', parkR: 'right →', parkBoth: '↔ open', shut: 'closed',
+      cta: 'Tap a ＋ to close a side – ZIP screen, glass or louvre wall', hsOpen: 'Choose side',
       notMade: 'Not available in this size – please choose another option.', later: 'price on request',
       fabric: 'ZIP screen fabric', ofName: { 14: 'Airy, lots of view', 5: 'Sun and privacy', 4: 'Sun and privacy, a little denser', 1: 'Almost opaque', 0: 'Blackout' },
       perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.',
@@ -144,7 +146,7 @@
         ['What happens after my request?', 'We discuss the details with you and, if needed, arrange a site survey. After that you receive a binding quote.'],
       ],
       hint: 'Drag to rotate. Tap a side to close it.',
-      tb: { ang: 'Louvres', drop: 'Screens', gopen: 'Glass', evening: 'Evening', front: 'Front', top: 'Top', closed: 'closed', open: 'open' },
+      tb: { ang: 'Louvres', drop: 'Screens', gopen: 'Glass', evening: 'Evening', front: 'Front', top: 'Top', closed: 'closed', open: 'open', louv: 'Turn the louvre direction' },
       qTitle: 'Indicative quote', qNo: 'No.', qDate: 'Date', qConfig: 'Your configuration', qPrice: 'Price', qItem: 'Item', qNet: 'Total net', qVat: 'VAT 20 %', qGross: 'Total incl. VAT',
       qFacts: { size: 'Size', mount: 'Mounting', model: 'Model', height: 'Post height', sides: 'Sides', colours: 'Colours', comfort: 'Comfort' },
       qNotes: ['Indicative price based on catalogue prices ' + CATALOGUE + ', not binding.', 'Not included: delivery, installation, foundations, electrical connection, permits.', 'The final price follows a site survey.', 'Screen colours are approximate.'],
@@ -170,7 +172,7 @@
       presets: 'Популярные размеры', height: 'Высота стоек', heightStd: 'стандарт', incl: 'в цене',
       layout: 'Компоновка', recommended: 'Рекомендуем', cheapest: 'дешевле всего', modules: (n) => n + ' ' + (n === 1 ? 'модуль' : n < 5 ? 'модуля' : 'модулей'), posts: (n) => n + ' ' + (n < 5 ? 'стойки' : 'стоек'),
       otherLayouts: (n) => 'Ещё ' + n + ' ' + (n === 1 ? 'вариант' : n < 5 ? 'варианта' : 'вариантов'),
-      louvTip: (s) => `Совет: поверните ламели – та же площадь, дешевле на ${s}.`, louvDo: 'Применить',
+      louvTip: (s) => `Совет: поверните ламели – та же площадь, дешевле на ${s}.`, louvDo: 'Применить', louvDir: 'Направление ламелей', louvNa: 'нельзя',
       louvNow: (d) => `Ламели идут ${d}.`, louvPar: 'вдоль стены', louvPerp: 'от стены вперёд', louvParF: 'вдоль ширины', louvPerpF: 'вдоль глубины',
       sugg: { DEPTH_TOO_SMALL: 'Глубина меньше минимальной.', WIDTH_TOO_SMALL: 'Ширина меньше минимальной.', DEPTH_TOO_LARGE: 'Глубина больше возможной.', WIDTH_TOO_LARGE: 'Ширина больше возможной.', NO_COMBINATION: 'Такой размер не собирается.' },
       suggFix: (v) => `Изменить на ${v} м`,
@@ -179,7 +181,8 @@
       allSides: 'Все стороны', fills: { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Раздвижное стекло', verto: 'Ламельная стена', panels: 'Раздвижные панели' },
       legend: { zip: 'Ткань в боковых направляющих, с мотором – от солнца и взглядов.', glass: 'Раздвижные стеклянные полотна (Win Glass) – от ветра и дождя.', verto: 'Неподвижные алюминиевые профили (Win Verto) – от взглядов, воздух проходит.', panels: 'Алюминиевые ламельные панели на направляющих (Win Panels) – сдвигаются.' },
       sides: { front: 'Спереди', left: 'Слева', right: 'Справа', back: 'Сзади' }, field: 'проём', row: 'ряд',
-      park: 'Стекло паркуется', parkL: '← влево', parkR: 'вправо →', parkBoth: 'в обе стороны',
+      park: 'Стекло', parkL: '← влево', parkR: 'вправо →', parkBoth: '↔ открыто', shut: 'закрыто',
+      cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или ламельная стена', hsOpen: 'Выбрать сторону',
       notMade: 'В таком размере не производится – выберите другой вариант.', later: 'цена по запросу',
       fabric: 'Ткань ZIP-скринов', ofName: { 14: 'Лёгкая, хорошо видно наружу', 5: 'От солнца и взглядов', 4: 'От солнца и взглядов, чуть плотнее', 1: 'Почти непрозрачная', 0: 'Блэкаут' },
       perM2: '€/м²', zipCtl: 'Управление с пульта перголы.',
@@ -214,7 +217,7 @@
         ['Что будет после запроса?', 'Мы обсудим с вами детали и при необходимости договоримся о замере. После этого вы получите окончательное предложение.'],
       ],
       hint: 'Тяните, чтобы вращать. Нажмите на сторону, чтобы закрыть её.',
-      tb: { ang: 'Ламели', drop: 'Скрины', gopen: 'Остекление', evening: 'Вечер', front: 'Спереди', top: 'Сверху', closed: 'закрыто', open: 'открыто' },
+      tb: { ang: 'Ламели', drop: 'Скрины', gopen: 'Остекление', evening: 'Вечер', front: 'Спереди', top: 'Сверху', closed: 'закрыто', open: 'открыто', louv: 'Повернуть ламели' },
       qTitle: 'Предварительное предложение', qNo: '№', qDate: 'Дата', qConfig: 'Ваша конфигурация', qPrice: 'Цена', qItem: 'Позиция', qNet: 'Итого без НДС', qVat: 'НДС 20 %', qGross: 'Итого с НДС',
       qFacts: { size: 'Размер', mount: 'Установка', model: 'Модель', height: 'Высота стоек', sides: 'Стороны', colours: 'Цвета', comfort: 'Комфорт' },
       qNotes: ['Ориентировочная цена по каталогу ' + CATALOGUE + ', без обязательств.', 'Не входит: доставка, монтаж, фундамент, подключение электричества, разрешения.', 'Окончательная цена – после замера на месте.', 'Цвета на экране приблизительные.'],
@@ -368,6 +371,7 @@
     const body = [stepSize, stepSides, stepComfort, stepColours, stepOffer][step](t, o);
     F.innerHTML = head + steps + `<div class="f-body">${body}</div>` + bar(t, o);
     if (focusId && step === 1) { const el = F.querySelector(`[data-side="${focusId}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+    renderHotspots();
   }
   function bar(t, o) {
     const total = q().total, ok = !!o && total > 0;
@@ -411,7 +415,10 @@
     const other = state.louvres === 'parallel' ? 'perpendicular' : 'parallel';
     const alt = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: other }, cat).options[0];
     const dirTxt = state.louvres === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF);
-    if (alt && alt.total < cheapest - 1) h += `<div class="f-tip"><span>${t.louvNow(dirTxt)} ${t.louvTip(fe(gross(cheapest - alt.total)))}</span><button type="button" class="f-chip" data-louv="${other}">${t.louvDo}</button></div>`;
+    const dirName = (k) => { const s = k === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF); return s.charAt(0).toUpperCase() + s.slice(1); };
+    const dirPrice = (k) => (k === state.louvres ? cheapest : alt ? alt.total : null);
+    h += `<div class="f-h3"><span>${t.louvDir}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.louvNow(dirTxt)}</span></div><div class="f-chips">${['parallel', 'perpendicular'].map((k) => { const pr = dirPrice(k); return `<button type="button" class="f-chip" data-louv="${k}" aria-pressed="${state.louvres === k}" ${pr == null ? 'disabled' : ''}><span aria-hidden="true">${k === 'parallel' ? '⇆' : '⇅'}</span>${dirName(k)}<span class="pr">${pr == null ? t.louvNa : fe(gross(pr))}</span></button>`; }).join('')}</div>`;
+    if (alt && alt.total < cheapest - 1) h += `<div class="f-tip"><span>${t.louvTip(fe(gross(cheapest - alt.total)))}</span><button type="button" class="f-chip" data-louv="${other}">${t.louvDo}</button></div>`;
     return h;
   }
 
@@ -427,8 +434,12 @@
       h += `<div class="f-side${focusId === op.id ? ' hl' : ''}" data-side="${op.id}"><div class="top"><span class="nm">${sideLabel(op.id, o)}<small>${metres(Math.round(op.len * 1000))} m</small></span><span class="pr">${f === 'none' ? '' : bad ? '—' : '+' + fe(gross(amt))}</span></div>
         <div class="f-fills" role="group">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fills[k]}</button>`).join('')}</div>`;
       if (f === 'glass' && !bad) {
-        const g = glassFor(op), dbl = g.best && g.best.opening === 'double', side = glassCfg(op).side || state.glassSide;
-        h += `<div class="sub2">${t.park}: ${dbl ? `<span>${t.parkBoth}</span>` : `<button type="button" class="f-chip" data-park="left" data-id="${op.id}" aria-pressed="${side === 'left'}">${t.parkL}</button><button type="button" class="f-chip" data-park="right" data-id="${op.id}" aria-pressed="${side === 'right'}">${t.parkR}</button>`}</div>`;
+        const g = glassFor(op), dbl = g.best && g.best.opening === 'double', cfg = glassCfg(op), side = cfg.side || state.glassSide;
+        const isOpen = (cfg.open ?? state.glassOpen) > 0;
+        const gb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
+        h += `<div class="sub2">${t.park}: ${dbl
+          ? gb('close', '○ ' + t.shut, !isOpen) + gb('both', t.parkBoth, isOpen)
+          : gb('left', t.parkL, isOpen && side === 'left') + gb('close', '○ ' + t.shut, !isOpen) + gb('right', t.parkR, isOpen && side === 'right')}</div>`;
       }
       if (bad) h += `<div class="bad">${t.notMade}</div>`;
       h += `</div>`;
@@ -635,10 +646,14 @@
     if (d.fix) { if (d.fix.startsWith('DEPTH')) setDims(state.width, Number(d.v)); else setDims(Number(d.v), state.depth); return; }
     if (d.h) { state.po.postHeight = Number(d.h); rebuild(); return; }
     if (d.opt !== undefined) { choose(Number(d.opt)); return; }
-    if (d.louv) { state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); recompute(false); return; }
+    if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); recompute(false); return; }
     if (d.fill) { if (d.fill === 'none') delete state.fills[d.id]; else state.fills[d.id] = d.fill; focusId = d.id; rebuild(); applyAnim(); return; }
     if (d.all) { for (const x of opsOf(o)) { if (d.all === 'none') delete state.fills[x.id]; else state.fills[x.id] = d.all; } rebuild(); applyAnim(); return; }
-    if (d.park) { const op = openingById(d.id); if (op) { setCfg(op, { side: d.park }); if (!state.glassCfg[op.id].open && !state.glassOpen) state.glassCfg[op.id].open = 100; build(); applyAnim(); render(); } return; }
+    if (d.gpos) { // the glass slides to the chosen side, or closes the opening
+      const op = openingById(d.id);
+      if (op) { setCfg(op, d.gpos === 'close' ? { open: 0 } : d.gpos === 'both' ? { open: 100 } : { side: d.gpos, open: 100 }); build(); applyAnim(); render(); }
+      return;
+    }
     if (d.of) { state.colors.fabric = fabricForOpenness(Number(d.of)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); return; }
     if (d.gl) { state.glass.type = d.gl; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); renderColors(); renderEstimate(); return; }
     const po = state.po;
@@ -681,11 +696,13 @@
   /* ---------- mode, language, toolbar ---------- */
   const TB_RU = T.ru.tb;
   const HINT_RU = $('hint') ? $('hint').textContent : '';
+  const LOUV_TITLE_RU = $('louv-dir').title;
   function translateToolbar() {
     const tb = isCust() ? L().tb : TB_RU;
     const setLabel = (id, txt) => { const lab = $(id).closest('label'); if (lab && lab.firstChild && lab.firstChild.nodeType === 3) lab.firstChild.nodeValue = txt + ' '; };
     setLabel('ang', tb.ang); setLabel('drop', tb.drop); setLabel('gopen', tb.gopen);
     $('evening').textContent = tb.evening; $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
+    $('louv-dir').title = isCust() ? tb.louv : LOUV_TITLE_RU; $('louv-dir').setAttribute('aria-label', tb.louv);
     gopenText();
     window.MM_UNIT = isCust() ? L().mm : 'мм';
     renderLabels(curOpt());
@@ -709,6 +726,44 @@
     document.querySelector('.app > aside.panel').prepend(b);
   }
   function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(false); }
+
+  /* ---------- 3D call to action: a "+" on every side; tap it to choose what closes that side ---------- */
+  const HS = document.createElement('div'); HS.id = 'hotspots'; HS.className = 'cust-only';
+  const CTA = document.createElement('button'); CTA.type = 'button'; CTA.id = 'f-cta'; CTA.className = 'cust-only';
+  $('view').parentElement.append(HS, CTA);
+  let hsSig = '';
+  function renderHotspots() {
+    const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
+    CTA.hidden = anyFill || !o; CTA.innerHTML = `<span class="hand">☝</span>${esc(L().cta)}`;
+    const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || 'none')).join(',') + '|' + (focusId || '');
+    if (sig === hsSig) return; hsSig = sig;
+    HS.innerHTML = ops.map((x) => {
+      const f = state.fills[x.id] || 'none', lab = `${sideLabel(x.id, o)} · ${f === 'none' ? L().hsOpen : L().fills[f]}`;
+      return `<button type="button" class="hs${f === 'none' ? '' : ' filled'}${!anyFill ? ' pulse' : ''}${focusId === x.id ? ' on' : ''}" data-hs="${x.id}" title="${esc(lab)}" aria-label="${esc(lab)}">${f === 'none' ? '+' : GL[f]}</button>`;
+    }).join('');
+  }
+  const hv = new THREE.Vector3();
+  (function placeHs() { // follow the camera: each button sits on the middle of its side
+    requestAnimationFrame(placeHs);
+    if (!isCust() || !HS.firstChild) return;
+    const r = $('view').getBoundingClientRect(), list = [];
+    for (const b of HS.children) {
+      const pl = pickables.find((p) => p.userData.opening && p.userData.opening.id === b.dataset.hs);
+      if (!pl) { b.style.display = 'none'; continue; }
+      pl.getWorldPosition(hv); hv.project(camera);
+      list.push({ b, x: ((hv.x + 1) / 2) * r.width, y: ((1 - hv.y) / 2) * r.height, z: hv.z, off: hv.z > 1 || Math.abs(hv.x) > 1.02 || Math.abs(hv.y) > 1.02 });
+    }
+    // nearest first; a button that would sit on top of a nearer one (e.g. front and back in the front view) is hidden
+    list.sort((a, c) => a.z - c.z);
+    const shown = [];
+    for (const it of list) {
+      const hide = it.off || shown.some((s) => Math.hypot(s.x - it.x, s.y - it.y) < 34);
+      it.b.style.display = hide ? 'none' : '';
+      if (!hide) { shown.push(it); it.b.style.left = it.x + 'px'; it.b.style.top = it.y + 'px'; }
+    }
+  })();
+  HS.addEventListener('click', (ev) => { const b = ev.target.closest('[data-hs]'); if (!b) return; dirty = true; step = 1; focusId = b.dataset.hs; render(); });
+  CTA.addEventListener('click', () => { step = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
   /* ---------- hooks from the main script ---------- */
   window.onEstimate = () => {
