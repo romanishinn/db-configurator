@@ -56,14 +56,23 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .labels { position: absolute; inset: 0; pointer-events: none; }
 .dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 .dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 10px 12px; font-size: 12.5px; }
-/* the three sliders share one grid: caption | track | value, so the tracks line up */
-.toolbar label { display: grid; grid-template-columns: 96px 110px 64px; align-items: center; gap: 6px; flex: 0 0 300px; }
+.toolbar { position: relative; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 8px 12px; font-size: 12.5px; }
+.toolbar .tb-row { display: flex; gap: 6px; flex: 1 1 100%; }
+.toolbar .ib { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; }
+.toolbar .ib svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.toolbar .ib[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.toolbar #evening[aria-pressed="true"] .bulb { fill: #ffd36b; stroke: #ffd36b; }
+.toolbar #evening[aria-pressed="true"] { box-shadow: 0 0 12px rgba(255, 211, 107, .55); }
+/* pop-ups open above the toolbar, over the bottom of the 3D view */
+.toolbar .tb-pop { position: absolute; left: 10px; bottom: calc(100% + 8px); z-index: 5; background: #fff; border: 1px solid #c5ccd1; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.18); padding: 10px 12px; display: grid; gap: 8px; }
+.toolbar #tb-views { grid-auto-flow: column; gap: 6px; }
+.toolbar #tb-views button { padding: 6px 12px; }
+/* the sliders share one grid: caption | track | value, so the tracks line up */
+.toolbar label { display: grid; grid-template-columns: 92px 140px 64px; align-items: center; gap: 6px; }
 .toolbar label[hidden] { display: none; }
-/* glass slider sits on its own row, directly under Скрины */
-.toolbar #gopen-l:not([hidden]) { flex-basis: 100%; }
-.toolbar input[type=range] { width: 110px; accent-color: #2c6a86; }
-.toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 4px; padding: 4px 9px; cursor: pointer; }
+.toolbar input[type=range] { width: 140px; accent-color: #2c6a86; }
+.toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+@media (max-width: 760px) { .toolbar .ib .cap { display: none; } .toolbar .ib { padding: 0 12px; } .toolbar label { grid-template-columns: 84px minmax(0, 1fr) 60px; } .toolbar input[type=range] { width: 100%; } .toolbar .tb-pop { right: 10px; } }
 .toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; }
 .toolbar .dots i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 1px; vertical-align: middle; }
 .toolbar .dots i:nth-child(1) { background: #8c9196; } .toolbar .dots i:nth-child(2) { background: #2c6a86; } .toolbar .dots i:nth-child(3) { background: #d9b26b; }
@@ -73,7 +82,6 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .toolbar #clr-pop .sw { display: inline-block; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #9aa4ab; flex: none; }
 .toolbar #clr-pop .nm { color: #5b666e; }
 /* phone: all five buttons on one row (no spacer), sliders stay in their own rows */
-@media (max-width: 760px) { .toolbar { gap: 8px; } .toolbar button { padding: 4px 6px; } .toolbar span[style] { display: none; } } /* own full-width row: its text length no longer moves the buttons */
 .toolbar #louv-info b { color: #1d6b3a; font-weight: 600; }
 .toolbar button[aria-pressed="true"] { background: #1c2226; color: #fff; border-color: #1c2226; }
 .hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
@@ -193,18 +201,26 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <div class="hint" id="hint">Нажмите на проём между стойками, чтобы выбрать заполнение. Тяните мышью — вращение, колесо — масштаб.</div>
     </div>
     <div class="toolbar">
-      <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
-      <label>Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
-      <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
-      <button type="button" id="evening" aria-pressed="false">Вечер</button>
-      <button type="button" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен">⇄</button>
+      <!-- icon row: view · louvre direction · movement sliders · day/night (+ colours in pro) -->
+      <div class="tb-row">
+        <button type="button" class="ib" id="tb-view" aria-expanded="false" aria-controls="tb-views" title="Вид"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="14.5" r="3.6"/><circle cx="17.5" cy="14.5" r="3.6"/><path d="M10.1 14.2c1.2-.9 2.6-.9 3.8 0M2.9 13.6 5 7.5h2.2M21.1 13.6 19 7.5h-2.2"/></svg><span class="cap">Вид</span></button>
+        <button type="button" class="ib" id="louv-dir" aria-pressed="false" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h15l-3.5-3.5M20 15.5H5l3.5 3.5"/></svg><span class="cap">Ламели</span></button>
+        <button type="button" class="ib" id="tb-move" aria-expanded="false" aria-controls="tb-sliders" title="Движение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3zM12 12l8-4.7M12 12v9.2M12 12 4 7.3"/></svg><span class="cap">Движение</span></button>
+        <button type="button" class="ib" id="evening" aria-pressed="false" title="День / ночь"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="bulb" d="M12 2.8a6.2 6.2 0 0 0-3.7 11.2c.7.5 1.1 1.3 1.1 2.1v.6h5.2v-.6c0-.8.4-1.6 1.1-2.1A6.2 6.2 0 0 0 12 2.8z"/><path d="M9.6 19.2h4.8M10.4 21.6h3.2"/></svg><span class="cap">Ночь</span></button>
+        <button type="button" class="ib pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span><span class="cap">Цвета</span></button>
+      </div>
+      <div class="tb-pop" id="tb-views" hidden>
+        <button type="button" id="v-iso">3D</button>
+        <button type="button" id="v-front">Спереди</button>
+        <button type="button" id="v-top">Сверху</button>
+      </div>
+      <div class="tb-pop" id="tb-sliders" hidden>
+        <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
+        <label id="drop-l">Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
+        <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
+      </div>
       <span id="louv-info" class="muted pro-only"></span>
       <div id="clr-pop" class="clr-pop pro-only" hidden></div>
-      <span style="flex:1"></span>
-      <button type="button" class="pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span></button>
-      <button type="button" id="v-iso">3D</button>
-      <button type="button" id="v-front">Спереди</button>
-      <button type="button" id="v-top">Сверху</button>
     </div>
   </section>
 
@@ -824,6 +840,7 @@ function openingById(id) {
 function syncGlassControls() {
   const any = Object.values(state.fills).includes('glass');
   $('gopen-l').hidden = !any;
+  $('drop-l').hidden = !Object.values(state.fills).includes('zip'); // the screen slider only when there is a screen
 }
 function closeMenu() { if (menu) { menu.remove(); menu = null; menuAt = null; } }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
@@ -1225,7 +1242,17 @@ function renderLouvreInfo(cur, alt) {
   $('louv-dir').disabled = !alt && !!cur;
 }
 $('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 'perpendicular' : 'parallel'; e.currentTarget.setAttribute('aria-pressed', state.louvres === 'perpendicular'); recompute(true); };
-$('evening').onclick = (e) => { state.evening = !state.evening; e.target.setAttribute('aria-pressed', state.evening); applyAnim(); };
+$('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.setAttribute('aria-pressed', state.evening); applyAnim(); };
+/* icon row: "view" and "movement" open small panels above the toolbar; one at a time, a click elsewhere closes them */
+function togglePop(btn, pop, force) {
+  const open = force !== undefined ? force : pop.hidden;
+  for (const [b, p] of [[$('tb-view'), $('tb-views')], [$('tb-move'), $('tb-sliders')]]) { p.hidden = true; b.setAttribute('aria-expanded', 'false'); }
+  pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+}
+$('tb-view').onclick = () => togglePop($('tb-view'), $('tb-views'));
+$('tb-move').onclick = () => togglePop($('tb-move'), $('tb-sliders'));
+$('tb-views').addEventListener('click', (e) => { if (e.target.closest('button')) togglePop($('tb-view'), $('tb-views'), false); });
+document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#tb-views, #tb-sliders, #tb-view, #tb-move')) { togglePop($('tb-view'), $('tb-views'), false); } });
 $('clr-btn').onclick = () => { const pop = $('clr-pop'); pop.hidden = !pop.hidden; $('clr-btn').setAttribute('aria-pressed', String(!pop.hidden)); renderColorPop(); };
 $('clr-pop').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; state.colorOpen = b.dataset.pick; renderColors(); $('clr').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 $('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top');

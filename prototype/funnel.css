@@ -116,7 +116,6 @@ body.cust #hint { max-width: 340px; }
   body.cust .app { grid-template-columns: 1fr; padding: 0; gap: 0; }
   body.cust .stage { position: sticky; top: 0; height: 40vh; min-height: 240px; border-radius: 0; border-width: 0 0 1px; z-index: 4; }
   body.cust .stage .vp { height: auto; flex: 1; }
-  body.cust .toolbar label { display: none !important; }
   body.cust .toolbar { padding: 6px 10px; }
   body.cust .funnel { border-radius: 0; border-width: 0; padding-bottom: 76px; }
   body.cust .f-bar { grid-template-columns: minmax(0, 1fr) auto auto; padding-left: 12px; padding-right: 12px; }

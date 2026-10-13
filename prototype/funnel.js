@@ -74,7 +74,7 @@
         ['Wie geht es nach der Anfrage weiter?', 'Wir besprechen die Details mit Ihnen und vereinbaren bei Bedarf einen Termin für das Aufmaß. Danach erhalten Sie ein verbindliches Angebot.'],
       ],
       hint: 'Ziehen zum Drehen. Tippen Sie auf eine Seite, um sie zu schließen.',
-      tb: { ang: 'Lamellen', drop: 'Screens', gopen: 'Glas', evening: 'Abend', front: 'Vorne', top: 'Oben', closed: 'zu', open: 'offen', louv: 'Lamellenrichtung drehen' },
+      tb: { ang: 'Lamellen', drop: 'Screens', gopen: 'Glas', evening: 'Abend', front: 'Vorne', top: 'Oben', closed: 'zu', open: 'offen', louv: 'Lamellenrichtung drehen', view: 'Ansicht', louvCap: 'Lamellen', move: 'Bewegen', night: 'Nacht', nightT: 'Tag / Nacht – Licht einschalten', moveT: 'Lamellen drehen, Glas und Screens bewegen' },
       // quote
       qTitle: 'Richtpreisangebot', qNo: 'Nr.', qDate: 'Datum', qConfig: 'Ihre Konfiguration', qPrice: 'Preis', qItem: 'Position', qNet: 'Summe netto', qVat: 'USt. 20 %', qGross: 'Gesamt inkl. USt.',
       qFacts: { size: 'Größe', mount: 'Montage', model: 'Modell', height: 'Stützenhöhe', sides: 'Seiten', colours: 'Farben', comfort: 'Komfort' },
@@ -146,7 +146,7 @@
         ['What happens after my request?', 'We discuss the details with you and, if needed, arrange a site survey. After that you receive a binding quote.'],
       ],
       hint: 'Drag to rotate. Tap a side to close it.',
-      tb: { ang: 'Louvres', drop: 'Screens', gopen: 'Glass', evening: 'Evening', front: 'Front', top: 'Top', closed: 'closed', open: 'open', louv: 'Turn the louvre direction' },
+      tb: { ang: 'Louvres', drop: 'Screens', gopen: 'Glass', evening: 'Evening', front: 'Front', top: 'Top', closed: 'closed', open: 'open', louv: 'Turn the louvre direction', view: 'View', louvCap: 'Louvres', move: 'Move', night: 'Night', nightT: 'Day / night – switch the lights on', moveT: 'Tilt the louvres, move glass and screens' },
       qTitle: 'Indicative quote', qNo: 'No.', qDate: 'Date', qConfig: 'Your configuration', qPrice: 'Price', qItem: 'Item', qNet: 'Total net', qVat: 'VAT 20 %', qGross: 'Total incl. VAT',
       qFacts: { size: 'Size', mount: 'Mounting', model: 'Model', height: 'Post height', sides: 'Sides', colours: 'Colours', comfort: 'Comfort' },
       qNotes: ['Indicative price based on catalogue prices ' + CATALOGUE + ', not binding.', 'Not included: delivery, installation, foundations, electrical connection, permits.', 'The final price follows a site survey.', 'Screen colours are approximate.'],
@@ -217,7 +217,7 @@
         ['Что будет после запроса?', 'Мы обсудим с вами детали и при необходимости договоримся о замере. После этого вы получите окончательное предложение.'],
       ],
       hint: 'Тяните, чтобы вращать. Нажмите на сторону, чтобы закрыть её.',
-      tb: { ang: 'Ламели', drop: 'Скрины', gopen: 'Остекление', evening: 'Вечер', front: 'Спереди', top: 'Сверху', closed: 'закрыто', open: 'открыто', louv: 'Повернуть ламели' },
+      tb: { ang: 'Ламели', drop: 'Скрины', gopen: 'Остекление', evening: 'Вечер', front: 'Спереди', top: 'Сверху', closed: 'закрыто', open: 'открыто', louv: 'Повернуть ламели', view: 'Вид', louvCap: 'Ламели', move: 'Движение', night: 'Ночь', nightT: 'День / ночь – включить свет', moveT: 'Повернуть ламели, открыть стекло и скрины' },
       qTitle: 'Предварительное предложение', qNo: '№', qDate: 'Дата', qConfig: 'Ваша конфигурация', qPrice: 'Цена', qItem: 'Позиция', qNet: 'Итого без НДС', qVat: 'НДС 20 %', qGross: 'Итого с НДС',
       qFacts: { size: 'Размер', mount: 'Установка', model: 'Модель', height: 'Высота стоек', sides: 'Стороны', colours: 'Цвета', comfort: 'Комфорт' },
       qNotes: ['Ориентировочная цена по каталогу ' + CATALOGUE + ', без обязательств.', 'Не входит: доставка, монтаж, фундамент, подключение электричества, разрешения.', 'Окончательная цена – после замера на месте.', 'Цвета на экране приблизительные.'],
@@ -701,7 +701,10 @@
     const tb = isCust() ? L().tb : TB_RU;
     const setLabel = (id, txt) => { const lab = $(id).closest('label'); if (lab && lab.firstChild && lab.firstChild.nodeType === 3) lab.firstChild.nodeValue = txt + ' '; };
     setLabel('ang', tb.ang); setLabel('drop', tb.drop); setLabel('gopen', tb.gopen);
-    $('evening').textContent = tb.evening; $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
+    const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night);
+    $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
+    $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
     $('louv-dir').title = isCust() ? tb.louv : LOUV_TITLE_RU; $('louv-dir').setAttribute('aria-label', tb.louv);
     gopenText();
     window.MM_UNIT = isCust() ? L().mm : 'мм';
