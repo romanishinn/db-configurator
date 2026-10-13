@@ -29,6 +29,7 @@
       louvNow: (d) => `Lamellen laufen ${d}.`, louvPar: 'parallel zur Hauswand', louvPerp: 'von der Hauswand weg', louvParF: 'entlang der Breite', louvPerpF: 'entlang der Tiefe',
       sugg: { DEPTH_TOO_SMALL: 'Die Tiefe ist kleiner als möglich.', WIDTH_TOO_SMALL: 'Die Breite ist kleiner als möglich.', DEPTH_TOO_LARGE: 'Die Tiefe ist größer als möglich.', WIDTH_TOO_LARGE: 'Die Breite ist größer als möglich.', NO_COMBINATION: 'Diese Größe lässt sich nicht bauen.' },
       suggFix: (v) => `Auf ${v} m ändern`,
+      snapped: (b, r) => `Wegen des Lamellenrasters wird ${b} m statt ${r} m gebaut.`, multiRow: 'Mehrere Reihen in der Tiefe – den Preis bestätigen wir mit Ihrer Anfrage.',
       // step 2
       s2: 'Welche Seiten möchten Sie schließen?', s2l: 'Jede Seite kann offen bleiben oder Sonnen-, Wind- oder Sichtschutz bekommen. Sie können auch im 3D-Bild auf eine Seite tippen.',
       allSides: 'Alle Seiten', fills: { none: 'Offen', zip: 'ZIP-Screen', glass: 'Schiebeglas', verto: 'Lamellenwand', panels: 'Schiebepaneele' },
@@ -103,6 +104,7 @@
       louvNow: (d) => `Louvres run ${d}.`, louvPar: 'parallel to the wall', louvPerp: 'away from the wall', louvParF: 'along the width', louvPerpF: 'along the depth',
       sugg: { DEPTH_TOO_SMALL: 'The depth is below the minimum.', WIDTH_TOO_SMALL: 'The width is below the minimum.', DEPTH_TOO_LARGE: 'The depth is above the maximum.', WIDTH_TOO_LARGE: 'The width is above the maximum.', NO_COMBINATION: 'This size cannot be built.' },
       suggFix: (v) => `Change to ${v} m`,
+      snapped: (b, r) => `Because of the louvre spacing, ${b} m is built instead of ${r} m.`, multiRow: 'Several rows in depth – we confirm the price with your request.',
       s2: 'Which sides would you like to close?', s2l: 'Each side can stay open or get sun, wind or privacy protection. You can also tap a side in the 3D view.',
       allSides: 'All sides', fills: { none: 'Open', zip: 'ZIP screen', glass: 'Sliding glass', verto: 'Louvre wall', panels: 'Sliding panels' },
       legend: { zip: 'Fabric blind in side guides, motorised – sun and privacy protection.', glass: 'Sliding glass panels (Win Glass) – shelter from wind and rain.', verto: 'Fixed aluminium profiles (Win Verto) – privacy, air still flows.', panels: 'Aluminium louvre panels on rails (Win Panels) – slide aside.' },
@@ -172,6 +174,7 @@
       louvNow: (d) => `Ламели идут ${d}.`, louvPar: 'вдоль стены', louvPerp: 'от стены вперёд', louvParF: 'вдоль ширины', louvPerpF: 'вдоль глубины',
       sugg: { DEPTH_TOO_SMALL: 'Глубина меньше минимальной.', WIDTH_TOO_SMALL: 'Ширина меньше минимальной.', DEPTH_TOO_LARGE: 'Глубина больше возможной.', WIDTH_TOO_LARGE: 'Ширина больше возможной.', NO_COMBINATION: 'Такой размер не собирается.' },
       suggFix: (v) => `Изменить на ${v} м`,
+      snapped: (b, r) => `Из-за шага ламелей строится ${b} м вместо ${r} м.`, multiRow: 'Несколько рядов в глубину – цену подтвердим по запросу.',
       s2: 'Какие стороны закрыть?', s2l: 'Каждая сторона может остаться открытой или получить защиту от солнца, ветра или взглядов. Можно нажать на сторону прямо на 3D.',
       allSides: 'Все стороны', fills: { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Раздвижное стекло', verto: 'Ламельная стена', panels: 'Раздвижные панели' },
       legend: { zip: 'Ткань в боковых направляющих, с мотором – от солнца и взглядов.', glass: 'Раздвижные стеклянные полотна (Win Glass) – от ветра и дождя.', verto: 'Неподвижные алюминиевые профили (Win Verto) – от взглядов, воздух проходит.', panels: 'Алюминиевые ламельные панели на направляющих (Win Panels) – сдвигаются.' },
@@ -372,7 +375,6 @@
     const nextLabel = step === 3 ? t.toOffer : step === 4 ? t.send : t.next + ': ' + t.steps[step + 1];
     return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1">${t.back}</button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${esc(nextLabel)}${step < 4 ? ' →' : ''}</button></div>`;
   }
-  function updateBar() { const o = curOpt(), t = L(), old = F.querySelector('.f-bar'); if (old) old.outerHTML = bar(t, o); }
 
   /* step 1: size */
   function stepSize(t, o) {
@@ -402,6 +404,9 @@
     h += `<div class="f-h3"><span>${t.layout}</span></div><div class="f-lay">${lay(opts[0], 0)}${state.optIndex > 0 ? lay(opts[state.optIndex], state.optIndex) : ''}</div>`;
     const rest = opts.map((x, i) => [x, i]).filter(([, i]) => i !== 0 && i !== state.optIndex);
     if (rest.length) h += `<details class="f-more"><summary>${t.otherLayouts(rest.length)}</summary><div class="f-lay" style="margin-top:6px">${rest.map(([x, i]) => lay(x, i)).join('')}</div></details>`;
+    if (o.width !== state.width) h += `<div class="f-note">${t.snapped(metres(o.width), metres(state.width))}</div>`;
+    if (o.depth !== state.depth) h += `<div class="f-note">${t.snapped(metres(o.depth), metres(state.depth))}</div>`;
+    if (o.issues.some((i) => i.code === 'MULTI_ROW_ASSUMPTION')) h += `<div class="f-note">${t.multiRow}</div>`;
     // louvre direction: offer the cheaper one, explain the current one
     const other = state.louvres === 'parallel' ? 'perpendicular' : 'parallel';
     const alt = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: other }, cat).options[0];
@@ -529,7 +534,7 @@
   }
 
   /* ---------- request e-mail and quote ---------- */
-  function sizeText() { const o = curOpt(); return o ? `${metres(state.width)} × ${metres(state.depth)} m` : ''; }
+  function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} m` : ''; } // as built (louvre spacing may round the size)
   function mailText() {
     const t = L(), lines = quoteLines(), total = q().total;
     const parts = [t.mailHi, '', `${t.qFacts.size}: ${sizeText()} (${state.mount === 'wall' ? t.wall : t.free})`];
@@ -556,7 +561,12 @@
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
   function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return 'DB-' + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
-  function snapshotImage() { try { renderer.render(scene, camera); return renderer.domElement.toDataURL('image/jpeg', 0.9); } catch (e) { return ''; } }
+  function snapshotImage() {
+    const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved;
+    try { setView('iso'); renderer.render(scene, camera); return renderer.domElement.toDataURL('image/jpeg', 0.9); }
+    catch (e) { return ''; }
+    finally { camera.position.copy(pos); controls.target.copy(tgt); controls.update(); lastView = lv; userMoved = um; }
+  }
   function buildQuote() {
     const t = L(), o = curOpt(), lines = quoteLines(), total = q().total, e = colorsEff();
     const ops = opsOf(o).filter((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
@@ -599,6 +609,13 @@
   const rebuild = () => { syncGlassControls(); build(); renderEstimate(); renderPergolaOptions(); };
   function go(d) { step = Math.max(0, Math.min(4, step + d)); focusId = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); if (step === 1) setView('iso'); }
   let dimT = 0;
+  /** typed size in metres -> mm; the same value again does nothing (a blur must not re-render under the user's next tap) */
+  function applyDim(el) {
+    const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (!(v > 0)) return;
+    const w = el.dataset.dim === 'w' ? Math.max(1000, Math.round(v / 10) * 10) : state.width, d = el.dataset.dim === 'd' ? Math.max(1000, Math.round(v / 10) * 10) : state.depth;
+    if (w === state.width && d === state.depth) return;
+    setDims(w, d);
+  }
   function setDims(w, d) {
     state.width = Math.max(1000, Math.round(w / 10) * 10); state.depth = Math.max(1000, Math.round(d / 10) * 10);
     $('w').value = state.width; $('d').value = state.depth; recompute(false);
@@ -648,7 +665,7 @@
     dirty = true;
     if (el.dataset.dim) {
       clearTimeout(dimT);
-      dimT = setTimeout(() => { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (!(v > 0)) return; if (el.dataset.dim === 'w') setDims(v, state.depth); else setDims(state.width, v); }, 600);
+      dimT = setTimeout(() => applyDim(el), 600);
       return;
     }
     if (el.form && el.form.id === 'f-form' && el.name) { form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value; }
@@ -656,7 +673,7 @@
   F.addEventListener('change', (ev) => {
     const el = ev.target;
     if (el.form && el.form.id === 'f-form' && el.name) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
-    if (el.dataset.dim) { clearTimeout(dimT); const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { if (el.dataset.dim === 'w') setDims(v, state.depth); else setDims(state.width, v); } }
+    if (el.dataset.dim) { clearTimeout(dimT); applyDim(el); }
     if (el.id === 'f-file' && el.files && el.files[0]) { const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(el.files[0]); }
   });
   F.addEventListener('submit', (ev) => { ev.preventDefault(); sendRequest(); });
@@ -697,9 +714,13 @@
   window.onEstimate = () => {
     persist();
     if (!isCust()) return;
+    // keep what the user is typing: re-render, then put the text and the caret back into the same field
     const a = document.activeElement;
-    if (a && F.contains(a) && a.matches('input[type=number], input[type=text], input[type=email], input[type=tel], textarea, select')) updateBar();
-    else render();
+    const key = a && F.contains(a) && a.matches('input, textarea, select') ? (a.id ? '#' + a.id : a.name ? `[name="${a.name}"]` : null) : null;
+    const val = key ? a.value : null;
+    let sel = null; try { sel = key ? [a.selectionStart, a.selectionEnd] : null; } catch (e) { sel = null; }
+    render();
+    if (key) { const n = F.querySelector(key); if (n) { if (n.type !== 'checkbox') n.value = val; n.focus({ preventScroll: true }); try { if (sel && sel[0] != null) n.setSelectionRange(sel[0], sel[1]); } catch (e) { /* number inputs */ } } }
   };
   window.onOpeningPick = (o) => {
     if (!isCust()) return false;
@@ -718,7 +739,7 @@
     // customers start with an open pergola: nothing extra is pre-selected, every addition is their own choice
     state.fills = {}; build(); renderEstimate();
     const saved = Store.get('db.cfg');
-    if (saved && saved.fills && Object.keys(saved.fills).length) resumeOffer = saved;
+    if (saved && JSON.stringify(saved) !== JSON.stringify(snapshot())) resumeOffer = saved;
   }
   setMode(mode);
 })();

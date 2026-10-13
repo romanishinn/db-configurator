@@ -893,7 +893,7 @@ function screenWhyNot(r, req, mode) {
 }
 function renderEstimate() {
   const o = state.options[state.optIndex], tb = $('lines');
-  if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; return; }
+  if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; state.q = { lines: [], total: 0, incomplete: 0, issues: [] }; if (typeof window.onEstimate === 'function') window.onEstimate(); return; }
   const ROLE = { single: 'отдельная пергола', base: 'базовый модуль', add: 'доп. модуль' };
   const MOUNT = { wall: '', free: ' · отдельностоящая', roof: '' };
   const Q = []; // structured lines: the customer view and the printable quote are built from these
