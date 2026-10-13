@@ -1241,7 +1241,13 @@ function renderLouvreInfo(cur, alt) {
   $('louv-info').innerHTML = t;
   $('louv-dir').disabled = !alt && !!cur;
 }
-$('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 'perpendicular' : 'parallel'; e.currentTarget.setAttribute('aria-pressed', state.louvres === 'perpendicular'); recompute(true); };
+/** run a rebuild without moving the camera: the view the user chose (front, top, rotated) stays as it was */
+function keepCamera(fn) {
+  const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved;
+  fn();
+  camera.position.copy(pos); controls.target.copy(tgt); lastView = lv; userMoved = um; controls.update();
+}
+$('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 'perpendicular' : 'parallel'; e.currentTarget.setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(true)); };
 $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.setAttribute('aria-pressed', state.evening); applyAnim(); };
 /* icon row: "view" and "movement" open small panels above the toolbar; one at a time, a click elsewhere closes them */
 function togglePop(btn, pop, force) {
