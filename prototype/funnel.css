@@ -189,3 +189,11 @@ body.cust #hint { display: none !important; }
 .f-sw.f-sw-sm button .c { width: 34px; height: 34px; }
 
 @media (max-width: 420px) { .f-bar .p .nt { display: none; } .f-row2 .f-btn { font-size: 13px; padding: 10px 8px; } }
+
+/* section headers: a long note on the right drops to its own line instead of squeezing next to the title */
+.f-h3 { flex-wrap: wrap; row-gap: 2px; }
+.f-h3 > span:last-child:not(:first-child) { margin-left: auto; text-align: right; }
+
+/* the "more" circle: three dots drawn exactly in the middle (a text ellipsis sits on the baseline) */
+.f-sw button .c.more svg { width: 22px; height: 22px; fill: currentColor; display: block; }
+.f-sw button .c .lnk { display: grid; place-items: center; line-height: 1; }

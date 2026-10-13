@@ -518,7 +518,7 @@
       if (key !== 'construction') row += `<button type="button" data-cl="${key}" data-c="" aria-pressed="${linked}"><span class="c" style="background:${swatchBg(colorOf(e.construction))}"><span class="lnk">=</span></span>${t.asFrame}<span class="pr">&nbsp;</span></button>`;
       row += std.map((c) => sw(c, !linked && eff === c.id)).join('');
       if (!linked && effC.group !== 'standard' && !effC.custom) row += sw(effC, true);
-      row += `<button type="button" data-more="${key}" aria-expanded="${!!moreOpen[key]}"><span class="c more">…</span>${t.moreColours}<span class="pr">&nbsp;</span></button>`;
+      row += `<button type="button" data-more="${key}" aria-expanded="${!!moreOpen[key]}"><span class="c more"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="19" cy="12" r="2.1"/></svg></span>${t.moreColours}<span class="pr">&nbsp;</span></button>`;
       h += `<div class="f-h3"><span>${label}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${linked ? t.asFrame : esc(cname(eff))}</span></div><div class="f-sw">${row}</div>`;
       if (moreOpen[key]) {
         h += `<div class="f-palette">` + Object.keys(t.groups).map((g) => {
