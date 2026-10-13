@@ -63,8 +63,8 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .toolbar .ib[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .toolbar #evening[aria-pressed="true"] .bulb { fill: #ffd36b; stroke: #ffd36b; }
 .toolbar #evening[aria-pressed="true"] { box-shadow: 0 0 12px rgba(255, 211, 107, .55); }
-/* pop-ups open above the toolbar, over the bottom of the 3D view */
-.toolbar .tb-pop { position: absolute; left: 10px; bottom: calc(100% + 8px); z-index: 5; background: #fff; border: 1px solid #c5ccd1; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.18); padding: 10px 12px; display: grid; gap: 8px; }
+/* panels open as a row under the icons, so they never cover the 3D picture */
+.toolbar .tb-pop { flex: 1 1 100%; background: var(--bg); border: 1px solid #d6dadd; border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; justify-content: start; }
 .toolbar #tb-views { grid-auto-flow: column; gap: 6px; }
 .toolbar #tb-views button { padding: 6px 12px; }
 /* the sliders share one grid: caption | track | value, so the tracks line up */
@@ -72,7 +72,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .toolbar label[hidden] { display: none; }
 .toolbar input[type=range] { width: 140px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 6px; padding: 4px 9px; cursor: pointer; }
-@media (max-width: 760px) { .toolbar .ib .cap { display: none; } .toolbar .ib { padding: 0 12px; } .toolbar label { grid-template-columns: 84px minmax(0, 1fr) 60px; } .toolbar input[type=range] { width: 100%; } .toolbar .tb-pop { right: 10px; } }
+@media (max-width: 760px) { .toolbar .ib .cap { display: none; } .toolbar .ib { padding: 0 12px; } .toolbar label { grid-template-columns: 84px minmax(0, 1fr) 60px; } .toolbar input[type=range] { width: 100%; } .toolbar .tb-pop { justify-content: stretch; } }
 .toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; }
 .toolbar .dots i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 1px; vertical-align: middle; }
 .toolbar .dots i:nth-child(1) { background: #8c9196; } .toolbar .dots i:nth-child(2) { background: #2c6a86; } .toolbar .dots i:nth-child(3) { background: #d9b26b; }
