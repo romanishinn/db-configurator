@@ -448,7 +448,7 @@
     const used = new Set(ops.map((x) => state.fills[x.id]).filter(Boolean));
     if (used.has('zip')) {
       const curOf = fabricOf().openness;
-      h += `<div class="f-h3"><span>${t.fabric}</span></div><div class="f-chips">${opennessList().map((of) => {
+      h += `<div class="f-h3"><span>${t.fabric}</span></div><div class="f-chips f-list">${opennessList().map((of) => {
         const cheapestF = cat.fabrics.collections.filter((f) => f.openness === of).sort((a, b) => a.eurPerM2 - b.eurPerM2)[0];
         return `<button type="button" class="f-chip" data-of="${of}" aria-pressed="${curOf === of}">${of} % · ${esc(t.ofName[of] || '')}<span class="pr">${cheapestF && cheapestF.eurPerM2 ? '+' + cheapestF.eurPerM2 + ' ' + t.perM2 : t.incl}</span></button>`;
       }).join('')}</div><p class="f-lead" style="margin:6px 0 0;font-size:12.5px">${t.zipCtl}</p>`;
@@ -468,7 +468,8 @@
   function stepComfort(t, o) {
     if (!o) return '';
     const po = state.po, s500 = o.family !== 'S400';
-    const card = (title, desc, chips) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div><div class="f-chips">${chips}</div>`;
+    // longer choices are a list (one row each, text left, price right); yes/no and counts stay short chips
+    const card = (title, desc, chips, list = true) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div><div class="f-chips${list ? ' f-list' : ''}">${chips}</div>`;
     const chip = (attr, cur, label, delta) => `<button type="button" class="f-chip" ${attr} aria-pressed="${cur}">${esc(label)}${delta !== undefined ? `<span class="pr">${plusE(delta)}</span>` : ''}</button>`;
     const lightCur = po.ledLouvres ? po.ledLouvres.colour : po.spots ? 'spots' : 'none';
     const LIGHT = { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } };
@@ -481,9 +482,9 @@
     h += card(t.heat, t.heatD, chip('data-heat="none"', heatCur === 'none', t.heats.none) + heatList.map((k) => chip(`data-heat="${k}"`, heatCur === k, t.heats[k] || t.heats.other, optDelta({ heaters: { set: k, qty: 1 } }))).join(''));
     h += card(t.weather, t.weatherD, ['none', 'wind', 'set', 'multi'].map((k) => chip(`data-sensor="${k}"`, (po.sensors || 'none') === k, t.weathers[k], k === 'none' ? undefined : optDelta({ sensors: k }))).join(''));
     h += card(t.app, t.appD, ['none', 'bluetooth', 'wifi'].map((k) => chip(`data-smart="${k}"`, (po.smart || 'none') === k, t.apps[k], k === 'none' ? undefined : optDelta({ smart: k }))).join(''));
-    h += card(t.thermal, t.thermalD, chip('data-thermal="0"', !po.thermal, t.off) + chip('data-thermal="1"', !!po.thermal, t.on, optDelta({ thermal: true })));
-    h += card(t.audio, t.audioD, chip('data-audio="0"', !po.audio, t.off) + chip('data-audio="1"', !!po.audio, t.on, optDelta({ audio: 1 })));
-    if (s500) h += card(t.sockets, t.socketsD, [0, 1, 2, 4].map((n) => chip(`data-sock="${n}"`, po.sockets.power === n, n ? '× ' + n : t.off, n ? optDelta({ sockets: { power: n, usb: 0 } }) : undefined)).join(''));
+    h += card(t.thermal, t.thermalD, chip('data-thermal="0"', !po.thermal, t.off) + chip('data-thermal="1"', !!po.thermal, t.on, optDelta({ thermal: true })), false);
+    h += card(t.audio, t.audioD, chip('data-audio="0"', !po.audio, t.off) + chip('data-audio="1"', !!po.audio, t.on, optDelta({ audio: 1 })), false);
+    if (s500) h += card(t.sockets, t.socketsD, [0, 1, 2, 4].map((n) => chip(`data-sock="${n}"`, po.sockets.power === n, n ? '× ' + n : t.off, n ? optDelta({ sockets: { power: n, usb: 0 } }) : undefined)).join(''), false);
     return h;
   }
 

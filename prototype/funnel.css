@@ -38,6 +38,12 @@ body.cust .app { grid-template-columns: minmax(0, 1fr) 440px; }
 .f-chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
 .f-chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
 .f-chip .pr { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); font-weight: 400; }
+.f-chip { text-align: left; }
+.f-chip .pr { white-space: nowrap; }
+/* list of choices: one row each, text on the left, price on the right */
+.f-chips.f-list { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.f-list .f-chip { width: 100%; border-radius: 8px; padding: 10px 12px; justify-content: flex-start; }
+.f-list .f-chip .pr { margin-left: auto; padding-left: 12px; }
 .f-chip:disabled { opacity: .4; cursor: not-allowed; }
 .f-note { font-size: 12.5px; border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 8px 10px; border-radius: 4px; margin-top: 10px; }
 .f-tip { font-size: 12.5px; border-left: 3px solid var(--good); background: color-mix(in srgb, var(--good) 10%, transparent); padding: 8px 10px; border-radius: 4px; margin-top: 10px; display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
