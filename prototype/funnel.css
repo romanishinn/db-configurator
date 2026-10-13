@@ -173,3 +173,14 @@ body.cust #hint { display: none !important; }
 @keyframes ctaNod { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
 @media (prefers-reduced-motion: reduce) { #f-cta .hand { animation: none; } }
 @media (max-width: 760px) { #f-cta { font-size: 12.5px; padding: 7px 12px 7px 10px; top: 8px; } .hs { width: 32px; height: 32px; font-size: 20px; } }
+
+/* colour rows: "as frame" link mark, the "…" circle and the opened palette */
+.f-sw button .c { position: relative; display: grid; place-items: center; }
+.f-sw button .c .lnk { width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,.9); color: #1c2226; font: 600 14px/20px var(--f-body); }
+.f-sw button .c.more { background: var(--bg); border: 1px dashed #9aa4ab; color: var(--ink); font: 700 20px/1 var(--f-body); letter-spacing: 1px; }
+.f-sw button[aria-expanded="true"] .c.more { border-style: solid; border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.f-palette { border: 1px solid var(--line); border-radius: 8px; padding: 2px 10px 12px; margin-top: 8px; }
+.f-sw.f-sw-sm { gap: 8px 4px; }
+.f-sw.f-sw-sm button { width: 70px; font-size: 10.5px; overflow-wrap: anywhere; hyphens: auto; }
+.f-sw button { overflow-wrap: anywhere; hyphens: auto; }
+.f-sw.f-sw-sm button .c { width: 34px; height: 34px; }

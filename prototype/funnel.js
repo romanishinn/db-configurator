@@ -51,7 +51,7 @@
       sockets: 'Steckdosen in der Stütze', socketsD: '230 V', on: 'Ja', off: 'Nein',
       // step 4
       s4: 'Welche Farbe passt zu Ihrem Haus?', s4l: 'Die zwei Standardfarben sind im Preis. Andere Farben kosten einen Aufpreis in Prozent.',
-      frame: 'Rahmen und Stützen', roof: 'Lamellen', asFrame: 'wie Rahmen', moreColours: 'Weitere Farben', groups: { fine: 'Feinstruktur', smooth: 'Glatt matt', exclusive: 'Exklusiv', wood: 'Holzoptik' },
+      frame: 'Rahmen und Stützen', roof: 'Lamellen', slideCol: 'Profile von Glas, Lamellenwand, Paneelen', zipCol: 'ZIP-Kassette und Führungen', asFrame: 'wie Rahmen', moreColours: 'Weitere Farben', groups: { fine: 'Feinstruktur', smooth: 'Glatt matt', exclusive: 'Exklusiv', wood: 'Holzoptik' },
       fabricTone: 'Farbton des Stoffes', colourNote: 'Farben am Bildschirm sind Annäherungen. Vor der Bestellung zeigen wir Ihnen Originalmuster.',
       // step 5
       s5: 'Ihr Richtpreis', s5l: 'Auf Basis der Katalogpreise ' + CATALOGUE + '. Unverbindlich – der endgültige Preis folgt nach dem Aufmaß vor Ort.',
@@ -124,7 +124,7 @@
       audio: 'Music', audioD: '2 speakers, Bluetooth', thermal: 'Quieter in rain', thermalD: 'Insulating insert in the louvres',
       sockets: 'Sockets in the post', socketsD: '230 V', on: 'Yes', off: 'No',
       s4: 'Which colour suits your house?', s4l: 'The two standard colours are included. Other colours add a percentage.',
-      frame: 'Frame and posts', roof: 'Louvres', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
+      frame: 'Frame and posts', roof: 'Louvres', slideCol: 'Glass, louvre wall and panel profiles', zipCol: 'ZIP box and guides', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
       fabricTone: 'Fabric shade', colourNote: 'Screen colours are approximate. We show you original samples before you order.',
       s5: 'Your indicative price', s5l: 'Based on catalogue prices ' + CATALOGUE + '. Not binding – the final price follows a site survey.',
       grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges' },
@@ -195,7 +195,7 @@
       audio: 'Музыка', audioD: '2 колонки, Bluetooth', thermal: 'Тише в дождь', thermalD: 'Термовставка в ламелях',
       sockets: 'Розетки в стойке', socketsD: '230 В', on: 'Да', off: 'Нет',
       s4: 'Какой цвет подойдёт к дому?', s4l: 'Два стандартных цвета входят в цену. Другие цвета – доплата в процентах.',
-      frame: 'Рама и стойки', roof: 'Ламели', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
+      frame: 'Рама и стойки', roof: 'Ламели', slideCol: 'Профили стекла, ламельной стены, панелей', zipCol: 'Короб и направляющие ZIP', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
       fabricTone: 'Оттенок ткани', colourNote: 'Цвета на экране приблизительные. Перед заказом покажем оригинальные образцы.',
       s5: 'Ваша ориентировочная цена', s5l: 'По каталожным ценам ' + CATALOGUE + '. Без обязательств – окончательная цена после замера на месте.',
       grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты' },
@@ -489,19 +489,42 @@
   }
 
   /* step 4: colours */
+  // colour rows: [as frame] · standard colours · [chosen special colour] · "…" opens the full palette under the row
+  const moreOpen = {};
   function stepColours(t, o) {
     if (!o) return '';
     const e = colorsEff(), rates = cat.coating.rates[sysOf(o)];
-    const sw = (c, attr, cur) => `<button type="button" ${attr}="${c.id}" aria-pressed="${cur}"><span class="c" style="background:${swatchBg(c)}"></span>${esc(cname(c.id))}<span class="pr">${(rates[c.group] && rates[c.group][2]) ? '+' + rates[c.group][2] + ' %' : t.incl}</span></button>`;
     const std = PALETTE.filter((c) => c.group === 'standard');
-    const more = (attr, cur) => Object.keys(t.groups).map((g) => { const list = PALETTE.filter((c) => c.group === g); const r = rates[g]; return list.length ? `<div class="f-h3" style="margin-top:10px"><span>${t.groups[g]}</span><span>${r && r[2] ? '+' + r[2] + ' %' : ''}</span></div><div class="f-pal">${list.map((c) => `<button type="button" ${attr}="${c.id}" aria-pressed="${cur === c.id}" title="${esc(cname(c.id))}" aria-label="${esc(cname(c.id))}" style="background:${swatchBg(c)}"></button>`).join('')}</div>` : ''; }).join('');
+    const fills = Object.values(state.fills);
+    const rows = [['construction', t.frame], ['roof', t.roof]];
+    if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels')) rows.push(['slide', t.slideCol]);
+    if (fills.includes('zip')) rows.push(['zip', t.zipCol]);
+    const pct = (key, g) => {
+      if (key === 'slide') return cat.coating.rates.GLASS[g] || 0;
+      if (key === 'zip') return cat.coating.rates.SCREEN_ZIP[g] || 0;
+      const r = rates[g]; if (!r) return 0;
+      return key === 'roof' ? r[1] : state.colors.roof ? r[0] : r[2];
+    };
+    const prTxt = (key, g) => { const p = pct(key, g); return p ? '+' + p + ' %' : t.incl; };
     let h = `<h2>${t.s4}</h2><p class="f-lead">${t.s4l}</p>`;
-    h += `<div class="f-h3"><span>${t.frame}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(cname(e.construction))}</span></div><div class="f-sw">${std.map((c) => sw(c, 'data-frame', e.construction === c.id)).join('')}</div>`;
-    h += `<details class="f-more"${std.some((c) => c.id === e.construction) ? '' : ' open'}><summary>${t.moreColours}</summary>${more('data-frame', e.construction)}</details>`;
-    const linked = !state.colors.roof;
-    h += `<div class="f-h3"><span>${t.roof}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${linked ? t.asFrame : esc(cname(e.roof))}</span></div><div class="f-chips"><button type="button" class="f-chip" data-roof="same" aria-pressed="${linked}">${t.asFrame}</button></div>`;
-    h += `<details class="f-more"${linked ? '' : ' open'}><summary>${t.moreColours}</summary><div class="f-sw" style="margin-top:6px">${std.map((c) => sw(c, 'data-roofc', !linked && e.roof === c.id)).join('')}</div>${more('data-roofc', linked ? '' : e.roof)}</details>`;
-    if (Object.values(state.fills).includes('zip')) h += `<div class="f-h3"><span>${t.fabricTone}</span></div><div class="f-pal">${FABRIC_TONES.map(([hx, n]) => `<button type="button" data-tone="${hx}" aria-pressed="${state.colors.tone === hx}" title="${esc(n)}" aria-label="${esc(n)}" style="background:${hx}"></button>`).join('')}</div>`;
+    for (const [key, label] of rows) {
+      const linked = key !== 'construction' && !state.colors[key];
+      const eff = e[key], effC = colorOf(eff);
+      const sw = (c, cur) => `<button type="button" data-cl="${key}" data-c="${c.id}" aria-pressed="${cur}"><span class="c" style="background:${swatchBg(c)}"></span>${esc(cname(c.id))}<span class="pr">${prTxt(key, c.group)}</span></button>`;
+      let row = '';
+      if (key !== 'construction') row += `<button type="button" data-cl="${key}" data-c="" aria-pressed="${linked}"><span class="c" style="background:${swatchBg(colorOf(e.construction))}"><span class="lnk">=</span></span>${t.asFrame}<span class="pr">&nbsp;</span></button>`;
+      row += std.map((c) => sw(c, !linked && eff === c.id)).join('');
+      if (!linked && effC.group !== 'standard' && !effC.custom) row += sw(effC, true);
+      row += `<button type="button" data-more="${key}" aria-expanded="${!!moreOpen[key]}"><span class="c more">…</span>${t.moreColours}<span class="pr">&nbsp;</span></button>`;
+      h += `<div class="f-h3"><span>${label}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${linked ? t.asFrame : esc(cname(eff))}</span></div><div class="f-sw">${row}</div>`;
+      if (moreOpen[key]) {
+        h += `<div class="f-palette">` + Object.keys(t.groups).map((g) => {
+          const list = PALETTE.filter((c) => c.group === g); if (!list.length) return '';
+          return `<div class="f-h3" style="margin-top:12px"><span>${t.groups[g]}</span><span>${prTxt(key, g)}</span></div><div class="f-sw f-sw-sm">${list.map((c) => `<button type="button" data-cl="${key}" data-c="${c.id}" aria-pressed="${!linked && eff === c.id}"><span class="c" style="background:${swatchBg(c)}"></span>${esc(cname(c.id))}</button>`).join('')}</div>`;
+        }).join('') + `</div>`;
+      }
+    }
+    if (fills.includes('zip')) h += `<div class="f-h3"><span>${t.fabricTone}</span></div><div class="f-pal">${FABRIC_TONES.map(([hx, n]) => `<button type="button" data-tone="${hx}" aria-pressed="${state.colors.tone === hx}" title="${esc(n)}" aria-label="${esc(n)}" style="background:${hx}"></button>`).join('')}</div>`;
     h += `<p class="f-lead" style="margin-top:14px;font-size:12.5px">${t.colourNote}</p>`;
     return h;
   }
@@ -665,6 +688,13 @@
     if (d.thermal) { po.thermal = d.thermal === '1'; rebuild(); return; }
     if (d.audio) { po.audio = Number(d.audio); rebuild(); return; }
     if (d.sock !== undefined) { po.sockets = { ...po.sockets, power: Number(d.sock) }; rebuild(); return; }
+    if (d.more) { moreOpen[d.more] = !moreOpen[d.more]; render(); return; }
+    if (d.cl) { // a colour for one part; '' = same as the frame
+      const k = d.cl; moreOpen[k] = false;
+      if (!d.c) { state.colors[k] = null; applyColors(); renderColors(); renderEstimate(); }
+      else setColor(k, d.c);
+      return;
+    }
     if (d.frame) { setColor('construction', d.frame); return; }
     if (d.roof === 'same') { state.colors.roof = null; applyColors(); renderColors(); renderEstimate(); return; }
     if (d.roofc) { state.colors.roof = d.roofc === state.colors.construction ? null : d.roofc; applyColors(); renderColors(); renderEstimate(); return; }
