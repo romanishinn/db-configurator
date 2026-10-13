@@ -61,12 +61,12 @@
       incomplete: 'Einige Positionen sind in dieser Größe nicht lieferbar und nicht im Preis.',
       print: 'Angebot drucken oder als PDF speichern', request: 'Unverbindliche Anfrage senden', requestS: 'Wir melden uns persönlich bei Ihnen', share: 'Link kopieren', shareS: 'zum Teilen oder später weitermachen', copied: 'Link kopiert',
       saveFile: 'Als Datei speichern', openFile: 'Datei öffnen',
-      formT: 'Ihre Anfrage', name: 'Name', email: 'E-Mail', phone: 'Telefon (optional)', place: 'PLZ und Ort der Montage', when: 'Wann möchten Sie bauen?',
+      formT: 'Ihre Anfrage', name: 'Name', email: 'E-Mail', phone: 'Telefon (optional)', place: 'PLZ und Ort der Montage (optional)', when: 'Wann möchten Sie bauen?',
       whens: ['So bald wie möglich', 'In 1–3 Monaten', 'Später in diesem Jahr', 'Ich informiere mich nur'],
       wantMount: 'Montage gewünscht', wantVisit: 'Besichtigung und Aufmaß vor Ort gewünscht', msg: 'Nachricht (optional)',
       required: 'Bitte ausfüllen', badEmail: 'Bitte eine gültige E-Mail-Adresse eingeben',
       privacy: 'Ihre Angaben werden nur für diese Anfrage verwendet. Die Nachricht wird über Ihr E-Mail-Programm gesendet – auf dieser Seite wird nichts gespeichert.',
-      sendBtn: 'E-Mail mit Anfrage öffnen', sentT: 'Fast geschafft', sent: 'Ihr E-Mail-Programm hat sich mit der fertigen Nachricht geöffnet. Bitte senden Sie sie ab.', noMail: 'Kein E-Mail-Programm? Text kopieren', textCopied: 'Text kopiert',
+      sendBtn: 'E-Mail mit Anfrage öffnen', sentT: 'Fast geschafft', reopen: 'E-Mail noch einmal öffnen', sent: 'Ihr E-Mail-Programm hat sich mit der fertigen Nachricht geöffnet. Bitte senden Sie sie ab.', noMail: 'Kein E-Mail-Programm? Text kopieren', textCopied: 'Text kopiert',
       faqT: 'Häufige Fragen',
       faq: [
         ['Ist der Preis verbindlich?', 'Nein. Es ist ein Richtpreis auf Basis der Katalogpreise ' + CATALOGUE + '. Den verbindlichen Preis erhalten Sie nach dem Aufmaß vor Ort.'],
@@ -134,12 +134,12 @@
       incomplete: 'Some items are not available in this size and are not in the price.',
       print: 'Print the quote or save it as PDF', request: 'Send a free request', requestS: 'We will get back to you personally', share: 'Copy link', shareS: 'to share or continue later', copied: 'Link copied',
       saveFile: 'Save as file', openFile: 'Open file',
-      formT: 'Your request', name: 'Name', email: 'E-mail', phone: 'Phone (optional)', place: 'Postcode and town of installation', when: 'When would you like to build?',
+      formT: 'Your request', name: 'Name', email: 'E-mail', phone: 'Phone (optional)', place: 'Postcode and town of installation (optional)', when: 'When would you like to build?',
       whens: ['As soon as possible', 'In 1–3 months', 'Later this year', 'Just looking'],
       wantMount: 'Installation wanted', wantVisit: 'Site visit and measurement wanted', msg: 'Message (optional)',
       required: 'Please fill in', badEmail: 'Please enter a valid e-mail address',
       privacy: 'Your details are only used for this request. The message is sent from your own e-mail program – nothing is stored on this page.',
-      sendBtn: 'Open e-mail with request', sentT: 'Almost done', sent: 'Your e-mail program opened with the message ready. Please send it.', noMail: 'No e-mail program? Copy the text', textCopied: 'Text copied',
+      sendBtn: 'Open e-mail with request', sentT: 'Almost done', reopen: 'Open the e-mail again', sent: 'Your e-mail program opened with the message ready. Please send it.', noMail: 'No e-mail program? Copy the text', textCopied: 'Text copied',
       faqT: 'Questions',
       faq: [
         ['Is the price binding?', 'No. It is an indicative price based on catalogue prices ' + CATALOGUE + '. You get a binding price after the site survey.'],
@@ -206,12 +206,12 @@
       incomplete: 'Некоторые позиции в таком размере не производятся и не вошли в цену.',
       print: 'Распечатать или сохранить PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
       saveFile: 'Сохранить в файл', openFile: 'Открыть файл',
-      formT: 'Ваш запрос', name: 'Имя', email: 'E-mail', phone: 'Телефон (необязательно)', place: 'Индекс и город монтажа', when: 'Когда планируете?',
+      formT: 'Ваш запрос', name: 'Имя', email: 'E-mail', phone: 'Телефон (необязательно)', place: 'Индекс и город монтажа (необязательно)', when: 'Когда планируете?',
       whens: ['Как можно скорее', 'Через 1–3 месяца', 'Позже в этом году', 'Пока просто смотрю'],
       wantMount: 'Нужен монтаж', wantVisit: 'Нужен выезд и замер', msg: 'Сообщение (необязательно)',
       required: 'Заполните, пожалуйста', badEmail: 'Введите правильный e-mail',
       privacy: 'Ваши данные используются только для этого запроса. Письмо отправляется из вашей почтовой программы – на сайте ничего не сохраняется.',
-      sendBtn: 'Открыть письмо с запросом', sentT: 'Почти готово', sent: 'Открылась ваша почтовая программа с готовым письмом. Отправьте его, пожалуйста.', noMail: 'Нет почтовой программы? Скопировать текст', textCopied: 'Текст скопирован',
+      sendBtn: 'Открыть письмо с запросом', sentT: 'Почти готово', reopen: 'Открыть письмо ещё раз', sent: 'Открылась ваша почтовая программа с готовым письмом. Отправьте его, пожалуйста.', noMail: 'Нет почтовой программы? Скопировать текст', textCopied: 'Текст скопирован',
       faqT: 'Частые вопросы',
       faq: [
         ['Цена окончательная?', 'Нет. Это ориентировочная цена по каталогу ' + CATALOGUE + '. Окончательную цену вы получите после замера на месте.'],
@@ -556,7 +556,7 @@
     return h;
   }
   function formHtml(t) {
-    if (sentOk) return `<div class="f-done" id="f-form"><b>${t.sentT}</b><p style="margin:6px 0 8px">${t.sent}</p><button type="button" class="f-link" data-act="copytext">${t.noMail}</button></div>`;
+    if (sentOk) return `<div class="f-done" id="f-form"><b>${t.sentT}</b><p style="margin:6px 0 8px">${t.sent}</p><div style="display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="f-link" data-act="reopen">${t.reopen}</button><button type="button" class="f-link" data-act="copytext">${t.noMail}</button></div></div>`;
     const err = (k) => formErr[k] ? `<span class="err">${formErr[k]}</span>` : '';
     return `<form class="f-form" id="f-form" novalidate><div class="f-h3" style="margin:22px 0 0"><span>${t.formT}</span></div>
       <label>${t.name}<input type="text" name="name" autocomplete="name" value="${esc(form.name)}">${err('name')}</label>
@@ -580,21 +580,25 @@
     parts.push('', `${t.qGross}: ${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))} (${t.net} ${fe(total)})`, '');
     parts.push(`${t.name}: ${form.name}`, `${t.email}: ${form.email}`);
     if (form.phone) parts.push(`${t.phone.replace(/ \(.*\)/, '')}: ${form.phone}`);
-    parts.push(`${t.place}: ${form.place}`, `${t.when}: ${t.whens[form.when]}`);
+    if (form.place.trim()) parts.push(`${t.place.replace(/ \(.*\)/, '')}: ${form.place}`);
+    parts.push(`${t.when}: ${t.whens[form.when]}`);
     if (form.mount) parts.push('✓ ' + t.wantMount);
     if (form.visit) parts.push('✓ ' + t.wantVisit);
     if (form.msg) parts.push('', form.msg);
     parts.push('', `${t.qLink}: ${shareUrl()}`, '', t.mailBye, form.name);
     return parts.join('\n');
   }
+  let lastMailto = '';
+  function openMail() { window.__lastMailto = lastMailto; const a = document.createElement('a'); a.href = lastMailto; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
   function sendRequest() {
     const t = L(); formErr = {};
     if (!form.name.trim()) formErr.name = t.required;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
-    if (!form.place.trim()) formErr.place = t.required;
+    // postcode / town: optional for now
     if (Object.keys(formErr).length) { render(); const f = F.querySelector('#f-form'); if (f) f.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
     const subj = t.mailSubj(sizeText(), (q().incomplete ? t.from + ' ' : '') + fe(gross(q().total)));
-    location.href = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
+    lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
+    openMail();
     sentOk = true; render();
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
@@ -707,6 +711,7 @@
     if (d.act === 'share') { copy(shareUrl(), L().copied); return; }
     if (d.act === 'save') { saveFile(); return; }
     if (d.act === 'open') { $('f-file').click(); return; }
+    if (d.act === 'reopen') { if (lastMailto) openMail(); return; }
     if (d.act === 'copytext') { copy(mailText(), L().textCopied); return; }
   });
   F.addEventListener('input', (ev) => {
