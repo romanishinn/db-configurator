@@ -13,7 +13,7 @@
   const T = {
     de: {
       steps: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'],
-      next: 'Weiter', back: 'Zurück', toOffer: 'Zum Angebot', send: 'Anfrage senden',
+      moreOpt: 'Mehr …', next: 'Weiter', back: 'Zurück', toOffer: 'Zum Angebot', send: 'Anfrage senden',
       pro: 'Pro', proTitle: 'Erweiterte Ansicht für Fachberater', toCust: 'Kundenansicht',
       intro: 'Lamellendach in 5 Schritten konfigurieren. Richtpreis sofort, unverbindlich, ohne Anmeldung.',
       resume: 'Ihre letzte Konfiguration fortsetzen?', resumeYes: 'Fortsetzen', resumeNo: 'Neu beginnen',
@@ -91,7 +91,7 @@
     },
     en: {
       steps: ['Size', 'Sides', 'Comfort', 'Colours', 'Quote'],
-      next: 'Next', back: 'Back', toOffer: 'See quote', send: 'Send request',
+      moreOpt: 'More …', next: 'Next', back: 'Back', toOffer: 'See quote', send: 'Send request',
       pro: 'Pro', proTitle: 'Advanced view for sales staff', toCust: 'Customer view',
       intro: 'Configure your louvred roof in 5 steps. Indicative price right away, no obligation, no sign-up.',
       resume: 'Continue your last configuration?', resumeYes: 'Continue', resumeNo: 'Start over',
@@ -163,7 +163,7 @@
     },
     ru: {
       steps: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Итог'],
-      next: 'Далее', back: 'Назад', toOffer: 'К предложению', send: 'Отправить запрос',
+      moreOpt: 'Ещё …', next: 'Далее', back: 'Назад', toOffer: 'К предложению', send: 'Отправить запрос',
       pro: 'Pro', proTitle: 'Расширенный режим для менеджера', toCust: 'Режим клиента',
       intro: 'Пергола с ламелями за 5 шагов. Ориентировочная цена сразу, без обязательств и без регистрации.',
       resume: 'Продолжить прошлую конфигурацию?', resumeYes: 'Продолжить', resumeNo: 'Начать заново',
@@ -383,6 +383,15 @@
     return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1">${t.back}</button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${esc(nextLabel)}${step < 4 ? ' →' : ''}</button></div>`;
   }
 
+  /** two choices side by side; a third and more go into a dropdown ("More …") next to them */
+  function two(name, items, cur, t) {
+    const btn = (it) => `<button type="button" class="f-seg" data-${name}="${it.v}" aria-pressed="${String(cur) === String(it.v)}" ${it.off ? 'disabled' : ''}><span>${esc(it.label)}</span>${it.pr ? `<span class="pr">${esc(it.pr)}</span>` : ''}</button>`;
+    const rest = items.slice(2), inRest = rest.some((it) => String(it.v) === String(cur));
+    const sel = rest.length ? `<select class="f-more-sel${inRest ? ' on' : ''}" data-sel="${name}" aria-label="${esc(t.moreOpt)}"><option value="">${esc(t.moreOpt)}</option>${rest.map((it) => `<option value="${it.v}" ${String(cur) === String(it.v) ? 'selected' : ''}>${esc(it.label)}${it.pr ? ' · ' + esc(it.pr) : ''}</option>`).join('')}</select>` : '';
+    return `<div class="f-two${rest.length ? ' f-three' : ''}">${items.slice(0, 2).map(btn).join('')}${sel}</div>`;
+  }
+  const head = (title, desc) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div>`;
+
   /* step 1: size */
   function stepSize(t, o) {
     const wall = state.mount === 'wall';
@@ -401,7 +410,7 @@
     if (!o) return h;
     // post height
     const s500 = o.family !== 'S400', hs = s500 ? [2800, 3200] : [2800, 3000, 3200];
-    h += `<div class="f-h3"><span>${t.height}</span></div><div class="f-chips">${hs.map((x) => { const d = optDelta({ postHeight: x }); return `<button type="button" class="f-chip" data-h="${x}" aria-pressed="${state.po.postHeight === x}">≤ ${metres(x)} ${t.m}${x === 2800 ? ' · ' + t.heightStd : ''}<span class="pr">${plusE(d)}</span></button>`; }).join('')}</div>`;
+    h += `<div class="f-h3"><span>${t.height}</span></div>` + two('h', hs.map((x) => ({ v: x, label: `≤ ${metres(x)} ${t.m}`, pr: x === 2800 ? t.heightStd : plusE(optDelta({ postHeight: x })) })), state.po.postHeight, t);
     // layout: recommended first, alternatives folded away
     const opts = state.options, cheapest = opts[0].total;
     const lay = (x, i) => {
@@ -420,7 +429,7 @@
     const dirTxt = state.louvres === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF);
     const dirName = (k) => { const s = k === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF); return s.charAt(0).toUpperCase() + s.slice(1); };
     const dirPrice = (k) => (k === state.louvres ? cheapest : alt ? alt.total : null);
-    h += `<div class="f-h3"><span>${t.louvDir}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.louvNow(dirTxt)}</span></div><div class="f-chips">${['parallel', 'perpendicular'].map((k) => { const pr = dirPrice(k); return `<button type="button" class="f-chip" data-louv="${k}" aria-pressed="${state.louvres === k}" ${pr == null ? 'disabled' : ''}><span aria-hidden="true">${k === 'parallel' ? '⇆' : '⇅'}</span>${dirName(k)}<span class="pr">${pr == null ? t.louvNa : fe(gross(pr))}</span></button>`; }).join('')}</div>`;
+    h += `<div class="f-h3"><span>${t.louvDir}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.louvNow(dirTxt)}</span></div>` + two('louv', ['parallel', 'perpendicular'].map((k) => { const pr = dirPrice(k); return { v: k, label: `${k === 'parallel' ? '⇆' : '⇅'} ${dirName(k)}`, pr: pr == null ? t.louvNa : fe(gross(pr)), off: pr == null }; }), state.louvres, t);
     if (alt && alt.total < cheapest - 1) h += `<div class="f-tip"><span>${t.louvTip(fe(gross(cheapest - alt.total)))}</span><button type="button" class="f-chip" data-louv="${other}">${t.louvDo}</button></div>`;
     return h;
   }
@@ -485,9 +494,9 @@
     h += card(t.heat, t.heatD, chip('data-heat="none"', heatCur === 'none', t.heats.none) + heatList.map((k) => chip(`data-heat="${k}"`, heatCur === k, t.heats[k] || t.heats.other, optDelta({ heaters: { set: k, qty: 1 } }))).join(''));
     h += card(t.weather, t.weatherD, ['none', 'wind', 'set', 'multi'].map((k) => chip(`data-sensor="${k}"`, (po.sensors || 'none') === k, t.weathers[k], k === 'none' ? undefined : optDelta({ sensors: k }))).join(''));
     h += card(t.app, t.appD, ['none', 'bluetooth', 'wifi'].map((k) => chip(`data-smart="${k}"`, (po.smart || 'none') === k, t.apps[k], k === 'none' ? undefined : optDelta({ smart: k }))).join(''));
-    h += card(t.thermal, t.thermalD, chip('data-thermal="0"', !po.thermal, t.off) + chip('data-thermal="1"', !!po.thermal, t.on, optDelta({ thermal: true })), false);
-    h += card(t.audio, t.audioD, chip('data-audio="0"', !po.audio, t.off) + chip('data-audio="1"', !!po.audio, t.on, optDelta({ audio: 1 })), false);
-    if (s500) h += card(t.sockets, t.socketsD, [0, 1, 2, 4].map((n) => chip(`data-sock="${n}"`, po.sockets.power === n, n ? '× ' + n : t.off, n ? optDelta({ sockets: { power: n, usb: 0 } }) : undefined)).join(''), false);
+    h += head(t.thermal, t.thermalD) + two('thermal', [{ v: '0', label: t.off, pr: '' }, { v: '1', label: t.on, pr: plusE(optDelta({ thermal: true })) }], po.thermal ? '1' : '0', t);
+    h += head(t.audio, t.audioD) + two('audio', [{ v: '0', label: t.off, pr: '' }, { v: '1', label: t.on, pr: plusE(optDelta({ audio: 1 })) }], po.audio ? '1' : '0', t);
+    if (s500) h += head(t.sockets, t.socketsD) + two('sock', [0, 1, 2, 4].map((n) => ({ v: String(n), label: n ? '× ' + n : t.off, pr: n ? plusE(optDelta({ sockets: { power: n, usb: 0 } })) : '' })), String(po.sockets.power), t);
     return h;
   }
 
@@ -665,7 +674,10 @@
   F.addEventListener('click', (ev) => {
     const b = ev.target.closest('button'); if (!b || !F.contains(b)) return;
     if (!b.dataset.step && !b.dataset.go && !b.dataset.lang) dirty = true;
-    const d = b.dataset, o = curOpt();
+    act(b.dataset);
+  });
+  function act(d) {
+    const o = curOpt();
     if (d.lang) { setLang(d.lang); return; }
     if (d.mode) { setMode(d.mode); return; }
     if (d.step !== undefined) { step = Number(d.step); focusId = null; render(); return; }
@@ -713,7 +725,7 @@
     if (d.act === 'open') { $('f-file').click(); return; }
     if (d.act === 'reopen') { if (lastMailto) openMail(); return; }
     if (d.act === 'copytext') { copy(mailText(), L().textCopied); return; }
-  });
+  }
   F.addEventListener('input', (ev) => {
     const el = ev.target;
     dirty = true;
@@ -726,6 +738,7 @@
   });
   F.addEventListener('change', (ev) => {
     const el = ev.target;
+    if (el.dataset.sel) { if (el.value !== '') { dirty = true; act({ [el.dataset.sel]: el.value }); } return; } // "More …" dropdown
     if (el.form && el.form.id === 'f-form' && el.name) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
     if (el.dataset.dim) { clearTimeout(dimT); applyDim(el); }
     if (el.id === 'f-file' && el.files && el.files[0]) { const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(el.files[0]); }
