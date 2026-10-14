@@ -23,6 +23,12 @@ export interface ScreenRequest {
   customMotor?: { name?: string; price?: number };
   /** omit to take the cheapest system that builds this size with this fabric */
   system?: ScreenSystem;
+  /**
+   * 'sameOpenness': if the fabric is not made this wide / high (collection limits drawn in the price table,
+   * e.g. Soltis 7635 at most 6000 on ZIP 130), take the cheapest screen with another collection of the same
+   * openness factor that is (e.g. Serge 600, also OF 5 %). The result then carries a FABRIC_SUBSTITUTED issue.
+   */
+  fabricFallback?: 'sameOpenness';
 }
 
 interface ScreenMeta {
@@ -111,6 +117,23 @@ export function priceScreenIn(system: ScreenSystem, req: ScreenRequest, cat: Cat
 
 /** Cheapest ZIP system that builds the opening with the chosen fabric; issues explain why not when none does. */
 export function selectScreen(req: ScreenRequest, cat: Catalog): ScreenResult {
+  const res = selectScreenExact(req, cat);
+  if (res.best || req.fabricFallback !== 'sameOpenness') return res;
+  if (!res.issues.some((i) => i.code === 'FABRIC_MAX_WIDTH' || i.code === 'FABRIC_MAX_HEIGHT')) return res;
+  const from = req.fabric ?? DEFAULT_FABRIC;
+  const f0 = cat.fabrics?.collections.find((c) => c.id === from);
+  if (!f0) return res;
+  let alt: { id: string; r: ScreenResult } | null = null;
+  for (const c of cat.fabrics!.collections) {
+    if (c.id === from || c.openness !== f0.openness) continue;
+    const r = selectScreenExact({ ...req, fabric: c.id }, cat);
+    if (r.best && (!alt || r.best.total < alt.r.best!.total)) alt = { id: c.id, r };
+  }
+  if (!alt) return res;
+  return { ...alt.r, issues: [{ severity: 'info', code: 'FABRIC_SUBSTITUTED', params: { from, to: alt.id } }] };
+}
+
+function selectScreenExact(req: ScreenRequest, cat: Catalog): ScreenResult {
   const options: ScreenOption[] = [];
   const issues: Issue[] = [];
   for (const s of req.system ? [req.system] : SCREEN_SYSTEMS) {

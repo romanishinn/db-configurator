@@ -38,7 +38,7 @@
       sides: { front: 'Vorne', left: 'Links', right: 'Rechts', back: 'Hinten' }, field: 'Feld', row: 'Reihe',
       park: 'Glas', parkL: '← links', parkR: 'rechts →', parkBoth: '↔ offen', shut: 'zu',
       cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Lamellenwand', hsOpen: 'Seite wählen',
-      notMade: 'In dieser Größe nicht lieferbar – andere Variante wählen.', later: 'Preis auf Anfrage',
+      notMade: 'In dieser Größe nicht lieferbar – andere Variante wählen.', zipFabricOnly: (s) => `In dieser Größe nur mit Stoff ${s} – oben bei „Stoff der ZIP-Screens“ wählen.`, zipMax: (m, ax) => `ZIP-Screens gibt es bis ${m} m ${ax === 'height' ? 'Höhe' : 'Breite'}.`, swapped: (a, b) => `Stoff ${a} statt ${b} – ${b} gibt es nicht so groß`, later: 'Preis auf Anfrage',
       fabric: 'Stoff der ZIP-Screens', ofName: { 14: 'Luftig, viel Durchsicht', 5: 'Sonnen- und Sichtschutz', 4: 'Sicht- und Sonnenschutz, etwas dichter', 1: 'Fast blickdicht', 0: 'Verdunkelung' },
       perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.', ctlT: 'Bedienung der Screens', ctlD: 'alle Screens mit Motor', ctlM: { pergola: 'Mit der Pergola-Fernbedienung', remote: 'Eigene Funk-Fernbedienung', smart: 'Smartphone-App', switch: 'Taster an der Wand', solar: 'Solar, ohne Stromkabel' }, cardQ: 'Was kommt auf diese Seite?', done: 'Fertig', thisScreen: 'Bedienung dieses Screens',
       glassTint: 'Glas', tints: { float: 'Klar', diamant: 'Extraklar', milk: 'Milchglas', brown: 'Bronze', graphite: 'Graphit', black: 'Schwarz', mirror: 'Spiegel' }, tintNa: 'nur 10 mm',
@@ -114,7 +114,7 @@
       sides: { front: 'Front', left: 'Left', right: 'Right', back: 'Back' }, field: 'bay', row: 'row',
       park: 'Glass', parkL: '← left', parkR: 'right →', parkBoth: '↔ open', shut: 'closed',
       cta: 'Tap a ＋ to close a side – ZIP screen, glass or louvre wall', hsOpen: 'Choose side',
-      notMade: 'Not available in this size – please choose another option.', later: 'price on request',
+      notMade: 'Not available in this size – please choose another option.', zipFabricOnly: (s) => `In this size only with fabric ${s} – choose it under “ZIP screen fabric” above.`, zipMax: (m, ax) => `ZIP screens are made up to ${m} m ${ax === 'height' ? 'high' : 'wide'}.`, swapped: (a, b) => `fabric ${a} instead of ${b} – ${b} is not made this large`, later: 'price on request',
       fabric: 'ZIP screen fabric', ofName: { 14: 'Airy, lots of view', 5: 'Sun and privacy', 4: 'Sun and privacy, a little denser', 1: 'Almost opaque', 0: 'Blackout' },
       perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.', ctlT: 'Screen control', ctlD: 'all screens are motorised', ctlM: { pergola: 'With the pergola remote', remote: 'Separate radio remote', smart: 'Smartphone app', switch: 'Wall push button', solar: 'Solar, no power cable' }, cardQ: 'What goes on this side?', done: 'Done', thisScreen: 'Control of this screen',
       glassTint: 'Glass', tints: { float: 'Clear', diamant: 'Extra clear', milk: 'Frosted', brown: 'Bronze', graphite: 'Graphite', black: 'Black', mirror: 'Mirror' }, tintNa: '10 mm only',
@@ -186,7 +186,7 @@
       sides: { front: 'Спереди', left: 'Слева', right: 'Справа', back: 'Сзади' }, field: 'проём', row: 'ряд',
       park: 'Стекло', parkL: '← влево', parkR: 'вправо →', parkBoth: '↔ открыто', shut: 'закрыто',
       cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или ламельная стена', hsOpen: 'Выбрать сторону',
-      notMade: 'В таком размере не производится – выберите другой вариант.', later: 'цена по запросу',
+      notMade: 'В таком размере не производится – выберите другой вариант.', zipFabricOnly: (s) => `В таком размере только с тканью ${s} – выберите её выше в «Ткань ZIP-скринов».`, zipMax: (m, ax) => `ZIP-скрины делают до ${m} м по ${ax === 'height' ? 'высоте' : 'ширине'}.`, swapped: (a, b) => `ткань ${a} вместо ${b} – ${b} не делают такого размера`, later: 'цена по запросу',
       fabric: 'Ткань ZIP-скринов', ofName: { 14: 'Лёгкая, хорошо видно наружу', 5: 'От солнца и взглядов', 4: 'От солнца и взглядов, чуть плотнее', 1: 'Почти непрозрачная', 0: 'Блэкаут' },
       perM2: '€/м²', zipCtl: 'Управление с пульта перголы.', ctlT: 'Управление скринами', ctlD: 'все скрины с мотором', ctlM: { pergola: 'С пульта перголы', remote: 'Отдельный радиопульт', smart: 'Приложение на телефоне', switch: 'Кнопка на стене', solar: 'Солнечная батарея, без кабеля' }, cardQ: 'Что поставить на эту сторону?', done: 'Готово', thisScreen: 'Управление этим скрином',
       glassTint: 'Стекло', tints: { float: 'Прозрачное', diamant: 'Особо прозрачное', milk: 'Матовое', brown: 'Бронза', graphite: 'Графит', black: 'Чёрное', mirror: 'Зеркальное' }, tintNa: 'только 10 мм',
@@ -305,6 +305,14 @@
 
   /* ---------- price helpers ---------- */
   const q = () => state.q || { lines: [], total: 0, incomplete: 0 };
+  /** why a side is not priced, in plain words (ZIP: fabric or size limit from the price table) */
+  function badText(id) {
+    const t = L(), l = q().lines.find((x) => x.k === 'unbuilt' && x.id === id);
+    if (!l) return t.notMade;
+    if (l.fill === 'zip' && l.why === 'fabric') return t.zipFabricOnly(l.ok.map((fid) => { const f = cat.fabrics.collections.find((c) => c.id === fid); return `${f.name} (${f.openness} %)`; }).join(', '));
+    if (l.fill === 'zip' && l.why === 'size' && l.max) return t.zipMax(metres(l.max), l.axis);
+    return t.notMade;
+  }
   const sideAmount = (id) => q().lines.filter((l) => l.id === id && l.a).reduce((s, l) => s + l.a, 0);
   function sideLabel(id, o) {
     const [side, i] = id.split('-'), n = Number(i);
@@ -340,10 +348,10 @@
         const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST'].includes(l.code) ? 'pergola' : 'comfort';
         out.push({ g, t: t.opt[l.code] || l.code, d, a: l.a });
       } else if (l.k === 'glass') out.push({ g: 'sides', t: `${t.fills.glass} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${l.panels} ${t.panelsW} · ${t.tints[l.glazing]} ${l.thick} mm`, a: l.a });
-      else if (l.k === 'zip') { const f = cat.fabrics.collections.find((x) => x.id === l.fabric); out.push({ g: 'sides', t: `${t.fills.zip} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${f ? f.name + ' (OF ' + f.openness + ' %)' : ''}`, a: l.a }); }
+      else if (l.k === 'zip') { const f = cat.fabrics.collections.find((x) => x.id === l.fabric), f0 = l.swapFrom && cat.fabrics.collections.find((x) => x.id === l.swapFrom); out.push({ g: 'sides', t: `${t.fills.zip} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${f ? f.name + ' (OF ' + f.openness + ' %)' : ''}${f0 ? ' · ' + t.swapped(f.name, f0.name) : ''}`, a: l.a }); }
       else if (l.k === 'verto') out.push({ g: 'sides', t: `${t.fills.verto} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${l.profiles} ${t.profilesW}`, a: l.a });
       else if (l.k === 'panels') out.push({ g: 'sides', t: `${t.fills.panels} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${l.slats === 'fixed' ? t.slatsFixed : t.slatsRot}`, a: l.a });
-      else if (l.k === 'unbuilt') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: t.notMade, a: null });
+      else if (l.k === 'unbuilt') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: badText(l.id), a: null });
       else if (l.k === 'pending') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: t.later, a: null });
       else if (l.k === 'corner') out.push({ g: 'sides', t: t.corner + (l.n > 1 ? ' × ' + l.n : ''), d: '', a: l.a });
       else if (l.k === 'fabric') out.push({ g: 'sides', t: `${t.fabricS} ${l.name}`, d: `OF ${l.of} %`, a: l.a });
@@ -392,7 +400,7 @@
     let sum = 0; const modes = [], sys = new Set();
     for (const op of zips) {
       const mode = modeFor(op.id); if (!ok.includes(mode)) return null;
-      const r = DBCore.selectScreen({ width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), control: DBCore.MOTOR_FOR_MODE[mode], brand, customMotor: { name: state.custom.name, price: state.custom.motor } }, cat);
+      const r = DBCore.selectScreen({ width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), fabricFallback: 'sameOpenness', control: DBCore.MOTOR_FOR_MODE[mode], brand, customMotor: { name: state.custom.name, price: state.custom.motor } }, cat);
       if (!r.best) return null;
       sum += r.best.motor.price; modes.push(mode); sys.add(o.family === 'S400' ? 'p' + o.modules.indexOf(op.mod) : 'all');
     }
@@ -492,7 +500,7 @@
       h += `<div class="f-side${focusId === op.id ? ' hl' : ''}" data-side="${op.id}"><div class="top"><span class="nm">${sideLabel(op.id, o)}<small>${metres(Math.round(op.len * 1000))} ${t.m}</small></span><span class="pr">${f === 'none' ? '' : bad ? '—' : '+' + fe(gross(amt))}</span></div>
         <div class="f-fills" role="group">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
       if (f === 'glass' && !bad) h += glassPos(op, t);
-      if (bad) h += `<div class="bad">${t.notMade}</div>`;
+      if (bad) h += `<div class="bad">${badText(op.id)}</div>`;
       h += `</div>`;
     }
     h += `</div>`;
@@ -889,7 +897,7 @@
     const t = L(), f = state.fills[op.id] || 'none', bad = q().lines.some((l) => l.k === 'unbuilt' && l.id === op.id);
     let h = `<div class="fc-h"><b>${sideLabel(op.id, o)}</b><small>${metres(Math.round(op.len * 1000))} ${t.m}</small><span class="pr">${f === 'none' || bad ? '' : '+' + fe(gross(sideAmount(op.id)))}</span><button type="button" class="fc-x" data-card-close="1" aria-label="${esc(t.done)}">×</button></div>`;
     h += `<div class="fc-q">${t.cardQ}</div><div class="fc-fills">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
-    if (bad) h += `<div class="f-note">${t.notMade}</div>`;
+    if (bad) h += `<div class="f-note">${badText(op.id)}</div>`;
     if (f === 'zip' && !bad) h += `<div class="fc-q">${t.thisScreen}</div><div class="f-chips f-list">${ctlRows(t, 'data-zctl', (m) => ctlOf(op.id) === m, (m) => (id) => (id === op.id ? m : ctlOf(id)), `data-id="${op.id}"`)}</div>`;
     if (f === 'glass' && !bad) h += `<div style="margin-top:10px">${glassPos(op, t)}</div>`;
     h += `<button type="button" class="f-btn primary fc-done" data-card-close="1">${t.done}</button>`;

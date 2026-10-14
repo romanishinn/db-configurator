@@ -990,18 +990,25 @@ function renderEstimate() {
     } else if (f === 'zip') {
       const mode = ctlOf(op.id);
       const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), control: DBCore.MOTOR_FOR_MODE[mode], brand: state.brand, customMotor: { name: state.custom.name, price: state.custom.motor } };
-      const r = DBCore.selectScreen(req, cat);
-      lastZipReqs.push({ ...req, _id: op.id });
+      // a fabric not made this wide/high is replaced by the cheapest one with the same openness (engine: fabricFallback)
+      const r = DBCore.selectScreen({ ...req, fabricFallback: 'sameOpenness' }, cat);
+      const swap = r.issues.find((i) => i.code === 'FABRIC_SUBSTITUTED');
+      if (swap) req.fabric = swap.params.to;
+      lastZipReqs.push({ ...req, fabric: zipFabId(op), _id: op.id });
       zipReqs.push({ req, mode, sys: o.family === 'S400' ? 'p' + o.modules.indexOf(op.mod) : 'all' });
       const ctlSel = `<label class="zl">Управление<select class="zctl" data-zctl="${op.id}">${Object.entries(CTL).filter(([k]) => modesOf().includes(k)).map(([k, c]) => `<option value="${k}" ${k === mode ? 'selected' : ''}>${c.name}</option>`).join('')}</select></label>`;
       if (r.best) {
         const b = r.best, fab = b.lines.find((l) => l.code === 'FABRIC_SURCHARGE');
         zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0, mode, sys: zipReqs.at(-1).sys, fid: req.fabric });
         sides += b.gridPrice + b.motor.price; coat.push({ system: 'SCREEN_ZIP', base: b.gridPrice, color: e.zip, label: 'zip' });
-        Q.push({ k: 'zip', id: op.id, w: req.width, h: req.height, fabric: req.fabric, mode, a: b.gridPrice + b.motor.price });
+        Q.push({ k: 'zip', id: op.id, w: req.width, h: req.height, fabric: req.fabric, swapFrom: swap ? swap.params.from : null, mode, a: b.gridPrice + b.motor.price });
+        if (swap) { const fn = (id) => cat.fabrics.collections.find((x) => x.id === id).name; html += `<tr><td colspan="2"><div class="note">Ткань ${fn(swap.params.to)} вместо ${fn(swap.params.from)}: ${fn(swap.params.from)} не производится такой ширины/высоты (линии ограничений в таблице прайса); та же проницаемость, доплата по ${fn(swap.params.to)}.</div></td></tr>`; }
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${SCREEN_NAME[b.system]}, по прайсу ${mm(b.billed.width)} × ${mm(b.billed.height)} — ${eur(b.gridPrice)} · стр. ${cat.tables[b.system].source.page}<br>мотор ${motorName(b.motor)}, ${MOTOR_CTL[b.motor.control]}, ${b.motor.nm} Нм (нужно ${b.torqueNm} Нм) — ${eur(b.motor.price)}${b.motor.source ? ' · стр. ' + b.motor.source.page : ''}</span></td><td class="a">${eur(b.gridPrice + b.motor.price)}</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       } else {
-        unbuilt.push(op); Q.push({ k: 'unbuilt', fill: 'zip', id: op.id, w: req.width, h: req.height });
+        const oor = r.issues.find((i) => i.code === 'SCREEN_SIZE_OUT_OF_RANGE' && i.params.system === 'zip130.adaptive') || r.issues.find((i) => i.code === 'SCREEN_SIZE_OUT_OF_RANGE');
+        const fabOk = cat.fabrics.collections.filter((c) => DBCore.selectScreen({ ...req, fabric: c.id }, cat).best).map((c) => c.id);
+        const why = fabOk.length ? { why: 'fabric', ok: fabOk } : oor ? { why: 'size', axis: oor.params.axis, max: oor.params.max } : r.issues.some((i) => i.code === 'SCREEN_NO_MOTOR') ? { why: 'motor' } : { why: 'size' };
+        unbuilt.push(op); Q.push({ k: 'unbuilt', fill: 'zip', id: op.id, w: req.width, h: req.height, ...why });
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${screenWhyNot(r, req, mode)}</span></td><td class="a muted">—</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       }
     } else if (f === 'verto') {
@@ -1314,7 +1321,8 @@ const opennessList = () => [...new Set(cat.fabrics.collections.map((f) => f.open
 /** Openness factor chosen -> the cheapest collection with it that every placed ZIP screen can be made of (else the cheapest one). */
 function fabricForOpenness(of, reqs = lastZipReqs) {
   const list = cat.fabrics.collections.filter((f) => f.openness === of).sort((a, b) => a.eurPerM2 - b.eurPerM2);
-  return (list.find((f) => reqs.every((r) => DBCore.selectScreen({ ...r, fabric: f.id }, cat).best)) || list[0]).id;
+  // the cheapest collection with this openness; a screen it cannot cover takes another one of the same openness (fabricFallback)
+  return (list.find((f) => reqs.every((r) => DBCore.selectScreen({ ...r, fabric: f.id, fabricFallback: 'sameOpenness' }, cat).best)) || list[0]).id;
 }
 /** 3D look of the fabric: OF 0 % is opaque, the more open, the more you see through */
 function fabricLook() {

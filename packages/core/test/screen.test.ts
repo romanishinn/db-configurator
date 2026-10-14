@@ -71,6 +71,27 @@ describe('ZIP pricing on a pergola side', () => {
     expect(selectScreen({ width: 6500, height: 2500 }, cat).best).toBeNull();
     expect(selectScreen({ width: 6500, height: 2500, fabric: 'serge-600' }, cat).best!.system).toBe('zip130.adaptive');
   });
+  it('fabric fallback: 6820 wide with Soltis 7635 (OF 5 %, max 6000 on ZIP 130, p.48) -> Serge 600 (also OF 5 %, 7 EUR/m2)', () => {
+    const r = selectScreen({ width: 6820, height: 2560, fabricFallback: 'sameOpenness' }, cat);
+    expect(r.issues).toEqual([{ severity: 'info', code: 'FABRIC_SUBSTITUTED', params: { from: 'soltis-7635', to: 'serge-600' } }]);
+    expect(r.best!.system).toBe('zip130.adaptive');
+    expect(r.best!.billed).toEqual({ width: 6900, height: 2600 });
+    // same price as asking for Serge 600 directly
+    expect(r.best!.total).toBe(selectScreen({ width: 6820, height: 2560, fabric: 'serge-600' }, cat).best!.total);
+  });
+  it('fabric fallback keeps the openness: Soltis 92 (OF 4 %) has no OF 4 % alternative -> still blocked; within limits nothing changes', () => {
+    const r = selectScreen({ width: 5500, height: 2500, fabric: 'soltis-92', fabricFallback: 'sameOpenness' }, cat);
+    expect(r.best).toBeNull();
+    expect(r.issues.map((i) => i.code)).toContain('FABRIC_MAX_WIDTH');
+    const ok = selectScreen({ width: 3870, height: 2590, fabricFallback: 'sameOpenness' }, cat);
+    expect(ok.issues).toEqual([]);
+    expect(ok.best!.total).toBe(selectScreen({ width: 3870, height: 2590 }, cat).best!.total);
+  });
+  it('fabric fallback does not hide a size limit: 7200 wide is over the ZIP 130 maximum of 7000', () => {
+    const r = selectScreen({ width: 7200, height: 2500, fabricFallback: 'sameOpenness' }, cat);
+    expect(r.best).toBeNull();
+    expect(r.issues.some((i) => i.code === 'SCREEN_SIZE_OUT_OF_RANGE' && i.params?.max === 7000)).toBe(true);
+  });
   it('ZIP coating % applies to the catalogue price of the screen with Soltis 7635 (Win Screen p.20 note)', () => {
     const b = selectScreen({ width: 3870, height: 2590 }, cat).best!;
     expect(coatingSurcharges([{ system: 'SCREEN_ZIP', base: b.gridPrice, color: '07' }], cat).total).toBe(114.64); // 8 % of 1433
