@@ -40,7 +40,7 @@
       cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Lamellenwand', hsOpen: 'Seite wählen',
       notMade: 'In dieser Größe nicht lieferbar – andere Variante wählen.', later: 'Preis auf Anfrage',
       fabric: 'Stoff der ZIP-Screens', ofName: { 14: 'Luftig, viel Durchsicht', 5: 'Sonnen- und Sichtschutz', 4: 'Sicht- und Sonnenschutz, etwas dichter', 1: 'Fast blickdicht', 0: 'Verdunkelung' },
-      perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.',
+      perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.', ctlT: 'Bedienung der Screens', ctlD: 'alle Screens mit Motor', ctlM: { pergola: 'Mit der Pergola-Fernbedienung', remote: 'Eigene Funk-Fernbedienung', smart: 'Smartphone-App', switch: 'Taster an der Wand', solar: 'Solar, ohne Stromkabel' }, cardQ: 'Was kommt auf diese Seite?', done: 'Fertig', thisScreen: 'Bedienung dieses Screens',
       glassTint: 'Glas', tints: { float: 'Klar', diamant: 'Extraklar', milk: 'Milchglas', brown: 'Bronze', graphite: 'Graphit', black: 'Schwarz', mirror: 'Spiegel' }, tintNa: 'nur 10 mm',
       // step 3
       s3: 'Was macht es gemütlich?', s3l: 'Alles optional. Wählen Sie nur, was Sie wirklich nutzen werden – nachrüsten ist bei vielem später schwieriger.',
@@ -116,7 +116,7 @@
       cta: 'Tap a ＋ to close a side – ZIP screen, glass or louvre wall', hsOpen: 'Choose side',
       notMade: 'Not available in this size – please choose another option.', later: 'price on request',
       fabric: 'ZIP screen fabric', ofName: { 14: 'Airy, lots of view', 5: 'Sun and privacy', 4: 'Sun and privacy, a little denser', 1: 'Almost opaque', 0: 'Blackout' },
-      perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.',
+      perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.', ctlT: 'Screen control', ctlD: 'all screens are motorised', ctlM: { pergola: 'With the pergola remote', remote: 'Separate radio remote', smart: 'Smartphone app', switch: 'Wall push button', solar: 'Solar, no power cable' }, cardQ: 'What goes on this side?', done: 'Done', thisScreen: 'Control of this screen',
       glassTint: 'Glass', tints: { float: 'Clear', diamant: 'Extra clear', milk: 'Frosted', brown: 'Bronze', graphite: 'Graphite', black: 'Black', mirror: 'Mirror' }, tintNa: '10 mm only',
       s3: 'What makes it cosy?', s3l: 'All optional. Pick only what you will really use – many things are harder to add later.',
       light: 'Light', lightD: 'For evenings outside', lights: { none: 'No light', white: 'LED strip, warm white', rgbw: 'LED strip, colour (RGBW)', spots: 'LED spots' },
@@ -188,7 +188,7 @@
       cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или ламельная стена', hsOpen: 'Выбрать сторону',
       notMade: 'В таком размере не производится – выберите другой вариант.', later: 'цена по запросу',
       fabric: 'Ткань ZIP-скринов', ofName: { 14: 'Лёгкая, хорошо видно наружу', 5: 'От солнца и взглядов', 4: 'От солнца и взглядов, чуть плотнее', 1: 'Почти непрозрачная', 0: 'Блэкаут' },
-      perM2: '€/м²', zipCtl: 'Управление с пульта перголы.',
+      perM2: '€/м²', zipCtl: 'Управление с пульта перголы.', ctlT: 'Управление скринами', ctlD: 'все скрины с мотором', ctlM: { pergola: 'С пульта перголы', remote: 'Отдельный радиопульт', smart: 'Приложение на телефоне', switch: 'Кнопка на стене', solar: 'Солнечная батарея, без кабеля' }, cardQ: 'Что поставить на эту сторону?', done: 'Готово', thisScreen: 'Управление этим скрином',
       glassTint: 'Стекло', tints: { float: 'Прозрачное', diamant: 'Особо прозрачное', milk: 'Матовое', brown: 'Бронза', graphite: 'Графит', black: 'Чёрное', mirror: 'Зеркальное' }, tintNa: 'только 10 мм',
       s3: 'Что сделает уютнее?', s3l: 'Всё по желанию. Выбирайте только то, чем будете пользоваться, – многое потом добавить сложнее.',
       light: 'Свет', lightD: 'Для вечеров на террасе', lights: { none: 'Без света', white: 'LED-лента, тёплый белый', rgbw: 'LED-лента, цветная (RGBW)', spots: 'LED-споты' },
@@ -375,12 +375,58 @@
     F.innerHTML = head + steps + `<div class="f-body">${body}</div>` + bar(t, o);
     if (focusId && step === 1) { const el = F.querySelector(`[data-side="${focusId}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     renderHotspots();
+    renderCard();
   }
   function bar(t, o) {
     const total = q().total, ok = !!o && total > 0;
     const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     const nextLabel = step === 3 ? t.toOffer : step === 4 ? t.send : t.next + ': ' + t.steps[step + 1];
     return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1">${t.back}</button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${esc(nextLabel)}${step < 4 ? ' →' : ''}</button></div>`;
+  }
+
+  /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
+  function zipCtlCost(modeFor, brand = state.brand) {
+    const o = curOpt(); if (!o) return null;
+    const zips = opsOf(o).filter((x) => state.fills[x.id] === 'zip'); if (!zips.length) return 0;
+    const ok = DBCore.brandModes(brand, cat);
+    let sum = 0; const modes = [], sys = new Set();
+    for (const op of zips) {
+      const mode = modeFor(op.id); if (!ok.includes(mode)) return null;
+      const r = DBCore.selectScreen({ width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), control: DBCore.MOTOR_FOR_MODE[mode], brand, customMotor: { name: state.custom.name, price: state.custom.motor } }, cat);
+      if (!r.best) return null;
+      sum += r.best.motor.price; modes.push(mode); sys.add(o.family === 'S400' ? 'p' + o.modules.indexOf(op.mod) : 'all');
+    }
+    const opt = DBCore.priceOptions(o, poFor(o), cat);
+    return sum + DBCore.screenControlLines(modes, { brand, remote: brand === state.brand ? state.remote || undefined : undefined, wind: state.wind, windSensors: sys.size, customControls: state.custom.controls, pergolaChannels: o.modules.length + opt.channels }, cat).total;
+  }
+  /** keep the current motor brand if it can do these controls, else the cheapest brand that can (e.g. a wall button needs YOODA or Somfy) */
+  function brandFor(modeFor) {
+    if (state.brand !== 'custom' && zipCtlCost(modeFor, state.brand) != null) return { brand: state.brand, cost: zipCtlCost(modeFor, state.brand) };
+    let best = null;
+    for (const br of DBCore.MOTOR_BRANDS.filter((x) => x !== 'custom')) { const c = zipCtlCost(modeFor, br); if (c != null && (!best || c < best.cost)) best = { brand: br, cost: c }; }
+    return best;
+  }
+  const CTL_MODES = ['pergola', 'remote', 'smart', 'switch', 'solar'];
+  /** control choices as list rows: price difference to what is chosen now (all screens, or one screen in the side card) */
+  function ctlRows(t, attr, isCur, modeForOf, extra = '') {
+    const now = zipCtlCost((id) => ctlOf(id));
+    return CTL_MODES.map((m) => {
+      const bf = brandFor(modeForOf(m)), c = bf ? bf.cost : null, cur = isCur(m), diff = c == null || now == null ? 0 : c - now;
+      if (c == null) return '';
+      const pr = cur ? '' : (diff > 0.5 ? '+' : diff < -0.5 ? '−' : '±') + fe(Math.abs(gross(diff)));
+      return `<button type="button" class="f-chip" ${attr}="${m}" ${extra} aria-pressed="${cur}">${esc(t.ctlM[m])}<span class="pr">${esc(pr)}</span></button>`;
+    }).join('');
+  }
+  const zipIds = () => opsOf(curOpt()).filter((x) => state.fills[x.id] === 'zip').map((x) => x.id);
+
+  /** glass on one side: ← left · ○ closed · right → (double systems: closed / open) */
+  function glassPos(op, t) {
+    const g = glassFor(op), dbl = g.best && g.best.opening === 'double', cfg = glassCfg(op), side = cfg.side || state.glassSide;
+    const isOpen = (cfg.open ?? state.glassOpen) > 0;
+    const gb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
+    return `<div class="sub2">${t.park}: ${dbl
+      ? gb('close', '○ ' + t.shut, !isOpen) + gb('both', t.parkBoth, isOpen)
+      : gb('left', t.parkL, isOpen && side === 'left') + gb('close', '○ ' + t.shut, !isOpen) + gb('right', t.parkR, isOpen && side === 'right')}</div>`;
   }
 
   /** two choices side by side; a third and more go into a dropdown ("More …") next to them */
@@ -445,14 +491,7 @@
       const f = state.fills[op.id] || 'none', amt = sideAmount(op.id), bad = q().lines.some((l) => l.k === 'unbuilt' && l.id === op.id);
       h += `<div class="f-side${focusId === op.id ? ' hl' : ''}" data-side="${op.id}"><div class="top"><span class="nm">${sideLabel(op.id, o)}<small>${metres(Math.round(op.len * 1000))} ${t.m}</small></span><span class="pr">${f === 'none' ? '' : bad ? '—' : '+' + fe(gross(amt))}</span></div>
         <div class="f-fills" role="group">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
-      if (f === 'glass' && !bad) {
-        const g = glassFor(op), dbl = g.best && g.best.opening === 'double', cfg = glassCfg(op), side = cfg.side || state.glassSide;
-        const isOpen = (cfg.open ?? state.glassOpen) > 0;
-        const gb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
-        h += `<div class="sub2">${t.park}: ${dbl
-          ? gb('close', '○ ' + t.shut, !isOpen) + gb('both', t.parkBoth, isOpen)
-          : gb('left', t.parkL, isOpen && side === 'left') + gb('close', '○ ' + t.shut, !isOpen) + gb('right', t.parkR, isOpen && side === 'right')}</div>`;
-      }
+      if (f === 'glass' && !bad) h += glassPos(op, t);
       if (bad) h += `<div class="bad">${t.notMade}</div>`;
       h += `</div>`;
     }
@@ -463,7 +502,8 @@
       h += `<div class="f-h3"><span>${t.fabric}</span></div><div class="f-chips f-list">${opennessList().map((of) => {
         const cheapestF = cat.fabrics.collections.filter((f) => f.openness === of).sort((a, b) => a.eurPerM2 - b.eurPerM2)[0];
         return `<button type="button" class="f-chip" data-of="${of}" aria-pressed="${curOf === of}">${of} % · ${esc(t.ofName[of] || '')}<span class="pr">${cheapestF && cheapestF.eurPerM2 ? '+' + cheapestF.eurPerM2 + ' ' + t.perM2 : t.incl}</span></button>`;
-      }).join('')}</div><p class="f-lead" style="margin:6px 0 0;font-size:12.5px">${t.zipCtl}</p>`;
+      }).join('')}</div>`;
+      h += head(t.ctlT, t.ctlD) + `<div class="f-chips f-list">${ctlRows(t, 'data-zctlall', (m) => zipIds().every((id) => ctlOf(id) === m), (m) => () => m)}</div>`;
     }
     if (used.has('glass')) {
       h += `<div class="f-h3"><span>${t.glassTint}</span></div><div class="f-sw">${Object.entries(GLAZING).map(([k, g]) => {
@@ -690,6 +730,15 @@
     if (d.h) { state.po.postHeight = Number(d.h); rebuild(); return; }
     if (d.opt !== undefined) { choose(Number(d.opt)); return; }
     if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(false)); return; }
+    if (d.zctlall || d.zctl) { // the motor brand follows the control if needed (see brandFor)
+      const ids = zipIds(), cur = Object.fromEntries(ids.map((id) => [id, ctlOf(id)]));
+      const modeFor = d.zctlall ? () => d.zctlall : (id) => (id === d.id ? d.zctl : cur[id]);
+      const bf = brandFor(modeFor); if (!bf) return;
+      state.brand = bf.brand; state.remote = '';
+      for (const id of ids) state.zipCtl[id] = modeFor(id);
+      renderEstimate(); return;
+    }
+    if (d.cardClose) { closeCard(); return; }
     if (d.fill) { if (d.fill === 'none') delete state.fills[d.id]; else state.fills[d.id] = d.fill; focusId = d.id; rebuild(); applyAnim(); return; }
     if (d.all) { for (const x of opsOf(o)) { if (d.all === 'none') delete state.fills[x.id]; else state.fills[x.id] = d.all; } rebuild(); applyAnim(); return; }
     if (d.gpos) { // the glass slides to the chosen side, or closes the opening
@@ -823,8 +872,30 @@
       if (!hide) { shown.push(it); it.b.style.left = it.x + 'px'; it.b.style.top = it.y + 'px'; }
     }
   })();
-  HS.addEventListener('click', (ev) => { const b = ev.target.closest('[data-hs]'); if (!b) return; dirty = true; step = 1; focusId = b.dataset.hs; render(); });
+  HS.addEventListener('click', (ev) => { const b = ev.target.closest('[data-hs]'); if (!b) return; dirty = true; openCard(b.dataset.hs); });
   CTA.addEventListener('click', () => { step = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  /* ---------- side card: tap a side in 3D and choose right there ---------- */
+  const CARD = document.createElement('div'); CARD.id = 'f-card'; CARD.className = 'cust-only'; CARD.hidden = true;
+  CARD.setAttribute('role', 'dialog');
+  $('view').parentElement.append(CARD);
+  let cardId = null;
+  function openCard(id) { cardId = id; focusId = id; render(); }
+  function closeCard() { cardId = null; CARD.hidden = true; render(); }
+  function renderCard() {
+    if (!cardId || !isCust()) { CARD.hidden = true; return; }
+    const o = curOpt(), op = opsOf(o).find((x) => x.id === cardId);
+    if (!op) { CARD.hidden = true; return; }
+    const t = L(), f = state.fills[op.id] || 'none', bad = q().lines.some((l) => l.k === 'unbuilt' && l.id === op.id);
+    let h = `<div class="fc-h"><b>${sideLabel(op.id, o)}</b><small>${metres(Math.round(op.len * 1000))} ${t.m}</small><span class="pr">${f === 'none' || bad ? '' : '+' + fe(gross(sideAmount(op.id)))}</span><button type="button" class="fc-x" data-card-close="1" aria-label="${esc(t.done)}">×</button></div>`;
+    h += `<div class="fc-q">${t.cardQ}</div><div class="fc-fills">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
+    if (bad) h += `<div class="f-note">${t.notMade}</div>`;
+    if (f === 'zip' && !bad) h += `<div class="fc-q">${t.thisScreen}</div><div class="f-chips f-list">${ctlRows(t, 'data-zctl', (m) => ctlOf(op.id) === m, (m) => (id) => (id === op.id ? m : ctlOf(id)), `data-id="${op.id}"`)}</div>`;
+    if (f === 'glass' && !bad) h += `<div style="margin-top:10px">${glassPos(op, t)}</div>`;
+    h += `<button type="button" class="f-btn primary fc-done" data-card-close="1">${t.done}</button>`;
+    CARD.innerHTML = h; CARD.hidden = false;
+  }
+  CARD.addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (!b) return; dirty = true; act(b.dataset); });
 
   /* ---------- hooks from the main script ---------- */
   window.onEstimate = () => {
@@ -840,7 +911,7 @@
   };
   window.onOpeningPick = (o) => {
     if (!isCust()) return false;
-    step = 1; focusId = o.id; render();
+    openCard(o.id); // choose right on the 3D view; the sides step shows the same choice
     return true;
   };
 
