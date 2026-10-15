@@ -1,6 +1,7 @@
-import { pricePergola, type Mount } from './pergola';
+import { pricePergola, slideProjection, SLIDE_MAX_SNAP, SLIDE_POST_FREE_PROJECTION, type Mount } from './pergola';
+import { OutOfRangeError } from './grid';
 import { round2 } from './money';
-import type { Catalog, Issue } from './types';
+import type { Catalog, Issue, SourceRef } from './types';
 
 /**
  * Composer: covers a terrace of any size with one or more pergola modules and ranks the options.
@@ -22,9 +23,12 @@ export interface TerraceRequest {
    * S500 wall drawings show the wall on either side (types B/C, S500 p.14).
    */
   louvres?: LouvreDirection;
+  /** limit the options to these families (e.g. the customer chose a sliding roof); default: all */
+  families?: Family[];
 }
 
-export type Family = 'S400' | 'S500' | 'S500_DOUBLE';
+/** S400 / S500 / S500_DOUBLE: rotating louvres. SLIDE: sliding roof, louvres fold together towards one end. */
+export type Family = 'S400' | 'S500' | 'S500_DOUBLE' | 'SLIDE';
 
 export interface PlacedModule {
   family: Family;
@@ -67,6 +71,8 @@ export interface Composition {
   issues: Issue[];
   /** why this option is shown: cheapest, equal modules, fewest modules */
   tags: string[];
+  /** Slide: additional supporting posts the catalogue requires (projection above 6000 mm), included in total */
+  requiredPosts?: { qty: number; unit: number; amount: number; source: SourceRef };
 }
 
 interface FamilySpec {
@@ -79,22 +85,32 @@ interface FamilySpec {
   depthStep: number | null; // null = any projection (individual projection surcharge applies)
   gridStep: number; // projection grid of the price table
   modular: boolean; // shares posts at joints (S500) or stands as separate pergolas (S400)
+  /** most modules along the louvre length / along the projection (default MAX_GRID) */
+  maxCols?: number;
+  maxRows?: number;
+  /** projection fixed by the louvre count: built only within the price list's projection ranges (Slide) */
+  ranges?: boolean;
 }
 
 const SPECS: FamilySpec[] = [
   { family: 'S400', label: 'S400', widths: [2000, 2500, 3000, 3500, 4000, 4500], minWidth: 2000, maxDepth: 7000, minDepth: 2000, depthStep: 200, gridStep: 200, modular: false },
   { family: 'S500', label: 'S500', widths: [2000, 2250, 2500, 3000, 3250, 3500, 3750, 4000, 4250, 4500, 5000], minWidth: 2000, maxDepth: 8000, minDepth: 2000, depthStep: null, gridStep: 250, modular: true },
   { family: 'S500_DOUBLE', label: 'S500 двойная', widths: [5500, 5950, 6500, 6950], minWidth: 5500, maxDepth: 7000, minDepth: 2000, depthStep: null, gridStep: 250, modular: true },
+  // Slide p.5–9: width 2500–4000, projection by louvre count, 10–29 louvres (2526–6948 mm; ± half a louvre pitch
+  // snaps to the nearest range, see slideProjection).
+  // ASSUMPTION: narrower than 2500 mm is not offered (the price list starts at 2500); the catalogue drawings show
+  // at most two modules per direction (width max. 8000, projection max. 14000), so the composer stops at 2 × 2.
+  { family: 'SLIDE', label: 'Slide', widths: [2500, 3000, 3500, 4000], minWidth: 2500, maxDepth: 6948 + SLIDE_MAX_SNAP, minDepth: 2526 - SLIDE_MAX_SNAP, depthStep: null, gridStep: 250, modular: true, maxCols: 2, maxRows: 2, ranges: true },
 ];
 
 const MAX_EXTRA_MODULES = 2; // also try n+1, n+2 modules beyond the minimum
 const MAX_GRID = 4; // catalogue shows S500 configurations up to 4 × 4 modules
 
 function priceModule(spec: FamilySpec, mount: Mount, role: PlacedModule['role'], width: number, depth: number, cat: Catalog) {
-  const model = spec.family === 'S400' ? 'S400' : 'S500';
+  const model = spec.family === 'S400' ? 'S400' : spec.family === 'SLIDE' ? 'SLIDE' : 'S500';
   const layout = spec.family === 'S500_DOUBLE' ? 'double' : 'single';
   const module = role === 'add' ? 'add' : 'base';
-  return pricePergola({ model, mount, layout, module: model === 'S500' ? module : undefined, width, projection: depth }, cat);
+  return pricePergola({ model, mount, layout, module: model === 'S400' ? undefined : module, width, projection: depth }, cat);
 }
 
 /** Support posts, counted in terrace axes (row 0 is at the wall). */
@@ -163,7 +179,7 @@ function lengthSplits(spec: FamilySpec, total: number): number[][] {
   const nMin = Math.max(1, Math.ceil(total / maxW));
   const out: number[][] = [];
   for (let n = nMin; n <= Math.min(nMin + MAX_EXTRA_MODULES, MAX_GRID * 2); n++) {
-    if (spec.modular && n > MAX_GRID) continue;
+    if (spec.modular && n > (spec.maxCols ?? MAX_GRID)) continue;
     for (const c of stepCombos(spec.widths, n, total, spec.minWidth)) {
       const fitted = fitToSteps(c, total, spec.minWidth);
       if (fitted) out.push(fitted);
@@ -174,8 +190,37 @@ function lengthSplits(spec: FamilySpec, total: number): number[][] {
   return out;
 }
 
+interface VSplit { parts: number[]; issues: Issue[] }
+
+/** Slide: each module's projection snaps to the projection range of its louvre count; equal parts. */
+function slideSplits(spec: FamilySpec, total: number, cat: Catalog): VSplit[] {
+  const table = cat.tables['slide.wall.base'];
+  if (!table) throw new Error('slide.wall.base missing');
+  const out: VSplit[] = [];
+  const nMin = Math.max(1, Math.ceil(total / spec.maxDepth));
+  for (let n = nMin; n <= Math.min(nMin + 1, spec.maxRows ?? MAX_GRID); n++) {
+    const even = splitEven(Math.round(total / 10) * 10, n, 0, spec.maxDepth);
+    if (!even || even.some((p) => p < spec.minDepth)) continue;
+    let parts: number[];
+    try {
+      parts = even.map((p) => slideProjection(table, p).built);
+    } catch (e) {
+      if (e instanceof OutOfRangeError) continue;
+      throw e;
+    }
+    const built = parts.reduce((a, b) => a + b, 0);
+    const issues: Issue[] = built !== total ? [{ severity: 'warn', code: 'DEPTH_SNAPPED', params: { requested: total, built, slide: 1 } }] : [];
+    out.push({ parts, issues });
+  }
+  return out;
+}
+
 /** Projection axis: snap to the louvre pitch where required, then candidate splits. */
-function projectionSplits(spec: FamilySpec, total: number): { splits: number[][]; built: number; issues: Issue[] } | null {
+function projectionSplits(spec: FamilySpec, total: number, cat: Catalog): VSplit[] | null {
+  if (spec.ranges) {
+    const s = slideSplits(spec, total, cat);
+    return s.length ? s : null;
+  }
   const issues: Issue[] = [];
   let d = total;
   if (spec.depthStep && d % spec.depthStep !== 0) {
@@ -194,7 +239,7 @@ function projectionSplits(spec: FamilySpec, total: number): { splits: number[][]
     if (even) splits.push(even);
     if (n > 1 && n <= 3 && d % spec.gridStep === 0) splits.push(...exactCombos(spec.minDepth, spec.maxDepth, spec.gridStep, n, d));
   }
-  return splits.length ? { splits, built: d, issues } : null;
+  return splits.length ? splits.map((parts) => ({ parts, issues })) : null;
 }
 
 export function compose(req: TerraceRequest, cat: Catalog): { options: Composition[]; suggestions: Issue[] } {
@@ -204,15 +249,16 @@ export function compose(req: TerraceRequest, cat: Catalog): { options: Compositi
   const vLen = louvres === 'parallel' ? req.depth : req.width;
   const all: Composition[] = [];
   for (const spec of SPECS) {
-    const ps = projectionSplits(spec, vLen);
+    if (req.families && !req.families.includes(spec.family)) continue;
+    const ps = projectionSplits(spec, vLen, cat);
     if (!ps) continue;
     const seenV = new Set<string>();
-    for (const vParts of ps.splits) {
+    for (const { parts: vParts, issues: vIssues } of ps) {
       const vKey = [...vParts].sort((a, b) => a - b).join(',');
       if (seenV.has(vKey)) continue;
       seenV.add(vKey);
       for (const uParts of lengthSplits(spec, uLen)) {
-        const comp = build(spec, req, louvres, uParts, vParts, ps.issues, cat);
+        const comp = build(spec, req, louvres, uParts, vParts, vIssues, cat);
         if (comp) all.push(comp);
       }
     }
@@ -274,6 +320,8 @@ function buildWithBase(spec: FamilySpec, req: TerraceRequest, louvres: LouvreDir
   const lens = modules.filter((m) => m.row === 0).map((m) => m.width);
   const equal = lens.every((w) => Math.abs(w - lens[0]!) <= 10);
   const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+  const requiredPosts = spec.family === 'SLIDE' ? slideRequiredPosts(req, par, uParts, vParts, cat) : undefined;
+  if (requiredPosts) total += requiredPosts.amount;
   return {
     family: spec.family,
     label: spec.label,
@@ -288,7 +336,28 @@ function buildWithBase(spec: FamilySpec, req: TerraceRequest, louvres: LouvreDir
     equalWidths: equal,
     issues: allIssues,
     tags: [],
+    ...(requiredPosts ? { requiredPosts } : {}),
   };
+}
+
+/**
+ * Slide: a module with a projection above 6000 mm needs an additional supporting post under each beam that runs
+ * along the projection (catalogue drawings p.5–8: one post in the middle of the side). Adjacent modules share the
+ * beam line, so a row of n such modules needs n + 1 posts; a beam lying on the wall needs none.
+ * ASSUMPTION: posts counted per beam line as above; roof modules (p.9) carry no such note, so none there.
+ * Priced as the "additional dividing post" at standard height (p.11); a higher post is priced with the options.
+ */
+function slideRequiredPosts(req: TerraceRequest, par: boolean, uParts: number[], vParts: number[], cat: Catalog) {
+  if (req.mount === 'roof') return undefined;
+  const long = vParts.filter((p) => p > SLIDE_POST_FREE_PROJECTION).length;
+  if (!long) return undefined;
+  // parallel: beams along the projection run away from the wall; perpendicular: the first one lies on the wall
+  const lines = uParts.length + 1 - (req.mount === 'wall' && !par ? 1 : 0);
+  const qty = long * lines;
+  const s = cat.optionScalars?.['slide.intermediatePost'] as { values: number[]; source: SourceRef } | undefined;
+  if (!s) throw new Error('slide.intermediatePost missing');
+  const unit = s.values[0]!;
+  return { qty, unit, amount: qty * unit, source: s.source };
 }
 
 const key = (c: Composition) => `${c.family}|${c.louvres}|${c.modules.map((m) => `${m.row}:${m.width}x${m.depth}`).sort().join(',')}`;
@@ -311,7 +380,7 @@ function rank(all: Composition[]): Composition[] {
   add(list.find((c) => c.equalWidths), 'equal');
   const fewest = Math.min(...list.map((c) => c.modules.length));
   add(list.find((c) => c.modules.length === fewest), 'fewest');
-  for (const fam of ['S400', 'S500', 'S500_DOUBLE'] as Family[]) add(list.find((c) => c.family === fam), 'family');
+  for (const fam of ['S400', 'S500', 'S500_DOUBLE', 'SLIDE'] as Family[]) add(list.find((c) => c.family === fam), 'family');
   return [...picked.values()].sort((a, b) => a.total - b.total);
 }
 

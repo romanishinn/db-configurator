@@ -26,7 +26,7 @@ export function colorGroup(id: string, cat: Catalog): ColorGroup {
 
 /** Coating surcharge in % of the catalogue price of one product. Pergolas: construction + roof (louvres). */
 export function coatingPercentFor(system: CoatingSystem, color: string, roofColor: string | undefined, cat: Catalog): number {
-  if (system === 'S400' || system === 'S500') {
+  if (system === 'S400' || system === 'S500' || system === 'SLIDE') {
     const roof = roofColor ?? color;
     return coatingPercent(system, { construction: colorGroup(color, cat), roof: colorGroup(roof, cat), same: roof === color }, cat);
   }

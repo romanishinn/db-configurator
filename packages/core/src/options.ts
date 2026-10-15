@@ -10,7 +10,8 @@ import type { Catalog, GridTable, Issue, Line } from './types';
  */
 export type LedColour = 'white' | 'rgb' | 'rgbw';
 export type GutterLed = 'bwhite' | 'brgb' | 'brgbw' | 'cwhitergb';
-export type SensorChoice = 'wind' | 'rain' | 'set' | 'multi';
+/** S400/S500: wind, rain, wind+rain+temperature set, multisensor. Slide (Somfy io): wind, windSun (Soliris io). */
+export type SensorChoice = 'wind' | 'rain' | 'set' | 'multi' | 'windSun';
 
 export interface PergolaOptions {
   /** LED strips in N louvres of every module (S500 double: N per half) */
@@ -74,7 +75,14 @@ export function countPrice(t: CountTable, n: number): { price: number; billed: n
   return { price: t.prices[last]! + (n - t.counts[last]!) * t.additional, billed: n };
 }
 
-const modelOf = (c: Composition) => (c.family === 'S400' ? 's400' : 's500');
+const modelOf = (c: Composition) => (c.family === 'S400' ? 's400' : c.family === 'SLIDE' ? 'slide' : 's500');
+
+/** Options the Slide price list (07.2026) does not have: lighting inside the louvres, crown spots, internal box,
+ * rain sensor / sensor sets, Bluetooth unit, LED gutter "RGB only". */
+export const SLIDE_UNAVAILABLE = ['ledLouvres', 'spots', 'lamps', 'crownSpots', 'internalBox'] as const;
+
+/** Slide post heights (p.11): standard up to 2600 mm, then 2601–3000 and 3001–3200 mm. */
+export const SLIDE_STANDARD_POST_HEIGHT = 2600;
 const sc = (cat: Catalog, key: string) => (cat.optionScalars?.[key] as Scalar | undefined);
 
 /** Grid lookup that bills sizes below the first column/row at the first one (ASSUMPTION: table minimum). */
@@ -112,9 +120,15 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
   const add = (code: string, amount: number, params: Record<string, string | number>, source?: { file?: string; page?: number; table?: string }) =>
     lines.push({ code, params, amount: round2(amount), source });
 
+  const slide = model === 'slide';
+  if (slide) {
+    const sel: Record<string, unknown> = { ledLouvres: o.ledLouvres, spots: o.spots && o.spots.louvres > 0 ? o.spots : null, lamps: o.lamps && o.lamps.louvres > 0 ? o.lamps : null, crownSpots: o.crownSpots || 0, internalBox: o.internalBox || 0 };
+    for (const k of SLIDE_UNAVAILABLE) if (sel[k]) issues.push({ severity: 'block', code: 'OPT_NOT_FOR_MODEL', params: { option: k, model } });
+    if (o.ledGutter === 'brgb') issues.push({ severity: 'block', code: 'OPT_NOT_FOR_MODEL', params: { option: 'ledGutter.brgb', model } });
+  }
   for (const m of c.modules) {
     const ref = `${m.louvreLength}×${m.projection}`;
-    if (o.ledLouvres) {
+    if (o.ledLouvres && !slide) {
       const t = tbl(`opt.${dbl ? 's500d' : model}.ledlouvre.${o.ledLouvres.colour}`);
       const n = dbl ? o.ledLouvres.louvres * 2 : o.ledLouvres.louvres;
       try {
@@ -126,7 +140,7 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
         issues.push({ severity: 'block', code: 'OPT_LED_LOUVRES_RANGE', params: { module: ref } });
       }
     }
-    if (o.ledGutter) {
+    if (o.ledGutter && !(slide && o.ledGutter === 'brgb')) {
       const t = tbl(`opt.${dbl ? 's500d' : model}.gutter.${o.ledGutter}`);
       try {
         const g = lookupMin(t, m.louvreLength, m.projection, issues);
@@ -138,7 +152,7 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
       }
     }
     for (const [key, sel, code] of [['spots', o.spots, 'OPT_SPOTS'], ['lamps', o.lamps, 'OPT_LAMPS']] as const) {
-      if (!sel || sel.louvres <= 0) continue;
+      if (!sel || sel.louvres <= 0 || slide) continue;
       const L = lighting(cat, model);
       const grid = (dbl ? L[key].double : L[key].single)?.[String(sel.perLouvre)];
       const axis = key === 'spots' ? L.spotLouvres : L.lampLouvres;
@@ -157,7 +171,7 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
       add(code, grid[i]!, { module: ref, perLouvre: sel.perLouvre, louvres: sel.louvres, double: dbl ? 1 : 0 }, lightSource(L, true));
       channels += 1; // ASSUMPTION: one remote channel per lighting type per module
     }
-    if (o.crownSpots && o.crownSpots > 0) {
+    if (o.crownSpots && o.crownSpots > 0 && !slide) {
       const L = lighting(cat, model);
       const p = countPrice(L.crown, o.crownSpots);
       add('OPT_CROWN_SPOTS', p.price, { module: ref, points: o.crownSpots, billed: p.billed }, lightSource(L, false));
@@ -178,7 +192,18 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
   // weather sensors (S400 p.19 / S500 p.44): wind, rain, wind+rain+temperature set, multisensor.
   // Wind and rain sensors serve a single- or multi-module pergola; the temperature sensor is needed in each
   // module, so the set adds a temperature sensor (60 €) for every further module of a system.
-  if (o.sensors) {
+  if (o.sensors && slide) {
+    // Slide p.12 (Somfy io): Eolis io wind sensor (wired, 230 V) or Soliris io wind + sun sensor.
+    // ASSUMPTION: one sensor per pergola system (a joined Slide is one system); the battery Eolis WireFree is an alternative.
+    const s = sc(cat, 'slide.somfy') as (Scalar & { keys: string[] }) | undefined;
+    if (!s) throw new Error('slide.somfy missing');
+    const price = (k: string) => s.values[s.keys.indexOf(k)]!;
+    if (o.sensors === 'wind') add('OPT_SENSOR', price('eolis'), { sensor: 'wind', modules: c.modules.length, device: 'Eolis io' }, s.source);
+    else if (o.sensors === 'windSun') add('OPT_SENSOR', price('soliris'), { sensor: 'windSun', modules: c.modules.length, device: 'Soliris io' }, s.source);
+    else issues.push({ severity: 'block', code: 'OPT_NOT_FOR_MODEL', params: { option: `sensors.${o.sensors}`, model } });
+  } else if (o.sensors === 'windSun') {
+    issues.push({ severity: 'block', code: 'OPT_NOT_FOR_MODEL', params: { option: 'sensors.windSun', model } });
+  } else if (o.sensors) {
     const s = sc(cat, `${model}.sensors`)!;
     const [wind, rain, temp, , set, multi] = s.values as [number, number, number, number, number, number];
     for (const sys of pergolaSystems(c)) {
@@ -190,11 +215,17 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
     }
     if (o.sensors === 'multi') issues.push({ severity: 'info', code: 'OPT_MULTISENSOR_UNIT', params: { change: 229 } });
   }
-  if (o.smart) {
+  if (o.smart && slide) {
+    // Slide p.12: TaHoma Switch Pro (Wi-Fi, app and voice control); no Bluetooth unit in the Slide list
+    const s = sc(cat, 'slide.somfy') as (Scalar & { keys: string[] }) | undefined;
+    if (!s) throw new Error('slide.somfy missing');
+    if (o.smart === 'wifi') add('OPT_SMART', s.values[s.keys.indexOf('tahoma')]!, { unit: 'wifi', device: 'TaHoma Switch Pro' }, s.source);
+    else issues.push({ severity: 'block', code: 'OPT_NOT_FOR_MODEL', params: { option: 'smart.bluetooth', model } });
+  } else if (o.smart) {
     const s = sc(cat, `${model}.smart`)!;
     add('OPT_SMART', o.smart === 'bluetooth' ? s.values[0]! : s.values[1]!, { unit: o.smart }, s.source);
   }
-  let boxes = o.internalBox ?? 0;
+  let boxes = slide ? 0 : o.internalBox ?? 0;
   if (o.heaters && o.heaters.qty > 0) {
     const h = (cat.optionScalars?.heaters as { [m: string]: { sets: HeaterSet[]; preparation: number; source: { file: string; page: number } } })[model]!;
     const set = h.sets.find((x) => x.id === o.heaters!.set);
@@ -219,7 +250,21 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
     add('OPT_AUDIO', s.values[0]! * o.audio, { qty: o.audio, unit: s.values[0]! }, s.source);
     channels += o.audio; // ASSUMPTION: the remote's audio key takes one channel per set
   }
-  if (o.postHeight && o.postHeight > 2800) {
+  if (slide && o.postHeight && o.postHeight > SLIDE_STANDARD_POST_HEIGHT) {
+    // Slide p.11: surcharge per post 2601–3000 / 3001–3200 mm; the required dividing posts cost more when higher
+    const s = sc(cat, 'slide.postHeight')!;
+    const ip = sc(cat, 'slide.intermediatePost')!;
+    const step = o.postHeight <= 3000 ? 0 : 1;
+    if (o.postHeight > 3200) issues.push({ severity: 'block', code: 'OPT_POST_TOO_HIGH', params: { max: 3200 } });
+    else {
+      if (c.posts > 0) add('OPT_POST_HEIGHT', s.values[step]! * c.posts, { posts: c.posts, height: o.postHeight, unit: s.values[step]! }, s.source);
+      const req = c.requiredPosts?.qty ?? 0;
+      if (req > 0) {
+        const unit = ip.values[step + 1]! - ip.values[0]!;
+        add('OPT_REQUIRED_POST_HEIGHT', unit * req, { posts: req, height: o.postHeight, unit, standard: ip.values[0]!, at: ip.values[step + 1]! }, ip.source);
+      }
+    }
+  } else if (!slide && o.postHeight && o.postHeight > 2800) {
     const s = sc(cat, `${model}.postHeight`)!;
     // S400: 2801–3000 / 3001–3200; S500: 2801–3200
     const unit = model === 's400' ? (o.postHeight <= 3000 ? s.values[0]! : s.values[1]!) : s.values[0]!;
@@ -240,13 +285,15 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
   }
   if (o.intermediatePosts && o.intermediatePosts > 0) {
     const s = sc(cat, `${model}.intermediatePost`)!;
-    const h = o.postHeight ?? 2800;
+    const h = o.postHeight ?? (slide ? SLIDE_STANDARD_POST_HEIGHT : 2800);
     // S400: up to 2800 / 2801–3000 / 3001–3200; S500: up to 2800 / 2801–3200
-    const unit = model === 's400' ? (h <= 2800 ? s.values[0]! : h <= 3000 ? s.values[1]! : s.values[2]!) : h <= 2800 ? s.values[0]! : s.values[1]!;
+    // Slide: up to 2600 / 2601–3000 / 3001–3200
+    const unit = slide ? (h <= 2600 ? s.values[0]! : h <= 3000 ? s.values[1]! : s.values[2]!)
+      : model === 's400' ? (h <= 2800 ? s.values[0]! : h <= 3000 ? s.values[1]! : s.values[2]!) : h <= 2800 ? s.values[0]! : s.values[1]!;
     if (h <= 3200) add('OPT_INTERMEDIATE_POST', unit * o.intermediatePosts, { qty: o.intermediatePosts, height: h, unit }, s.source);
   }
-  if (o.sockets && model === 's500' && (o.sockets.power || o.sockets.usb)) {
-    const s = sc(cat, 's500.sockets')!;
+  if (o.sockets && (model === 's500' || slide) && (o.sockets.power || o.sockets.usb)) {
+    const s = sc(cat, `${model}.sockets`)!;
     if (o.sockets.power) add('OPT_SOCKET', s.values[0]! * o.sockets.power, { kind: 'power', qty: o.sockets.power, unit: s.values[0]! }, s.source);
     if (o.sockets.usb) add('OPT_SOCKET', s.values[1]! * o.sockets.usb, { kind: 'usb', qty: o.sockets.usb, unit: s.values[1]! }, s.source);
   }

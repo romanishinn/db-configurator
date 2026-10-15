@@ -322,6 +322,33 @@
     "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
     "page": 53
    }
+  },
+  "slide": {
+   "sets": [
+    {
+     "id": "s5.single",
+     "name": "Модель 5 (Somfy io), 1500 Вт (~10 м²): 1 обогреватель + 1 блок",
+     "heaters": 1,
+     "watts": 1500,
+     "channels": 1,
+     "price": 1162,
+     "needsInternalBox": false
+    },
+    {
+     "id": "s5.double",
+     "name": "Модель 5 (Somfy io), 4000 Вт (~25 м²): двойной + 2 блока",
+     "heaters": 1,
+     "watts": 4000,
+     "channels": 1,
+     "price": 2292,
+     "needsInternalBox": false
+    }
+   ],
+   "preparation": 86,
+   "source": {
+    "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+    "page": 14
+   }
   }
  },
  "lighting": {
@@ -607,6 +634,128 @@
     "spots.single.4",
     "crown"
    ]
+  },
+  "slide": {
+   "vertical": {
+    "counts": [
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10
+    ],
+    "prices": [
+     907,
+     1131,
+     1355,
+     1580,
+     1804,
+     2028,
+     2252,
+     2477,
+     2701
+    ],
+    "additional": 224
+   },
+   "source": {
+    "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+    "page": 13
+   }
+  }
+ },
+ "slide.cornerPostToCentre": {
+  "values": [
+   565
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 11
+  }
+ },
+ "slide.audio": {
+  "values": [
+   836
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 15
+  }
+ },
+ "slide.sockets": {
+  "values": [
+   182,
+   247
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 15
+  }
+ },
+ "slide.socketConnection": {
+  "values": [
+   86
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 15
+  }
+ },
+ "slide.extraWiring": {
+  "values": [
+   86
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 14
+  }
+ },
+ "slide.somfy": {
+  "values": [
+   232,
+   198,
+   190,
+   263,
+   132,
+   334,
+   377
+  ],
+  "keys": [
+   "tahoma",
+   "eolisWireFree",
+   "eolis",
+   "soliris",
+   "situoVar",
+   "nina",
+   "ninaTimer"
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 12
+  }
+ },
+ "slide.postHeight": {
+  "values": [
+   81,
+   121
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 11
+  }
+ },
+ "slide.intermediatePost": {
+  "values": [
+   765,
+   845,
+   887
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
+   "page": 11
   }
  }
 }

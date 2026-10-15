@@ -260,3 +260,7 @@ if __name__ == '__main__':
     for k, v in sc.items():
         print(k, v.get('values', '...'), 'p', v.get('source', {}).get('page', ''))
     json.dump(sc, open(f'{OUT}/options-scalars.json', 'w'), ensure_ascii=False, indent=1)
+    # the sliding-roof list writes its own keys into the same file (tools/import/build_slide.py)
+    import sys; sys.path.insert(0, os.path.dirname(__file__))
+    import build_slide
+    build_slide.merge_scalars(build_slide.build_scalars())

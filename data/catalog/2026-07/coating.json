@@ -150,6 +150,53 @@
       "structuralRal": 40,
       "exclusive": 40,
       "wood": 100
+    },
+    "SLIDE": {
+      "standard": [
+        0,
+        0,
+        0
+      ],
+      "fine": [
+        6,
+        4,
+        10
+      ],
+      "smooth": [
+        6,
+        4,
+        10
+      ],
+      "ralAny": [
+        8,
+        6,
+        14
+      ],
+      "ralMetallic": [
+        15,
+        10,
+        25
+      ],
+      "structural": [
+        15,
+        10,
+        25
+      ],
+      "structuralRal": [
+        15,
+        10,
+        25
+      ],
+      "exclusive": [
+        15,
+        10,
+        25
+      ],
+      "wood": [
+        15,
+        10,
+        25
+      ]
     }
   },
   "minimumCharge": {
