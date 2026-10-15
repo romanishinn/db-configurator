@@ -514,7 +514,7 @@
     h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${state.roof === 'sliding' ? t.roofSlideD : t.roofRotD}</p>`;
     const dim = (k, label, v) => `<div class="f-dim"><label for="f-${k}">${label}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="f-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
     h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
-    const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6500, 3500], [8000, 4000]];
+    const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6600, 3500], [8000, 4000]];
     h += `<div class="f-h3"><span>${t.presets}</span></div><div class="f-chips">${presets.map(([w, d]) => `<button type="button" class="f-chip" data-preset="${w}x${d}" aria-pressed="${state.width === w && state.depth === d}">${metres(w).replace(/,00|\.00/, '')} × ${metres(d).replace(/,00|\.00/, '')} ${t.m}</button>`).join('')}</div>`;
     // size problems: plain-language fix buttons
     const r = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: famFilter() }, cat);
