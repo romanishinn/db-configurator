@@ -314,7 +314,8 @@ function buildWithBase(spec: FamilySpec, req: TerraceRequest, louvres: LouvreDir
   modules.sort((a, b) => a.row - b.row || a.col - b.col);
   const cols = par ? uParts.length : vParts.length;
   const rows = par ? vParts.length : uParts.length;
-  if (spec.modular && vParts.length > 1) allIssues.push({ severity: 'info', code: 'MULTI_ROW_ASSUMPTION' });
+  // Slide: two modules in depth are drawn in the catalogue itself (TYP B2 / A2, p.6 and p.8)
+  if (spec.modular && vParts.length > 1 && spec.family !== 'SLIDE') allIssues.push({ severity: 'info', code: 'MULTI_ROW_ASSUMPTION' });
   if (!spec.modular && modules.length > 1) allIssues.push({ severity: 'info', code: 'SEPARATE_PERGOLAS', params: { count: modules.length } });
   if (!spec.modular && req.mount === 'wall' && rows > 1) allIssues.push({ severity: 'info', code: 'S400_FREE_ROWS' });
   const lens = modules.filter((m) => m.row === 0).map((m) => m.width);

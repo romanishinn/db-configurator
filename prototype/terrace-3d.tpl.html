@@ -56,6 +56,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .labels { position: absolute; inset: 0; pointer-events: none; }
 .dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 .dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
+.dim.stack { background: #2c6a86; color: #fff; }
 .toolbar { position: relative; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 8px 12px; font-size: 12.5px; }
 .toolbar .tb-row { display: flex; gap: 6px; flex: 1 1 100%; }
 .toolbar .ib { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; }
@@ -180,6 +181,10 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <button type="button" id="mt-wall" aria-pressed="true">У стены</button>
       <button type="button" id="mt-free" aria-pressed="false">Отдельностоящая</button>
     </div>
+    <div class="seg" role="group" aria-label="Крыша">
+      <button type="button" id="rf-rot" aria-pressed="true" title="S400 / S500: ламели поворачиваются">Поворотные ламели</button>
+      <button type="button" id="rf-slide" aria-pressed="false" title="Slide: ламели складываются к одной стороне">Раздвижная крыша</button>
+    </div>
     <div class="dims">
       <div><label class="l" for="w" id="w-l" title="Вдоль стены">Ширина, мм</label><input type="number" id="w" value="6500" step="100" min="1000"></div>
       <div><label class="l" for="d">Глубина, мм</label><input type="number" id="d" value="3500" step="100" min="1000"></div>
@@ -216,6 +221,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       </div>
       <div class="tb-pop" id="tb-sliders" hidden>
         <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
+        <label id="sopen-l" hidden>Крыша <input type="range" id="sopen" min="0" max="100" value="0"><span id="sopenv">закрыта</span></label>
         <label id="drop-l">Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
         <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
       </div>
@@ -255,7 +261,7 @@ const $ = (id) => document.getElementById(id);
 const eur = (n) => n.toLocaleString('de-AT', { maximumFractionDigits: 0 }) + ' €';
 const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
 const mm = (n) => n.toLocaleString('de-AT') ;
-const FAM = { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная' };
+const FAM = { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная', SLIDE: 'Slide' };
 const TAG = { cheapest: 'Дешевле всего', equal: 'Ровные модули', fewest: 'Меньше модулей', family: '' };
 const FILL = { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Стекло Win Glass', verto: 'Win Verto', panels: 'Win Panels' };
 /* ---------- colours ---------- */
@@ -278,7 +284,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', mount: 'wall', width: 6500, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right' };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'parallel', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6500, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right' };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'front-1': 'zip', 'front-2': 'zip', 'right-0': 'verto' };
 
@@ -377,16 +383,46 @@ function box(w, h, d, mat, x, y, z, parent = root) {
 const SPEC = {
   S400: { post: 0.13, crown: 0.21, pitch: 0.2, louverW: 0.231, firstLouvers: 8, minD: 2.0 },
   S500: { post: 0.13, crown: 0.24, pitch: 0.25, louverW: 0.286, firstLouvers: 6, minD: 2.0 },
+  // Slide (price list p.4): posts 160 mm, base beams 322 / 348 mm, louvre profile 278 × 40 mm.
+  // Folded louvres stand about 46 mm apart: the open-roof drawing (p.4) shows the stack at ~19 % of the projection
+  // (ASSUMPTION: read from the drawing, to confirm with the manufacturer).
+  SLIDE: { post: 0.16, crown: 0.322, louverW: 0.278, louverT: 0.04, stackPitch: 0.046, minD: 2.5 },
 };
+const famKey = (o) => (o.family === 'S400' ? 'S400' : o.family === 'SLIDE' ? 'SLIDE' : 'S500');
+/** roof type chosen by the user: rotating louvres (S400 / S500) or the sliding roof (Slide) */
+const FAMILIES = { rotating: ['S400', 'S500', 'S500_DOUBLE'], sliding: ['SLIDE'] };
+const famFilter = () => FAMILIES[state.roof] || FAMILIES.rotating;
+/** post heights in the price lists: S400 2800 / 3000 / 3200, S500 2800 / 3200, Slide 2600 / 3000 / 3200 (first = standard) */
+const heightsOf = (o) => (o.family === 'SLIDE' ? [2600, 3000, 3200] : o.family === 'S400' ? [2800, 3000, 3200] : [2800, 3200]);
+/** Slide: louvre count of a module (the price row whose projection range the module is built in) */
+const slideLouvres = (m) => 10 + DBCore.slideProjection(cat.tables['slide.wall.base'], m.projection).index;
+/** folded louvres: the stack depth at the wall end, mm */
+const slideStack = (m) => Math.round((slideLouvres(m) * SPEC.SLIDE.stackPitch + SPEC.SLIDE.louverT) * 1000);
+/** options the chosen pergola type does not have are dropped when the type changes; the height moves to the type's standard */
+function fitOptions(o) {
+  if (!o) return;
+  const po = state.po, hs = heightsOf(o);
+  if (!hs.includes(po.postHeight)) po.postHeight = po.postHeight === 2600 || po.postHeight === 2800 ? hs[0] : hs.find((h) => h >= po.postHeight) || hs.at(-1);
+  const heaters = cat.optionScalars.heaters[o.family === 'SLIDE' ? 'slide' : o.family === 'S400' ? 's400' : 's500'].sets.map((x) => x.id);
+  if (po.heaters && !heaters.includes(po.heaters.set)) po.heaters = null;
+  if (o.family === 'SLIDE') {
+    po.ledLouvres = null; po.spots = null; po.lamps = null; po.crownSpots = 0;
+    if (po.ledGutter === 'brgb') po.ledGutter = null;
+    if (po.sensors && !['wind', 'windSun'].includes(po.sensors)) po.sensors = null;
+    if (po.smart === 'bluetooth') po.smart = null;
+  } else if (po.sensors === 'windSun') po.sensors = null;
+}
 let H = 2.8; // post height to the top of the crown, m (standard 2800, option 3000 / 3200)
 
 function build() {
   scene.remove(root); root = new THREE.Group(); scene.add(root);
   pickables = []; animated = { louvers: [], screens: [], leds: [], glass: [] };
-  H = state.po.postHeight / 1000;
   const opt = state.options[state.optIndex];
+  fitOptions(opt);
+  H = state.po.postHeight / 1000;
+  syncRoofControls(opt); syncGlassControls();
   if (!opt) { renderLabels(null); return; }
-  const fam = opt.family === 'S400' ? 'S400' : 'S500';
+  const fam = famKey(opt);
   const sp = SPEC[fam];
   const W = opt.width / 1000;
   const D = opt.depth / 1000;
@@ -427,9 +463,27 @@ function build() {
         }
       }
     }
+    const alongX = m.louvreAxis === 'x';
+    if (fam === 'SLIDE') {
+      // sliding roof: the louvre count is fixed by the price row; closed they lie flat and overlap, opening they tilt
+      // up and slide together to the wall end (freestanding: the back end), where they stand as a folded stack
+      const n = slideLouvres(m);
+      const lenL = (alongX ? xb - xa : zb - za) - 2 * sp.post - 0.02;
+      const span = (alongX ? zb - za : xb - xa) - 2 * sp.post;
+      const geo = alongX ? new THREE.BoxGeometry(lenL, sp.louverT, sp.louverW) : new THREE.BoxGeometry(sp.louverW, sp.louverT, lenL);
+      const inst = new THREE.InstancedMesh(geo, M.louver, n);
+      inst.castShadow = true; inst.receiveShadow = true;
+      const start = (alongX ? za : xa) + sp.post;
+      inst.userData = { slide: true, n, axis: alongX ? 'x' : 'z', x: (xa + xb) / 2, z: (za + zb) / 2, y: yTop - 0.06, start, step: span / n };
+      root.add(inst); animated.louvers.push(inst);
+      if (state.po.ledGutter) {
+        const pl = new THREE.PointLight(0xffd9a0, 0, Math.max(xb - xa, zb - za) * 1.6, 2);
+        pl.position.set((xa + xb) / 2, H - sp.crown - 0.2, (za + zb) / 2); root.add(pl); animated.lights = (animated.lights || []).concat(pl);
+      }
+      continue;
+    }
     // louvres (instanced): length = catalogue width, count from the projection (louvre pitch)
     const n = Math.max(2, Math.round(sp.firstLouvers + (m.projection - 2000) / (sp.pitch * 1000)));
-    const alongX = m.louvreAxis === 'x';
     const lenL = (alongX ? xb - xa : zb - za) - 2 * sp.post - 0.02;
     const span = (alongX ? zb - za : xb - xa) - 2 * sp.post;
     const geo = alongX ? new THREE.BoxGeometry(lenL, 0.03, sp.louverW) : new THREE.BoxGeometry(sp.louverW, 0.03, lenL);
@@ -480,6 +534,8 @@ function build() {
   // posts
   const posts = postPositions(opt);
   for (const [x, z] of posts) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
+  // Slide: posts the catalogue requires for a projection above 6000 mm (middle of each beam along the projection)
+  for (const [x, z] of requiredPostPositions(opt)) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
   // additional intermediate posts (option): on the front beams, widest modules first
   const extra = intermediatePositions(opt, sp);
   for (const [x, z] of extra) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
@@ -503,6 +559,36 @@ function build() {
   renderLabels(opt);
 }
 
+/** Slide: required posts (engine: Composition.requiredPosts), post centres in metres. The same rule as the engine:
+ *  one post in the middle of every beam that runs along a projection above 6000 mm; a beam on the wall needs none. */
+function requiredPostPositions(opt) {
+  if (!opt || opt.family !== 'SLIDE' || state.mount === 'roof') return [];
+  const p = SPEC.SLIDE.post / 2, W = opt.width, D = opt.depth, out = new Map();
+  const put = (x, z) => out.set(Math.round(x) + ':' + Math.round(z), [x / 1000, z / 1000]);
+  for (const m of opt.modules) {
+    if (m.projection <= 6000) continue;
+    if (m.louvreAxis === 'x') { // projection runs away from the wall (z): beams on the module's left and right edges
+      const z = m.y + m.depth / 2;
+      for (const x of [m.x, m.x + m.width]) put(x === 0 ? p * 1000 : x === W ? W - p * 1000 : x, z);
+    } else { // projection runs along the wall (x): beams on the module's back and front edges
+      const x = m.x + m.width / 2;
+      for (const z of [m.y, m.y + m.depth]) { if (z === 0 && state.mount === 'wall') continue; put(x, z === 0 ? p * 1000 : z === D ? D - p * 1000 : z); }
+    }
+  }
+  return [...out.values()];
+}
+/** shows the second slider (roof open / closed) only for the sliding roof; louvres tilt up to 90° there */
+function syncRoofControls(opt) {
+  const slide = !!opt && opt.family === 'SLIDE';
+  $('sopen-l').hidden = !slide;
+  $('ang').max = slide ? 90 : 135;
+  if (slide && state.angle > 90) { state.angle = 90; $('ang').value = 90; $('angv').textContent = '90°'; }
+  sopenText();
+}
+function sopenText() {
+  const v = state.slideOpen, tb = window.TB_TEXT || {};
+  $('sopenv').textContent = v === 0 ? tb.roofClosed || 'закрыта' : v === 100 ? tb.roofOpen || 'открыта' : v + '%';
+}
 function intermediatePositions(opt, sp) {
   const k = state.po.intermediatePosts || 0;
   if (!k) return [];
@@ -516,8 +602,7 @@ function intermediatePositions(opt, sp) {
 }
 
 function postPositions(opt) {
-  const fam = opt.family === 'S400' ? 'S400' : 'S500';
-  const p = SPEC[fam].post / 2, out = [];
+  const p = SPEC[famKey(opt)].post / 2, out = [];
   if (opt.family === 'S400') {
     // every S400 is a separate pergola: 2 front posts, plus 2 back posts unless it hangs on the wall
     for (const m of opt.modules) {
@@ -556,6 +641,22 @@ function openings(opt, sp) {
   }
   if (state.mount === 'free') {
     opt.modules.filter((m) => m.row === 0).forEach((m, i) => out.push({ mod: m, id: 'back-' + i, label: 'Сзади, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: sp.post / 2, rotY: 0, axis: 'x' }));
+  }
+  return splitAtPosts(out, requiredPostPositions(opt), sp);
+}
+/** a side with a required post in its middle becomes two openings (id, id + '-b'), each filled on its own */
+function splitAtPosts(list, posts, sp) {
+  if (!posts.length) return list;
+  const out = [];
+  for (const o of list) {
+    const along = o.axis === 'x' ? 0 : 1, c = along === 0 ? o.cx : o.cz, line = along === 0 ? o.cz : o.cx;
+    const a = c - o.len / 2, b = c + o.len / 2;
+    const hit = posts.find(([x, z]) => { const pa = along === 0 ? x : z, pl = along === 0 ? z : x; return Math.abs(pl - line) < 0.2 && pa > a + 0.3 && pa < b - 0.3; });
+    if (!hit) { out.push(o); continue; }
+    const at = along === 0 ? hit[0] : hit[1];
+    const l1 = at - sp.post / 2 - a, l2 = b - (at + sp.post / 2);
+    const part = (len, cc, id, k) => ({ ...o, id, label: o.label + ', часть ' + k, len, ...(along === 0 ? { cx: cc } : { cz: cc }), part: k });
+    out.push(part(l1, a + l1 / 2, o.id, 1), part(l2, b - l2 / 2, o.id + '-b', 2));
   }
   return out;
 }
@@ -637,6 +738,7 @@ function applyAnim() {
   const a = THREE.MathUtils.degToRad(state.angle), mat = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
   for (const inst of animated.louvers) {
     const u = inst.userData;
+    if (u.slide) { slideMatrices(inst, mat, s); continue; }
     q.setFromAxisAngle(u.axis === 'x' ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, -1), a);
     for (let i = 0; i < u.n; i++) {
       mat.compose(u.axis === 'x' ? new THREE.Vector3(u.x, u.y, u.z + i * u.step) : new THREE.Vector3(u.x + i * u.step, u.y, u.z), q, s);
@@ -660,6 +762,28 @@ function applyAnim() {
   for (const pl of animated.lights || []) pl.intensity = state.evening ? 1.6 : 0;
   scene.background = new THREE.Color(state.evening ? 0x1b2530 : 0xc5d1d9);
   hemi.intensity = state.evening ? 0.25 : 0.85; sun.intensity = state.evening ? 0.12 : 0.95;
+}
+
+/**
+ * Sliding roof: open = 0 … 1 moves every louvre from its closed place (evenly over the span, overlapping, flat)
+ * to the folded stack at the start of the span (pitch 46 mm). The tilt slider sets the angle; while the louvres
+ * close up they must turn at least so far that a 278 mm louvre fits its pitch.
+ */
+function slideMatrices(inst, mat, scl) {
+  const u = inst.userData, sp = SPEC.SLIDE, open = state.slideOpen / 100, q = new THREE.Quaternion(), pos = new THREE.Vector3();
+  const pitch = u.step + (sp.stackPitch - u.step) * open;
+  let need = 0; // smallest angle where W·cos a + T·sin a fits the pitch (only while the roof is opening)
+  if (open > 0) { for (let d = 0; d <= 90; d += 1) { const a = THREE.MathUtils.degToRad(d); need = d; if (sp.louverW * Math.cos(a) + sp.louverT * Math.sin(a) <= pitch * 0.98) break; } }
+  const ang = THREE.MathUtils.degToRad(Math.max(Math.min(state.angle, 90), need));
+  q.setFromAxisAngle(u.axis === 'x' ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, -1), ang);
+  for (let i = 0; i < u.n; i++) {
+    const closed = u.start + u.step * (i + 0.5), folded = u.start + sp.louverT / 2 + 0.01 + sp.stackPitch * i;
+    const c = closed + (folded - closed) * open;
+    const y = u.y + (i % 2 ? 0.008 : 0) * (1 - Math.min(1, ang * 4)); // closed and flat: every other louvre a little higher (they overlap)
+    pos.set(u.axis === 'x' ? u.x : c, y, u.axis === 'x' ? c : u.z);
+    mat.compose(pos, q, scl); inst.setMatrixAt(i, mat);
+  }
+  inst.instanceMatrix.needsUpdate = true;
 }
 
 /* ---------- camera + labels ---------- */
@@ -703,6 +827,13 @@ function renderLabels(opt) {
   add(mm(Math.round(W * 1000)) + ' ' + (window.MM_UNIT || 'мм'), [W / 2, 0.02, D + 1.15], 'total');
   if (opt.cols > 1) opt.modules.filter((m) => m.row === 0).forEach((m) => add(mm(m.width), [(m.x + m.width / 2) / 1000, 0.02, D + 0.3]));
   add(mm(opt.depth) + ' ' + (window.MM_UNIT || 'мм'), [-0.7, 0.02, D * 0.22], 'total'); // off the middle, where the side's "+" sits
+  // sliding roof: how deep the folded louvres are (shown while the roof is open)
+  if (opt.family === 'SLIDE' && state.slideOpen > 0) {
+    const m = opt.modules[0], st = slideStack(m), k = state.slideOpen / 100;
+    const txt = (window.STACK_TEXT || ((v) => `ламели сложены: ${v} мм`))(mm(st));
+    const along = m.louvreAxis === 'x';
+    add(txt, along ? [W / 2, H + 0.12, m.y / 1000 + SPEC.SLIDE.post + (st / 1000) / 2] : [m.x / 1000 + SPEC.SLIDE.post + (st / 1000) / 2, H + 0.12, D / 2], k < 1 ? 'stack' : 'stack');
+  }
 }
 const v = new THREE.Vector3();
 function placeLabels() {
@@ -834,20 +965,21 @@ function onMenuClick(ev) {
 }
 function openingById(id) {
   const o = state.options[state.optIndex]; if (!o) return null;
-  const sp = SPEC[o.family === 'S400' ? 'S400' : 'S500'];
-  return openings(o, sp).find((x) => x.id === id) || null;
+  return openings(o, SPEC[famKey(o)]).find((x) => x.id === id) || null;
 }
 function syncGlassControls() {
-  const any = Object.values(state.fills).includes('glass');
-  $('gopen-l').hidden = !any;
-  $('drop-l').hidden = !Object.values(state.fills).includes('zip'); // the screen slider only when there is a screen
+  // only sides that exist in the current layout count (a fill can stay on a side that the new size does not have)
+  const o = state.options[state.optIndex], ids = new Set(o ? openings(o, SPEC[famKey(o)]).map((x) => x.id) : []);
+  const used = Object.entries(state.fills).filter(([id]) => ids.has(id)).map(([, f]) => f);
+  $('gopen-l').hidden = !used.includes('glass');
+  $('drop-l').hidden = !used.includes('zip'); // the screen slider only when there is a screen
 }
 function closeMenu() { if (menu) { menu.remove(); menu = null; menuAt = null; } }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
 
 /* ---------- options + estimate ---------- */
 function recompute(resetFills) {
-  const req = { mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres };
+  const req = { mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: famFilter() };
   const r = DBCore.compose(req, cat);
   const other = DBCore.compose({ ...req, louvres: state.louvres === 'parallel' ? 'perpendicular' : 'parallel' }, cat);
   renderLouvreInfo(r.options[0], other.options[0]);
@@ -893,7 +1025,10 @@ const BRANDS = {
   somfy: { name: 'Somfy', tier: 'премиум', hint: 'io 2-way 868 МГц, электронные концевики (стр. 107–116)' },
   custom: { name: 'Свой вариант', tier: 'своя цена', hint: 'свой мотор и управление по своей цене; нужный момент мотора показан у каждого скрина' },
 };
-const modesOf = () => DBCore.brandModes(state.brand, cat);
+/** Slide comes with a Somfy io remote (Situo 5 io), not the TELECO 63-channel one: the wired "from the pergola remote"
+ *  screen control (TELECO unit) is not offered there. ASSUMPTION: pairing io screens with the Slide remote — to confirm. */
+const noPergolaCtl = () => { const o = state.options[state.optIndex]; return !!o && o.family === 'SLIDE'; };
+const modesOf = (brand = state.brand) => DBCore.brandModes(brand, cat).filter((m) => !(m === 'pergola' && noPergolaCtl()));
 const SLATS = { fixed: 'Неподвижные (45°)', rotating: 'Поворотные (0–90°)' };
 const PMOUNT = { sliding: 'Раздвижные (по направляющим)', fixed: 'Неподвижные' };
 const panelOpt = (id) => ({ slats: 'fixed', mount: 'sliding', ...(state.panelOpt[id] || {}) });
@@ -924,34 +1059,39 @@ function renderEstimate() {
   const ROLE = { single: 'отдельная пергола', base: 'базовый модуль', add: 'доп. модуль' };
   const MOUNT = { wall: '', free: ' · отдельностоящая', roof: '' };
   const Q = []; // structured lines: the customer view and the printable quote are built from these
-  for (const m of o.modules) Q.push({ k: 'module', fam: o.family, w: m.width, d: m.depth, a: m.price });
-  { const rest = o.total - o.modules.reduce((s, m) => s + m.price, 0); if (Math.abs(rest) > 0.5) Q.push({ k: 'moduleExtra', a: rest }); }
-  let html = o.modules.map((m, i) => `<tr><td>${FAM[o.family]}, ${mm(m.width)} × ${mm(m.depth)}<span class="s">${ROLE[m.role]}${state.mount === 'wall' ? MOUNT[m.mount] : ''} · ламели ${mm(m.louvreLength)} мм, вылет ${mm(m.projection)} · таблица ${m.table}</span></td><td class="a">${eur(m.price)}</td></tr>`).join('');
+  const slide = o.family === 'SLIDE', rp = o.requiredPosts;
+  for (const m of o.modules) Q.push({ k: 'module', fam: o.family, w: m.width, d: m.depth, a: m.price, ...(slide ? { louvres: slideLouvres(m), stack: slideStack(m) } : {}) });
+  if (rp) Q.push({ k: 'reqPosts', qty: rp.qty, unit: rp.unit, a: rp.amount });
+  { const rest = o.total - o.modules.reduce((s, m) => s + m.price, 0) - (rp ? rp.amount : 0); if (Math.abs(rest) > 0.5) Q.push({ k: 'moduleExtra', a: rest }); }
+  let html = o.modules.map((m, i) => `<tr><td>${FAM[o.family]}, ${mm(m.width)} × ${mm(m.depth)}<span class="s">${ROLE[m.role]}${state.mount === 'wall' ? MOUNT[m.mount] : ''} · ламели ${mm(m.louvreLength)} мм, вылет ${mm(m.projection)}${slide ? ` (${slideLouvres(m)} ламелей, сложенные — ≈ ${mm(slideStack(m))} мм у ${state.mount === 'wall' && m.louvreAxis === 'x' ? 'стены' : 'края'})` : ''} · таблица ${m.table}</span></td><td class="a">${eur(m.price)}</td></tr>`).join('');
+  if (rp) html += `<tr><td>Обязательные доп. стойки Slide × ${rp.qty}<span class="s">вылет больше 6 000 мм — стойка посередине каждой балки вдоль вылета · ${eur(rp.unit)} за стойку до 2 600 мм · стр. ${rp.source.page}</span></td><td class="a">${eur(rp.amount)}</td></tr>`;
   const fills = Object.entries(state.fills).filter(([, f]) => f !== 'none');
-  const ops = openings(o, SPEC[o.family === 'S400' ? 'S400' : 'S500']);
+  const ops = openings(o, SPEC[famKey(o)]);
   let sides = 0; const pending = [], unbuilt = [];
   lastZipReqs = [];
   const e = colorsEff(), coat = [], zipOps = [], zipReqs = [];
   let panelsCustomColour = false;
-  const sys = o.family === 'S400' ? 'S400' : 'S500';
+  const sys = famKey(o);
   const op = DBCore.priceOptions(o, poFor(o), cat);
   {
-    const OPN = { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'Подсветка в ламелях', OPT_LED_GUTTER: 'Подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка конструкции под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб (BOX)', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'Точечные LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме (короне)', OPT_VERTICAL_LAMPS: 'Вертикальные LED-светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные промежуточные стойки' };
+    const OPN = { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'Подсветка в ламелях', OPT_LED_GUTTER: 'Подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка конструкции под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб (BOX)', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'Точечные LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме (короне)', OPT_VERTICAL_LAMPS: 'Вертикальные LED-светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные промежуточные стойки', OPT_REQUIRED_POST_HEIGHT: 'Обязательные стойки Slide выше стандарта' };
     const groups = {};
     for (const l of op.lines) { const k = l.code + (l.params.kind || ''); (groups[k] = groups[k] || []).push(l); }
     for (const ls of Object.values(groups)) {
       const l0 = ls[0], p = l0.params, amt = ls.reduce((a, l) => a + l.amount, 0), n = ls.length;
       let det = '';
       if (l0.code === 'OPT_POST_HEIGHT') det = `до ${mm(p.height)} мм · ${p.posts} ${plural(p.posts, 'стойка', 'стойки', 'стоек')} × ${eur(p.unit)}`;
+      if (l0.code === 'OPT_REQUIRED_POST_HEIGHT') det = `до ${mm(p.height)} мм · ${p.posts} × (${eur(p.at)} − ${eur(p.standard)} в цене стойки)`;
       if (l0.code === 'OPT_LED_LOUVRES') det = `LED-лента ${LEDC[p.colour]}, ${p.louvres} ${plural(p.louvres, 'ламель', 'ламели', 'ламелей')} · ${byModule(ls)}`;
-      if (l0.code === 'OPT_LED_GUTTER') det = `${GUT[p.type]} · ${byModule(ls)}`;
+      if (l0.code === 'OPT_LED_GUTTER') det = `${(o.family === 'SLIDE' ? GUT_SLIDE : GUT)[p.type]} · ${byModule(ls)}`;
       if (l0.code === 'OPT_THERMAL') det = byModule(ls) + (op.issues.some((i) => i.code === 'OPT_BILLED_AT_TABLE_MIN' && /thermal/.test(i.params.table)) ? ' · по прайсу от минимального размера таблицы' : '');
-      if (l0.code === 'OPT_SENSOR') det = `${SEN[p.sensor]} · ${n > 1 ? n + ' системы' : 'одна система'}${p.extraTemp ? `, + датчик температуры на ${p.extraTemp} доп. ${plural(p.extraTemp, 'модуль', 'модуля', 'модулей')}` : ''}`;
-      if (l0.code === 'OPT_SMART') det = SMART[p.unit];
+      if (l0.code === 'OPT_SENSOR') det = `${(o.family === 'SLIDE' ? SEN_SLIDE : SEN)[p.sensor]} · ${n > 1 ? n + ' системы' : 'одна система'}${p.extraTemp ? `, + датчик температуры на ${p.extraTemp} доп. ${plural(p.extraTemp, 'модуль', 'модуля', 'модулей')}` : ''}`;
+      if (l0.code === 'OPT_SMART') det = (o.family === 'SLIDE' ? SMART_SLIDE : SMART)[p.unit];
       if (l0.code === 'OPT_HEATERS') det = `${p.name} × ${p.qty}`;
       if (l0.code === 'OPT_HEATER_PREP') det = `${p.heaters} × ${eur(p.unit)} (кабели, отверстия, подключение)`;
       if (l0.code === 'OPT_INTERNAL_BOX') det = op.issues.some((i) => i.code === 'OPT_INTERNAL_BOX_FOR_HEATERS') ? 'обязателен для блоков обогревателей моделей 2 и 3' : '';
       if (l0.code === 'OPT_AUDIO') det = '2 колонки 25 Вт, Bluetooth-блок';
+      if (l0.code === 'OPT_HEATERS' && o.family === 'SLIDE') det = `${p.name} × ${p.qty} · без пульта в комплекте, управление с пульта перголы`;
       if (l0.code === 'OPT_SPOTS') det = `${p.perLouvre} ${plural(p.perLouvre, 'спот', 'спота', 'спотов')} в ламели × ${p.double ? p.louvres + '+' + p.louvres : p.louvres} ${plural(p.louvres, 'ламель', 'ламели', 'ламелей')}, 2 Вт, 3000/4000 K · ${byModule(ls)}`;
       if (l0.code === 'OPT_LAMPS') det = `${p.perLouvre} ${plural(p.perLouvre, 'лампа', 'лампы', 'ламп')} в ламели × ${p.double ? p.louvres + '+' + p.louvres : p.louvres} ${plural(p.louvres, 'ламель', 'ламели', 'ламелей')}, 3 Вт · ${byModule(ls)}`;
       if (l0.code === 'OPT_CROWN_SPOTS') det = `${p.points} ${plural(p.points, 'спот', 'спота', 'спотов')} ${o.family === 'S400' ? 'на перголу' : 'на модуль'}${p.billed !== p.points ? ` (по прайсу — ${p.billed})` : ''}, симметрично по сторонам · ${byModule(ls)}`;
@@ -962,7 +1102,7 @@ function renderEstimate() {
       Q.push({ k: 'opt', code: l0.code, p, n, a: amt });
     }
     for (const i of op.issues.filter((i) => i.severity === 'block')) Q.push({ k: 'optBlocked', code: i.code });
-    for (const i of op.issues.filter((i) => i.severity === 'block')) html += `<tr><td colspan="2"><div class="note">${i.code === 'OPT_POST_TOO_HIGH' ? 'Стойки выше 3 200 мм не производятся.' : i.code === 'OPT_VERTICAL_LAMPS_MODEL' ? 'Вертикальные светильники — только для S500.' : 'Опция не производится для модуля ' + (i.params.module || '')}</div></td></tr>`;
+    for (const i of op.issues.filter((i) => i.severity === 'block')) html += `<tr><td colspan="2"><div class="note">${i.code === 'OPT_POST_TOO_HIGH' ? 'Стойки выше 3 200 мм не производятся.' : i.code === 'OPT_VERTICAL_LAMPS_MODEL' ? 'Вертикальные светильники — только для S500.' : i.code === 'OPT_NOT_FOR_MODEL' ? 'Этой опции нет в прайсе Slide (' + i.params.option + ').' : 'Опция не производится для модуля ' + (i.params.module || '')}</div></td></tr>`;
     if (op.issues.some((i) => i.code === 'OPT_CROWN_SPOTS_RECESS')) html += `<tr><td colspan="2"><div class="note">Споты в раме нельзя ставить над проёмом, где между стойками стоит Win Glass или ZIP. Уточнить расстановку — споты только на свободных сторонах.</div></td></tr>`;
     const vp = op.issues.find((i) => i.code === 'OPT_VERTICAL_LAMPS_POSTS');
     if (vp) html += `<tr><td colspan="2"><div class="note">Вертикальных светильников ${vp.params.lamps}, а стоек ${vp.params.posts} — на одну стойку ставится один светильник.</div></td></tr>`;
@@ -1062,7 +1202,7 @@ function renderEstimate() {
   const cname = (id) => { const c = colorOf(id); return c.custom ? c.nameRu : c.id + ' ' + (c.group === 'wood' ? c.nameRu : c.nameRu.toLowerCase()); };
   const bySys = {};
   for (const l of cs.lines.filter((l) => l.code === 'COATING_SURCHARGE')) { const k = l.params.system; (bySys[k] = bySys[k] || { sum: 0, pct: l.params.percent, n: 0 }); bySys[k].sum += l.amount; bySys[k].n++; }
-  const SYSN = { S400: 'перголы', S500: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'Win Verto' };
+  const SYSN = { S400: 'перголы', S500: 'перголы', SLIDE: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'Win Verto' };
   for (const [k, v] of Object.entries(bySys)) {
     const what = k === 'GLASS' || k === 'VERTO' ? cname(e.slide) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
     Q.push({ k: 'coat', sys: k, pct: v.pct, a: v.sum });
@@ -1083,7 +1223,8 @@ function renderEstimate() {
   }
   {
     const systems = new Set(zipOps.map((z) => z.sys)).size;
-    const cl = DBCore.screenControlLines(zipOps.map((z) => z.mode), { brand: state.brand, remote: state.remote || undefined, wind: state.wind, windSensors: systems, customControls: state.custom.controls, pergolaChannels: o.modules.length + op.channels }, cat);
+    const cl = DBCore.screenControlLines(zipOps.map((z) => z.mode), { brand: state.brand, remote: state.remote || undefined, wind: state.wind, windSensors: systems, customControls: state.custom.controls, pergolaChannels: slide ? undefined : o.modules.length + op.channels }, cat);
+    if (slide) html += `<tr><td>Пульт перголы Somfy Situo 5 io Pure II<span class="s">входит в цену Slide (5 каналов) · ZIP-скрины — отдельным пультом или приложением выбранного бренда · стр. 12</span></td><td class="a muted">в цене</td></tr>`;
     const CL = { CONTROL_REMOTE: 'пульт на проект', CONTROL_SMART: 'один блок на проект', CONTROL_PERGOLA_UNIT: 'скрины с пульта перголы', CONTROL_WIND_SENSOR: 'один на систему перголы со скринами', CONTROL_SWITCH: 'по одному на скрин' };
     for (const l of cl.lines) if (l.amount) Q.push({ k: 'control', code: l.code, name: l.params.name || '', qty: l.params.qty || 1, a: l.amount });
     for (const l of cl.lines.filter((l) => l.code === 'CONTROL_CUSTOM')) { html += `<tr><td>Управление — свой вариант<span class="s">пульты, датчики и т. п. на проект</span></td><td class="a">${eur(l.amount)}</td></tr>`; }
@@ -1138,15 +1279,19 @@ function renderEstimate() {
   $('wind').closest('label').hidden = state.brand === 'custom';
   const nSys = new Set(zipOps.map((z) => z.sys)).size;
   $('wind-t').innerHTML = `Датчик ветра — 1 на систему${nSys > 1 ? ` (${nSys} шт.)` : ''} <span class="muted">— без него гарантия на ткань не действует</span>`;
-  const ISS = { SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Размер подогнан под шаг ламелей (S400 — 200 мм).', S400_FREE_ROWS: 'Задний ряд S400 крепится к стене, передний — отдельностоящие перголы (4 стойки).', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у производителя.' };
-  $('issues').innerHTML = o.issues.map((i) => `<div class="note">${ISS[i.code] || i.code}${i.params && i.params.built ? ` Строим ${mm(i.params.built)} мм вместо ${mm(i.params.requested)} мм.` : ''}</div>`).join('');
+  const ISS = { SLIDE_DEPTH: 'Вылет Slide задаётся числом ламелей: каждая строка прайса делается только в своём диапазоне (около 230 мм на ламель), берётся ближайший.', SEPARATE_PERGOLAS: 'S400 не соединяется в модули: это отдельные перголы, на стыках сдвоенные стойки.', DEPTH_SNAPPED: 'Размер подогнан под шаг ламелей (S400 — 200 мм).', S400_FREE_ROWS: 'Задний ряд S400 крепится к стене, передний — отдельностоящие перголы (4 стойки).', MULTI_ROW_ASSUMPTION: 'Несколько рядов в глубину — цену уточнить у производителя.' };
+  $('issues').innerHTML = o.issues.map((i) => `<div class="note">${ISS[i.code === 'DEPTH_SNAPPED' && i.params && i.params.slide ? 'SLIDE_DEPTH' : i.code] || i.code}${i.params && i.params.built ? ` Строим ${mm(i.params.built)} мм вместо ${mm(i.params.requested)} мм.` : ''}</div>`).join('');
 }
 
 /* ---------- pergola options ---------- */
 const LEDC = { white: 'белая', rgb: 'RGB', rgbw: 'RGBW' };
 const GUT = { bwhite: 'тип B, белая', brgb: 'тип B, RGB', brgbw: 'тип B, RGBW (белая + RGB)', cwhitergb: 'тип C, белая + RGB' };
-const SEN = { wind: 'датчик ветра', rain: 'датчик дождя', set: 'комплект: ветер + дождь + температура', multi: 'мультидатчик (ветер, дождь, температура, снег)' };
+const SEN = { wind: 'датчик ветра', rain: 'датчик дождя', set: 'комплект: ветер + дождь + температура', multi: 'мультидатчик (ветер, дождь, температура, снег)', windSun: 'ветер + солнце (Somfy Soliris io)' };
 const SMART = { bluetooth: 'Bluetooth (T-Mate, дома)', wifi: 'Wi-Fi (через интернет, голос)' };
+// Slide price list (p.12–13): Somfy io devices; LED only in the gutter (white, RGBW, white + RGB)
+const SEN_SLIDE = { wind: 'датчик ветра Somfy Eolis io', windSun: 'ветер + солнце Somfy Soliris io' };
+const SMART_SLIDE = { wifi: 'Somfy TaHoma Switch Pro (Wi-Fi, приложение, голос)' };
+const GUT_SLIDE = { bwhite: 'белая', brgbw: 'RGBW (белая + RGB)', cwhitergb: 'белая + RGB' };
 function byModule(ls) {
   const g = {};
   for (const l of ls) { const k = l.params.module + '|' + l.amount; g[k] = (g[k] || 0) + 1; }
@@ -1161,35 +1306,35 @@ function optDelta(patch) { const o = state.options[state.optIndex]; if (!o) retu
 function renderPergolaOptions() {
   const o = state.options[state.optIndex], po = state.po;
   if (!o) { $('popts').innerHTML = ''; return; }
-  const s500 = o.family !== 'S400';
+  const s500 = o.family !== 'S400', slide = o.family === 'SLIDE';
   const pr = (v) => v ? '+' + eur(v) : 'в цене';
-  const hs = s500 ? [2800, 3200] : [2800, 3000, 3200];
-  const heaters = cat.optionScalars.heaters[s500 ? 's500' : 's400'].sets;
+  const hs = heightsOf(o);
+  const heaters = cat.optionScalars.heaters[slide ? 'slide' : s500 ? 's500' : 's400'].sets;
   const ledN = po.ledLouvres ? po.ledLouvres.louvres : 5;
   const litItems = [po.ledLouvres, po.ledGutter, po.spots, po.lamps, po.crownSpots, po.verticalLamps].filter(Boolean).length;
   const litSum = optDelta({ ledLouvres: po.ledLouvres, ledGutter: po.ledGutter, spots: po.spots, lamps: po.lamps, crownSpots: po.crownSpots, verticalLamps: po.verticalLamps });
   const spotN = po.spots ? po.spots.louvres : 5, lampN = po.lamps ? po.lamps.louvres : 4, dbl = o.family === 'S500_DOUBLE';
   $('popts').innerHTML = `
-    <label>Высота стоек<select id="o-h">${hs.map((h) => `<option value="${h}" ${po.postHeight === h ? 'selected' : ''}>${h === 2800 ? 'до 2 800 мм — стандарт' : 'до ' + mm(h) + ' мм'} · ${pr(optDelta({ postHeight: h }))}</option>`).join('')}</select></label>
+    <label>Высота стоек<select id="o-h">${hs.map((h, i) => `<option value="${h}" ${po.postHeight === h ? 'selected' : ''}>${i === 0 ? 'до ' + mm(h) + ' мм — стандарт' : 'до ' + mm(h) + ' мм'} · ${pr(optDelta({ postHeight: h }))}</option>`).join('')}</select></label>
     <label>Доп. промежуточные стойки<select id="o-ip">${[0, 1, 2, 3, 4, 5, 6].map((k) => `<option value="${k}" ${po.intermediatePosts === k ? 'selected' : ''}>${k ? k + ' шт. · +' + eur(optDelta({ intermediatePosts: k, postHeight: po.postHeight }) - optDelta({ postHeight: po.postHeight })) : 'нет'}</option>`).join('')}</select></label>
     <details class="lightbox"${litItems ? ' open' : ''}><summary>Освещение${litItems ? ` · ${litItems} ${plural(litItems, 'вид', 'вида', 'видов')} · ${pr(litSum)}` : ' · нет'}</summary>
-    <label>Подсветка в ламелях<span class="row2"><select id="o-led"><option value="">нет</option>${Object.entries(LEDC).map(([k, t]) => `<option value="${k}" ${po.ledLouvres && po.ledLouvres.colour === k ? 'selected' : ''}>LED-лента ${t} · ${pr(optDelta({ ledLouvres: { colour: k, louvres: ledN } }))}</option>`).join('')}</select>
+    ${slide ? '' : `<label>Подсветка в ламелях<span class="row2"><select id="o-led"><option value="">нет</option>${Object.entries(LEDC).map(([k, t]) => `<option value="${k}" ${po.ledLouvres && po.ledLouvres.colour === k ? 'selected' : ''}>LED-лента ${t} · ${pr(optDelta({ ledLouvres: { colour: k, louvres: ledN } }))}</option>`).join('')}</select>
       <select id="o-ledn" aria-label="Ламелей с подсветкой">${[3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${ledN === n ? 'selected' : ''}>${o.family === 'S500_DOUBLE' ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
-    <label>Подсветка в желобе<select id="o-gut"><option value="">нет</option>${Object.entries(GUT).map(([k, t]) => `<option value="${k}" ${po.ledGutter === k ? 'selected' : ''}>${t} · ${pr(optDelta({ ledGutter: k }))}</option>`).join('')}</select></label>
-    <label>LED-споты в ламелях<span class="row2"><select id="o-spot"><option value="">нет</option>${[3, 4, 5].map((k) => `<option value="${k}" ${po.spots && po.spots.perLouvre === k ? 'selected' : ''}>${k} ${plural(k, 'спот', 'спота', 'спотов')} в ламели · ${pr(optDelta({ spots: { perLouvre: k, louvres: spotN } }))}</option>`).join('')}</select>
+    `}<label>Подсветка в желобе<select id="o-gut"><option value="">нет</option>${Object.entries(slide ? GUT_SLIDE : GUT).map(([k, t]) => `<option value="${k}" ${po.ledGutter === k ? 'selected' : ''}>${t} · ${pr(optDelta({ ledGutter: k }))}</option>`).join('')}</select></label>
+    ${slide ? '' : `<label>LED-споты в ламелях<span class="row2"><select id="o-spot"><option value="">нет</option>${[3, 4, 5].map((k) => `<option value="${k}" ${po.spots && po.spots.perLouvre === k ? 'selected' : ''}>${k} ${plural(k, 'спот', 'спота', 'спотов')} в ламели · ${pr(optDelta({ spots: { perLouvre: k, louvres: spotN } }))}</option>`).join('')}</select>
       <select id="o-spotn" aria-label="Ламелей со спотами">${[3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${spotN === n ? 'selected' : ''}>${dbl ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
     <label>LED-лампы в ламелях<span class="row2"><select id="o-lamp"><option value="">нет</option>${[2, 3, 4].map((k) => `<option value="${k}" ${po.lamps && po.lamps.perLouvre === k ? 'selected' : ''}>${k} ${plural(k, 'лампа', 'лампы', 'ламп')} в ламели · ${pr(optDelta({ lamps: { perLouvre: k, louvres: lampN } }))}</option>`).join('')}</select>
       <select id="o-lampn" aria-label="Ламелей с лампами">${[2, 3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${lampN === n ? 'selected' : ''}>${dbl ? n + '+' + n : n} ламел.</option>`).join('')}</select></span></label>
-    <label>LED-споты в раме, ${o.family === 'S400' ? 'на перголу' : 'на модуль'}<select id="o-crown"><option value="0">нет</option>${[8, 10, 12, 14, 16, 18, 20, 22, 24, 26].map((k) => `<option value="${k}" ${po.crownSpots === k ? 'selected' : ''}>${k} ${plural(k, 'спот', 'спота', 'спотов')} · ${pr(optDelta({ crownSpots: k }))}</option>`).join('')}</select></label>
+    <label>LED-споты в раме, ${o.family === 'S400' ? 'на перголу' : 'на модуль'}<select id="o-crown"><option value="0">нет</option>${[8, 10, 12, 14, 16, 18, 20, 22, 24, 26].map((k) => `<option value="${k}" ${po.crownSpots === k ? 'selected' : ''}>${k} ${plural(k, 'спот', 'спота', 'спотов')} · ${pr(optDelta({ crownSpots: k }))}</option>`).join('')}</select></label>`}
     ${s500 ? `<label>Вертикальные светильники на стойках<select id="o-vert"><option value="0">нет</option>${[2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => `<option value="${k}" ${po.verticalLamps === k ? 'selected' : ''}>${k} шт. · ${pr(optDelta({ verticalLamps: k }))}</option>`).join('')}</select></label>` : ''}
     </details>
-    <label>Датчики погоды<select id="o-sen"><option value="">нет</option>${Object.entries(SEN).map(([k, t]) => `<option value="${k}" ${po.sensors === k ? 'selected' : ''}>${t} · ${pr(optDelta({ sensors: k }))}</option>`).join('')}</select></label>
-    <label>Управление со смартфона<select id="o-smart"><option value="">нет (пульт перголы в цене)</option>${Object.entries(SMART).map(([k, t]) => `<option value="${k}" ${po.smart === k ? 'selected' : ''}>${t} · ${pr(optDelta({ smart: k }))}</option>`).join('')}</select></label>
+    <label>Датчики погоды<select id="o-sen"><option value="">нет</option>${Object.entries(slide ? SEN_SLIDE : Object.fromEntries(Object.entries(SEN).filter(([k]) => k !== 'windSun'))).map(([k, t]) => `<option value="${k}" ${po.sensors === k ? 'selected' : ''}>${t} · ${pr(optDelta({ sensors: k }))}</option>`).join('')}</select></label>
+    <label>Управление со смартфона<select id="o-smart"><option value="">нет (пульт перголы в цене)</option>${Object.entries(slide ? SMART_SLIDE : SMART).map(([k, t]) => `<option value="${k}" ${po.smart === k ? 'selected' : ''}>${t} · ${pr(optDelta({ smart: k }))}</option>`).join('')}</select></label>
     <label>Обогреватели<span class="row2"><select id="o-heat"><option value="">нет</option>${heaters.map((h) => `<option value="${h.id}" ${po.heaters && po.heaters.set === h.id ? 'selected' : ''}>${h.name} · ${eur(h.price)}</option>`).join('')}</select>
       <input type="number" id="o-heatq" min="1" max="12" value="${po.heaters ? po.heaters.qty : 1}" aria-label="Количество комплектов"></span></label>
     <span class="chk"><input type="checkbox" id="o-th" ${po.thermal ? 'checked' : ''}><label for="o-th" style="display:inline">Термовставка в ламелях — тише дождь, теплее</label><span class="pr">${pr(optDelta({ thermal: true }))}</span></span>
     <span class="chk"><input type="checkbox" id="o-au" ${po.audio ? 'checked' : ''}><label for="o-au" style="display:inline">Аудиосистема (2 колонки, Bluetooth)</label><span class="pr">${pr(optDelta({ audio: 1 }))}</span></span>
-    ${s500 ? `<label>Розетки в стойке: 230 В / USB<span class="row2" style="grid-template-columns:1fr 1fr"><input type="number" id="o-sp" min="0" max="8" value="${po.sockets.power}" aria-label="Розетки 230 В"><input type="number" id="o-su" min="0" max="8" value="${po.sockets.usb}" aria-label="USB-розетки"></span></label>` : ''}`;
+    ${s500 || slide ? `<label>Розетки в стойке: 230 В / USB<span class="row2" style="grid-template-columns:1fr 1fr"><input type="number" id="o-sp" min="0" max="8" value="${po.sockets.power}" aria-label="Розетки 230 В"><input type="number" id="o-su" min="0" max="8" value="${po.sockets.usb}" aria-label="USB-розетки"></span></label>` : ''}`;
 }
 $('popts').addEventListener('change', (e) => {
   const po = state.po, v = e.target.value, id = e.target.id;
@@ -1232,9 +1377,14 @@ $('lines').addEventListener('click', (e) => {
 $('lines').addEventListener('change', (e) => { const id = e.target.dataset.zctl; if (!id) return; state.zipCtl[id] = e.target.value; renderEstimate(); });
 function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(true); }
 $('mt-wall').onclick = () => setMount('wall'); $('mt-free').onclick = () => setMount('free');
+/** roof type: rotating louvres (S400 / S500) or sliding roof (Slide) — the layouts are searched only in that type */
+function setRoof(r) { state.roof = r; syncRoofButtons(); recompute(true); }
+function syncRoofButtons() { $('rf-rot').setAttribute('aria-pressed', state.roof !== 'sliding'); $('rf-slide').setAttribute('aria-pressed', state.roof === 'sliding'); }
+$('rf-rot').onclick = () => setRoof('rotating'); $('rf-slide').onclick = () => setRoof('sliding');
 let t; const onDims = () => { clearTimeout(t); t = setTimeout(() => { state.width = Number($('w').value) || 0; state.depth = Number($('d').value) || 0; recompute(true); }, 350); };
 $('w').addEventListener('input', onDims); $('d').addEventListener('input', onDims);
 $('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent = state.angle + '°'; applyAnim(); };
+$('sopen').oninput = (e) => { state.slideOpen = +e.target.value; sopenText(); applyAnim(); renderLabels(state.options[state.optIndex]); };
 $('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
 $('gopen').oninput = (e) => { for (const c of Object.values(state.glassCfg)) delete c.open; state.glassOpen = +e.target.value; $('gopenv').textContent = state.glassOpen === 0 ? 'закрыто' : state.glassOpen === 100 ? 'открыто' : state.glassOpen + '%'; applyAnim(); };
 function renderLouvreInfo(cur, alt) {
@@ -1245,6 +1395,7 @@ function renderLouvreInfo(cur, alt) {
     const d = alt.total - cur.total;
     t += d < 0 ? ` · если повернуть: <b>−${eur(-d)}</b>` : ` · если повернуть: +${eur(d)}`;
   } else if (!alt && cur) t += ' · повернуть нельзя: размер не собирается';
+  if (cur && cur.family === 'SLIDE') t += ` · Slide: ламели складываются к ${state.mount === 'wall' && cur.louvres === 'parallel' ? 'стене' : 'краю'}, пакет ≈ ${mm(slideStack(cur.modules[0]))} мм`;
   $('louv-info').innerHTML = t;
   $('louv-dir').disabled = !alt && !!cur;
 }
@@ -1305,7 +1456,7 @@ function applyColors() {
   srgbCol(M.fabric.color, state.colors.tone);
   fabricLook();
 }
-const pergolaSys = () => { const o = state.options[state.optIndex]; return o && o.family === 'S400' ? 'S400' : 'S500'; };
+const pergolaSys = () => { const o = state.options[state.optIndex]; return o ? famKey(o) : 'S500'; };
 function pctText(t) {
   const e = colorsEff();
   let p;

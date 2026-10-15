@@ -235,6 +235,52 @@
     },
   };
 
+  // Sliding roof (Slide) and the roof-type choice: texts added to every language
+  const EXTRA = {
+    de: {
+      roofT: 'Dach', roofRot: 'Drehbare Lamellen', roofSlide: 'Schiebedach',
+      roofRotD: 'Die Lamellen drehen sich (bis ca. 135°) – Licht und Luft nach Wunsch, das Dach bleibt über Ihnen.',
+      roofSlideD: 'Die Lamellen kippen und falten sich zur Seite zusammen – der Himmel wird frei.',
+      slideStack: (st, rest, side) => `Ganz geöffnet liegen die Lamellen gefaltet ${side}: ca. ${st} m, ${rest} m sind offen.`, sideWall: 'an der Hauswand', sideEdge: 'an einer Seite',
+      reqPosts: 'Zusätzliche Stützen (Tiefe über 6 m)', pergolaSlide: 'Lamellen-Schiebedach', part: 'Teil',
+      lightsSlide: { none: 'Kein Licht', bwhite: 'LED in der Rinne, warmweiß', brgbw: 'LED in der Rinne, RGBW', cwhitergb: 'LED in der Rinne, weiß + RGB' },
+      heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
+      windSun: 'Wind + Sonne', stackLbl: (v) => `Lamellen gefaltet: ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
+      reqPostH: 'Höhere Zusatzstützen',
+    },
+    en: {
+      roofT: 'Roof', roofRot: 'Rotating louvres', roofSlide: 'Sliding roof',
+      roofRotD: 'The louvres rotate (up to about 135°) – light and air as you like, the roof stays above you.',
+      roofSlideD: 'The louvres tilt and fold together to one side – the sky opens up.',
+      slideStack: (st, rest, side) => `Fully open, the folded louvres sit ${side}: about ${st} m, ${rest} m are open.`, sideWall: 'at the house wall', sideEdge: 'on one side',
+      reqPosts: 'Additional posts (depth over 6 m)', pergolaSlide: 'Sliding louvre roof', part: 'part',
+      lightsSlide: { none: 'No light', bwhite: 'LED in the gutter, warm white', brgbw: 'LED in the gutter, RGBW', cwhitergb: 'LED in the gutter, white + RGB' },
+      heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
+      windSun: 'Wind + sun', stackLbl: (v) => `louvres folded: ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
+      reqPostH: 'Taller additional posts',
+    },
+    ru: {
+      roofT: 'Крыша', roofRot: 'Поворотные ламели', roofSlide: 'Раздвижная крыша',
+      roofRotD: 'Ламели поворачиваются (примерно до 135°) – свет и воздух по желанию, крыша остаётся над вами.',
+      roofSlideD: 'Ламели наклоняются и складываются к одной стороне – открывается небо.',
+      slideStack: (st, rest, side) => `Полностью открытые ламели лежат пакетом ${side}: около ${st} м, открыто ${rest} м.`, sideWall: 'у стены дома', sideEdge: 'с одной стороны',
+      reqPosts: 'Дополнительные стойки (глубина больше 6 м)', pergolaSlide: 'Пергола с раздвижной крышей', part: 'часть',
+      lightsSlide: { none: 'Без света', bwhite: 'LED в желобе, тёплый белый', brgbw: 'LED в желобе, RGBW', cwhitergb: 'LED в желобе, белый + RGB' },
+      heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
+      windSun: 'Ветер + солнце', stackLbl: (v) => `ламели сложены: ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
+      reqPostH: 'Доп. стойки выше стандарта',
+    },
+  };
+  for (const [l, x] of Object.entries(EXTRA)) {
+    Object.assign(T[l], x);
+    T[l].fam.SLIDE = 'Slide';
+    T[l].sysName.SLIDE = T[l].sysName.S500;
+    T[l].weathers.windSun = x.windSun;
+    Object.assign(T[l].heats, x.heatsSlide);
+    T[l].opt.OPT_REQUIRED_POST_HEIGHT = x.reqPostH;
+    Object.assign(T[l].tb, { sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen });
+  }
+
   /* ---------- small helpers ---------- */
   const Store = { // storage adapter: browser storage for now (a persistent store is decided later)
     get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
@@ -257,12 +303,12 @@
   let step = 0, focusId = null, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
   const isCust = () => document.body.classList.contains('cust');
   const curOpt = () => state.options[state.optIndex];
-  const sysOf = (o) => (o.family === 'S400' ? 'S400' : 'S500');
+  const sysOf = (o) => famKey(o);
   const opsOf = (o) => (o ? openings(o, SPEC[sysOf(o)]) : []);
   const toast = (msg) => { const d = document.createElement('div'); d.className = 'f-toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
 
   /* ---------- configuration <-> link / storage ---------- */
-  const KEYS = ['mount', 'width', 'depth', 'louvres', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote'];
+  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote'];
   const prune = (v) => { // drop empty values so the link stays short
     if (Array.isArray(v)) return v.map(prune);
     if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) { const p = prune(x); if (p === null || p === undefined || p === '' || (typeof p === 'object' && !Array.isArray(p) && !Object.keys(p).length)) continue; o[k] = p; } return o; }
@@ -283,6 +329,8 @@
     $('w').value = state.width; $('d').value = state.depth;
     $('mt-wall').setAttribute('aria-pressed', state.mount === 'wall'); $('mt-free').setAttribute('aria-pressed', state.mount === 'free');
     $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular');
+    if (state.roof !== 'sliding') state.roof = 'rotating';
+    syncRoofButtons();
     const idx = s.optIndex || 0;
     recompute(false);
     if (idx && idx < state.options.length) choose(idx);
@@ -319,6 +367,9 @@
     let s = L().sides[side];
     if ((side === 'front' || side === 'back') && o && o.cols > 1) s += ' · ' + L().field + ' ' + (n + 1);
     if ((side === 'left' || side === 'right') && o && o.rows > 1) s += ' · ' + L().row + ' ' + (n + 1);
+    // a Slide side with a required post in the middle is two openings
+    const op = o && o.family === 'SLIDE' ? opsOf(o).find((x) => x.id === id) : null;
+    if (op && op.part) s += ' · ' + L().part + ' ' + op.part;
     return s;
   }
   // German colour names: the catalogue has English and Russian names; wood décors keep their catalogue names
@@ -333,7 +384,8 @@
     if (!o) return out;
     const sz = (w, h) => `${metres(w)} × ${metres(h)} ${t.m}`;
     for (const l of q().lines) {
-      if (l.k === 'module') out.push({ g: 'pergola', t: `${t.pergola} ${t.fam[l.fam]}`, d: sz(l.w, l.d), a: l.a });
+      if (l.k === 'module') out.push({ g: 'pergola', t: `${l.fam === 'SLIDE' ? t.pergolaSlide : t.pergola} ${t.fam[l.fam]}`, d: sz(l.w, l.d), a: l.a });
+      else if (l.k === 'reqPosts') out.push({ g: 'pergola', t: t.reqPosts, d: '× ' + l.qty, a: l.a });
       else if (l.k === 'moduleExtra') out.push({ g: 'pergola', t: `${t.pergola} – ${t.extra}`, d: '', a: l.a });
       else if (l.k === 'opt') {
         let d = '';
@@ -345,7 +397,9 @@
         if (l.code === 'OPT_LED_LOUVRES') d = p.colour === 'white' ? t.lights.white : p.colour === 'rgbw' ? t.lights.rgbw : 'RGB';
         if (l.code === 'OPT_SOCKET') d = (p.kind === 'usb' ? 'USB' : '230 V') + ' × ' + p.qty;
         if (l.code === 'OPT_INTERMEDIATE_POST') d = '× ' + p.qty;
-        const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST'].includes(l.code) ? 'pergola' : 'comfort';
+        if (l.code === 'OPT_REQUIRED_POST_HEIGHT') d = `≤ ${metres(p.height)} ${t.m} · × ${p.posts}`;
+        if (l.code === 'OPT_LED_GUTTER' && o.family === 'SLIDE') d = t.lightsSlide[p.type] || '';
+        const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST', 'OPT_REQUIRED_POST_HEIGHT'].includes(l.code) ? 'pergola' : 'comfort';
         out.push({ g, t: t.opt[l.code] || l.code, d, a: l.a });
       } else if (l.k === 'glass') out.push({ g: 'sides', t: `${t.fills.glass} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${l.panels} ${t.panelsW} · ${t.tints[l.glazing]} ${l.thick} mm`, a: l.a });
       else if (l.k === 'zip') { const f = cat.fabrics.collections.find((x) => x.id === l.fabric), f0 = l.swapFrom && cat.fabrics.collections.find((x) => x.id === l.swapFrom); out.push({ g: 'sides', t: `${t.fills.zip} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${f ? f.name + ' (OF ' + f.openness + ' %)' : ''}${f0 ? ' · ' + t.swapped(f.name, f0.name) : ''}`, a: l.a }); }
@@ -396,7 +450,7 @@
   function zipCtlCost(modeFor, brand = state.brand) {
     const o = curOpt(); if (!o) return null;
     const zips = opsOf(o).filter((x) => state.fills[x.id] === 'zip'); if (!zips.length) return 0;
-    const ok = DBCore.brandModes(brand, cat);
+    const ok = modesOf(brand);
     let sum = 0; const modes = [], sys = new Set();
     for (const op of zips) {
       const mode = modeFor(op.id); if (!ok.includes(mode)) return null;
@@ -405,7 +459,7 @@
       sum += r.best.motor.price; modes.push(mode); sys.add(o.family === 'S400' ? 'p' + o.modules.indexOf(op.mod) : 'all');
     }
     const opt = DBCore.priceOptions(o, poFor(o), cat);
-    return sum + DBCore.screenControlLines(modes, { brand, remote: brand === state.brand ? state.remote || undefined : undefined, wind: state.wind, windSensors: sys.size, customControls: state.custom.controls, pergolaChannels: o.modules.length + opt.channels }, cat).total;
+    return sum + DBCore.screenControlLines(modes, { brand, remote: brand === state.brand ? state.remote || undefined : undefined, wind: state.wind, windSensors: sys.size, customControls: state.custom.controls, pergolaChannels: o.family === 'SLIDE' ? undefined : o.modules.length + opt.channels }, cat).total;
   }
   /** keep the current motor brand if it can do these controls, else the cheapest brand that can (e.g. a wall button needs YOODA or Somfy) */
   function brandFor(modeFor) {
@@ -454,17 +508,21 @@
     h += `<div class="f-cards">
       <button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${t.wall}</b><span class="d">${t.wallD}</span></button>
       <button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${t.free}</b><span class="d">${t.freeD}</span></button></div>`;
+    // roof type: rotating louvres (S400 / S500) or the sliding roof (Slide), each with its lowest price for this size
+    const firstOf = (r) => DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[r] }, cat).options[0];
+    h += head(t.roofT, '') + two('rooft', ['rotating', 'sliding'].map((r) => { const x = firstOf(r); return { v: r, label: r === 'rotating' ? t.roofRot : t.roofSlide, pr: x ? t.from + ' ' + fe(gross(x.total)) : t.louvNa, off: !x && state.roof !== r }; }), state.roof, t);
+    h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${state.roof === 'sliding' ? t.roofSlideD : t.roofRotD}</p>`;
     const dim = (k, label, v) => `<div class="f-dim"><label for="f-${k}">${label}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="f-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
     h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
     const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6500, 3500], [8000, 4000]];
     h += `<div class="f-h3"><span>${t.presets}</span></div><div class="f-chips">${presets.map(([w, d]) => `<button type="button" class="f-chip" data-preset="${w}x${d}" aria-pressed="${state.width === w && state.depth === d}">${metres(w).replace(/,00|\.00/, '')} × ${metres(d).replace(/,00|\.00/, '')} ${t.m}</button>`).join('')}</div>`;
     // size problems: plain-language fix buttons
-    const r = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres }, cat);
+    const r = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: famFilter() }, cat);
     for (const s of r.suggestions) h += `<div class="f-note">${t.sugg[s.code] || s.code}${s.params && s.params.suggested ? ` <button type="button" class="f-link" data-fix="${s.code}" data-v="${s.params.suggested}">${t.suggFix(metres(s.params.suggested))}</button>` : ''}</div>`;
     if (!o) return h;
     // post height
-    const s500 = o.family !== 'S400', hs = s500 ? [2800, 3200] : [2800, 3000, 3200];
-    h += `<div class="f-h3"><span>${t.height}</span></div>` + two('h', hs.map((x) => ({ v: x, label: `≤ ${metres(x)} ${t.m}`, pr: x === 2800 ? t.heightStd : plusE(optDelta({ postHeight: x })) })), state.po.postHeight, t);
+    const hs = heightsOf(o);
+    h += `<div class="f-h3"><span>${t.height}</span></div>` + two('h', hs.map((x, i) => ({ v: x, label: `≤ ${metres(x)} ${t.m}`, pr: i === 0 ? t.heightStd : plusE(optDelta({ postHeight: x })) })), state.po.postHeight, t);
     // layout: recommended first, alternatives folded away
     const opts = state.options, cheapest = opts[0].total;
     const lay = (x, i) => {
@@ -477,9 +535,13 @@
     if (o.width !== state.width) h += `<div class="f-note">${t.snapped(metres(o.width), metres(state.width))}</div>`;
     if (o.depth !== state.depth) h += `<div class="f-note">${t.snapped(metres(o.depth), metres(state.depth))}</div>`;
     if (o.issues.some((i) => i.code === 'MULTI_ROW_ASSUMPTION')) h += `<div class="f-note">${t.multiRow}</div>`;
+    if (o.family === 'SLIDE') { // how much room the folded louvres take: the customer sees what stays open
+      const m = o.modules[0], st = slideStack(m), side = wall && m.louvreAxis === 'x' ? t.sideWall : t.sideEdge;
+      h += `<div class="f-tip"><span>${t.slideStack(metres(st), metres(m.projection - st - 2 * SPEC.SLIDE.post * 1000), side)}</span></div>`;
+    }
     // louvre direction: offer the cheaper one, explain the current one
     const other = state.louvres === 'parallel' ? 'perpendicular' : 'parallel';
-    const alt = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: other }, cat).options[0];
+    const alt = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: other, families: famFilter() }, cat).options[0];
     const dirTxt = state.louvres === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF);
     const dirName = (k) => { const s = k === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF); return s.charAt(0).toUpperCase() + s.slice(1); };
     const dirPrice = (k) => (k === state.louvres ? cheapest : alt ? alt.total : null);
@@ -527,21 +589,23 @@
   /* step 3: comfort */
   function stepComfort(t, o) {
     if (!o) return '';
-    const po = state.po, s500 = o.family !== 'S400';
+    const po = state.po, s500 = o.family !== 'S400', slide = o.family === 'SLIDE';
     // longer choices are a list (one row each, text left, price right); yes/no and counts stay short chips
     const card = (title, desc, chips, list = true) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div><div class="f-chips${list ? ' f-list' : ''}">${chips}</div>`;
     const chip = (attr, cur, label, delta) => `<button type="button" class="f-chip" ${attr} aria-pressed="${cur}">${esc(label)}${delta !== undefined ? `<span class="pr">${plusE(delta)}</span>` : ''}</button>`;
-    const lightCur = po.ledLouvres ? po.ledLouvres.colour : po.spots ? 'spots' : 'none';
-    const LIGHT = { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } };
+    // Slide has no lighting inside the louvres: light comes from the gutter
+    const lightCur = slide ? po.ledGutter || 'none' : po.ledLouvres ? po.ledLouvres.colour : po.spots ? 'spots' : 'none';
+    const LIGHT = slide ? { none: null, bwhite: { ledGutter: 'bwhite' }, brgbw: { ledGutter: 'brgbw' }, cwhitergb: { ledGutter: 'cwhitergb' } }
+      : { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } };
     let h = `<h2>${t.s3}</h2><p class="f-lead">${t.s3l}</p>`;
-    h += card(t.light, t.lightD, Object.entries(LIGHT).map(([k, p]) => chip(`data-light="${k}"`, lightCur === k, t.lights[k], p ? optDelta(p) : undefined)).join(''));
-    const heaters = cat.optionScalars.heaters[s500 ? 's500' : 's400'].sets.map((x) => x.id);
-    const heatList = ['m1.single', 'm1.pair', 'm1.double'].filter((k) => heaters.includes(k));
+    h += card(t.light, t.lightD, Object.entries(LIGHT).map(([k, p]) => chip(`data-light="${k}"`, lightCur === k, (slide ? t.lightsSlide : t.lights)[k], p ? optDelta(p) : undefined)).join(''));
+    const heaters = cat.optionScalars.heaters[slide ? 'slide' : s500 ? 's500' : 's400'].sets.map((x) => x.id);
+    const heatList = (slide ? ['s5.single', 's5.double'] : ['m1.single', 'm1.pair', 'm1.double']).filter((k) => heaters.includes(k));
     const heatCur = po.heaters ? po.heaters.set : 'none';
     if (heatCur !== 'none' && !heatList.includes(heatCur)) heatList.push(heatCur);
     h += card(t.heat, t.heatD, chip('data-heat="none"', heatCur === 'none', t.heats.none) + heatList.map((k) => chip(`data-heat="${k}"`, heatCur === k, t.heats[k] || t.heats.other, optDelta({ heaters: { set: k, qty: 1 } }))).join(''));
-    h += card(t.weather, t.weatherD, ['none', 'wind', 'set', 'multi'].map((k) => chip(`data-sensor="${k}"`, (po.sensors || 'none') === k, t.weathers[k], k === 'none' ? undefined : optDelta({ sensors: k }))).join(''));
-    h += card(t.app, t.appD, ['none', 'bluetooth', 'wifi'].map((k) => chip(`data-smart="${k}"`, (po.smart || 'none') === k, t.apps[k], k === 'none' ? undefined : optDelta({ smart: k }))).join(''));
+    h += card(t.weather, t.weatherD, (slide ? ['none', 'wind', 'windSun'] : ['none', 'wind', 'set', 'multi']).map((k) => chip(`data-sensor="${k}"`, (po.sensors || 'none') === k, t.weathers[k], k === 'none' ? undefined : optDelta({ sensors: k }))).join(''));
+    h += card(t.app, t.appD, (slide ? ['none', 'wifi'] : ['none', 'bluetooth', 'wifi']).map((k) => chip(`data-smart="${k}"`, (po.smart || 'none') === k, t.apps[k], k === 'none' ? undefined : optDelta({ smart: k }))).join(''));
     h += head(t.thermal, t.thermalD) + two('thermal', [{ v: '0', label: t.off, pr: '' }, { v: '1', label: t.on, pr: plusE(optDelta({ thermal: true })) }], po.thermal ? '1' : '0', t);
     h += head(t.audio, t.audioD) + two('audio', [{ v: '0', label: t.off, pr: '' }, { v: '1', label: t.on, pr: plusE(optDelta({ audio: 1 })) }], po.audio ? '1' : '0', t);
     if (s500) h += head(t.sockets, t.socketsD) + two('sock', [0, 1, 2, 4].map((n) => ({ v: String(n), label: n ? '× ' + n : t.off, pr: n ? plusE(optDelta({ sockets: { power: n, usb: 0 } })) : '' })), String(po.sockets.power), t);
@@ -672,7 +736,7 @@
     const comfort = lines.filter((l) => l.g === 'comfort').map((l) => l.t).join(', ') || t.none;
     const facts = [
       [t.qFacts.size, `${sizeText()} · ${state.mount === 'wall' ? t.wall : t.free}`],
-      [t.qFacts.model, `${t.pergola} ${t.fam[o.family]} · ${t.modules(o.modules.length)} (${o.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ')} ${t.m}) · ${t.posts(o.posts)}`],
+      [t.qFacts.model, `${o.family === 'SLIDE' ? t.pergolaSlide : t.pergola} ${t.fam[o.family]} · ${t.modules(o.modules.length)} (${o.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ')} ${t.m}) · ${t.posts(o.posts)}`],
       [t.qFacts.height, `≤ ${metres(state.po.postHeight)} ${t.m}`],
       [t.qFacts.sides, ops.length ? ops.map((x) => `${sideLabel(x.id, o)}: ${t.fills[state.fills[x.id]]}`).join('; ') : t.open],
       [t.qFacts.colours, `${t.frame}: ${cname(e.construction)}${state.colors.roof ? '; ' + t.roof + ': ' + cname(e.roof) : ''}`],
@@ -736,6 +800,7 @@
     if (d.preset) { const [w, dd] = d.preset.split('x').map(Number); setDims(w, dd); return; }
     if (d.fix) { if (d.fix.startsWith('DEPTH')) setDims(state.width, Number(d.v)); else setDims(Number(d.v), state.depth); return; }
     if (d.h) { state.po.postHeight = Number(d.h); rebuild(); return; }
+    if (d.rooft) { if (d.rooft === state.roof) return; state.roof = d.rooft; syncRoofButtons(); keepCamera(() => recompute(false)); setView('iso'); return; }
     if (d.opt !== undefined) { choose(Number(d.opt)); return; }
     if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(false)); return; }
     if (d.zctlall || d.zctl) { // the motor brand follows the control if needed (see brandFor)
@@ -757,7 +822,13 @@
     if (d.of) { state.colors.fabric = fabricForOpenness(Number(d.of)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); return; }
     if (d.gl) { state.glass.type = d.gl; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); renderColors(); renderEstimate(); return; }
     const po = state.po;
-    if (d.light) { po.ledLouvres = null; po.spots = null; if (d.light === 'white' || d.light === 'rgbw') po.ledLouvres = { colour: d.light, louvres: 5 }; if (d.light === 'spots') po.spots = { perLouvre: 3, louvres: 5 }; rebuild(); return; }
+    if (d.light) {
+      po.ledLouvres = null; po.spots = null;
+      if (o && o.family === 'SLIDE') po.ledGutter = d.light === 'none' ? null : d.light; // Slide: LED in the gutter
+      if (d.light === 'white' || d.light === 'rgbw') po.ledLouvres = { colour: d.light, louvres: 5 };
+      if (d.light === 'spots') po.spots = { perLouvre: 3, louvres: 5 };
+      rebuild(); return;
+    }
     if (d.heat) { po.heaters = d.heat === 'none' ? null : { set: d.heat, qty: 1 }; rebuild(); return; }
     if (d.sensor) { po.sensors = d.sensor === 'none' ? null : d.sensor; rebuild(); return; }
     if (d.smart) { po.smart = d.smart === 'none' ? null : d.smart; rebuild(); return; }
@@ -809,7 +880,9 @@
   function translateToolbar() {
     const tb = isCust() ? L().tb : TB_RU;
     const setLabel = (id, txt) => { const lab = $(id).closest('label'); if (lab && lab.firstChild && lab.firstChild.nodeType === 3) lab.firstChild.nodeValue = txt + ' '; };
-    setLabel('ang', tb.ang); setLabel('drop', tb.drop); setLabel('gopen', tb.gopen);
+    setLabel('ang', tb.ang); setLabel('drop', tb.drop); setLabel('gopen', tb.gopen); setLabel('sopen', tb.sopen);
+    window.TB_TEXT = tb; sopenText();
+    window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
     cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night);
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
