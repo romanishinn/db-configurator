@@ -97,6 +97,15 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar #tb-colors .row button .sw { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #9aa4ab; flex: none; }
 .toolbar #tb-colors .row button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; color: #1c2226; font-weight: 600; }
 .toolbar #tb-colors .hint2 { font-size: 12px; color: #5b666e; }
+.toolbar #tb-colors .t .cur { text-transform: none; letter-spacing: 0; font-weight: 400; color: #1c2226; }
+.toolbar #tb-colors .row button.more { padding: 5px 10px; color: #2c6a86; border-style: dashed; }
+.toolbar #tb-colors .row button.more svg { width: 14px; height: 14px; transition: transform .15s; }
+.toolbar #tb-colors .row button.more[aria-expanded="true"] svg { transform: rotate(180deg); }
+.toolbar #tb-colors .more-list { display: grid; gap: 4px; padding: 6px 8px 8px; border: 1px solid #d5dbe0; border-radius: 10px; background: #fff; }
+.toolbar #tb-colors .more-list .g { font-size: 11px; color: #5b666e; }
+.toolbar #tb-colors .dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.toolbar #tb-colors .dots button { width: 30px; height: 30px; min-width: 0; padding: 0; border-radius: 50%; border: 1px solid #9aa4ab; }
+.toolbar #tb-colors .dots button[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2c6a86; }
 /* the sliders share one grid: caption | track | value, so the tracks line up */
 .toolbar label { display: grid; grid-template-columns: 92px 140px 64px; align-items: center; gap: 6px; }
 .toolbar label[hidden] { display: none; }
@@ -1644,43 +1653,60 @@ $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.
 /* icon row: "view" and "movement" open small panels above the toolbar; one at a time, a click elsewhere closes them */
 /* ---------- light: choose it right on the 3D and see it at once (evening, louvres closed, view from below) ---------- */
 /* ---------- colour on the 3D: glass tint and frame colour with one tap ---------- */
+let quickMore = null; // the part whose "more colours" list is open in the colour panel
 function renderColorQuick() {
   // every element that is on the pergola now, in this order: glass, frame, louvres, ZIP box + guides (+ fabric shade),
-  // profiles of the sliding systems; "as frame" keeps a part linked to the frame colour
-  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла, ламельной стены, панелей', asFrame: 'как рама', noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
+  // profiles of the sliding systems; "as frame" keeps a part linked to the frame colour.
+  // Short by default: as frame + the standard colours (+ the chosen one); the rest of the palette opens under "More colours".
+  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла, ламельной стены, панелей', asFrame: 'как рама', more: 'Другие цвета', groups: Object.fromEntries(GROUPS), noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
   const fills = Object.values(state.fills), e = colorsEff(), std = PALETTE.filter((c) => c.group === 'standard');
   const name = window.COLOR_NAME || ((c) => (c.custom ? c.nameRu : c.id + ' ' + c.nameRu));
   const sw = (attr, k, bg, label, cur, extra = '') => `<button type="button" ${attr}="${k}" ${extra} aria-pressed="${cur}"><span class="sw" style="background:${bg}"></span>${label}</button>`;
-  const colourRow = (key) => {
-    const linked = key !== 'construction' && !state.colors[key], cur = colorOf(e[key]);
-    const list = std.some((c) => c.id === cur.id) || cur.custom ? std : [...std, cur];
+  const head = (title, cur) => `<div class="t">${title}${cur ? `<span class="cur"> · ${cur}</span>` : ''}</div>`;
+  const colourBlock = (key, title) => {
+    const linked = key !== 'construction' && !state.colors[key], cur = colorOf(e[key]), open = quickMore === key;
+    const list = std.some((c) => c.id === cur.id) || cur.custom || linked ? std : [...std, cur];
     let r = key !== 'construction' ? sw('data-qcol', '', swatchBg(colorOf(e.construction)), tx.asFrame, linked, `data-part="${key}"`) : '';
     r += list.map((c) => sw('data-qcol', c.id, swatchBg(c), name(c), !linked && e[key] === c.id, `data-part="${key}"`)).join('');
-    return `<div class="row">${r}</div>`;
+    r += `<button type="button" class="more" data-qmore="${key}" aria-expanded="${open}">${tx.more} <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+    let more = '';
+    if (open) {
+      const grp = tx.groups || {};
+      more = `<div class="more-list">${GROUPS.filter(([g]) => g !== 'standard').map(([g, t]) => `<div class="g">${grp[g] || t}</div><div class="dots">${PALETTE.filter((c) => c.group === g).map((c) =>
+        `<button type="button" data-qcol="${c.id}" data-part="${key}" style="background:${swatchBg(c)}" title="${name(c)}" aria-label="${name(c)}" aria-pressed="${!linked && e[key] === c.id}"></button>`).join('')}</div>`).join('')}</div>`;
+    }
+    return head(title, linked ? tx.asFrame : name(cur)) + `<div class="row">${r}</div>` + more;
   };
   let h = '';
-  if (fills.includes('glass')) h += `<div class="t">${tx.glass}</div><div class="row">${Object.entries(GLAZING).map(([k, g]) => sw('data-gtint', k, '#' + g.col.toString(16).padStart(6, '0'), tx.tints[k] || k, state.glass.type === k)).join('')}</div>`;
-  h += `<div class="t">${tx.frame}</div>` + colourRow('construction');
-  h += `<div class="t">${tx.roof}</div>` + colourRow('roof');
+  if (fills.includes('glass')) h += head(tx.glass) + `<div class="row">${Object.entries(GLAZING).map(([k, g]) => sw('data-gtint', k, '#' + g.col.toString(16).padStart(6, '0'), tx.tints[k] || k, state.glass.type === k)).join('')}</div>`;
+  h += colourBlock('construction', tx.frame);
+  h += colourBlock('roof', tx.roof);
   if (fills.includes('zip')) {
-    h += `<div class="t">${tx.zip}</div>` + colourRow('zip');
+    h += colourBlock('zip', tx.zip);
     // fabric of the ZIP screens: openness (how much you see through), the cheapest collection that is made this size
     const curOf = fabricOf().openness, ofNames = tx.ofName || OF_NAME;
-    h += `<div class="t">${tx.fabricOf || 'Ткань ZIP'}</div><div class="row">${opennessList().map((of) => `<button type="button" data-qof="${of}" aria-pressed="${curOf === of}">${of} % · ${ofNames[of] || ''}</button>`).join('')}</div>`;
-    h += `<div class="t">${tx.fabric}</div><div class="row">${FABRIC_TONES.map(([hx, n], i) => sw('data-tone', hx, hx, (tx.toneNames && tx.toneNames[i]) || n, state.colors.tone === hx)).join('')}</div>`;
+    h += head(tx.fabricOf || 'Ткань ZIP') + `<div class="row">${opennessList().map((of) => `<button type="button" data-qof="${of}" aria-pressed="${curOf === of}">${of} % · ${ofNames[of] || ''}</button>`).join('')}</div>`;
+    const ti = FABRIC_TONES.findIndex((x) => x[0] === state.colors.tone), tn = (i) => (tx.toneNames && tx.toneNames[i]) || FABRIC_TONES[i][1];
+    h += head(tx.fabric, ti >= 0 ? tn(ti) : '') + `<div class="dots">${FABRIC_TONES.map(([hx], i) => `<button type="button" data-tone="${hx}" style="background:${hx}" title="${tn(i)}" aria-label="${tn(i)}" aria-pressed="${state.colors.tone === hx}"></button>`).join('')}</div>`;
   }
-  if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels')) h += `<div class="t">${tx.slide}</div>` + colourRow('slide');
+  if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels')) h += colourBlock('slide', tx.slide);
   $('tb-colors').innerHTML = h;
 }
 $('tb-colors').addEventListener('click', (e) => {
+  const m = e.target.closest('[data-qmore]');
+  if (m) {
+    quickMore = quickMore === m.dataset.qmore ? null : m.dataset.qmore; renderColorQuick();
+    const l = $('tb-colors').querySelector('.more-list'); if (l) l.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return;
+  }
   const g = e.target.closest('[data-gtint]'), c = e.target.closest('[data-qcol]'), t = e.target.closest('[data-tone]'), of = e.target.closest('[data-qof]');
   if (of) { state.colors.fabric = fabricForOpenness(Number(of.dataset.qof)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); renderColorQuick(); return; }
   if (g) { state.glass.type = g.dataset.gtint; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); applyAnim(); renderColors(); renderEstimate(); }
   if (c) { if (c.dataset.qcol) setColor(c.dataset.part, c.dataset.qcol); else { state.colors[c.dataset.part] = null; applyColors(); renderColors(); renderEstimate(); } }
   if (t) { state.colors.tone = t.dataset.tone; applyColors(); renderColors(); if (typeof window.onEstimate === 'function') window.onEstimate(); }
-  if (g || c || t) renderColorQuick();
+  if (g || c || t) { const top = $('tb-colors').scrollTop; renderColorQuick(); $('tb-colors').scrollTop = top; }
 });
-$('tb-color').onclick = () => { renderColorQuick(); togglePop($('tb-color'), $('tb-colors')); };
+$('tb-color').onclick = () => { quickMore = null; renderColorQuick(); togglePop($('tb-color'), $('tb-colors')); };
 const LIGHT_SETS = {
   rotating: { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } },
   slide: { none: null, bwhite: { ledGutter: 'bwhite' }, brgbw: { ledGutter: 'brgbw' }, cwhitergb: { ledGutter: 'cwhitergb' } },
