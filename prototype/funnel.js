@@ -247,7 +247,7 @@
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `gefaltet ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
-      tbColor: 'Farbe', tbColorT: 'Glas- und Rahmenfarbe', noGlass: 'Erscheint, sobald eine Seite Glas hat', tbLight: 'Licht', tbUnder: 'Von unten', ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
+      ctaS: 'Tippen Sie auf ＋, um eine Seite zu schließen', tbColor: 'Farbe', tbColorT: 'Glas- und Rahmenfarbe', noGlass: 'Erscheint, sobald eine Seite Glas hat', tbLight: 'Licht', tbUnder: 'Von unten', ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'ohne zweiten Sender – Empfangsmodul in der Stütze', remote: 'kleiner zusätzlicher Handsender nur für die Screens', smart: 'per App am Smartphone, auch unterwegs', switch: 'fester Taster an der Wand, nur mit YOODA- oder Somfy-Motoren', solar: 'Motor mit Solarpanel, kein Stromkabel, eigener Handsender' },
       photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Ziehen Sie die 4 Punkte dorthin, wo die Stützen stehen sollen: 1 und 2 an der Hauswand (links, rechts), 3 und 4 vorne. Die Pergola stellt sich in die Perspektive des Fotos. Das Foto bleibt in Ihrem Browser.', photoBad: 'Punkte vertauscht: 1 und 2 an der Wand links und rechts, 3 und 4 vorne rechts und links.', photoPts: 'Punkte', photoHelpS: '4 Punkte auf die Ecken der Pergola ziehen', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
     },
@@ -261,7 +261,7 @@
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `folded ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
-      tbColor: 'Colour', tbColorT: 'Glass and frame colour', noGlass: 'Appears once a side has glass', tbLight: 'Light', tbUnder: 'From below', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
+      ctaS: 'Tap ＋ to close a side', tbColor: 'Colour', tbColorT: 'Glass and frame colour', noGlass: 'Appears once a side has glass', tbLight: 'Light', tbUnder: 'From below', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'no second remote – receiver module in the post', remote: 'small extra remote just for the screens', smart: 'with the smartphone app, also when away', switch: 'fixed push button on the wall, only with YOODA or Somfy motors', solar: 'motor with solar panel, no power cable, own remote' },
       photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Drag the 4 points to where the posts will stand: 1 and 2 at the house wall (left, right), 3 and 4 at the front. The pergola takes the perspective of the photo. The photo stays in your browser.', photoBad: 'Points mixed up: 1 and 2 at the wall left and right, 3 and 4 at the front right and left.', photoPts: 'Points', photoHelpS: 'Drag the 4 points to the pergola corners', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
     },
@@ -275,7 +275,7 @@
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `сложены ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
-      tbColor: 'Цвет', tbColorT: 'Цвет стекла и рамы', noGlass: 'Появится, когда закроете сторону стеклом', tbLight: 'Свет', tbUnder: 'Снизу', ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
+      ctaS: 'Нажмите ＋, чтобы закрыть сторону', tbColor: 'Цвет', tbColorT: 'Цвет стекла и рамы', noGlass: 'Появится, когда закроете сторону стеклом', tbLight: 'Свет', tbUnder: 'Снизу', ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
       ctlH: { pergola: 'без второго пульта – приёмный блок в стойке', remote: 'небольшой отдельный пульт только для скринов', smart: 'через приложение в смартфоне, и вне дома', switch: 'кнопка на стене, только с моторами YOODA или Somfy', solar: 'мотор с солнечной панелью, без кабеля, свой пульт' },
       photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Перетащите 4 точки туда, где будут стоять стойки: 1 и 2 – у стены дома (слева и справа), 3 и 4 – впереди. Пергола сама встанет в перспективу фото. Фото остаётся в вашем браузере.', photoBad: 'Точки перепутаны: 1 и 2 – у стены слева и справа, 3 и 4 – впереди справа и слева.', photoPts: 'Точки', photoHelpS: 'Перетащите 4 точки на углы перголы', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
@@ -456,8 +456,9 @@
   function bar(t, o) {
     const total = q().total, ok = !!o && total > 0;
     const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
-    const nextLabel = step === 3 ? t.toOffer : step === 4 ? t.send : t.next + ': ' + t.steps[step + 1];
-    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1">${t.back}</button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${esc(nextLabel)}${step < 4 ? ' →' : ''}</button></div>`;
+    // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
+    const nextLabel = step === 3 ? esc(t.toOffer) : step === 4 ? esc(t.send) : esc(t.next) + `<span class="nx">: ${esc(t.steps[step + 1])}</span>`;
+    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 4 ? ' →' : ''}</button></div>`;
   }
 
   /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
@@ -948,7 +949,7 @@
   let hsSig = '';
   function renderHotspots() {
     const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
-    CTA.hidden = anyFill || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span>${esc(L().cta)}`;
+    CTA.hidden = anyFill || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span><span class="l">${esc(L().cta)}</span><span class="s">${esc(L().ctaS)}</span>`;
     const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || 'none')).join(',') + '|' + (focusId || '');
     if (sig === hsSig) return; hsSig = sig;
     HS.innerHTML = ops.map((x) => {

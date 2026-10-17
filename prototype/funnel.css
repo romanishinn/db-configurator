@@ -254,3 +254,16 @@ body.cust #hint { display: none !important; }
   .fc-done { position: sticky; bottom: 0; margin: 10px 0 0; box-shadow: 0 -8px 10px var(--panel); }
   #f-cta { font-size: 11.5px; padding: 5px 10px 5px 8px; top: 6px; }
 }
+
+/* phones: the hint over the 3D is one short line; the bottom bar keeps the price whole */
+#f-cta .s, .f-bar .back .ar { display: none; }
+@media (max-width: 760px) {
+  #f-cta { font-size: 12px; padding: 5px 12px 5px 8px; top: 6px; gap: 6px; }
+  #f-cta .l { display: none; } #f-cta .s { display: inline; }
+  #f-cta .hand { font-size: 14px; }
+}
+@media (max-width: 420px) {
+  .f-bar .next .nx { display: none; }
+  .f-bar .back .bk { display: none; } .f-bar .back .ar { display: inline; }
+  body.cust .f-bar .back { padding: 10px 14px; font-size: 18px; line-height: 1; }
+}
