@@ -40,7 +40,7 @@
       cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Lamellenwand', hsOpen: 'Seite wählen',
       notMade: 'In dieser Größe nicht lieferbar – andere Variante wählen.', zipFabricOnly: (s) => `In dieser Größe nur mit Stoff ${s} – oben bei „Stoff der ZIP-Screens“ wählen.`, zipMax: (m, ax) => `ZIP-Screens gibt es bis ${m} m ${ax === 'height' ? 'Höhe' : 'Breite'}.`, swapped: (a, b) => `Stoff ${a} statt ${b} – ${b} gibt es nicht so groß`, later: 'Preis auf Anfrage',
       fabric: 'Stoff der ZIP-Screens', ofName: { 14: 'Luftig, viel Durchsicht', 5: 'Sonnen- und Sichtschutz', 4: 'Sicht- und Sonnenschutz, etwas dichter', 1: 'Fast blickdicht', 0: 'Verdunkelung' },
-      perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.', ctlT: 'Bedienung der Screens', ctlD: 'alle Screens mit Motor', ctlM: { pergola: 'Mit der Pergola-Fernbedienung', remote: 'Eigene Funk-Fernbedienung', smart: 'Smartphone-App', switch: 'Taster an der Wand', solar: 'Solar, ohne Stromkabel' }, cardQ: 'Was kommt auf diese Seite?', done: 'Fertig', thisScreen: 'Bedienung dieses Screens',
+      perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.', ctlT: 'Bedienung der Screens', ctlD: 'alle Screens mit Motor', ctlM: { pergola: 'Mit der Pergola-Fernbedienung', remote: 'Separate Fernbedienung', smart: 'Smartphone-App', switch: 'Schalter an der Wand', solar: 'Solar, ohne Stromkabel' }, ctlStd: 'Standard', cardQ: 'Was kommt auf diese Seite?', done: 'Fertig', thisScreen: 'Bedienung dieses Screens',
       glassTint: 'Glas', tints: { float: 'Klar', diamant: 'Extraklar', milk: 'Milchglas', brown: 'Bronze', graphite: 'Graphit', black: 'Schwarz', mirror: 'Spiegel' }, tintNa: 'nur 10 mm',
       // step 3
       s3: 'Was macht es gemütlich?', s3l: 'Alles optional. Wählen Sie nur, was Sie wirklich nutzen werden – nachrüsten ist bei vielem später schwieriger.',
@@ -116,7 +116,7 @@
       cta: 'Tap a ＋ to close a side – ZIP screen, glass or louvre wall', hsOpen: 'Choose side',
       notMade: 'Not available in this size – please choose another option.', zipFabricOnly: (s) => `In this size only with fabric ${s} – choose it under “ZIP screen fabric” above.`, zipMax: (m, ax) => `ZIP screens are made up to ${m} m ${ax === 'height' ? 'high' : 'wide'}.`, swapped: (a, b) => `fabric ${a} instead of ${b} – ${b} is not made this large`, later: 'price on request',
       fabric: 'ZIP screen fabric', ofName: { 14: 'Airy, lots of view', 5: 'Sun and privacy', 4: 'Sun and privacy, a little denser', 1: 'Almost opaque', 0: 'Blackout' },
-      perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.', ctlT: 'Screen control', ctlD: 'all screens are motorised', ctlM: { pergola: 'With the pergola remote', remote: 'Separate radio remote', smart: 'Smartphone app', switch: 'Wall push button', solar: 'Solar, no power cable' }, cardQ: 'What goes on this side?', done: 'Done', thisScreen: 'Control of this screen',
+      perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.', ctlT: 'Screen control', ctlD: 'all screens are motorised', ctlM: { pergola: 'With the pergola remote', remote: 'Separate remote', smart: 'Smartphone app', switch: 'Wall switch', solar: 'Solar, no power cable' }, ctlStd: 'standard', cardQ: 'What goes on this side?', done: 'Done', thisScreen: 'Control of this screen',
       glassTint: 'Glass', tints: { float: 'Clear', diamant: 'Extra clear', milk: 'Frosted', brown: 'Bronze', graphite: 'Graphite', black: 'Black', mirror: 'Mirror' }, tintNa: '10 mm only',
       s3: 'What makes it cosy?', s3l: 'All optional. Pick only what you will really use – many things are harder to add later.',
       light: 'Light', lightD: 'For evenings outside', lights: { none: 'No light', white: 'LED strip, warm white', rgbw: 'LED strip, colour (RGBW)', spots: 'LED spots' },
@@ -188,7 +188,7 @@
       cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или ламельная стена', hsOpen: 'Выбрать сторону',
       notMade: 'В таком размере не производится – выберите другой вариант.', zipFabricOnly: (s) => `В таком размере только с тканью ${s} – выберите её выше в «Ткань ZIP-скринов».`, zipMax: (m, ax) => `ZIP-скрины делают до ${m} м по ${ax === 'height' ? 'высоте' : 'ширине'}.`, swapped: (a, b) => `ткань ${a} вместо ${b} – ${b} не делают такого размера`, later: 'цена по запросу',
       fabric: 'Ткань ZIP-скринов', ofName: { 14: 'Лёгкая, хорошо видно наружу', 5: 'От солнца и взглядов', 4: 'От солнца и взглядов, чуть плотнее', 1: 'Почти непрозрачная', 0: 'Блэкаут' },
-      perM2: '€/м²', zipCtl: 'Управление с пульта перголы.', ctlT: 'Управление скринами', ctlD: 'все скрины с мотором', ctlM: { pergola: 'С пульта перголы', remote: 'Отдельный радиопульт', smart: 'Приложение на телефоне', switch: 'Кнопка на стене', solar: 'Солнечная батарея, без кабеля' }, cardQ: 'Что поставить на эту сторону?', done: 'Готово', thisScreen: 'Управление этим скрином',
+      perM2: '€/м²', zipCtl: 'Управление с пульта перголы.', ctlT: 'Управление скринами', ctlD: 'все скрины с мотором', ctlM: { pergola: 'С пульта перголы', remote: 'Отдельный пульт', smart: 'Приложение на телефоне', switch: 'Выключатель на стене', solar: 'Солнечная батарея, без кабеля' }, ctlStd: 'стандарт', cardQ: 'Что поставить на эту сторону?', done: 'Готово', thisScreen: 'Управление этим скрином',
       glassTint: 'Стекло', tints: { float: 'Прозрачное', diamant: 'Особо прозрачное', milk: 'Матовое', brown: 'Бронза', graphite: 'Графит', black: 'Чёрное', mirror: 'Зеркальное' }, tintNa: 'только 10 мм',
       s3: 'Что сделает уютнее?', s3l: 'Всё по желанию. Выбирайте только то, чем будете пользоваться, – многое потом добавить сложнее.',
       light: 'Свет', lightD: 'Для вечеров на террасе', lights: { none: 'Без света', white: 'LED-лента, тёплый белый', rgbw: 'LED-лента, цветная (RGBW)', spots: 'LED-споты' },
@@ -474,21 +474,22 @@
   }
   /** keep the current motor brand if it can do these controls, else the cheapest brand that can (e.g. a wall button needs YOODA or Somfy) */
   function brandFor(modeFor) {
-    if (state.brand !== 'custom' && zipCtlCost(modeFor, state.brand) != null) return { brand: state.brand, cost: zipCtlCost(modeFor, state.brand) };
+    // customers: always back to the standard motors (WIN CONTROL) when they can do it — a wall switch must not leave
+    // the cheaper YOODA motors behind after the customer returns to the pergola remote
+    const pref = isCust() ? 'wincontrol' : state.brand;
+    if (pref !== 'custom' && zipCtlCost(modeFor, pref) != null) return { brand: pref, cost: zipCtlCost(modeFor, pref) };
     let best = null;
     for (const br of DBCore.MOTOR_BRANDS.filter((x) => x !== 'custom')) { const c = zipCtlCost(modeFor, br); if (c != null && (!best || c < best.cost)) best = { brand: br, cost: c }; }
     return best;
   }
-  const CTL_MODES = ['pergola', 'remote', 'smart', 'switch', 'solar'];
-  /** control choices as list rows: price difference to what is chosen now (all screens, or one screen in the side card) */
+  /** Customer view, kept simple: the screens run from the pergola remote as standard (the receiver unit comes with it);
+   *  the only alternatives are a wall switch or a separate remote. No motors, brands or price differences here —
+   *  the total at the bottom shows the price. App and solar control stay available in the Pro view. */
+  const CTL_MODES = ['pergola', 'switch', 'remote'];
   function ctlRows(t, attr, isCur, modeForOf, extra = '') {
-    const now = zipCtlCost((id) => ctlOf(id));
     return CTL_MODES.map((m) => {
-      const bf = brandFor(modeForOf(m)), c = bf ? bf.cost : null, cur = isCur(m), diff = c == null || now == null ? 0 : c - now;
-      if (c == null) return '';
-      const pr = cur ? '' : (diff > 0.5 ? '+' : diff < -0.5 ? '−' : '±') + fe(Math.abs(gross(diff)));
-      // the pergola remote is the recommended way: no second remote in the customer's hand
-      return `<button type="button" class="f-chip" ${attr}="${m}" ${extra} aria-pressed="${cur}"><span class="lbl"><span>${esc(t.ctlM[m])}${m === 'pergola' ? ` <span class="f-badge">${esc(t.recommended)}</span>` : ''}</span><small>${esc(t.ctlH[m])}</small></span><span class="pr">${esc(pr)}</span></button>`;
+      if (!brandFor(modeForOf(m))) return ''; // not possible here (e.g. no pergola remote on the sliding roof)
+      return `<button type="button" class="f-chip" ${attr}="${m}" ${extra} aria-pressed="${isCur(m)}">${esc(t.ctlM[m])}${m === 'pergola' ? ` <span class="f-badge">${esc(t.ctlStd)}</span>` : ''}</button>`;
     }).join('');
   }
   const zipIds = () => opsOf(curOpt()).filter((x) => state.fills[x.id] === 'zip').map((x) => x.id);
