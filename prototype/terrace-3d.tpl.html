@@ -1710,7 +1710,10 @@ $('tb-light').onclick = () => { renderLightPop(); togglePop($('tb-light'), $('tb
 $('tb-lights').addEventListener('click', (e) => { const b = e.target.closest('[data-light]'); if (b) setLight(b.dataset.light); });
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
-  // each panel opens and closes on its own button: the sliders stay open while the louvres or day/night are switched
+  // one panel at a time (view, movement, light, colour); the louvre and day/night buttons do not close it
+  if (open) for (const [b, p] of [['tb-view', 'tb-views'], ['tb-move', 'tb-sliders'], ['tb-light', 'tb-lights'], ['tb-color', 'tb-colors']]) {
+    if (p !== pop.id) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); }
+  }
   pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));
 }
 $('tb-view').onclick = () => togglePop($('tb-view'), $('tb-views'));
