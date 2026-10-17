@@ -56,7 +56,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .labels { position: absolute; inset: 0; pointer-events: none; }
 .dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 .dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
-.dim.stack { background: #2c6a86; color: #fff; }
+.dim.stack { background: #2c6a86; color: #fff; font-size: 10.5px; padding: 1px 4px; }
 /* the customer's own photo behind the 3D (canvas is transparent then) */
 .vp.photo { background: #222 center / cover no-repeat; }
 #photo-bar { position: absolute; left: 12px; right: 12px; top: 12px; z-index: 4; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: rgba(255,255,255,.94); color: #1c2226; border-radius: 10px; padding: 8px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.2); font-size: 12.5px; }
@@ -82,7 +82,7 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar #evening[aria-pressed="true"] .bulb { fill: #ffd36b; stroke: #ffd36b; }
 .toolbar #evening[aria-pressed="true"] { box-shadow: 0 0 12px rgba(255, 211, 107, .55); }
 /* panels open as a row under the icons, so they never cover the 3D picture */
-.toolbar .tb-pop { flex: 1 1 100%; background: var(--bg); border: 1px solid #d6dadd; border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; justify-content: start; }
+.toolbar .tb-pop { flex: 1 1 100%; color: #1c2226; background: #eef0f1; /* the toolbar stays light in dark mode too */ border: 1px solid #d6dadd; border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; justify-content: start; }
 .toolbar #tb-views { grid-auto-flow: column; gap: 6px; }
 .toolbar #tb-views button { padding: 6px 12px; }
 /* the sliders share one grid: caption | track | value, so the tracks line up */
@@ -1017,9 +1017,10 @@ function renderLabels(opt) {
   // sliding roof: how deep the folded louvres are (shown while the roof is open)
   if (opt.family === 'SLIDE' && state.slideOpen > 0) {
     const m = opt.modules[0], st = slideStack(m), k = state.slideOpen / 100;
-    const txt = (window.STACK_TEXT || ((v) => `ламели сложены: ${v} мм`))(mm(st));
-    const along = m.louvreAxis === 'x';
-    add(txt, along ? [W / 2, H + 0.12, m.y / 1000 + SPEC.SLIDE.post + (st / 1000) / 2] : [m.x / 1000 + SPEC.SLIDE.post + (st / 1000) / 2, H + 0.12, D / 2], k < 1 ? 'stack' : 'stack');
+    const txt = (window.STACK_TEXT || ((v) => `сложены ${v} мм`))(mm(st));
+    // small, on the ground beside the pergola at the level of the stack — like the dimensions, never over the roof
+    const along = m.louvreAxis === 'x', mid = SPEC.SLIDE.post + (st / 1000) / 2;
+    add(txt, along ? [W + 0.75, 0.02, m.y / 1000 + mid] : [m.x / 1000 + mid, 0.02, D + 0.6], 'stack');
   }
 }
 const v = new THREE.Vector3();
@@ -1597,7 +1598,7 @@ $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.
 /* icon row: "view" and "movement" open small panels above the toolbar; one at a time, a click elsewhere closes them */
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
-  for (const [b, p] of [[$('tb-view'), $('tb-views')], [$('tb-move'), $('tb-sliders')]]) { p.hidden = true; b.setAttribute('aria-expanded', 'false'); }
+  // each panel opens and closes on its own button: the sliders stay open while the louvres or day/night are switched
   pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));
 }
 $('tb-view').onclick = () => togglePop($('tb-view'), $('tb-views'));
