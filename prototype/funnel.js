@@ -6,8 +6,9 @@
 (() => {
   // ASSUMPTION: private customers in Austria, standard VAT 20 %. Catalogue prices are net suggested retail prices.
   const VAT = 0.2;
-  // TODO(D&B): office e-mail and phone for requests and the quote footer. While empty, the mail opens without a recipient.
-  const OFFICE = { name: 'D&B Solutions', email: '', phone: '', web: '' };
+  // TODO(office): office e-mail and phone for requests and the quote footer. While empty, the mail opens without a recipient.
+  // Brand hidden for a demo video: put the company name back into name to show it again (header, quote, tab title).
+  const OFFICE = { name: '', email: '', phone: '', web: '' };
   const CATALOGUE = '07/2026';
 
   const T = {
@@ -440,7 +441,7 @@
   function render() {
     if (!isCust()) return;
     const t = L(), o = curOpt();
-    const head = `<div class="f-head"><span class="f-brand">${esc(OFFICE.name)}</span><span class="sp"></span>
+    const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
       <span class="f-lang" role="group" aria-label="Language">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${k.toUpperCase()}</button>`).join('')}</span>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
     const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 4 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
@@ -766,7 +767,7 @@
     sentOk = true; render();
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
-  function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return 'DB-' + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
+  function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return (OFFICE.name ? 'DB-' : '') + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
   let lastImg = '';
   function snapshotImage() {
     // on the customer's photo: exactly what they set up (photo + pergola), no camera change
@@ -805,7 +806,7 @@
       return `<tr class="g"><td colspan="2">${esc(t.grp[g])}</td></tr>` + ls.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s"> · ${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(l.a)}</td></tr>`).join('');
     }).join('');
     const contact = [OFFICE.email, OFFICE.phone, OFFICE.web].filter(Boolean).join(' · ');
-    return `<div class="q"><div class="hdr"><div><div class="brand">${esc(OFFICE.name)}</div>${contact ? `<div style="font-size:9pt;color:#444">${esc(contact)}</div>` : ''}</div><div class="meta"><h1>${t.qTitle}</h1>${t.qNo} ${quoteNo()} · ${t.qDate} ${date}</div></div>
+    return `<div class="q"><div class="hdr"><div>${OFFICE.name ? `<div class="brand">${esc(OFFICE.name)}</div>` : ''}${contact ? `<div style="font-size:9pt;color:#444">${esc(contact)}</div>` : ''}</div><div class="meta"><h1>${t.qTitle}</h1>${t.qNo} ${quoteNo()} · ${t.qDate} ${date}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
       <h2>${t.qConfig}</h2><table class="facts"><tbody>${facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
       <div><h2>${t.qPrice}</h2><table><thead><tr><th>${t.qItem}</th><th class="a">${t.net}</th></tr></thead><tbody>${rows}
@@ -1012,7 +1013,7 @@
     renderLabels(curOpt());
     const hint = $('hint'); if (hint) hint.textContent = isCust() ? L().hint : HINT_RU;
     document.documentElement.lang = isCust() ? lang : 'ru';
-    document.title = isCust() ? `${OFFICE.name} – ${L().pergola}` : '3D-конфигуратор D&B';
+    document.title = isCust() ? (OFFICE.name ? `${OFFICE.name} – ${L().pergola}` : L().pergola) : '3D-конфигуратор';
   }
   function gopenText() { const tb = isCust() ? L().tb : TB_RU, v = state.glassOpen; $('gopenv').textContent = v === 0 ? tb.closed : v === 100 ? tb.open : v + '%'; }
   $('gopen').addEventListener('input', gopenText);
