@@ -832,7 +832,7 @@
     if (d.lang) { setLang(d.lang); return; }
     if (d.mode) { setMode(d.mode); return; }
     if (d.step !== undefined) { step = Number(d.step); focusId = null; render(); return; }
-    if (d.go) { if (d.go === 'form') { const f = F.querySelector('#f-form'); if (f) { f.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = f.querySelector('input'); if (i) setTimeout(() => i.focus({ preventScroll: true }), 400); } return; } go(Number(d.go)); return; }
+    if (d.go) { if (d.go === 'form') { const f = F.querySelector('#f-form'); if (f) { f.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = f.querySelector('input'); if (i) setTimeout(() => i.focus(), 400); } return; } go(Number(d.go)); return; }
     if (d.resume) { const s = resumeOffer; resumeOffer = null; if (d.resume === 'yes' && s) restore(s); else { dirty = true; render(); persist(); } return; }
     if (d.mount) { setMount(d.mount); return; }
     if (d.nudge) { const k = d.nudge, v = (k === 'w' ? state.width : state.depth) + Number(d.d); if (k === 'w') setDims(v, state.depth); else setDims(state.width, v); return; }
@@ -886,7 +886,7 @@
     if (d.roof === 'same') { state.colors.roof = null; applyColors(); renderColors(); renderEstimate(); return; }
     if (d.roofc) { state.colors.roof = d.roofc === state.colors.construction ? null : d.roofc; applyColors(); renderColors(); renderEstimate(); return; }
     if (d.tone) { state.colors.tone = d.tone; applyColors(); renderColors(); render(); return; }
-    if (d.act === 'form') { sentOk = false; render(); const f = F.querySelector('#f-form'); if (f) { f.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = f.querySelector('input'); if (i) setTimeout(() => i.focus({ preventScroll: true }), 400); } return; }
+    if (d.act === 'form') { sentOk = false; render(); const f = F.querySelector('#f-form'); if (f) { f.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = f.querySelector('input'); if (i) setTimeout(() => i.focus(), 400); } return; }
     if (d.act === 'print') { printQuote(); return; }
     if (d.act === 'photo') { $('photo-in').click(); return; }
     if (d.act === 'share') { copy(shareUrl(), L().copied); return; }
@@ -913,6 +913,14 @@
     if (el.id === 'f-file' && el.files && el.files[0]) { const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(el.files[0]); }
   });
   F.addEventListener('submit', (ev) => { ev.preventDefault(); sendRequest(); });
+  // phones: while typing, the 3D stops sticking to the top (with the keyboard open it would cover the form),
+  // and the field being typed in is brought into view above the keyboard
+  F.addEventListener('focusin', (ev) => {
+    if (!ev.target.matches('input:not([type=checkbox]):not([type=file]), textarea, select')) return;
+    document.body.classList.add('typing');
+    setTimeout(() => { if (document.activeElement === ev.target) ev.target.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
+  });
+  F.addEventListener('focusout', () => setTimeout(() => { if (!F.contains(document.activeElement) || !document.activeElement.matches('input, textarea, select')) document.body.classList.remove('typing'); }, 200));
 
   /* ---------- mode, language, toolbar ---------- */
   const TB_RU = T.ru.tb;

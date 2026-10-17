@@ -267,3 +267,5 @@ body.cust #hint { display: none !important; }
   .f-bar .back .bk { display: none; } .f-bar .back .ar { display: inline; }
   body.cust .f-bar .back { padding: 10px 14px; font-size: 18px; line-height: 1; }
 }
+
+@media (max-width: 760px) { body.cust.typing .stage { position: relative; } }
