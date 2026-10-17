@@ -745,9 +745,13 @@ function addFill(o, fill) {
       pm.position.set(0, o.h / 2, 0); pm.renderOrder = 1; node.add(pm);
       const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(pw - 0.012, o.h - 0.1, 0.012)), new THREE.LineBasicMaterial({ color: 0x2b2f31 }));
       edge.position.y = o.h / 2; node.add(edge);
-      // round pull handle on the panel edge (TYP-A, price list p.8): on the joint side of the panel
-      const hs = i % 2 ? -1 : 1, hd = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.012, 24), M.slide);
-      hd.rotation.x = Math.PI / 2; hd.position.set(hs * (pw / 2 - 0.09), o.h * 0.45, 0.03); node.add(hd);
+      // round pull handle (TYP-A, price list p.8) only on the leading panel — the one that is pulled — on its free edge:
+      // one-way: the panel farthest from the parking side; from the centre: the two middle panels
+      const lead = dbl ? (i === per - 1 ? 1 : i === per ? -1 : 0) : side > 0 ? (i === 0 ? -1 : 0) : (i === nP - 1 ? 1 : 0);
+      if (lead) {
+        const hd = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.012, 24), M.slide);
+        hd.rotation.x = Math.PI / 2; hd.position.set(lead * (pw / 2 - 0.09), o.h * 0.45, 0.03); node.add(hd);
+      }
       // direction chevron: one per moving panel, pointing where the panel will park
       const ch = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.16, 14), chevMat);
       ch.rotation.z = (parkX - x) >= 0 ? -Math.PI / 2 : Math.PI / 2; ch.position.set(0, o.h - 0.24, 0.05); ch.visible = Math.abs(parkX - x) > 0.01; node.add(ch);

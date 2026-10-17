@@ -247,7 +247,7 @@
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `gefaltet ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
-      ctaS: 'Tippen Sie auf ＋, um eine Seite zu schließen', tbColor: 'Farbe', tbColorT: 'Glas- und Rahmenfarbe', noGlass: 'Erscheint, sobald eine Seite Glas hat', tbLight: 'Licht', tbUnder: 'Von unten', ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
+      glTypT: 'Öffnung', glTyp: { ltr: 'nach rechts', rtl: 'nach links', center: 'aus der Mitte' }, glOpen: 'offen', ctaS: 'Tippen Sie auf ＋, um eine Seite zu schließen', tbColor: 'Farbe', tbColorT: 'Glas- und Rahmenfarbe', noGlass: 'Erscheint, sobald eine Seite Glas hat', tbLight: 'Licht', tbUnder: 'Von unten', ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'ohne zweiten Sender – Empfangsmodul in der Stütze', remote: 'kleiner zusätzlicher Handsender nur für die Screens', smart: 'per App am Smartphone, auch unterwegs', switch: 'fester Taster an der Wand, nur mit YOODA- oder Somfy-Motoren', solar: 'Motor mit Solarpanel, kein Stromkabel, eigener Handsender' },
       photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Ziehen Sie die 4 Punkte dorthin, wo die Stützen stehen sollen: 1 und 2 an der Hauswand (links, rechts), 3 und 4 vorne. Die Pergola stellt sich in die Perspektive des Fotos. Das Foto bleibt in Ihrem Browser.', photoBad: 'Punkte vertauscht: 1 und 2 an der Wand links und rechts, 3 und 4 vorne rechts und links.', photoPts: 'Punkte', photoHelpS: '4 Punkte auf die Ecken der Pergola ziehen', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
     },
@@ -261,7 +261,7 @@
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `folded ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
-      ctaS: 'Tap ＋ to close a side', tbColor: 'Colour', tbColorT: 'Glass and frame colour', noGlass: 'Appears once a side has glass', tbLight: 'Light', tbUnder: 'From below', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
+      glTypT: 'Opening', glTyp: { ltr: 'to the right', rtl: 'to the left', center: 'from the centre' }, glOpen: 'open', ctaS: 'Tap ＋ to close a side', tbColor: 'Colour', tbColorT: 'Glass and frame colour', noGlass: 'Appears once a side has glass', tbLight: 'Light', tbUnder: 'From below', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'no second remote – receiver module in the post', remote: 'small extra remote just for the screens', smart: 'with the smartphone app, also when away', switch: 'fixed push button on the wall, only with YOODA or Somfy motors', solar: 'motor with solar panel, no power cable, own remote' },
       photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Drag the 4 points to where the posts will stand: 1 and 2 at the house wall (left, right), 3 and 4 at the front. The pergola takes the perspective of the photo. The photo stays in your browser.', photoBad: 'Points mixed up: 1 and 2 at the wall left and right, 3 and 4 at the front right and left.', photoPts: 'Points', photoHelpS: 'Drag the 4 points to the pergola corners', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
     },
@@ -275,7 +275,7 @@
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `сложены ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
-      ctaS: 'Нажмите ＋, чтобы закрыть сторону', tbColor: 'Цвет', tbColorT: 'Цвет стекла и рамы', noGlass: 'Появится, когда закроете сторону стеклом', tbLight: 'Свет', tbUnder: 'Снизу', ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
+      glTypT: 'Открывание', glTyp: { ltr: 'слева направо', rtl: 'справа налево', center: 'из центра' }, glOpen: 'открыто', ctaS: 'Нажмите ＋, чтобы закрыть сторону', tbColor: 'Цвет', tbColorT: 'Цвет стекла и рамы', noGlass: 'Появится, когда закроете сторону стеклом', tbLight: 'Свет', tbUnder: 'Снизу', ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
       ctlH: { pergola: 'без второго пульта – приёмный блок в стойке', remote: 'небольшой отдельный пульт только для скринов', smart: 'через приложение в смартфоне, и вне дома', switch: 'кнопка на стене, только с моторами YOODA или Somfy', solar: 'мотор с солнечной панелью, без кабеля, свой пульт' },
       photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Перетащите 4 точки туда, где будут стоять стойки: 1 и 2 – у стены дома (слева и справа), 3 и 4 – впереди. Пергола сама встанет в перспективу фото. Фото остаётся в вашем браузере.', photoBad: 'Точки перепутаны: 1 и 2 – у стены слева и справа, 3 и 4 – впереди справа и слева.', photoPts: 'Точки', photoHelpS: 'Перетащите 4 точки на углы перголы', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
@@ -507,14 +507,19 @@
   }
   const zipIds = () => opsOf(curOpt()).filter((x) => state.fills[x.id] === 'zip').map((x) => x.id);
 
-  /** glass on one side: ← left · ○ closed · right → (double systems: closed / open) */
+  /** glass on one side: how it opens (left → right, right → left, from the centre) and closed / open.
+   *  "From the centre" is a two-way Win Glass system (the panels part in the middle); the others park on one side.
+   *  A way that this size is not made in is greyed out. */
+  const GLASS_TYP_ICON = { ltr: '⇥', rtl: '⇤', center: '⇹' };
+  function glassTyp(op) { const g = glassFor(op), cfg = glassCfg(op); return g.best && g.best.opening === 'double' ? 'center' : (cfg.side || state.glassSide) === 'left' ? 'rtl' : 'ltr'; }
   function glassPos(op, t) {
-    const g = glassFor(op), dbl = g.best && g.best.opening === 'double', cfg = glassCfg(op), side = cfg.side || state.glassSide;
+    const g = glassFor(op), cfg = glassCfg(op), typ = glassTyp(op);
+    const has = (o) => g.options.some((x) => x.opening === o);
     const isOpen = (cfg.open ?? state.glassOpen) > 0;
-    const gb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
-    return `<div class="sub2">${t.park}: ${dbl
-      ? gb('close', '○ ' + t.shut, !isOpen) + gb('both', t.parkBoth, isOpen)
-      : gb('left', t.parkL, isOpen && side === 'left') + gb('close', '○ ' + t.shut, !isOpen) + gb('right', t.parkR, isOpen && side === 'right')}</div>`;
+    const tb = (v, cur, ok) => `<button type="button" class="f-chip" data-gtyp="${v}" data-id="${op.id}" aria-pressed="${cur}" ${ok ? '' : 'disabled'}>${GLASS_TYP_ICON[v]} ${esc(t.glTyp[v])}</button>`;
+    const sb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
+    return `<div class="sub2">${t.glTypT}: ${tb('ltr', typ === 'ltr', has('single'))}${tb('rtl', typ === 'rtl', has('single'))}${tb('center', typ === 'center', has('double'))}</div>`
+      + `<div class="sub2" style="margin-top:6px">${t.park}: ${sb('close', '○ ' + t.shut, !isOpen)}${sb('open', '◫ ' + t.glOpen, isOpen)}</div>`;
   }
 
   /** two choices side by side; a third and more go into a dropdown ("More …") next to them */
@@ -848,9 +853,16 @@
     if (d.cardClose) { closeCard(); return; }
     if (d.fill) { if (d.fill === 'none') delete state.fills[d.id]; else state.fills[d.id] = d.fill; focusId = d.id; rebuild(); applyAnim(); return; }
     if (d.all) { for (const x of opsOf(o)) { if (d.all === 'none') delete state.fills[x.id]; else state.fills[x.id] = d.all; } rebuild(); applyAnim(); return; }
+    if (d.gtyp) { // opening type: the cheapest one-way system parking on that side, or the cheapest two-way system
+      const op = openingById(d.id); if (!op) return;
+      const g = glassFor(op), want = d.gtyp === 'center' ? 'double' : 'single';
+      const pick = g.options.filter((x) => x.opening === want).sort((a, b) => a.price - b.price)[0]; if (!pick) return;
+      setCfg(op, { variant: pick.table, ...(d.gtyp === 'center' ? {} : { side: d.gtyp === 'rtl' ? 'left' : 'right' }) });
+      build(); applyAnim(); renderEstimate(); render(); return;
+    }
     if (d.gpos) { // the glass slides to the chosen side, or closes the opening
       const op = openingById(d.id);
-      if (op) { setCfg(op, d.gpos === 'close' ? { open: 0 } : d.gpos === 'both' ? { open: 100 } : { side: d.gpos, open: 100 }); build(); applyAnim(); render(); }
+      if (op) { setCfg(op, d.gpos === 'close' ? { open: 0 } : d.gpos === 'both' || d.gpos === 'open' ? { open: 100 } : { side: d.gpos, open: 100 }); build(); applyAnim(); render(); }
       return;
     }
     if (d.of) { state.colors.fabric = fabricForOpenness(Number(d.of)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); return; }
