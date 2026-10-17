@@ -89,6 +89,14 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar #tb-lights[hidden] { display: none; }
 .toolbar #tb-lights button { padding: 7px 11px; }
 .toolbar #tb-lights button[aria-pressed="true"] { background: #2c6a86; border-color: #2c6a86; color: #fff; }
+.toolbar #tb-colors { display: grid; gap: 6px; }
+.toolbar #tb-colors[hidden] { display: none; }
+.toolbar #tb-colors .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
+.toolbar #tb-colors .row { display: flex; flex-wrap: wrap; gap: 6px; }
+.toolbar #tb-colors .row button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px 5px 5px; border-radius: 999px; }
+.toolbar #tb-colors .row button .sw { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #9aa4ab; flex: none; }
+.toolbar #tb-colors .row button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; color: #1c2226; font-weight: 600; }
+.toolbar #tb-colors .hint2 { font-size: 12px; color: #5b666e; }
 /* the sliders share one grid: caption | track | value, so the tracks line up */
 .toolbar label { display: grid; grid-template-columns: 92px 140px 64px; align-items: center; gap: 6px; }
 .toolbar label[hidden] { display: none; }
@@ -237,6 +245,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <button type="button" class="ib" id="tb-move" aria-expanded="false" aria-controls="tb-sliders" title="Движение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3zM12 12l8-4.7M12 12v9.2M12 12 4 7.3"/></svg><span class="cap">Движение</span></button>
         <button type="button" class="ib" id="evening" aria-pressed="false" title="День / ночь"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="bulb" d="M12 2.8a6.2 6.2 0 0 0-3.7 11.2c.7.5 1.1 1.3 1.1 2.1v.6h5.2v-.6c0-.8.4-1.6 1.1-2.1A6.2 6.2 0 0 0 12 2.8z"/><path d="M9.6 19.2h4.8M10.4 21.6h3.2"/></svg><span class="cap">Ночь</span></button>
         <button type="button" class="ib" id="tb-light" aria-expanded="false" aria-controls="tb-lights" title="Освещение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h18M5 6.5v2.2M19 6.5v2.2"/><path d="M8 10.5l-1.2 2.4M12 10.5v2.7M16 10.5l1.2 2.4" stroke-dasharray="1.6 1.4"/><circle cx="12" cy="17.5" r="2.6"/><path d="M12 13.2v1.7"/></svg><span class="cap">Свет</span></button>
+        <button type="button" class="ib" id="tb-color" aria-expanded="false" aria-controls="tb-colors" title="Цвет стекла и рамы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.6 1.9-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.6" cy="11" r="1.3"/><circle cx="10.5" cy="7.2" r="1.3"/><circle cx="15" cy="7.4" r="1.3"/></svg><span class="cap">Цвет</span></button>
         <button type="button" class="ib" id="tb-photo" hidden aria-pressed="false" title="Посмотреть перголу на фото своей террасы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8.2c0-1 .8-1.8 1.8-1.8h2.4l1.5-2.2h5.6l1.5 2.2h2.4c1 0 1.8.8 1.8 1.8v9.6c0 1-.8 1.8-1.8 1.8H5.3c-1 0-1.8-.8-1.8-1.8z"/><circle cx="12" cy="13" r="3.6"/></svg><span class="cap">Фото</span></button>
         <button type="button" class="ib pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span><span class="cap">Цвета</span></button>
       </div>
@@ -247,6 +256,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <button type="button" id="v-under">Снизу</button>
       </div>
       <div class="tb-pop" id="tb-lights" hidden></div>
+      <div class="tb-pop" id="tb-colors" hidden></div>
       <div class="tb-pop" id="tb-sliders" hidden>
         <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
         <label id="sopen-l" hidden>Крыша <input type="range" id="sopen" min="0" max="100" value="0"><span id="sopenv">закрыта</span></label>
@@ -587,6 +597,7 @@ function build() {
   applyAnim();
   renderLabels(opt);
   if (PHOTO.pts) applyPhotoCamera(); // a new size: the same 4 points, the pergola's real size → the camera again
+  if (!$('tb-colors').hidden) renderColorQuick(); // a side got glass: its tints appear in the open colour panel
 }
 
 /** Slide: required posts (engine: Composition.requiredPosts), post centres in metres. The same rule as the engine:
@@ -1628,6 +1639,25 @@ $('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 
 $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.setAttribute('aria-pressed', state.evening); applyAnim(); };
 /* icon row: "view" and "movement" open small panels above the toolbar; one at a time, a click elsewhere closes them */
 /* ---------- light: choose it right on the 3D and see it at once (evening, louvres closed, view from below) ---------- */
+/* ---------- colour on the 3D: glass tint and frame colour with one tap ---------- */
+function renderColorQuick() {
+  const box = $('tb-colors'), tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама', noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
+  const hasGlass = Object.values(state.fills).includes('glass');
+  const sw = (attr, k, bg, name, cur) => `<button type="button" ${attr}="${k}" aria-pressed="${cur}"><span class="sw" style="background:${bg}"></span>${name}</button>`;
+  let h = `<div class="t">${tx.glass}</div>`;
+  h += hasGlass ? `<div class="row">${Object.entries(GLAZING).map(([k, g]) => sw('data-gtint', k, '#' + g.col.toString(16).padStart(6, '0'), tx.tints[k] || k, state.glass.type === k)).join('')}</div>` : `<div class="hint2">${tx.noGlass}</div>`;
+  const e = colorsEff(), std = PALETTE.filter((c) => c.group === 'standard'), cur = colorOf(e.construction);
+  const list = std.some((c) => c.id === cur.id) || cur.custom ? std : [...std, cur];
+  h += `<div class="t">${tx.frame}</div><div class="row">${list.map((c) => sw('data-fcol', c.id, swatchBg(c), (window.COLOR_NAME || ((c) => c.nameRu))(c), e.construction === c.id)).join('')}</div>`;
+  box.innerHTML = h;
+}
+$('tb-color').onclick = () => { renderColorQuick(); togglePop($('tb-color'), $('tb-colors')); };
+$('tb-colors').addEventListener('click', (e) => {
+  const g = e.target.closest('[data-gtint]'), f = e.target.closest('[data-fcol]');
+  if (g) { state.glass.type = g.dataset.gtint; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); applyAnim(); renderColors(); renderEstimate(); }
+  if (f) setColor('construction', f.dataset.fcol);
+  renderColorQuick();
+});
 const LIGHT_SETS = {
   rotating: { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } },
   slide: { none: null, bwhite: { ledGutter: 'bwhite' }, brgbw: { ledGutter: 'brgbw' }, cwhitergb: { ledGutter: 'cwhitergb' } },
@@ -1650,8 +1680,7 @@ function setLight(k) {
     state.angle = 0; $('ang').value = 0; $('angv').textContent = '0°';
     if (slide) { state.slideOpen = 0; $('sopen').value = 0; sopenText(); }
   }
-  build(); applyAnim();
-  if (k !== 'none' && !PHOTO.pts) setView('under');
+  build(); applyAnim(); // the camera stays where the customer had it
   renderEstimate(); renderPergolaOptions(); renderLightPop();
 }
 $('tb-light').onclick = () => { renderLightPop(); togglePop($('tb-light'), $('tb-lights')); };
