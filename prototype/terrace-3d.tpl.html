@@ -59,12 +59,21 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .dim.stack { background: #2c6a86; color: #fff; }
 /* the customer's own photo behind the 3D (canvas is transparent then) */
 .vp.photo { background: #222 center / cover no-repeat; }
-#photo-bar { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 4; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: rgba(255,255,255,.94); color: #1c2226; border-radius: 10px; padding: 8px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.2); font-size: 12.5px; }
-#photo-bar .txt { flex: 1 1 220px; min-width: 0; }
+#photo-bar { position: absolute; left: 12px; right: 12px; top: 12px; z-index: 4; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: rgba(255,255,255,.94); color: #1c2226; border-radius: 10px; padding: 8px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.2); font-size: 12.5px; }
+#photo-bar .txt { flex: 1 1 220px; min-width: 0; line-height: 1.3; }
 #photo-bar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
 #photo-bar button.pr { background: #2c6a86; border-color: #2c6a86; color: #fff; font-weight: 600; }
 #photo-bar .txt-s { display: none; }
-@media (max-width: 760px) { #photo-bar { left: 6px; right: 6px; bottom: 6px; padding: 5px 6px; font-size: 11px; gap: 4px 6px; flex-wrap: nowrap; } #photo-bar .txt { display: none; } #photo-bar .txt-s { display: block; flex: 1 1 auto; min-width: 0; line-height: 1.25; } #photo-bar button { font-size: 11.5px; padding: 5px 7px; white-space: nowrap; } #photo-new { display: none; } }
+#photo-marks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; overflow: visible; }
+#photo-marks polygon { fill: rgba(44,106,134,.12); stroke: #fff; stroke-width: 2; stroke-dasharray: 6 5; }
+#photo-marks g { pointer-events: all; cursor: grab; touch-action: none; }
+#photo-marks circle { fill: #2c6a86; stroke: #fff; stroke-width: 2.5; }
+#photo-marks circle.hit { fill: transparent; stroke: none; }
+#photo-marks text { fill: #fff; font: 700 12px/1 var(--f-body); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+#photo-marks.done polygon { fill: none; stroke-opacity: .55; }
+#photo-marks.hide { display: none; }
+body.photo-marking #hotspots { display: none; }
+@media (max-width: 760px) { #photo-bar { left: 6px; right: 6px; top: 6px; padding: 5px 6px; font-size: 11px; gap: 4px 6px; flex-wrap: nowrap; } #photo-bar .txt { display: none; } #photo-bar .txt-s { display: block; flex: 1 1 auto; min-width: 0; line-height: 1.25; } #photo-bar button { font-size: 11.5px; padding: 5px 7px; white-space: nowrap; } #photo-new { display: none; } }
 .toolbar { position: relative; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 8px 12px; font-size: 12.5px; }
 .toolbar .tb-row { display: flex; gap: 6px; flex: 1 1 100%; }
 .toolbar .ib { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; }
@@ -211,7 +220,8 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     <div class="vp">
       <div id="view"></div>
       <div class="labels" id="labels"></div>
-      <div id="photo-bar" hidden><span class="txt-s" id="photo-txt-s">Двигайте пальцами, чтобы поставить перголу на террасу</span><span class="txt" id="photo-txt">Поверните и приблизьте перголу, чтобы она встала на террасу: тяните — поворот, колесо или два пальца — ближе/дальше, правая кнопка или два пальца — сдвиг.</span><button type="button" id="photo-shot" class="pr">Сохранить снимок</button><button type="button" id="photo-new">Другое фото</button><button type="button" id="photo-off">Убрать фото</button></div>
+      <svg id="photo-marks" class="hide" aria-hidden="true"></svg>
+      <div id="photo-bar" hidden><span class="txt-s" id="photo-txt-s">Перетащите 4 точки на углы будущей перголы</span><span class="txt" id="photo-txt">Перетащите 4 точки туда, где будут стоять стойки перголы: 1 и 2 — у стены (слева и справа), 3 и 4 — впереди. Пергола сама встанет в перспективу фото.</span><button type="button" id="photo-pts" aria-pressed="true">Точки</button><button type="button" id="photo-shot" class="pr">Сохранить снимок</button><button type="button" id="photo-new">Другое фото</button><button type="button" id="photo-off">Убрать фото</button></div>
       <input type="file" id="photo-in" accept="image/*" hidden>
       <div class="hint" id="hint">Нажмите на проём между стойками, чтобы выбрать заполнение. Тяните мышью — вращение, колесо — масштаб.</div>
     </div>
@@ -569,6 +579,7 @@ function build() {
   }
   applyAnim();
   renderLabels(opt);
+  if (PHOTO.pts) applyPhotoCamera(); // a new size: the same 4 points, the pergola's real size → the camera again
 }
 
 /** Slide: required posts (engine: Composition.requiredPosts), post centres in metres. The same rule as the engine:
@@ -798,30 +809,141 @@ function slideMatrices(inst, mat, scl) {
   inst.instanceMatrix.needsUpdate = true;
 }
 
-/* ---------- the customer's photo: the pergola on their own terrace ----------
- * The photo stays in this browser only (memory): not in the link, not saved, not sent. The 3D canvas becomes
- * transparent, the ground only catches the pergola's shadow, the user turns and zooms the view to fit the photo. */
-const PHOTO = { url: null, img: null };
+/* ---------- the customer's photo: the pergola stands on their own terrace ----------
+ * The customer drags 4 points onto the photo where the pergola's corners will stand (1–2 at the wall, 3–4 in front).
+ * From these 4 points and the pergola's real width × depth the camera of the photo is solved (planar homography →
+ * focal length and pose), so the 3D pergola is drawn in the photo's own perspective and stays there: the view is
+ * fixed while the photo is on. The photo stays in this browser only (memory): not in the link, not saved, not sent. */
+const PHOTO = { url: null, img: null, pts: null, marks: true };
 const groundMat = ground.material, shadowMat = new THREE.ShadowMaterial({ opacity: 0.32 });
+/** Camera pose from 4 marked ground corners of a W × D rectangle (world: X along the wall, Z to the front, Y up).
+ *  pts: image pixels [[x,y]×4] in order (0,0) (W,0) (W,D) (0,D); principal point = image centre.
+ *  Returns { f, R (world→camera, OpenCV axes: x right, y down, z forward, rows), t, C (camera centre in world) } or null. */
+function solvePhotoPose(pts, W, D, iw, ih) {
+  const cx = iw / 2, cy = ih / 2;
+  const src = [[0, 0], [W, 0], [W, D], [0, D]], dst = pts.map(([x, y]) => [x - cx, y - cy]);
+  // homography plane (X, Z) -> image (DLT, h33 = 1)
+  const A = [], b = [];
+  for (let i = 0; i < 4; i++) {
+    const [X, Z] = src[i], [u, v] = dst[i];
+    A.push([X, Z, 1, 0, 0, 0, -u * X, -u * Z]); b.push(u);
+    A.push([0, 0, 0, X, Z, 1, -v * X, -v * Z]); b.push(v);
+  }
+  const h = gauss(A, b); if (!h) return null;
+  const H = [[h[0], h[1], h[2]], [h[3], h[4], h[5]], [h[6], h[7], 1]];
+  const c = (j) => [H[0][j], H[1][j], H[2][j]];
+  const h1 = c(0), h2 = c(1), h3 = c(2);
+  // focal length from r1 ⟂ r2 and |r1| = |r2|
+  const fs = [];
+  const o = -(h1[0] * h2[0] + h1[1] * h2[1]) / (h1[2] * h2[2]); if (isFinite(o) && o > 0) fs.push(o);
+  const e = (h1[0] ** 2 + h1[1] ** 2 - h2[0] ** 2 - h2[1] ** 2) / (h2[2] ** 2 - h1[2] ** 2); if (isFinite(e) && e > 0) fs.push(e);
+  let f = fs.length ? Math.sqrt(fs.reduce((a, x) => a + x, 0) / fs.length) : 0;
+  const fMin = 0.4 * Math.max(iw, ih), fMax = 4 * Math.max(iw, ih);
+  if (!(f >= fMin && f <= fMax)) f = Math.min(fMax, Math.max(fMin, f || 1.1 * Math.max(iw, ih))); // ASSUMPTION: typical phone lens
+  const ki = (v) => [v[0] / f, v[1] / f, v[2]];
+  const a1 = ki(h1), a2 = ki(h2), a3 = ki(h3);
+  let lam = 2 / (v3norm(a1) + v3norm(a2));
+  if (a3[2] * lam < 0) lam = -lam; // the plane origin lies in front of the camera
+  let r1 = v3scale(a1, lam), r2 = v3scale(a2, lam);
+  const t = v3scale(a3, lam);
+  // orthonormalise (symmetric Gram–Schmidt)
+  r1 = v3unit(r1); r2 = v3unit(v3sub(r2, v3scale(r1, v3dot(r1, r2)))); 
+  const n = v3cross(r2, r1); // world up = Z × X (right-handed X, Y, Z)
+  // R columns = camera-frame directions of world X, Y, Z
+  const R = [[r1[0], n[0], r2[0]], [r1[1], n[1], r2[1]], [r1[2], n[2], r2[2]]];
+  const C = [0, 1, 2].map((j) => -(R[0][j] * t[0] + R[1][j] * t[1] + R[2][j] * t[2]));
+  return { f, R, t, C, ok: C[1] > 0 };
+}
+function gauss(A, b) {
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let i = 0; i < n; i++) {
+    let p = i; for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[p][i])) p = k;
+    if (Math.abs(M[p][i]) < 1e-12) return null;
+    [M[i], M[p]] = [M[p], M[i]];
+    for (let k = 0; k < n; k++) if (k !== i) { const q = M[k][i] / M[i][i]; for (let j = i; j <= n; j++) M[k][j] -= q * M[i][j]; }
+  }
+  return M.map((r, i) => r[n] / r[i]);
+}
+const v3dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], v3norm = (a) => Math.sqrt(v3dot(a, a)), v3scale = (a, k) => a.map((x) => x * k);
+const v3sub = (a, b) => a.map((x, i) => x - b[i]), v3unit = (a) => v3scale(a, 1 / v3norm(a));
+const v3cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+
+/** image px <-> viewport px for a photo shown like CSS background-size: cover, centred */
+function photoFit() {
+  const r = view.getBoundingClientRect(), iw = PHOTO.img.naturalWidth, ih = PHOTO.img.naturalHeight;
+  const k = Math.max(r.width / iw, r.height / ih);
+  return { vw: r.width, vh: r.height, iw, ih, k, ox: (r.width - iw * k) / 2, oy: (r.height - ih * k) / 2 };
+}
+/** first guess: a moderate trapezoid in the middle of the visible part of the photo, wider at the front
+ *  (in viewport space, so it is on screen also where a narrow phone crops the photo's sides) */
+function defaultPts() {
+  const F = photoFit();
+  return [[0.33, 0.5], [0.67, 0.5], [0.78, 0.68], [0.22, 0.68]].map(([x, y]) => [(x * F.vw - F.ox) / F.k, (y * F.vh - F.oy) / F.k]);
+}
+let photoBad = false;
+function applyPhotoCamera() {
+  const o = state.options[state.optIndex]; if (!PHOTO.img || !PHOTO.pts || !o) return;
+  const F = photoFit(), sol = solvePhotoPose(PHOTO.pts, o.width / 1000, o.depth / 1000, F.iw, F.ih);
+  photoBad = !sol || !sol.ok;
+  if (!photoBad) {
+    const R = sol.R, row = (i, k = 1) => new THREE.Vector3(R[i][0] * k, R[i][1] * k, R[i][2] * k);
+    const m = new THREE.Matrix4().makeBasis(row(0), row(1, -1), row(2, -1)); // OpenCV camera axes -> three.js (y up, looking down -z)
+    camera.position.set(sol.C[0], sol.C[1], sol.C[2]);
+    camera.quaternion.setFromRotationMatrix(m);
+    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan((F.vh / 2) / (sol.f * F.k)));
+    camera.aspect = F.vw / Math.max(1, F.vh); camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+    const W = o.width / 1000, D = o.depth / 1000;
+    sun.position.set(W / 2 - 6, 14, D + 8); sun.target.position.set(W / 2, 0, D / 2);
+  }
+  root.visible = !photoBad;
+  drawMarks();
+}
+function drawMarks() {
+  const svg = $('photo-marks');
+  svg.classList.toggle('hide', !PHOTO.pts || !PHOTO.marks);
+  document.body.classList.toggle('photo-marking', !!PHOTO.pts && PHOTO.marks); // side "+" buttons step aside while the points are moved
+  if (!PHOTO.pts) { svg.innerHTML = ''; return; }
+  const F = photoFit(), vp = PHOTO.pts.map(([x, y]) => [F.ox + x * F.k, F.oy + y * F.k]);
+  svg.classList.toggle('done', !photoBad);
+  svg.innerHTML = `<polygon points="${vp.map((p) => p.join(',')).join(' ')}"${photoBad ? ' style="stroke:#e07a3c"' : ''}/>` +
+    vp.map(([x, y], i) => `<g data-i="${i}"><circle class="hit" cx="${x}" cy="${y}" r="24"/><circle cx="${x}" cy="${y}" r="12"/><text x="${x}" y="${y}">${i + 1}</text></g>`).join('');
+  const tb = window.TB_TEXT || {};
+  $('photo-txt').textContent = photoBad ? tb.photoBad || 'Точки перепутаны: 1 и 2 — у стены слева и справа, 3 и 4 — впереди справа и слева.' : tb.photoHelp || 'Перетащите 4 точки туда, где будут стоять стойки перголы: 1 и 2 — у стены (слева и справа), 3 и 4 — впереди. Пергола сама встанет в перспективу фото.';
+}
+let dragI = -1;
+$('photo-marks').addEventListener('pointerdown', (e) => {
+  const g = e.target.closest('g[data-i]'); if (!g) return;
+  dragI = Number(g.dataset.i); e.preventDefault(); e.stopPropagation(); $('photo-marks').setPointerCapture(e.pointerId);
+});
+$('photo-marks').addEventListener('pointermove', (e) => {
+  if (dragI < 0) return;
+  const r = view.getBoundingClientRect(), F = photoFit();
+  const x = Math.min(Math.max(e.clientX - r.left, 0), r.width), y = Math.min(Math.max(e.clientY - r.top, 0), r.height);
+  PHOTO.pts[dragI] = [(x - F.ox) / F.k, (y - F.oy) / F.k];
+  applyPhotoCamera();
+});
+const endDrag = () => { if (dragI >= 0 && typeof window.onPhoto === 'function') window.onPhoto(true, true); dragI = -1; };
+$('photo-marks').addEventListener('pointerup', endDrag); $('photo-marks').addEventListener('pointercancel', endDrag);
 function setPhoto(file) {
   if (!file || !/^image\//.test(file.type)) return;
   if (PHOTO.url) URL.revokeObjectURL(PHOTO.url);
   const url = URL.createObjectURL(file), img = new Image();
   img.onload = () => {
-    PHOTO.url = url; PHOTO.img = img;
+    PHOTO.url = url; PHOTO.img = img; PHOTO.pts = defaultPts(); PHOTO.marks = true;
     const vp = view.parentElement; vp.classList.add('photo'); vp.style.backgroundImage = `url("${url}")`;
-    ground.material = shadowMat;
-    $('photo-bar').hidden = false; $('tb-photo').setAttribute('aria-pressed', 'true');
-    build(); applyAnim(); setView('iso');
+    ground.material = shadowMat; controls.enabled = false;
+    $('photo-bar').hidden = false; $('tb-photo').setAttribute('aria-pressed', 'true'); $('photo-pts').setAttribute('aria-pressed', 'true');
+    build(); applyAnim(); applyPhotoCamera();
     if (typeof window.onPhoto === 'function') window.onPhoto(true);
   };
   img.src = url;
 }
 function clearPhoto() {
   if (PHOTO.url) URL.revokeObjectURL(PHOTO.url);
-  PHOTO.url = null; PHOTO.img = null;
+  PHOTO.url = null; PHOTO.img = null; PHOTO.pts = null;
   const vp = view.parentElement; vp.classList.remove('photo'); vp.style.backgroundImage = '';
-  ground.material = groundMat;
+  ground.material = groundMat; controls.enabled = true; root.visible = true; photoBad = false;
+  camera.fov = 40; camera.updateProjectionMatrix(); drawMarks();
   $('photo-bar').hidden = true; $('tb-photo').setAttribute('aria-pressed', 'false');
   build(); applyAnim(); setView('iso');
   if (typeof window.onPhoto === 'function') window.onPhoto(false);
@@ -848,11 +970,13 @@ $('photo-in').onchange = (e) => { setPhoto(e.target.files[0]); e.target.value = 
 $('photo-new').onclick = () => $('photo-in').click();
 $('photo-off').onclick = () => clearPhoto();
 $('photo-shot').onclick = () => saveShot();
+$('photo-pts').onclick = (e) => { PHOTO.marks = !PHOTO.marks; e.currentTarget.setAttribute('aria-pressed', String(PHOTO.marks)); drawMarks(); };
 
 /* ---------- camera + labels ---------- */
 function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.width / 1000, D: o.depth / 1000 }; }
 let lastView = 'iso', userMoved = false;
 function setView(kind) {
+  if (PHOTO.pts) { applyPhotoCamera(); return; } // on the customer's photo the view is the photo's own camera
   lastView = kind; userMoved = false;
   const { W, D } = bounds(), c = new THREE.Vector3(W / 2, 1.2, D / 2);
   const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
@@ -908,13 +1032,13 @@ function placeLabels() {
     l.el.style.left = ((v.x + 1) / 2) * r.width + 'px'; l.el.style.top = ((1 - v.y) / 2) * r.height + 'px';
   }
 }
-function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); if (!userMoved && state.options.length) setView(lastView); }
+function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); if (PHOTO.pts) applyPhotoCamera(); else if (!userMoved && state.options.length) setView(lastView); }
 new ResizeObserver(resize).observe(view);
 (function loop(t) {
   requestAnimationFrame(loop);
   // heat shimmer: the warm glow breathes slowly
   if (animated.heat && animated.heat.length) { const f = 0.85 + 0.15 * Math.sin((t || 0) / 450), k = state.evening ? 1.6 : 1; M.heatCone.opacity = 0.25 * f * k; M.heatFloor.opacity = 0.9 * f * k; }
-  controls.update(); renderer.render(scene, camera); placeLabels(); })();
+  if (!PHOTO.pts) controls.update(); renderer.render(scene, camera); placeLabels(); })();
 
 /* ---------- picking sides ---------- */
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();

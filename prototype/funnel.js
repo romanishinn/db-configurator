@@ -247,7 +247,7 @@
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `Lamellen gefaltet: ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
-      photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Drehen und zoomen Sie die Pergola, bis sie auf Ihrer Terrasse steht: ziehen – drehen, Mausrad oder zwei Finger – näher/weiter, rechte Maustaste oder zwei Finger – verschieben. Das Foto bleibt in Ihrem Browser.', photoHelpS: 'Mit den Fingern drehen und zoomen, bis die Pergola auf der Terrasse steht', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
+      photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Ziehen Sie die 4 Punkte dorthin, wo die Stützen stehen sollen: 1 und 2 an der Hauswand (links, rechts), 3 und 4 vorne. Die Pergola stellt sich in die Perspektive des Fotos. Das Foto bleibt in Ihrem Browser.', photoBad: 'Punkte vertauscht: 1 und 2 an der Wand links und rechts, 3 und 4 vorne rechts und links.', photoPts: 'Punkte', photoHelpS: '4 Punkte auf die Ecken der Pergola ziehen', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
     },
     en: {
       roofT: 'Roof', roofRot: 'Rotating louvres', roofSlide: 'Sliding roof',
@@ -259,7 +259,7 @@
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `louvres folded: ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
-      photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Turn and zoom the pergola until it stands on your terrace: drag – turn, wheel or two fingers – closer/further, right button or two fingers – move. The photo stays in your browser.', photoHelpS: 'Turn and zoom with your fingers until the pergola stands on the terrace', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
+      photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Drag the 4 points to where the posts will stand: 1 and 2 at the house wall (left, right), 3 and 4 at the front. The pergola takes the perspective of the photo. The photo stays in your browser.', photoBad: 'Points mixed up: 1 and 2 at the wall left and right, 3 and 4 at the front right and left.', photoPts: 'Points', photoHelpS: 'Drag the 4 points to the pergola corners', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
     },
     ru: {
       roofT: 'Крыша', roofRot: 'Поворотные ламели', roofSlide: 'Раздвижная крыша',
@@ -271,7 +271,7 @@
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `ламели сложены: ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
-      photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Поверните и приблизьте перголу, чтобы она встала на террасу: тяните – поворот, колесо или два пальца – ближе/дальше, правая кнопка или два пальца – сдвиг. Фото остаётся в вашем браузере.', photoHelpS: 'Двигайте пальцами, чтобы поставить перголу на террасу', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
+      photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Перетащите 4 точки туда, где будут стоять стойки: 1 и 2 – у стены дома (слева и справа), 3 и 4 – впереди. Пергола сама встанет в перспективу фото. Фото остаётся в вашем браузере.', photoBad: 'Точки перепутаны: 1 и 2 – у стены слева и справа, 3 и 4 – впереди справа и слева.', photoPts: 'Точки', photoHelpS: 'Перетащите 4 точки на углы перголы', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
   };
   for (const [l, x] of Object.entries(EXTRA)) {
@@ -281,7 +281,7 @@
     T[l].weathers.windSun = x.windSun;
     Object.assign(T[l].heats, x.heatsSlide);
     T[l].opt.OPT_REQUIRED_POST_HEIGHT = x.reqPostH;
-    Object.assign(T[l].tb, { sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen, photo: x.photo, photoT: x.photoT, photoHelp: x.photoHelp, photoHelpS: x.photoHelpS, photoShot: x.photoShot, photoNew: x.photoNew, photoOff: x.photoOff });
+    Object.assign(T[l].tb, { sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen, photo: x.photo, photoT: x.photoT, photoHelp: x.photoHelp, photoHelpS: x.photoHelpS, photoBad: x.photoBad, photoPts: x.photoPts, photoShot: x.photoShot, photoNew: x.photoNew, photoOff: x.photoOff });
   }
 
   /* ---------- small helpers ---------- */
@@ -892,7 +892,7 @@
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
     cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo);
-    $('tb-photo').title = tb.photoT; $('photo-txt').textContent = tb.photoHelp; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
+    $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
     $('louv-dir').title = isCust() ? tb.louv : LOUV_TITLE_RU; $('louv-dir').setAttribute('aria-label', tb.louv);
@@ -998,7 +998,7 @@
     render();
     if (key) { const n = F.querySelector(key); if (n) { if (n.type !== 'checkbox') n.value = val; n.focus({ preventScroll: true }); try { if (sel && sel[0] != null) n.setSelectionRange(sel[0], sel[1]); } catch (e) { /* number inputs */ } } }
   };
-  window.onPhoto = () => { dirty = true; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  window.onPhoto = (on, moved) => { dirty = true; if (moved) return; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   window.onOpeningPick = (o) => {
     if (!isCust()) return false;
     openCard(o.id); // choose right on the 3D view; the sides step shows the same choice
