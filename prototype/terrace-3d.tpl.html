@@ -1645,23 +1645,38 @@ $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.
 /* ---------- light: choose it right on the 3D and see it at once (evening, louvres closed, view from below) ---------- */
 /* ---------- colour on the 3D: glass tint and frame colour with one tap ---------- */
 function renderColorQuick() {
-  const box = $('tb-colors'), tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама', noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
-  const hasGlass = Object.values(state.fills).includes('glass');
-  const sw = (attr, k, bg, name, cur) => `<button type="button" ${attr}="${k}" aria-pressed="${cur}"><span class="sw" style="background:${bg}"></span>${name}</button>`;
-  let h = `<div class="t">${tx.glass}</div>`;
-  h += hasGlass ? `<div class="row">${Object.entries(GLAZING).map(([k, g]) => sw('data-gtint', k, '#' + g.col.toString(16).padStart(6, '0'), tx.tints[k] || k, state.glass.type === k)).join('')}</div>` : `<div class="hint2">${tx.noGlass}</div>`;
-  const e = colorsEff(), std = PALETTE.filter((c) => c.group === 'standard'), cur = colorOf(e.construction);
-  const list = std.some((c) => c.id === cur.id) || cur.custom ? std : [...std, cur];
-  h += `<div class="t">${tx.frame}</div><div class="row">${list.map((c) => sw('data-fcol', c.id, swatchBg(c), (window.COLOR_NAME || ((c) => c.nameRu))(c), e.construction === c.id)).join('')}</div>`;
-  box.innerHTML = h;
+  // every element that is on the pergola now, in this order: glass, frame, louvres, ZIP box + guides (+ fabric shade),
+  // profiles of the sliding systems; "as frame" keeps a part linked to the frame colour
+  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла, ламельной стены, панелей', asFrame: 'как рама', noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
+  const fills = Object.values(state.fills), e = colorsEff(), std = PALETTE.filter((c) => c.group === 'standard');
+  const name = window.COLOR_NAME || ((c) => (c.custom ? c.nameRu : c.id + ' ' + c.nameRu));
+  const sw = (attr, k, bg, label, cur, extra = '') => `<button type="button" ${attr}="${k}" ${extra} aria-pressed="${cur}"><span class="sw" style="background:${bg}"></span>${label}</button>`;
+  const colourRow = (key) => {
+    const linked = key !== 'construction' && !state.colors[key], cur = colorOf(e[key]);
+    const list = std.some((c) => c.id === cur.id) || cur.custom ? std : [...std, cur];
+    let r = key !== 'construction' ? sw('data-qcol', '', swatchBg(colorOf(e.construction)), tx.asFrame, linked, `data-part="${key}"`) : '';
+    r += list.map((c) => sw('data-qcol', c.id, swatchBg(c), name(c), !linked && e[key] === c.id, `data-part="${key}"`)).join('');
+    return `<div class="row">${r}</div>`;
+  };
+  let h = '';
+  if (fills.includes('glass')) h += `<div class="t">${tx.glass}</div><div class="row">${Object.entries(GLAZING).map(([k, g]) => sw('data-gtint', k, '#' + g.col.toString(16).padStart(6, '0'), tx.tints[k] || k, state.glass.type === k)).join('')}</div>`;
+  h += `<div class="t">${tx.frame}</div>` + colourRow('construction');
+  h += `<div class="t">${tx.roof}</div>` + colourRow('roof');
+  if (fills.includes('zip')) {
+    h += `<div class="t">${tx.zip}</div>` + colourRow('zip');
+    h += `<div class="t">${tx.fabric}</div><div class="row">${FABRIC_TONES.map(([hx, n], i) => sw('data-tone', hx, hx, (tx.toneNames && tx.toneNames[i]) || n, state.colors.tone === hx)).join('')}</div>`;
+  }
+  if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels')) h += `<div class="t">${tx.slide}</div>` + colourRow('slide');
+  $('tb-colors').innerHTML = h;
 }
-$('tb-color').onclick = () => { renderColorQuick(); togglePop($('tb-color'), $('tb-colors')); };
 $('tb-colors').addEventListener('click', (e) => {
-  const g = e.target.closest('[data-gtint]'), f = e.target.closest('[data-fcol]');
+  const g = e.target.closest('[data-gtint]'), c = e.target.closest('[data-qcol]'), t = e.target.closest('[data-tone]');
   if (g) { state.glass.type = g.dataset.gtint; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); applyAnim(); renderColors(); renderEstimate(); }
-  if (f) setColor('construction', f.dataset.fcol);
-  renderColorQuick();
+  if (c) { if (c.dataset.qcol) setColor(c.dataset.part, c.dataset.qcol); else { state.colors[c.dataset.part] = null; applyColors(); renderColors(); renderEstimate(); } }
+  if (t) { state.colors.tone = t.dataset.tone; applyColors(); renderColors(); if (typeof window.onEstimate === 'function') window.onEstimate(); }
+  if (g || c || t) renderColorQuick();
 });
+$('tb-color').onclick = () => { renderColorQuick(); togglePop($('tb-color'), $('tb-colors')); };
 const LIGHT_SETS = {
   rotating: { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } },
   slide: { none: null, bwhite: { ledGutter: 'bwhite' }, brgbw: { ledGutter: 'brgbw' }, cwhitergb: { ledGutter: 'cwhitergb' } },
