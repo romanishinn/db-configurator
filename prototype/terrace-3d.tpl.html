@@ -975,6 +975,9 @@ $('photo-pts').onclick = (e) => { PHOTO.marks = !PHOTO.marks; e.currentTarget.se
 /* ---------- camera + labels ---------- */
 function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.width / 1000, D: o.depth / 1000 }; }
 let lastView = 'iso', userMoved = false;
+/** after a rebuild: a view the customer turned by hand stays exactly as it is; otherwise the chosen view
+ *  (3D / front / top) is fitted to the new pergola — never a forced jump back to the 3D view */
+function refit() { if (!userMoved) setView(lastView); }
 function setView(kind) {
   if (PHOTO.pts) { applyPhotoCamera(); return; } // on the customer's photo the view is the photo's own camera
   lastView = kind; userMoved = false;
@@ -1186,13 +1189,13 @@ function recompute(resetFills) {
   }).join('');
   const NAMES = { DEPTH_TOO_SMALL: 'Глубина меньше минимальной', WIDTH_TOO_SMALL: 'Ширина меньше минимальной', DEPTH_TOO_LARGE: 'Глубина больше возможной', WIDTH_TOO_LARGE: 'Ширина больше возможной', NO_COMBINATION: 'Такой размер не собирается из каталога' };
   $('sugg').innerHTML = r.suggestions.map((s) => `<div class="note">${NAMES[s.code] || s.code}${s.params && s.params.suggested ? `. Можно сделать <button type="button" class="chip" data-fix="${s.code}" data-v="${s.params.suggested}">${mm(s.params.suggested)} мм</button>` : ''}</div>`).join('');
-  build(); setView('iso'); renderEstimate(); renderColors(); renderPergolaOptions();
+  build(); refit(); renderEstimate(); renderColors(); renderPergolaOptions();
 }
 $('opts').addEventListener('click', (e) => {
   const b = e.target.closest('.opt'); if (!b) return;
   state.optIndex = Number(b.dataset.i);
   document.querySelectorAll('.opt').forEach((x) => x.setAttribute('aria-pressed', x === b));
-  build(); setView('iso'); renderEstimate(); renderColors(); renderPergolaOptions();
+  build(); refit(); renderEstimate(); renderColors(); renderPergolaOptions();
 });
 $('sugg').addEventListener('click', (e) => {
   const b = e.target.closest('[data-fix]'); if (!b) return;

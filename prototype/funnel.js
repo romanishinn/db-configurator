@@ -348,7 +348,7 @@
   function choose(i) {
     state.optIndex = i;
     document.querySelectorAll('.opt').forEach((x) => x.setAttribute('aria-pressed', String(Number(x.dataset.i) === i)));
-    build(); setView('iso'); renderEstimate(); renderColors(); renderPergolaOptions();
+    build(); refit(); renderEstimate(); renderColors(); renderPergolaOptions();
   }
   let saveT = 0, dirty = false; // customers: nothing is saved until they change something (keeps the last saved project)
   function persist() {
@@ -833,7 +833,7 @@
     if (d.preset) { const [w, dd] = d.preset.split('x').map(Number); setDims(w, dd); return; }
     if (d.fix) { if (d.fix.startsWith('DEPTH')) setDims(state.width, Number(d.v)); else setDims(Number(d.v), state.depth); return; }
     if (d.h) { state.po.postHeight = Number(d.h); rebuild(); return; }
-    if (d.rooft) { if (d.rooft === state.roof) return; state.roof = d.rooft; syncRoofButtons(); keepCamera(() => recompute(false)); setView('iso'); return; }
+    if (d.rooft) { if (d.rooft === state.roof) return; state.roof = d.rooft; syncRoofButtons(); keepCamera(() => recompute(false)); return; }
     if (d.opt !== undefined) { choose(Number(d.opt)); return; }
     if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(false)); return; }
     if (d.zctlall || d.zctl) { // the motor brand follows the control if needed (see brandFor)
