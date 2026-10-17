@@ -138,17 +138,17 @@ body.cust #hint { max-width: 340px; }
 /* ---------- printable quote ---------- */
 #quote { display: none; }
 @media print {
-  body.printing > *:not(#quote) { display: none !important; }
-  body.printing #quote { display: block !important; }
+  body.printing > *:not(#quote), body.cust > *:not(#quote) { display: none !important; }
+  body.printing #quote, body.cust #quote { display: block !important; }
   body.printing { background: #fff; color: #111; }
-  @page { size: A4; margin: 14mm 14mm 16mm; }
+  @page { size: A4; margin: 10mm 12mm 10mm; }
 }
 .q { font-family: var(--f-body); color: #111; font-size: 10.5pt; line-height: 1.4; }
 .q h1 { font-family: var(--f-display); font-size: 20pt; margin: 0; }
 .q .hdr { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 8px; margin-bottom: 12px; }
 .q .hdr .brand { font-family: var(--f-display); font-weight: 700; font-size: 14pt; }
 .q .hdr .meta { text-align: right; font-size: 9.5pt; color: #444; }
-.q img { width: 100%; height: 54mm; object-fit: cover; border: 1px solid #ccc; border-radius: 3px; margin: 4px 0 10px; }
+.q img { width: 100%; height: 60mm; object-fit: cover; border: 1px solid #ccc; border-radius: 3px; margin: 4px 0 10px; }
 .q h2 { font-family: var(--f-display); font-size: 12pt; margin: 10px 0 4px; }
 .q table { width: 100%; border-collapse: collapse; }
 .q td, .q th { padding: 2.5px 0; border-bottom: 1px solid #ddd; vertical-align: top; text-align: left; }
@@ -269,3 +269,18 @@ body.cust #hint { display: none !important; }
 }
 
 @media (max-width: 760px) { body.cust.typing .stage { position: relative; } }
+
+/* one A4 page: compact type, facts in a two-column grid, one line per price item */
+.q { font-size: 9.5pt; line-height: 1.3; }
+.q .hdr { padding-bottom: 6px; margin-bottom: 8px; }
+.q h1 { font-size: 17pt; }
+.q h2 { font-size: 11pt; margin: 8px 0 3px; }
+.q td, .q th { padding: 2px 0; }
+.q .s { display: inline; font-size: 8.5pt; }
+.q .facts, .q .facts tbody { display: block; }
+.q .facts tbody { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
+.q .facts tr { display: grid; grid-template-columns: 26mm 1fr; gap: 2mm; border-bottom: 1px solid #e3e3e3; padding: 1.5px 0; }
+.q .facts td { border: 0; padding: 0; width: auto !important; }
+.q tr.g td { font-size: 7.5pt; text-transform: uppercase; letter-spacing: .06em; color: #666; font-weight: 600; padding-top: 6px; border-bottom: 1px solid #bbb; }
+.q .notes { font-size: 8pt; margin-top: 6px; columns: 2; column-gap: 8mm; }
+.q .foot { font-size: 8pt; margin-top: 6px; padding-top: 4px; }

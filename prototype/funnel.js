@@ -446,6 +446,7 @@
     // keep the tapped control where the finger is: re-rendering the panel must not move the page
     const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
     F.innerHTML = head + steps + `<div class="f-body">${body}</div>` + bar(t, o);
+    if (step === 4 && o) { try { $('quote').innerHTML = buildQuote(); fitQuote(); } catch (e) { /* the picture may fail without WebGL */ } }
     if (anchor) { const a2 = F.querySelector(lastTap); if (a2) { const dy = a2.getBoundingClientRect().top - y0; if (Math.abs(dy) > 1) window.scrollBy({ top: dy, behavior: 'instant' }); } }
     // scroll to a side only once, right after it was picked in 3D — never on later re-renders (they would yank the page up)
     if (scrollFocus && focusId && step === 1) { const el = F.querySelector(`[data-side="${focusId}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
@@ -762,13 +763,25 @@
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
   function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return 'DB-' + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
+  let lastImg = '';
   function snapshotImage() {
     // on the customer's photo: exactly what they set up (photo + pergola), no camera change
-    if (PHOTO.url) { try { return compositeImage(); } catch (e) { return ''; } }
-    const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved;
-    try { setView('iso'); renderer.render(scene, camera); return renderer.domElement.toDataURL('image/jpeg', 0.9); }
-    catch (e) { return ''; }
-    finally { camera.position.copy(pos); controls.target.copy(tgt); controls.update(); lastView = lv; userMoved = um; }
+    if (PHOTO.url) { try { return (lastImg = compositeImage()); } catch (e) { return lastImg; } }
+    // a sharp picture for A4: render off-screen at 1600 × 900 in the 3D view, then put everything back
+    const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved, asp = camera.aspect;
+    const size = renderer.getSize(new THREE.Vector2()), pr = renderer.getPixelRatio();
+    try {
+      renderer.setPixelRatio(1); renderer.setSize(1680, 600, false); camera.aspect = 1680 / 600; // the A4 picture's own proportion camera.updateProjectionMatrix();
+      setView('iso'); camera.position.sub(controls.target).multiplyScalar(1.12).add(controls.target); camera.updateMatrixWorld(); // a little air around it
+      renderer.render(scene, camera);
+      const url = renderer.domElement.toDataURL('image/jpeg', 0.88);
+      if (url.length > 1000) lastImg = url; // a hidden canvas (print layout) gives an empty picture: keep the last good one
+      return lastImg;
+    } catch (e) { return lastImg; }
+    finally {
+      renderer.setPixelRatio(pr); renderer.setSize(size.x, size.y, false); camera.aspect = asp; camera.updateProjectionMatrix();
+      camera.position.copy(pos); controls.target.copy(tgt); controls.update(); lastView = lv; userMoved = um;
+    }
   }
   function buildQuote() {
     const t = L(), o = curOpt(), lines = quoteLines(), total = q().total, e = colorsEff();
@@ -780,10 +793,13 @@
       [t.qFacts.height, `≤ ${metres(state.po.postHeight)} ${t.m}`],
       [t.qFacts.sides, ops.length ? ops.map((x) => `${sideLabel(x.id, o)}: ${t.fills[state.fills[x.id]]}`).join('; ') : t.open],
       [t.qFacts.colours, `${t.frame}: ${cname(e.construction)}${state.colors.roof ? '; ' + t.roof + ': ' + cname(e.roof) : ''}`],
-      [t.qFacts.comfort, comfort],
     ];
     const img = snapshotImage(), date = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : lang === 'ru' ? 'ru-RU' : 'de-AT');
-    const rows = lines.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s">${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(l.a)}</td></tr>`).join('');
+    // one line per item (details in grey on the same line), grouped like on the screen — fits one A4 page
+    const rows = groupsOrder.map((g) => {
+      const ls = lines.filter((l) => l.g === g); if (!ls.length) return '';
+      return `<tr class="g"><td colspan="2">${esc(t.grp[g])}</td></tr>` + ls.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s"> · ${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(l.a)}</td></tr>`).join('');
+    }).join('');
     const contact = [OFFICE.email, OFFICE.phone, OFFICE.web].filter(Boolean).join(' · ');
     return `<div class="q"><div class="hdr"><div><div class="brand">${esc(OFFICE.name)}</div>${contact ? `<div style="font-size:9pt;color:#444">${esc(contact)}</div>` : ''}</div><div class="meta"><h1>${t.qTitle}</h1>${t.qNo} ${quoteNo()} · ${t.qDate} ${date}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
@@ -795,13 +811,31 @@
       <ul class="notes">${t.qNotes.map((n) => `<li>${n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
       <div class="foot"><a href="${esc(shareUrl())}">${t.qLink}</a> · ${quoteNo()}</div></div>`;
   }
+  /** the offer always fits one A4 page: measured at print width, a long one is scaled down a little */
+  function fitQuote() {
+    const box = $('quote'), q0 = box.querySelector('.q'); if (!q0) return;
+    q0.style.zoom = '';
+    const keep = box.getAttribute('style');
+    box.setAttribute('style', 'display:block;position:absolute;left:-10000px;top:0;width:186mm');
+    const mm = q0.getBoundingClientRect().width / 186, h = q0.scrollHeight / mm; // height in mm
+    if (keep === null) box.removeAttribute('style'); else box.setAttribute('style', keep);
+    const avail = 297 - 20 - 4; // A4 minus the page margins, a little slack
+    if (h > avail) q0.style.zoom = String(Math.max(0.6, avail / h));
+  }
   function printQuote() {
-    $('quote').innerHTML = buildQuote();
+    $('quote').innerHTML = buildQuote(); fitQuote();
     document.body.classList.add('printing');
-    const done = () => { document.body.classList.remove('printing'); window.removeEventListener('afterprint', done); };
-    window.addEventListener('afterprint', done);
     setTimeout(() => window.print(), 60);
   }
+  // Printing from the browser menu (or "share → print" on a phone) also gives the clean offer, never the screen:
+  // the offer is rebuilt right before printing; print CSS shows only #quote in the customer view.
+  window.addEventListener('beforeprint', () => {
+    if (!isCust() || !curOpt()) return;
+    // on the offer step the offer is already up to date (rebuilt on every change); elsewhere build it now
+    if (step !== 4 || !$('quote').querySelector('.q')) { $('quote').innerHTML = buildQuote(); fitQuote(); }
+    document.body.classList.add('printing');
+  });
+  window.addEventListener('afterprint', () => document.body.classList.remove('printing'));
   function saveFile() {
     const blob = new Blob([JSON.stringify(snapshot(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `pergola-${quoteNo()}.json`; document.body.appendChild(a); a.click();
