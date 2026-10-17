@@ -247,6 +247,7 @@
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `Lamellen gefaltet: ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
+      photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Drehen und zoomen Sie die Pergola, bis sie auf Ihrer Terrasse steht: ziehen – drehen, Mausrad oder zwei Finger – näher/weiter, rechte Maustaste oder zwei Finger – verschieben. Das Foto bleibt in Ihrem Browser.', photoHelpS: 'Mit den Fingern drehen und zoomen, bis die Pergola auf der Terrasse steht', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
     },
     en: {
       roofT: 'Roof', roofRot: 'Rotating louvres', roofSlide: 'Sliding roof',
@@ -258,6 +259,7 @@
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `louvres folded: ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
+      photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Turn and zoom the pergola until it stands on your terrace: drag – turn, wheel or two fingers – closer/further, right button or two fingers – move. The photo stays in your browser.', photoHelpS: 'Turn and zoom with your fingers until the pergola stands on the terrace', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
     },
     ru: {
       roofT: 'Крыша', roofRot: 'Поворотные ламели', roofSlide: 'Раздвижная крыша',
@@ -269,6 +271,7 @@
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `ламели сложены: ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
+      photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Поверните и приблизьте перголу, чтобы она встала на террасу: тяните – поворот, колесо или два пальца – ближе/дальше, правая кнопка или два пальца – сдвиг. Фото остаётся в вашем браузере.', photoHelpS: 'Двигайте пальцами, чтобы поставить перголу на террасу', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
   };
   for (const [l, x] of Object.entries(EXTRA)) {
@@ -278,7 +281,7 @@
     T[l].weathers.windSun = x.windSun;
     Object.assign(T[l].heats, x.heatsSlide);
     T[l].opt.OPT_REQUIRED_POST_HEIGHT = x.reqPostH;
-    Object.assign(T[l].tb, { sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen });
+    Object.assign(T[l].tb, { sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen, photo: x.photo, photoT: x.photoT, photoHelp: x.photoHelp, photoHelpS: x.photoHelpS, photoShot: x.photoShot, photoNew: x.photoNew, photoOff: x.photoOff });
   }
 
   /* ---------- small helpers ---------- */
@@ -539,6 +542,7 @@
       const m = o.modules[0], st = slideStack(m), side = wall && m.louvreAxis === 'x' ? t.sideWall : t.sideEdge;
       h += `<div class="f-tip"><span>${t.slideStack(metres(st), metres(m.projection - st - 2 * SPEC.SLIDE.post * 1000), side)}</span></div>`;
     }
+    if (!PHOTO.url) h += `<div class="f-tip"><span>${t.photoTip}</span><button type="button" class="f-chip" data-act="photo">${t.photoBtn}</button></div>`;
     // louvre direction: offer the cheaper one, explain the current one
     const other = state.louvres === 'parallel' ? 'perpendicular' : 'parallel';
     const alt = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: other, families: famFilter() }, cat).options[0];
@@ -725,6 +729,8 @@
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
   function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return 'DB-' + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
   function snapshotImage() {
+    // on the customer's photo: exactly what they set up (photo + pergola), no camera change
+    if (PHOTO.url) { try { return compositeImage(); } catch (e) { return ''; } }
     const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved;
     try { setView('iso'); renderer.render(scene, camera); return renderer.domElement.toDataURL('image/jpeg', 0.9); }
     catch (e) { return ''; }
@@ -848,6 +854,7 @@
     if (d.tone) { state.colors.tone = d.tone; applyColors(); renderColors(); render(); return; }
     if (d.act === 'form') { sentOk = false; render(); const f = F.querySelector('#f-form'); if (f) { f.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = f.querySelector('input'); if (i) setTimeout(() => i.focus({ preventScroll: true }), 400); } return; }
     if (d.act === 'print') { printQuote(); return; }
+    if (d.act === 'photo') { $('photo-in').click(); return; }
     if (d.act === 'share') { copy(shareUrl(), L().copied); return; }
     if (d.act === 'save') { saveFile(); return; }
     if (d.act === 'open') { $('f-file').click(); return; }
@@ -884,7 +891,8 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night);
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo);
+    $('tb-photo').title = tb.photoT; $('photo-txt').textContent = tb.photoHelp; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
     $('louv-dir').title = isCust() ? tb.louv : LOUV_TITLE_RU; $('louv-dir').setAttribute('aria-label', tb.louv);
@@ -919,7 +927,7 @@
   let hsSig = '';
   function renderHotspots() {
     const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
-    CTA.hidden = anyFill || !o; CTA.innerHTML = `<span class="hand">☝</span>${esc(L().cta)}`;
+    CTA.hidden = anyFill || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span>${esc(L().cta)}`;
     const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || 'none')).join(',') + '|' + (focusId || '');
     if (sig === hsSig) return; hsSig = sig;
     HS.innerHTML = ops.map((x) => {
@@ -990,6 +998,7 @@
     render();
     if (key) { const n = F.querySelector(key); if (n) { if (n.type !== 'checkbox') n.value = val; n.focus({ preventScroll: true }); try { if (sel && sel[0] != null) n.setSelectionRange(sel[0], sel[1]); } catch (e) { /* number inputs */ } } }
   };
+  window.onPhoto = () => { dirty = true; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   window.onOpeningPick = (o) => {
     if (!isCust()) return false;
     openCard(o.id); // choose right on the 3D view; the sides step shows the same choice

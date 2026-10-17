@@ -57,6 +57,14 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 .dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
 .dim.stack { background: #2c6a86; color: #fff; }
+/* the customer's own photo behind the 3D (canvas is transparent then) */
+.vp.photo { background: #222 center / cover no-repeat; }
+#photo-bar { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 4; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: rgba(255,255,255,.94); color: #1c2226; border-radius: 10px; padding: 8px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.2); font-size: 12.5px; }
+#photo-bar .txt { flex: 1 1 220px; min-width: 0; }
+#photo-bar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+#photo-bar button.pr { background: #2c6a86; border-color: #2c6a86; color: #fff; font-weight: 600; }
+#photo-bar .txt-s { display: none; }
+@media (max-width: 760px) { #photo-bar { left: 6px; right: 6px; bottom: 6px; padding: 5px 6px; font-size: 11px; gap: 4px 6px; flex-wrap: nowrap; } #photo-bar .txt { display: none; } #photo-bar .txt-s { display: block; flex: 1 1 auto; min-width: 0; line-height: 1.25; } #photo-bar button { font-size: 11.5px; padding: 5px 7px; white-space: nowrap; } #photo-new { display: none; } }
 .toolbar { position: relative; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 8px 12px; font-size: 12.5px; }
 .toolbar .tb-row { display: flex; gap: 6px; flex: 1 1 100%; }
 .toolbar .ib { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; }
@@ -203,6 +211,8 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     <div class="vp">
       <div id="view"></div>
       <div class="labels" id="labels"></div>
+      <div id="photo-bar" hidden><span class="txt-s" id="photo-txt-s">Двигайте пальцами, чтобы поставить перголу на террасу</span><span class="txt" id="photo-txt">Поверните и приблизьте перголу, чтобы она встала на террасу: тяните — поворот, колесо или два пальца — ближе/дальше, правая кнопка или два пальца — сдвиг.</span><button type="button" id="photo-shot" class="pr">Сохранить снимок</button><button type="button" id="photo-new">Другое фото</button><button type="button" id="photo-off">Убрать фото</button></div>
+      <input type="file" id="photo-in" accept="image/*" hidden>
       <div class="hint" id="hint">Нажмите на проём между стойками, чтобы выбрать заполнение. Тяните мышью — вращение, колесо — масштаб.</div>
     </div>
     <div class="toolbar">
@@ -212,6 +222,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <button type="button" class="ib" id="louv-dir" aria-pressed="true" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h15l-3.5-3.5M20 15.5H5l3.5 3.5"/></svg><span class="cap">Ламели</span></button>
         <button type="button" class="ib" id="tb-move" aria-expanded="false" aria-controls="tb-sliders" title="Движение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3zM12 12l8-4.7M12 12v9.2M12 12 4 7.3"/></svg><span class="cap">Движение</span></button>
         <button type="button" class="ib" id="evening" aria-pressed="false" title="День / ночь"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="bulb" d="M12 2.8a6.2 6.2 0 0 0-3.7 11.2c.7.5 1.1 1.3 1.1 2.1v.6h5.2v-.6c0-.8.4-1.6 1.1-2.1A6.2 6.2 0 0 0 12 2.8z"/><path d="M9.6 19.2h4.8M10.4 21.6h3.2"/></svg><span class="cap">Ночь</span></button>
+        <button type="button" class="ib" id="tb-photo" aria-pressed="false" title="Посмотреть перголу на фото своей террасы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8.2c0-1 .8-1.8 1.8-1.8h2.4l1.5-2.2h5.6l1.5 2.2h2.4c1 0 1.8.8 1.8 1.8v9.6c0 1-.8 1.8-1.8 1.8H5.3c-1 0-1.8-.8-1.8-1.8z"/><circle cx="12" cy="13" r="3.6"/></svg><span class="cap">Фото</span></button>
         <button type="button" class="ib pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span><span class="cap">Цвета</span></button>
       </div>
       <div class="tb-pop" id="tb-views" hidden>
@@ -319,7 +330,7 @@ const GLASS_OPEN = { single: 'в одну сторону', double: 'в обе с
 
 /* ---------- three.js scene ---------- */
 const view = $('view');
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: false }); // alpha: the customer's photo shows through
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -427,8 +438,9 @@ function build() {
   const W = opt.width / 1000;
   const D = opt.depth / 1000;
   // deck + wall
-  box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
-  if (state.mount === 'wall') box(W + 3, 3.6, 0.25, M.wall, W / 2, 1.8, -0.125);
+  // on the customer's photo their own terrace and wall are in the picture: no drawn deck and wall
+  if (!PHOTO.url) box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
+  if (state.mount === 'wall' && !PHOTO.url) box(W + 3, 3.6, 0.25, M.wall, W / 2, 1.8, -0.125);
   const yTop = H, yC = H - sp.crown / 2;
   for (const m of opt.modules) {
     const x0 = m.x / 1000, z0 = m.y / 1000, w = m.width / 1000, d = m.depth / 1000;
@@ -760,7 +772,7 @@ function applyAnim() {
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
   for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.2 : 0.4;
   for (const pl of animated.lights || []) pl.intensity = state.evening ? 1.6 : 0;
-  scene.background = new THREE.Color(state.evening ? 0x1b2530 : 0xc5d1d9);
+  scene.background = PHOTO.url ? null : new THREE.Color(state.evening ? 0x1b2530 : 0xc5d1d9);
   hemi.intensity = state.evening ? 0.25 : 0.85; sun.intensity = state.evening ? 0.12 : 0.95;
 }
 
@@ -785,6 +797,57 @@ function slideMatrices(inst, mat, scl) {
   }
   inst.instanceMatrix.needsUpdate = true;
 }
+
+/* ---------- the customer's photo: the pergola on their own terrace ----------
+ * The photo stays in this browser only (memory): not in the link, not saved, not sent. The 3D canvas becomes
+ * transparent, the ground only catches the pergola's shadow, the user turns and zooms the view to fit the photo. */
+const PHOTO = { url: null, img: null };
+const groundMat = ground.material, shadowMat = new THREE.ShadowMaterial({ opacity: 0.32 });
+function setPhoto(file) {
+  if (!file || !/^image\//.test(file.type)) return;
+  if (PHOTO.url) URL.revokeObjectURL(PHOTO.url);
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => {
+    PHOTO.url = url; PHOTO.img = img;
+    const vp = view.parentElement; vp.classList.add('photo'); vp.style.backgroundImage = `url("${url}")`;
+    ground.material = shadowMat;
+    $('photo-bar').hidden = false; $('tb-photo').setAttribute('aria-pressed', 'true');
+    build(); applyAnim(); setView('iso');
+    if (typeof window.onPhoto === 'function') window.onPhoto(true);
+  };
+  img.src = url;
+}
+function clearPhoto() {
+  if (PHOTO.url) URL.revokeObjectURL(PHOTO.url);
+  PHOTO.url = null; PHOTO.img = null;
+  const vp = view.parentElement; vp.classList.remove('photo'); vp.style.backgroundImage = '';
+  ground.material = groundMat;
+  $('photo-bar').hidden = true; $('tb-photo').setAttribute('aria-pressed', 'false');
+  build(); applyAnim(); setView('iso');
+  if (typeof window.onPhoto === 'function') window.onPhoto(false);
+}
+/** what the viewer sees: the photo (cropped like CSS "cover") with the 3D on top, as a JPEG data URL */
+function compositeImage() {
+  renderer.render(scene, camera);
+  const gl = renderer.domElement, c = document.createElement('canvas');
+  c.width = gl.width; c.height = gl.height;
+  const g = c.getContext('2d');
+  if (PHOTO.img) {
+    const iw = PHOTO.img.naturalWidth, ih = PHOTO.img.naturalHeight, k = Math.max(c.width / iw, c.height / ih);
+    g.drawImage(PHOTO.img, (c.width - iw * k) / 2, (c.height - ih * k) / 2, iw * k, ih * k);
+  } else { g.fillStyle = '#c5d1d9'; g.fillRect(0, 0, c.width, c.height); }
+  g.drawImage(gl, 0, 0);
+  return c.toDataURL('image/jpeg', 0.9);
+}
+function saveShot() {
+  const a = document.createElement('a'); a.href = compositeImage(); a.download = 'pergola-terrasse.jpg';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+$('tb-photo').onclick = () => { if (PHOTO.url) clearPhoto(); else $('photo-in').click(); };
+$('photo-in').onchange = (e) => { setPhoto(e.target.files[0]); e.target.value = ''; };
+$('photo-new').onclick = () => $('photo-in').click();
+$('photo-off').onclick = () => clearPhoto();
+$('photo-shot').onclick = () => saveShot();
 
 /* ---------- camera + labels ---------- */
 function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.width / 1000, D: o.depth / 1000 }; }
