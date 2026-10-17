@@ -303,7 +303,7 @@
     return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : 'de';
   };
   let lang = pickLang();
-  let step = 0, focusId = null, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
+  let step = 0, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
   const isCust = () => document.body.classList.contains('cust');
   const curOpt = () => state.options[state.optIndex];
   const sysOf = (o) => famKey(o);
@@ -437,8 +437,13 @@
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
     const steps = `<ol class="f-steps">${t.steps.map((s, i) => `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${i < step}"><span class="n">${i + 1}</span>${esc(s)}</button></li>`).join('')}</ol>`;
     const body = [stepSize, stepSides, stepComfort, stepColours, stepOffer][step](t, o);
+    // keep the tapped control where the finger is: re-rendering the panel must not move the page
+    const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
     F.innerHTML = head + steps + `<div class="f-body">${body}</div>` + bar(t, o);
-    if (focusId && step === 1) { const el = F.querySelector(`[data-side="${focusId}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+    if (anchor) { const a2 = F.querySelector(lastTap); if (a2) { const dy = a2.getBoundingClientRect().top - y0; if (Math.abs(dy) > 1) window.scrollBy({ top: dy, behavior: 'instant' }); } }
+    // scroll to a side only once, right after it was picked in 3D — never on later re-renders (they would yank the page up)
+    if (scrollFocus && focusId && step === 1) { const el = F.querySelector(`[data-side="${focusId}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+    scrollFocus = false;
     renderHotspots();
     renderCard();
   }
@@ -776,7 +781,8 @@
 
   /* ---------- actions ---------- */
   const rebuild = () => { syncGlassControls(); build(); renderEstimate(); renderPergolaOptions(); };
-  function go(d) { step = Math.max(0, Math.min(4, step + d)); focusId = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); if (step === 1) setView('iso'); }
+  // the 3D view stays exactly as the customer left it when the step changes
+  function go(d) { step = Math.max(0, Math.min(4, step + d)); focusId = null; lastTap = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   let dimT = 0;
   /** typed size in metres -> mm; the same value again does nothing (a blur must not re-render under the user's next tap) */
   function applyDim(el) {
@@ -789,8 +795,12 @@
     state.width = Math.max(1000, Math.round(w / 10) * 10); state.depth = Math.max(1000, Math.round(d / 10) * 10);
     $('w').value = state.width; $('d').value = state.depth; recompute(false);
   }
+  /** selector of a control by its data-* attributes (the same control after a re-render) */
+  const selOf = (el) => { const ds = Object.entries(el.dataset); return ds.length ? el.tagName.toLowerCase() + ds.map(([k, v]) => `[data-${k.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())}="${CSS.escape(v)}"]`).join('') : null; };
+  let lastTap = null;
   F.addEventListener('click', (ev) => {
     const b = ev.target.closest('button'); if (!b || !F.contains(b)) return;
+    lastTap = b.dataset.step !== undefined || b.dataset.go ? null : selOf(b);
     if (!b.dataset.step && !b.dataset.go && !b.dataset.lang) dirty = true;
     act(b.dataset);
   });
@@ -873,7 +883,7 @@
   });
   F.addEventListener('change', (ev) => {
     const el = ev.target;
-    if (el.dataset.sel) { if (el.value !== '') { dirty = true; act({ [el.dataset.sel]: el.value }); } return; } // "More …" dropdown
+    if (el.dataset.sel) { if (el.value !== '') { dirty = true; lastTap = selOf(el); act({ [el.dataset.sel]: el.value }); } return; } // "More …" dropdown
     if (el.form && el.form.id === 'f-form' && el.name) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
     if (el.dataset.dim) { clearTimeout(dimT); applyDim(el); }
     if (el.id === 'f-file' && el.files && el.files[0]) { const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(el.files[0]); }
