@@ -96,6 +96,10 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar #tb-colors .row button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px 5px 5px; border-radius: 999px; }
 .toolbar #tb-colors .row button .sw { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #9aa4ab; flex: none; }
 .toolbar #tb-colors .row button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; color: #1c2226; font-weight: 600; }
+.toolbar #tb-lights { display: grid; gap: 6px; }
+.toolbar #tb-lights[hidden] { display: none; }
+.toolbar #tb-lights .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
+.toolbar #tb-lights .row { display: flex; flex-wrap: wrap; gap: 6px; }
 .toolbar #tb-colors .hint2 { font-size: 12px; color: #5b666e; }
 .toolbar #tb-colors .t .cur { text-transform: none; letter-spacing: 0; font-weight: 400; color: #1c2226; }
 .toolbar #tb-colors .row button.more { padding: 5px 10px; color: #2c6a86; border-style: dashed; }
@@ -1707,24 +1711,46 @@ $('tb-colors').addEventListener('click', (e) => {
   if (g || c || t) { const top = $('tb-colors').scrollTop; renderColorQuick(); $('tb-colors').scrollTop = top; }
 });
 $('tb-color').onclick = () => { quickMore = null; renderColorQuick(); togglePop($('tb-color'), $('tb-colors')); };
-const LIGHT_SETS = {
-  rotating: { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } },
-  slide: { none: null, bwhite: { ledGutter: 'bwhite' }, brgbw: { ledGutter: 'brgbw' }, cwhitergb: { ledGutter: 'cwhitergb' } },
-};
-const LIGHT_RU = { none: 'Без света', white: 'LED-лента, тёплый белый', rgbw: 'LED-лента, цветная (RGBW)', spots: 'LED-споты', bwhite: 'LED в желобе, тёплый белый', brgbw: 'LED в желобе, RGBW', cwhitergb: 'LED в желобе, белый + RGB' };
-const lightSet = () => { const o = state.options[state.optIndex]; return o && o.family === 'SLIDE' ? 'slide' : 'rotating'; };
-function lightCur() { const po = state.po; if (lightSet() === 'slide') return po.ledGutter || 'none'; return po.ledLouvres ? po.ledLouvres.colour : po.spots ? 'spots' : 'none'; }
-function renderLightPop() {
-  const box = $('tb-lights'), names = window.LIGHT_TEXT || LIGHT_RU, cur = lightCur();
-  box.innerHTML = Object.keys(LIGHT_SETS[lightSet()]).map((k) => `<button type="button" data-light="${k}" aria-pressed="${cur === k}">${names[k] || k}</button>`).join('');
+/* Light for the customer: groups that combine — in the louvres (one kind), in the gutter all round, spots in the frame,
+ * lights on the posts. Everything the price lists have for the chosen type (Slide: gutter + posts only, S400: no post lights).
+ * ASSUMPTION: fixed amounts for the customer — 5 lit louvres per module, 3 spots / 2 lamps per louvre, 8 spots in the frame,
+ * one light on every post; the manager changes the amounts in Pro. */
+function lightGroups() {
+  const o = state.options[state.optIndex]; if (!o) return [];
+  const slide = o.family === 'SLIDE', g = [];
+  if (!slide) g.push({ k: 'louvre', items: ['none', 'white', 'rgb', 'rgbw', 'spots', 'lamps'] });
+  g.push({ k: 'gutter', items: slide ? ['none', 'bwhite', 'brgbw', 'cwhitergb'] : ['none', 'bwhite', 'brgb', 'brgbw', 'cwhitergb'] });
+  if (!slide) g.push({ k: 'crown', items: ['none', 'crown8'] });
+  if (o.family !== 'S400') g.push({ k: 'posts', items: ['none', 'postsAll'] });
+  return g;
 }
-function setLight(k) {
-  const po = state.po, slide = lightSet() === 'slide', patch = LIGHT_SETS[lightSet()][k];
-  po.ledLouvres = null; po.spots = null;
-  if (slide) po.ledGutter = null;
-  if (patch) Object.assign(po, JSON.parse(JSON.stringify(patch)));
+const postLightCount = (o) => Math.min(10, Math.max(2, (o && o.posts) || 2));
+function lightPatch(g, k) {
+  const o = state.options[state.optIndex];
+  if (g === 'louvre') return { ledLouvres: ['white', 'rgb', 'rgbw'].includes(k) ? { colour: k, louvres: 5 } : null, spots: k === 'spots' ? { perLouvre: 3, louvres: 5 } : null, lamps: k === 'lamps' ? { perLouvre: 2, louvres: 5 } : null };
+  if (g === 'gutter') return { ledGutter: k === 'none' ? null : k };
+  if (g === 'crown') return { crownSpots: k === 'none' ? 0 : 8 };
+  return { verticalLamps: k === 'none' ? 0 : postLightCount(o) };
+}
+function lightCurOf(g) {
+  const po = state.po;
+  if (g === 'louvre') return po.ledLouvres ? po.ledLouvres.colour : po.spots ? 'spots' : po.lamps ? 'lamps' : 'none';
+  if (g === 'gutter') return po.ledGutter || 'none';
+  if (g === 'crown') return po.crownSpots > 0 ? 'crown8' : 'none';
+  return po.verticalLamps > 0 ? 'postsAll' : 'none';
+}
+const LIGHT_RU = { groups: { louvre: 'В ламелях', gutter: 'В желобе по периметру', crown: 'Споты в раме', posts: 'На стойках' }, none: 'Нет', white: 'LED-лента, тёплый белый', rgb: 'LED-лента RGB', rgbw: 'LED-лента RGBW', spots: 'LED-споты, 3 в ламели', lamps: 'LED-лампы, 2 в ламели', bwhite: 'тёплый белый', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'белый + RGB', crown8: '8 LED-спотов', postsAll: 'светильник на каждой стойке' };
+function renderLightPop() {
+  const box = $('tb-lights'), tx = window.LIGHT_TEXT || LIGHT_RU;
+  box.innerHTML = lightGroups().map((g) => `<div class="t">${tx.groups[g.k]}</div><div class="row">${g.items.map((k) => `<button type="button" data-light="${g.k}:${k}" aria-pressed="${lightCurOf(g.k) === k}">${tx[k] || k}</button>`).join('')}</div>`).join('');
+}
+/** "group:item" (old single keys are read as the louvre group, or the gutter on Slide) */
+function setLight(v) {
+  let [g, k] = String(v).includes(':') ? String(v).split(':') : [lightGroups()[0] ? lightGroups()[0].k : 'gutter', String(v)];
+  Object.assign(state.po, JSON.parse(JSON.stringify(lightPatch(g, k))));
   if (k !== 'none') {
-    // show it straight away: evening, louvres closed (the LEDs sit under them), roof closed, view from below
+    // show it straight away: evening, louvres closed (the LEDs sit under them), roof closed
+    const slide = state.options[state.optIndex] && state.options[state.optIndex].family === 'SLIDE';
     state.evening = true; $('evening').setAttribute('aria-pressed', 'true');
     state.angle = 0; $('ang').value = 0; $('angv').textContent = '0°';
     if (slide) { state.slideOpen = 0; $('sopen').value = 0; sopenText(); }
@@ -1732,6 +1758,7 @@ function setLight(k) {
   build(); applyAnim(); // the camera stays where the customer had it
   renderEstimate(); renderPergolaOptions(); renderLightPop();
 }
+window.lightGroups = lightGroups; window.lightPatch = lightPatch; window.lightCurOf = lightCurOf;
 $('tb-light').onclick = () => { renderLightPop(); togglePop($('tb-light'), $('tb-lights')); };
 $('tb-lights').addEventListener('click', (e) => { const b = e.target.closest('[data-light]'); if (b) setLight(b.dataset.light); });
 function togglePop(btn, pop, force) {

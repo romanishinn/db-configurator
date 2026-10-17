@@ -291,7 +291,9 @@ body.cust #hint { display: none !important; }
   /* an open panel uses all the room between the 3D and the price bar (3D 34vh, icon row ~56px, bar ~76px) */
   body.cust .toolbar .tb-pop { max-height: calc(100vh - 34vh - 56px - 76px - 6px); max-height: calc(100dvh - 34vh - 56px - 76px - 6px); overflow-y: auto; }
   /* compact chips in the colour / light panels */
-  body.cust .toolbar #tb-colors .row button, body.cust .toolbar #tb-lights button { font-size: 12px; padding: 4px 8px 4px 4px; }
+  body.cust .toolbar #tb-colors .row button { font-size: 12px; padding: 4px 8px 4px 4px; }
+  body.cust .toolbar #tb-lights button { font-size: 12px; padding: 5px 9px; }
+  body.cust .toolbar #tb-lights .t { font-size: 10px; }
   body.cust .toolbar #tb-colors .row button .sw { width: 18px; height: 18px; }
   body.cust .toolbar #tb-colors .t { font-size: 10px; }
 }

@@ -243,7 +243,7 @@
       roofSlideD: 'Die Lamellen kippen und falten sich zur Seite zusammen – der Himmel wird frei.',
       slideStack: (st, rest, side) => `Ganz geöffnet liegen die Lamellen gefaltet ${side}: ca. ${st} m, ${rest} m sind offen.`, sideWall: 'an der Hauswand', sideEdge: 'an einer Seite',
       reqPosts: 'Zusätzliche Stützen (Tiefe über 6 m)', pergolaSlide: 'Lamellen-Schiebedach', part: 'Teil',
-      lightsSlide: { none: 'Kein Licht', bwhite: 'LED in der Rinne, warmweiß', brgbw: 'LED in der Rinne, RGBW', cwhitergb: 'LED in der Rinne, weiß + RGB' },
+      lightG: { louvre: 'In den Lamellen', gutter: 'In der Rinne, rundum', crown: 'Spots im Rahmen', posts: 'An den Stützen' }, lightI: { none: 'Ohne', white: 'LED-Band warmweiß', rgb: 'LED-Band RGB', rgbw: 'LED-Band RGBW', spots: 'LED-Spots, 3 pro Lamelle', lamps: 'LED-Lampen, 2 pro Lamelle', bwhite: 'warmweiß', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'weiß + RGB', crown8: '8 LED-Spots', postsAll: 'Leuchte an jeder Stütze' }, crownNote: 'Nur an Seiten ohne Glas oder ZIP-Screen', perLouvre: 'pro Lamelle', lightsSlide: { none: 'Kein Licht', bwhite: 'LED in der Rinne, warmweiß', brgb: 'LED in der Rinne, RGB', brgbw: 'LED in der Rinne, RGBW', cwhitergb: 'LED in der Rinne, weiß + RGB' },
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `gefaltet ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
@@ -257,7 +257,7 @@
       roofSlideD: 'The louvres tilt and fold together to one side – the sky opens up.',
       slideStack: (st, rest, side) => `Fully open, the folded louvres sit ${side}: about ${st} m, ${rest} m are open.`, sideWall: 'at the house wall', sideEdge: 'on one side',
       reqPosts: 'Additional posts (depth over 6 m)', pergolaSlide: 'Sliding louvre roof', part: 'part',
-      lightsSlide: { none: 'No light', bwhite: 'LED in the gutter, warm white', brgbw: 'LED in the gutter, RGBW', cwhitergb: 'LED in the gutter, white + RGB' },
+      lightG: { louvre: 'In the louvres', gutter: 'In the gutter, all round', crown: 'Spots in the frame', posts: 'On the posts' }, lightI: { none: 'None', white: 'LED strip, warm white', rgb: 'LED strip, RGB', rgbw: 'LED strip, RGBW', spots: 'LED spots, 3 per louvre', lamps: 'LED lamps, 2 per louvre', bwhite: 'warm white', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'white + RGB', crown8: '8 LED spots', postsAll: 'a light on every post' }, crownNote: 'Only on sides without glass or a ZIP screen', perLouvre: 'per louvre', lightsSlide: { none: 'No light', bwhite: 'LED in the gutter, warm white', brgb: 'LED in the gutter, RGB', brgbw: 'LED in the gutter, RGBW', cwhitergb: 'LED in the gutter, white + RGB' },
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `folded ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
@@ -271,7 +271,7 @@
       roofSlideD: 'Ламели наклоняются и складываются к одной стороне – открывается небо.',
       slideStack: (st, rest, side) => `Полностью открытые ламели лежат пакетом ${side}: около ${st} м, открыто ${rest} м.`, sideWall: 'у стены дома', sideEdge: 'с одной стороны',
       reqPosts: 'Дополнительные стойки (глубина больше 6 м)', pergolaSlide: 'Пергола с раздвижной крышей', part: 'часть',
-      lightsSlide: { none: 'Без света', bwhite: 'LED в желобе, тёплый белый', brgbw: 'LED в желобе, RGBW', cwhitergb: 'LED в желобе, белый + RGB' },
+      lightG: { louvre: 'В ламелях', gutter: 'В желобе по периметру', crown: 'Споты в раме', posts: 'На стойках' }, lightI: { none: 'Нет', white: 'LED-лента, тёплый белый', rgb: 'LED-лента RGB', rgbw: 'LED-лента RGBW', spots: 'LED-споты, 3 в ламели', lamps: 'LED-лампы, 2 в ламели', bwhite: 'тёплый белый', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'белый + RGB', crown8: '8 LED-спотов', postsAll: 'светильник на каждой стойке' }, crownNote: 'Только на сторонах без стекла и ZIP-скрина', perLouvre: 'в ламели', lightsSlide: { none: 'Без света', bwhite: 'LED в желобе, тёплый белый', brgb: 'LED в желобе, RGB', brgbw: 'LED в желобе, RGBW', cwhitergb: 'LED в желобе, белый + RGB' },
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `сложены ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
@@ -403,11 +403,13 @@
         if (l.code === 'OPT_HEATERS') d = (t.heats[p.set] || t.heats.other) + (p.qty > 1 ? ' × ' + p.qty : '');
         if (l.code === 'OPT_SENSOR') d = t.weathers[p.sensor] || '';
         if (l.code === 'OPT_SMART') d = t.apps[p.unit] || '';
-        if (l.code === 'OPT_LED_LOUVRES') d = p.colour === 'white' ? t.lights.white : p.colour === 'rgbw' ? t.lights.rgbw : 'RGB';
+        if (l.code === 'OPT_LED_LOUVRES') d = `${t.lightI[p.colour] || p.colour} · ${p.louvres} ${t.roof}`;
         if (l.code === 'OPT_SOCKET') d = (p.kind === 'usb' ? 'USB' : '230 V') + ' × ' + p.qty;
         if (l.code === 'OPT_INTERMEDIATE_POST') d = '× ' + p.qty;
         if (l.code === 'OPT_REQUIRED_POST_HEIGHT') d = `≤ ${metres(p.height)} ${t.m} · × ${p.posts}`;
-        if (l.code === 'OPT_LED_GUTTER' && o.family === 'SLIDE') d = t.lightsSlide[p.type] || '';
+        if (l.code === 'OPT_LED_GUTTER') d = t.lightI[p.type] || '';
+        if (l.code === 'OPT_SPOTS' || l.code === 'OPT_LAMPS') d = `${p.louvres} ${t.roof} × ${p.perLouvre} ${t.perLouvre}`;
+        if (l.code === 'OPT_CROWN_SPOTS' || l.code === 'OPT_VERTICAL_LAMPS') d = '× ' + p.points;
         const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST', 'OPT_REQUIRED_POST_HEIGHT'].includes(l.code) ? 'pergola' : 'comfort';
         out.push({ g, t: t.opt[l.code] || l.code, d, a: l.a });
       } else if (l.k === 'glass') out.push({ g: 'sides', t: `${t.fills.glass} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${l.panels} ${t.panelsW} · ${t.tints[l.glazing]} ${l.thick} mm`, a: l.a });
@@ -627,12 +629,13 @@
     // longer choices are a list (one row each, text left, price right); yes/no and counts stay short chips
     const card = (title, desc, chips, list = true) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div><div class="f-chips${list ? ' f-list' : ''}">${chips}</div>`;
     const chip = (attr, cur, label, delta) => `<button type="button" class="f-chip" ${attr} aria-pressed="${cur}">${esc(label)}${delta !== undefined ? `<span class="pr">${plusE(delta)}</span>` : ''}</button>`;
-    // Slide has no lighting inside the louvres: light comes from the gutter
-    const lightCur = slide ? po.ledGutter || 'none' : po.ledLouvres ? po.ledLouvres.colour : po.spots ? 'spots' : 'none';
-    const LIGHT = slide ? { none: null, bwhite: { ledGutter: 'bwhite' }, brgbw: { ledGutter: 'brgbw' }, cwhitergb: { ledGutter: 'cwhitergb' } }
-      : { none: null, white: { ledLouvres: { colour: 'white', louvres: 5 } }, rgbw: { ledLouvres: { colour: 'rgbw', louvres: 5 } }, spots: { spots: { perLouvre: 3, louvres: 5 } } };
+    // light: every kind the price list has for this type, in groups that combine (Slide: gutter and posts only)
     let h = `<h2>${t.s3}</h2><p class="f-lead">${t.s3l}</p>`;
-    h += card(t.light, t.lightD, Object.entries(LIGHT).map(([k, p]) => chip(`data-light="${k}"`, lightCur === k, (slide ? t.lightsSlide : t.lights)[k], p ? optDelta(p) : undefined)).join(''));
+    const recess = Object.values(state.fills).some((f) => f === 'glass' || f === 'zip');
+    window.lightGroups().forEach((g, i) => {
+      const chips = g.items.map((k) => chip(`data-light="${g.k}:${k}"`, window.lightCurOf(g.k) === k, t.lightI[k], k === 'none' ? undefined : optDelta(window.lightPatch(g.k, k)))).join('');
+      h += card(i === 0 ? `${t.light} · ${t.lightG[g.k]}` : t.lightG[g.k], i === 0 ? t.lightD : g.k === 'crown' && recess ? t.crownNote : '', chips);
+    });
     const heaters = cat.optionScalars.heaters[slide ? 'slide' : s500 ? 's500' : 's400'].sets.map((x) => x.id);
     const heatList = (slide ? ['s5.single', 's5.double'] : ['m1.single', 'm1.pair', 'm1.double']).filter((k) => heaters.includes(k));
     const heatCur = po.heaters ? po.heaters.set : 'none';
@@ -854,7 +857,7 @@
     const po = state.po;
     if (i === 0) return false; // the size is always looked at first
     if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none');
-    if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
+    if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
     if (i === 3) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
     return false;
   }
@@ -999,7 +1002,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { ...L().lights, ...L().lightsSlide } : null; if (!$('tb-lights').hidden) renderLightPop();
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; if (!$('tb-lights').hidden) renderLightPop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
