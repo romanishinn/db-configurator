@@ -227,3 +227,12 @@ body.cust #hint { display: none !important; }
 @media (max-width: 760px) {
   #f-card { position: fixed; left: 0; right: 0; bottom: 0; width: auto; max-width: none; max-height: 72vh; border-radius: 16px 16px 0 0; z-index: 70; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* screen control: three pictures (remote · wall button · smartphone) */
+.f-ctl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 4px; }
+.f-ctl button { display: grid; justify-items: center; gap: 4px; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 6px 8px; cursor: pointer; }
+.f-ctl button svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.f-ctl button b { font-size: 13.5px; font-weight: 600; }
+.f-ctl button small { font-size: 11px; color: var(--good); font-weight: 600; min-height: 1.2em; }
+.f-ctl button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); color: var(--accent); }
+.f-ctl button[aria-pressed="true"] b { color: var(--ink); }
