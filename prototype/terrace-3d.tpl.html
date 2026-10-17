@@ -72,7 +72,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 #photo-marks text { fill: #fff; font: 700 12px/1 var(--f-body); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
 #photo-marks.done polygon { fill: none; stroke-opacity: .55; }
 #photo-marks.hide { display: none; }
-body.photo-marking #hotspots { display: none; }
+body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside only while a point is being dragged */
 @media (max-width: 760px) { #photo-bar { left: 6px; right: 6px; top: 6px; padding: 5px 6px; font-size: 11px; gap: 4px 6px; flex-wrap: nowrap; } #photo-bar .txt { display: none; } #photo-bar .txt-s { display: block; flex: 1 1 auto; min-width: 0; line-height: 1.25; } #photo-bar button { font-size: 11.5px; padding: 5px 7px; white-space: nowrap; } #photo-new { display: none; } }
 .toolbar { position: relative; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 8px 12px; font-size: 12.5px; }
 .toolbar .tb-row { display: flex; gap: 6px; flex: 1 1 100%; }
@@ -901,7 +901,6 @@ function applyPhotoCamera() {
 function drawMarks() {
   const svg = $('photo-marks');
   svg.classList.toggle('hide', !PHOTO.pts || !PHOTO.marks);
-  document.body.classList.toggle('photo-marking', !!PHOTO.pts && PHOTO.marks); // side "+" buttons step aside while the points are moved
   if (!PHOTO.pts) { svg.innerHTML = ''; return; }
   const F = photoFit(), vp = PHOTO.pts.map(([x, y]) => [F.ox + x * F.k, F.oy + y * F.k]);
   svg.classList.toggle('done', !photoBad);
@@ -914,6 +913,7 @@ let dragI = -1;
 $('photo-marks').addEventListener('pointerdown', (e) => {
   const g = e.target.closest('g[data-i]'); if (!g) return;
   dragI = Number(g.dataset.i); e.preventDefault(); e.stopPropagation(); $('photo-marks').setPointerCapture(e.pointerId);
+  document.body.classList.add('photo-dragging');
 });
 $('photo-marks').addEventListener('pointermove', (e) => {
   if (dragI < 0) return;
@@ -922,7 +922,7 @@ $('photo-marks').addEventListener('pointermove', (e) => {
   PHOTO.pts[dragI] = [(x - F.ox) / F.k, (y - F.oy) / F.k];
   applyPhotoCamera();
 });
-const endDrag = () => { if (dragI >= 0 && typeof window.onPhoto === 'function') window.onPhoto(true, true); dragI = -1; };
+const endDrag = () => { document.body.classList.remove('photo-dragging'); if (dragI >= 0 && typeof window.onPhoto === 'function') window.onPhoto(true, true); dragI = -1; };
 $('photo-marks').addEventListener('pointerup', endDrag); $('photo-marks').addEventListener('pointercancel', endDrag);
 function setPhoto(file) {
   if (!file || !/^image\//.test(file.type)) return;
