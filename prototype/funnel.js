@@ -743,7 +743,13 @@
   }
   let lastMailto = '';
   function openMail() { window.__lastMailto = lastMailto; const a = document.createElement('a'); a.href = lastMailto; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+  /** take the values straight from the fields (browser autofill does not always send input events) */
+  function syncForm() {
+    const f = F.querySelector('#f-form'); if (!f || f.tagName !== 'FORM') return; // after sending it is the confirmation box
+    for (const el of Array.from(f.elements)) if (el.name && el.name in form) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
+  }
   function sendRequest() {
+    syncForm();
     const t = L(); formErr = {};
     if (!form.name.trim()) formErr.name = t.required;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
@@ -832,7 +838,15 @@
     if (d.lang) { setLang(d.lang); return; }
     if (d.mode) { setMode(d.mode); return; }
     if (d.step !== undefined) { step = Number(d.step); focusId = null; render(); return; }
-    if (d.go) { if (d.go === 'form') { const f = F.querySelector('#f-form'); if (f) { f.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = f.querySelector('input'); if (i) setTimeout(() => i.focus(), 400); } return; } go(Number(d.go)); return; }
+    if (d.go) {
+      if (d.go === 'form') { // "Send request" in the bar: send when the form is filled, otherwise go to the first missing field
+        syncForm();
+        const okMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+        const missing = !form.name.trim() ? 'name' : !okMail ? 'email' : null;
+        if (!missing && !sentOk) { sendRequest(); return; }
+        const f = F.querySelector('#f-form'); if (f) { const i = f.querySelector(`[name="${missing || 'name'}"]`) || f; i.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (missing && i !== f) setTimeout(() => i.focus(), 400); }
+        return;
+      } go(Number(d.go)); return; }
     if (d.resume) { const s = resumeOffer; resumeOffer = null; if (d.resume === 'yes' && s) restore(s); else { dirty = true; render(); persist(); } return; }
     if (d.mount) { setMount(d.mount); return; }
     if (d.nudge) { const k = d.nudge, v = (k === 'w' ? state.width : state.depth) + Number(d.d); if (k === 'w') setDims(v, state.depth); else setDims(state.width, v); return; }
