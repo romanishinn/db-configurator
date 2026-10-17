@@ -247,7 +247,7 @@
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `Lamellen gefaltet: ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
-      ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
+      ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'ohne zweiten Sender – Empfangsmodul in der Stütze', remote: 'kleiner zusätzlicher Handsender nur für die Screens', smart: 'per App am Smartphone, auch unterwegs', switch: 'fester Taster an der Wand, nur mit YOODA- oder Somfy-Motoren', solar: 'Motor mit Solarpanel, kein Stromkabel, eigener Handsender' },
       photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Ziehen Sie die 4 Punkte dorthin, wo die Stützen stehen sollen: 1 und 2 an der Hauswand (links, rechts), 3 und 4 vorne. Die Pergola stellt sich in die Perspektive des Fotos. Das Foto bleibt in Ihrem Browser.', photoBad: 'Punkte vertauscht: 1 und 2 an der Wand links und rechts, 3 und 4 vorne rechts und links.', photoPts: 'Punkte', photoHelpS: '4 Punkte auf die Ecken der Pergola ziehen', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
     },
@@ -261,7 +261,7 @@
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `louvres folded: ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
-      ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
+      ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'no second remote – receiver module in the post', remote: 'small extra remote just for the screens', smart: 'with the smartphone app, also when away', switch: 'fixed push button on the wall, only with YOODA or Somfy motors', solar: 'motor with solar panel, no power cable, own remote' },
       photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Drag the 4 points to where the posts will stand: 1 and 2 at the house wall (left, right), 3 and 4 at the front. The pergola takes the perspective of the photo. The photo stays in your browser.', photoBad: 'Points mixed up: 1 and 2 at the wall left and right, 3 and 4 at the front right and left.', photoPts: 'Points', photoHelpS: 'Drag the 4 points to the pergola corners', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
     },
@@ -275,7 +275,7 @@
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `ламели сложены: ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
-      ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
+      ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
       ctlH: { pergola: 'без второго пульта – приёмный блок в стойке', remote: 'небольшой отдельный пульт только для скринов', smart: 'через приложение в смартфоне, и вне дома', switch: 'кнопка на стене, только с моторами YOODA или Somfy', solar: 'мотор с солнечной панелью, без кабеля, свой пульт' },
       photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Перетащите 4 точки туда, где будут стоять стойки: 1 и 2 – у стены дома (слева и справа), 3 и 4 – впереди. Пергола сама встанет в перспективу фото. Фото остаётся в вашем браузере.', photoBad: 'Точки перепутаны: 1 и 2 – у стены слева и справа, 3 и 4 – впереди справа и слева.', photoPts: 'Точки', photoHelpS: 'Перетащите 4 точки на углы перголы', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
@@ -497,9 +497,11 @@
   };
   /** three pictures: remote (standard), wall button, smartphone — nothing else to think about */
   function ctlRows(t, attr, isCur, modeForOf, extra = '') {
+    // a way that is not possible for this screen (e.g. solar on a very wide one) stays visible but greyed out
     return `<div class="f-ctl">` + CTL_MODES.map((m) => {
-      if (!brandFor(modeForOf(m))) return ''; // not possible here (e.g. no pergola remote on the sliding roof)
-      return `<button type="button" ${attr}="${m}" ${extra} aria-pressed="${isCur(m)}">${CTL_ICON[m]}<b>${esc(t.ctlS[m])}</b><small>${m === 'pergola' ? esc(t.ctlStd) : '&nbsp;'}</small></button>`;
+      const ok = !!brandFor(modeForOf(m));
+      if (!ok && m === 'pergola' && curOpt() && curOpt().family === 'SLIDE') return ''; // sliding roof: no pergola remote for screens
+      return `<button type="button" ${attr}="${m}" ${extra} aria-pressed="${ok && isCur(m)}" ${ok ? '' : 'disabled'}>${CTL_ICON[m]}<b>${esc(t.ctlS[m])}</b><small${ok ? '' : ' class="na"'}>${!ok ? esc(t.ctlNa) : m === 'pergola' ? esc(t.ctlStd) : ''}</small></button>`;
     }).join('') + `</div>`;
   }
   const zipIds = () => opsOf(curOpt()).filter((x) => state.fills[x.id] === 'zip').map((x) => x.id);
