@@ -284,3 +284,10 @@ body.cust #hint { display: none !important; }
 .q tr.g td { font-size: 7.5pt; text-transform: uppercase; letter-spacing: .06em; color: #666; font-weight: 600; padding-top: 6px; border-bottom: 1px solid #bbb; }
 .q .notes { font-size: 8pt; margin-top: 6px; columns: 2; column-gap: 8mm; }
 .q .foot { font-size: 8pt; margin-top: 6px; padding-top: 4px; }
+
+/* phones: an open toolbar panel (colours, light, sliders) scrolls inside itself, so the 3D + panel never fill the
+   whole screen; the price bar stays above everything */
+@media (max-width: 760px) {
+  body.cust .toolbar .tb-pop { max-height: 30vh; overflow-y: auto; overscroll-behavior: contain; }
+  body.cust .f-bar { z-index: 20; }
+}

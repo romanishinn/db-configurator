@@ -1664,13 +1664,17 @@ function renderColorQuick() {
   h += `<div class="t">${tx.roof}</div>` + colourRow('roof');
   if (fills.includes('zip')) {
     h += `<div class="t">${tx.zip}</div>` + colourRow('zip');
+    // fabric of the ZIP screens: openness (how much you see through), the cheapest collection that is made this size
+    const curOf = fabricOf().openness, ofNames = tx.ofName || OF_NAME;
+    h += `<div class="t">${tx.fabricOf || 'Ткань ZIP'}</div><div class="row">${opennessList().map((of) => `<button type="button" data-qof="${of}" aria-pressed="${curOf === of}">${of} % · ${ofNames[of] || ''}</button>`).join('')}</div>`;
     h += `<div class="t">${tx.fabric}</div><div class="row">${FABRIC_TONES.map(([hx, n], i) => sw('data-tone', hx, hx, (tx.toneNames && tx.toneNames[i]) || n, state.colors.tone === hx)).join('')}</div>`;
   }
   if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels')) h += `<div class="t">${tx.slide}</div>` + colourRow('slide');
   $('tb-colors').innerHTML = h;
 }
 $('tb-colors').addEventListener('click', (e) => {
-  const g = e.target.closest('[data-gtint]'), c = e.target.closest('[data-qcol]'), t = e.target.closest('[data-tone]');
+  const g = e.target.closest('[data-gtint]'), c = e.target.closest('[data-qcol]'), t = e.target.closest('[data-tone]'), of = e.target.closest('[data-qof]');
+  if (of) { state.colors.fabric = fabricForOpenness(Number(of.dataset.qof)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); renderColorQuick(); return; }
   if (g) { state.glass.type = g.dataset.gtint; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); applyAnim(); renderColors(); renderEstimate(); }
   if (c) { if (c.dataset.qcol) setColor(c.dataset.part, c.dataset.qcol); else { state.colors[c.dataset.part] = null; applyColors(); renderColors(); renderEstimate(); } }
   if (t) { state.colors.tone = t.dataset.tone; applyColors(); renderColors(); if (typeof window.onEstimate === 'function') window.onEstimate(); }
