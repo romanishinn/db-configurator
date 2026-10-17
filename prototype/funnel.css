@@ -289,5 +289,10 @@ body.cust #hint { display: none !important; }
    whole screen; the price bar stays above everything */
 @media (max-width: 760px) {
   body.cust .toolbar .tb-pop { max-height: 30vh; overflow-y: auto; overscroll-behavior: contain; }
-  body.cust .f-bar { z-index: 20; }
+  /* compact chips in the colour / light panels */
+  body.cust .toolbar #tb-colors .row button, body.cust .toolbar #tb-lights button { font-size: 12px; padding: 4px 8px 4px 4px; }
+  body.cust .toolbar #tb-colors .row button .sw { width: 18px; height: 18px; }
+  body.cust .toolbar #tb-colors .t { font-size: 10px; }
 }
+
+.f-steps button[data-check="true"] .n { color: var(--good); }

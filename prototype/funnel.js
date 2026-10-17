@@ -441,7 +441,7 @@
     const head = `<div class="f-head"><span class="f-brand">${esc(OFFICE.name)}</span><span class="sp"></span>
       <span class="f-lang" role="group" aria-label="Language">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${k.toUpperCase()}</button>`).join('')}</span>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
-    const steps = `<ol class="f-steps">${t.steps.map((s, i) => `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${i < step}"><span class="n">${i + 1}</span>${esc(s)}</button></li>`).join('')}</ol>`;
+    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 4 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
     const body = [stepSize, stepSides, stepComfort, stepColours, stepOffer][step](t, o);
     // keep the tapped control where the finger is: re-rendering the panel must not move the page
     const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
@@ -458,7 +458,8 @@
     const total = q().total, ok = !!o && total > 0;
     const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
-    const nextLabel = step === 3 ? esc(t.toOffer) : step === 4 ? esc(t.send) : esc(t.next) + `<span class="nx">: ${esc(t.steps[step + 1])}</span>`;
+    const to = step < 4 ? nextStep() : 4;
+    const nextLabel = step === 4 ? esc(t.send) : to === 4 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
     return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 4 ? ' →' : ''}</button></div>`;
   }
 
@@ -845,7 +846,24 @@
   /* ---------- actions ---------- */
   const rebuild = () => { syncGlassControls(); build(); renderEstimate(); renderPergolaOptions(); };
   // the 3D view stays exactly as the customer left it when the step changes
-  function go(d) { step = Math.max(0, Math.min(4, step + d)); focusId = null; lastTap = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  /* ---------- steps already answered: a ✓ on the step, and "Next" jumps over them ---------- */
+  const visited = new Set(); // steps the customer went on from with "Next"
+  const DEF_COLORS = { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' };
+  function stepDone(i) {
+    if (visited.has(i)) return true;
+    const po = state.po;
+    if (i === 0) return false; // the size is always looked at first
+    if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none');
+    if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
+    if (i === 3) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
+    return false;
+  }
+  /** the step "Next" leads to: the next one not answered yet, else the offer */
+  function nextStep() { for (let i = step + 1; i < 4; i++) if (!stepDone(i)) return i; return 4; }
+  function go(d) {
+    if (d > 0) { visited.add(step); step = nextStep(); } else step = Math.max(0, step - 1);
+    focusId = null; lastTap = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   let dimT = 0;
   /** typed size in metres -> mm; the same value again does nothing (a blur must not re-render under the user's next tap) */
   function applyDim(el) {
