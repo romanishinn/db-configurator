@@ -240,3 +240,17 @@ body.cust #hint { display: none !important; }
 .f-ctl { grid-auto-flow: column; grid-auto-columns: 1fr; grid-template-columns: none; }
 .f-ctl button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); color: var(--accent); }
 .f-ctl button[aria-pressed="true"] b { color: var(--ink); }
+
+/* phone held sideways (low screen): the 3D keeps the left part, the side card becomes a panel on the right
+   with the "Done" button always in reach; the hint banner gets small */
+@media (max-height: 520px) and (orientation: landscape) {
+  body.cust .vp { height: calc(100vh - 70px) !important; min-height: 240px; }
+  #f-card { position: fixed; left: auto; right: 8px; top: 8px; bottom: 8px; width: min(380px, 48vw); max-width: none; max-height: none; border-radius: 14px; z-index: 70; padding: 10px 12px 0; overflow: auto; }
+  #f-card .fc-q { margin: 8px 0 6px; }
+  .fc-fills .g { width: 38px; height: 38px; font-size: 16px; }
+  #f-card .f-ctl button { padding: 6px 2px 4px; grid-template-rows: 26px 2.4em 1.2em; }
+  #f-card .f-ctl button svg { width: 24px; height: 24px; }
+  #f-card .f-ctl button b { font-size: 11.5px; }
+  .fc-done { position: sticky; bottom: 0; margin: 10px 0 0; box-shadow: 0 -8px 10px var(--panel); }
+  #f-cta { font-size: 11.5px; padding: 5px 10px 5px 8px; top: 6px; }
+}

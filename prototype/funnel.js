@@ -247,7 +247,7 @@
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `gefaltet ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
-      ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
+      tbLight: 'Licht', tbUnder: 'Von unten', ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'ohne zweiten Sender – Empfangsmodul in der Stütze', remote: 'kleiner zusätzlicher Handsender nur für die Screens', smart: 'per App am Smartphone, auch unterwegs', switch: 'fester Taster an der Wand, nur mit YOODA- oder Somfy-Motoren', solar: 'Motor mit Solarpanel, kein Stromkabel, eigener Handsender' },
       photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Ziehen Sie die 4 Punkte dorthin, wo die Stützen stehen sollen: 1 und 2 an der Hauswand (links, rechts), 3 und 4 vorne. Die Pergola stellt sich in die Perspektive des Fotos. Das Foto bleibt in Ihrem Browser.', photoBad: 'Punkte vertauscht: 1 und 2 an der Wand links und rechts, 3 und 4 vorne rechts und links.', photoPts: 'Punkte', photoHelpS: '4 Punkte auf die Ecken der Pergola ziehen', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
     },
@@ -261,7 +261,7 @@
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `folded ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
-      ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
+      tbLight: 'Light', tbUnder: 'From below', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'no second remote – receiver module in the post', remote: 'small extra remote just for the screens', smart: 'with the smartphone app, also when away', switch: 'fixed push button on the wall, only with YOODA or Somfy motors', solar: 'motor with solar panel, no power cable, own remote' },
       photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Drag the 4 points to where the posts will stand: 1 and 2 at the house wall (left, right), 3 and 4 at the front. The pergola takes the perspective of the photo. The photo stays in your browser.', photoBad: 'Points mixed up: 1 and 2 at the wall left and right, 3 and 4 at the front right and left.', photoPts: 'Points', photoHelpS: 'Drag the 4 points to the pergola corners', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
     },
@@ -275,7 +275,7 @@
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `сложены ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
-      ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
+      tbLight: 'Свет', tbUnder: 'Снизу', ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
       ctlH: { pergola: 'без второго пульта – приёмный блок в стойке', remote: 'небольшой отдельный пульт только для скринов', smart: 'через приложение в смартфоне, и вне дома', switch: 'кнопка на стене, только с моторами YOODA или Somfy', solar: 'мотор с солнечной панелью, без кабеля, свой пульт' },
       photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Перетащите 4 точки туда, где будут стоять стойки: 1 и 2 – у стены дома (слева и справа), 3 и 4 – впереди. Пергола сама встанет в перспективу фото. Фото остаётся в вашем браузере.', photoBad: 'Точки перепутаны: 1 и 2 – у стены слева и справа, 3 и 4 – впереди справа и слева.', photoPts: 'Точки', photoHelpS: 'Перетащите 4 точки на углы перголы', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
@@ -287,7 +287,7 @@
     T[l].weathers.windSun = x.windSun;
     Object.assign(T[l].heats, x.heatsSlide);
     T[l].opt.OPT_REQUIRED_POST_HEIGHT = x.reqPostH;
-    Object.assign(T[l].tb, { sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen, photo: x.photo, photoT: x.photoT, photoHelp: x.photoHelp, photoHelpS: x.photoHelpS, photoBad: x.photoBad, photoPts: x.photoPts, photoShot: x.photoShot, photoNew: x.photoNew, photoOff: x.photoOff });
+    Object.assign(T[l].tb, { light: x.tbLight, under: x.tbUnder, sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen, photo: x.photo, photoT: x.photoT, photoHelp: x.photoHelp, photoHelpS: x.photoHelpS, photoBad: x.photoBad, photoPts: x.photoPts, photoShot: x.photoShot, photoNew: x.photoNew, photoOff: x.photoOff });
   }
 
   /* ---------- small helpers ---------- */
@@ -855,13 +855,7 @@
     if (d.of) { state.colors.fabric = fabricForOpenness(Number(d.of)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); return; }
     if (d.gl) { state.glass.type = d.gl; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); renderColors(); renderEstimate(); return; }
     const po = state.po;
-    if (d.light) {
-      po.ledLouvres = null; po.spots = null;
-      if (o && o.family === 'SLIDE') po.ledGutter = d.light === 'none' ? null : d.light; // Slide: LED in the gutter
-      if (d.light === 'white' || d.light === 'rgbw') po.ledLouvres = { colour: d.light, louvres: 5 };
-      if (d.light === 'spots') po.spots = { perLouvre: 3, louvres: 5 };
-      rebuild(); return;
-    }
+    if (d.light) { setLight(d.light); syncGlassControls(); return; } // same as the light button on the 3D: shown at once
     if (d.heat) { po.heaters = d.heat === 'none' ? null : { set: d.heat, qty: 1 }; rebuild(); return; }
     if (d.sensor) { po.sensors = d.sensor === 'none' ? null : d.sensor; rebuild(); return; }
     if (d.smart) { po.smart = d.smart === 'none' ? null : d.smart; rebuild(); return; }
@@ -918,7 +912,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo);
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { ...L().lights, ...L().lightsSlide } : null; if (!$('tb-lights').hidden) renderLightPop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
