@@ -32,7 +32,9 @@ body.cust .app { grid-template-columns: minmax(0, 1fr) 440px; }
 .f-card .pr { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
 .f-card[aria-pressed="true"] .pr { color: var(--ink); }
 .f-dims { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.f-dim label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+/* the two fields stay on one line: a label that wraps grows upwards, the steppers stay level */
+.f-dim { display: flex; flex-direction: column; }
+.f-dim label { flex: 1; display: flex; align-items: flex-end; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
 .f-step { display: grid; grid-template-columns: 38px 1fr 38px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--bg); }
 .f-step button { font: inherit; font-size: 18px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
 .f-step input { border: 0 !important; border-radius: 0 !important; text-align: center; background: transparent !important; font-size: 17px !important; padding: 8px 2px !important; -moz-appearance: textfield; }
