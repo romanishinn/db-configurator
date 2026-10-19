@@ -301,3 +301,7 @@ body.cust #hint { display: none !important; }
 }
 
 .f-steps button[data-check="true"] .n { color: var(--good); }
+
+/* offer step: one send button (in the bar); print / link are quiet text links under the form */
+.f-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+.f-more { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); }

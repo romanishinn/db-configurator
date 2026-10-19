@@ -60,7 +60,7 @@
       grp: { pergola: 'Pergola', sides: 'Seiten', comfort: 'Komfort', colours: 'Farben und Zuschläge' },
       notIncl: 'Nicht im Preis enthalten', notInclList: ['Lieferung und Montage', 'Fundamente und Elektroanschluss', 'Behördliche Genehmigungen, falls nötig'],
       incomplete: 'Einige Positionen sind in dieser Größe nicht lieferbar und nicht im Preis.',
-      print: 'Angebot drucken oder als PDF speichern', request: 'Unverbindliche Anfrage senden', requestS: 'Wir melden uns persönlich bei Ihnen', share: 'Link kopieren', shareS: 'zum Teilen oder später weitermachen', copied: 'Link kopiert',
+      print: 'Angebot drucken oder als PDF speichern', printS: 'Angebot als PDF speichern', request: 'Unverbindliche Anfrage senden', requestS: 'Wir melden uns persönlich bei Ihnen', share: 'Link kopieren', shareS: 'zum Teilen oder später weitermachen', copied: 'Link kopiert',
       saveFile: 'Als Datei speichern', openFile: 'Datei öffnen',
       formT: 'Ihre Anfrage', name: 'Name', email: 'E-Mail', phone: 'Telefon (optional)', place: 'PLZ und Ort der Montage (optional)', when: 'Wann möchten Sie bauen?',
       whens: ['So bald wie möglich', 'In 1–3 Monaten', 'Später in diesem Jahr', 'Ich informiere mich nur'],
@@ -133,7 +133,7 @@
       grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges' },
       notIncl: 'Not included', notInclList: ['Delivery and installation', 'Foundations and electrical connection', 'Building permits, if required'],
       incomplete: 'Some items are not available in this size and are not in the price.',
-      print: 'Print the quote or save it as PDF', request: 'Send a free request', requestS: 'We will get back to you personally', share: 'Copy link', shareS: 'to share or continue later', copied: 'Link copied',
+      print: 'Print the quote or save it as PDF', printS: 'Save the offer as PDF', request: 'Send a free request', requestS: 'We will get back to you personally', share: 'Copy link', shareS: 'to share or continue later', copied: 'Link copied',
       saveFile: 'Save as file', openFile: 'Open file',
       formT: 'Your request', name: 'Name', email: 'E-mail', phone: 'Phone (optional)', place: 'Postcode and town of installation (optional)', when: 'When would you like to build?',
       whens: ['As soon as possible', 'In 1–3 months', 'Later this year', 'Just looking'],
@@ -205,7 +205,7 @@
       grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты' },
       notIncl: 'Не входит в цену', notInclList: ['Доставка и монтаж', 'Фундамент и подключение электричества', 'Разрешения, если нужны'],
       incomplete: 'Некоторые позиции в таком размере не производятся и не вошли в цену.',
-      print: 'Распечатать или сохранить PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
+      print: 'Распечатать или сохранить PDF', printS: 'Сохранить предложение в PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
       saveFile: 'Сохранить в файл', openFile: 'Открыть файл',
       formT: 'Ваш запрос', name: 'Имя', email: 'E-mail', phone: 'Телефон (необязательно)', place: 'Индекс и город монтажа (необязательно)', when: 'Когда планируете?',
       whens: ['Как можно скорее', 'Через 1–3 месяца', 'Позже в этом году', 'Пока просто смотрю'],
@@ -705,11 +705,6 @@
     }
     h += `</tbody></table><p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.gross}</p>`;
     h += `<div class="f-h3"><span>${t.notIncl}</span></div><ul class="f-incl">${t.notInclList.map((x) => `<li>${x}</li>`).join('')}</ul>`;
-    h += `<div class="f-actions">
-      <button type="button" class="f-btn primary" data-act="form">${t.request}<small>${t.requestS}</small></button>
-      <button type="button" class="f-btn" data-act="print">${t.print}</button>
-      <div class="f-row2"><button type="button" class="f-btn" data-act="share">${t.share}</button><button type="button" class="f-btn" data-act="save">${t.saveFile}</button></div>
-      <button type="button" class="f-link" data-act="open" style="justify-self:start">${t.openFile}</button><input type="file" id="f-file" accept="application/json,.json" hidden></div>`;
     h += formHtml(t);
     h += `<div class="f-h3" style="margin-top:22px"><span>${t.faqT}</span></div><div class="f-faq">${t.faq.map(([qq, a]) => `<details><summary>${qq}</summary><p>${a}</p></details>`).join('')}</div>`;
     return h;
@@ -717,7 +712,8 @@
   function formHtml(t) {
     if (sentOk) return `<div class="f-done" id="f-form"><b>${t.sentT}</b><p style="margin:6px 0 8px">${t.sent}</p><div style="display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="f-link" data-act="reopen">${t.reopen}</button><button type="button" class="f-link" data-act="copytext">${t.noMail}</button></div></div>`;
     const err = (k) => formErr[k] ? `<span class="err">${formErr[k]}</span>` : '';
-    return `<form class="f-form" id="f-form" novalidate><div class="f-h3" style="margin:22px 0 0"><span>${t.formT}</span></div>
+    // one action on this step: "Send request" in the bar; the form keeps an invisible submit so Enter works
+    return `<form class="f-form" id="f-form" novalidate><div class="f-h3" style="margin:22px 0 0"><span>${t.formT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.requestS}</span></div>
       <label>${t.name}<input type="text" name="name" autocomplete="name" value="${esc(form.name)}">${err('name')}</label>
       <label>${t.email}<input type="email" name="email" autocomplete="email" value="${esc(form.email)}">${err('email')}</label>
       <label>${t.phone}<input type="tel" name="phone" autocomplete="tel" value="${esc(form.phone)}"></label>
@@ -727,7 +723,8 @@
       <label class="chk"><input type="checkbox" name="visit" ${form.visit ? 'checked' : ''}> ${t.wantVisit}</label>
       <label>${t.msg}<textarea name="msg">${esc(form.msg)}</textarea></label>
       <p class="f-priv">${t.privacy}</p>
-      <button type="submit" class="f-btn primary">${t.sendBtn}</button></form>`;
+      <button type="submit" class="f-sr" tabindex="-1">${t.send}</button></form>
+      <p class="f-more"><button type="button" class="f-link" data-act="print">${t.printS}</button> · <button type="button" class="f-link" data-act="share">${t.share}</button></p>`;
   }
 
 
@@ -1119,12 +1116,18 @@
     Store.set('db.mode', m);
     translateToolbar(); render();
     const r = $('mode-cust'); if (r) r.hidden = m === 'cust';
+    for (const x of document.querySelectorAll('.pro-file')) x.hidden = m === 'cust';
   }
   // pro mode: a way back to the customer view, at the top of the left panel
   {
     const b = document.createElement('button'); b.type = 'button'; b.id = 'mode-cust'; b.className = 'chip'; b.textContent = '← ' + T.ru.toCust; b.style.cssText = 'float:right;margin:-4px 0 0 8px;font-size:12px';
     b.onclick = () => setMode('cust');
-    document.querySelector('.app > aside.panel').prepend(b);
+    // JSON export / import of a configuration (the storage adapter for now): for the manager only
+    const fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'application/json,.json'; fi.hidden = true;
+    fi.onchange = () => { const f = fi.files && fi.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(f); fi.value = ''; };
+    const mk = (txt, fn) => { const x = document.createElement('button'); x.type = 'button'; x.className = 'chip pro-file'; x.textContent = txt; x.style.cssText = 'float:right;margin:-4px 0 0 8px;font-size:12px'; x.onclick = fn; return x; };
+    const panel = document.querySelector('.app > aside.panel');
+    panel.prepend(b, mk(T.ru.openFile, () => fi.click()), mk(T.ru.saveFile, saveFile), fi);
   }
   function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(false); }
 
