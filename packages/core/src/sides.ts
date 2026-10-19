@@ -50,6 +50,59 @@ export function priceVerto(width: number, height: number, cat: Catalog): VertoRe
   return { ok: true, profiles: n, spacing, billedHeight: base.y, lines, total: round2(lines.reduce((s, l) => s + l.amount, 0)), issues };
 }
 
+// ---------- Win Verto packages (example configurations p.9–10) ----------
+/**
+ * Mounting of a Verto package (price list p.5, p.9–10):
+ * A – on the frame, up to the height of the open louvres; B – on the frame, up to the top of the crown;
+ * C – in the recess between the posts; D – on the frame with a corner connection (two packages meet at a corner).
+ */
+export type VertoMount = 'A' | 'B' | 'C' | 'D';
+export type PergolaFamily = 'S400' | 'S500' | 'S500_DOUBLE' | 'SLIDE';
+
+/**
+ * Profile length from the pergola height (posts to the top of the crown), p.5:
+ * recess: S400 H − 210, S500 H − 240; surface up to the louvres: S400 H + 110, S500 H + 150; surface / corner: H.
+ * ASSUMPTION: the Slide (not on p.5) — recess H − 322 (its crown), up to the louvres as S500 (H + 150).
+ */
+export function vertoProfileLength(mount: VertoMount, family: PergolaFamily, height: number): number {
+  const s400 = family === 'S400', slide = family === 'SLIDE';
+  if (mount === 'C') return height - (s400 ? 210 : slide ? 322 : 240);
+  if (mount === 'A') return height + (s400 ? 110 : 150);
+  return height;
+}
+
+/** width of a package of N profiles at the recommended spacing (p.6): 35 mm profiles, 55 mm gaps */
+export const vertoPackageWidth = (profiles: number) => profiles * (PROFILE + RECOMMENDED_SPACING) - RECOMMENDED_SPACING;
+/** how many profiles fit in a width at the recommended spacing */
+export const vertoMaxProfiles = (width: number) => Math.floor((width + RECOMMENDED_SPACING) / (PROFILE + RECOMMENDED_SPACING));
+
+/**
+ * One package of N profiles of the given length: the table column N (5–40), the row = the first height not below the
+ * length; above 40 profiles the 40-profile price + the additional profile price of that row (p.6).
+ * ASSUMPTION: fewer than 5 profiles are billed as 5 (the first column); a profile shorter than 1950 mm at the 1950 row.
+ */
+export function priceVertoPackage(profiles: number, length: number, cat: Catalog): VertoResult {
+  const t = cat.tables['verto.profiles'] as GridTable & { meta: { additionalProfile: number[] } };
+  const issues: Issue[] = [];
+  const n = Math.max(1, Math.round(profiles));
+  const billedN = Math.max(5, n);
+  if (billedN !== n) issues.push({ severity: 'info', code: 'OPT_BILLED_AT_TABLE_MIN', params: { table: t.id, x: n, billedX: billedN } });
+  let g: { price: number; y: number };
+  try {
+    g = lookupGrid(t, Math.min(billedN, 40), Math.max(length, t.y.values[0]!));
+  } catch (e) {
+    if (e instanceof OutOfRangeError) {
+      issues.push({ severity: 'block', code: 'VERTO_HEIGHT_OUT_OF_RANGE', params: { value: length, min: e.min, max: e.max } });
+      return { ok: false, profiles: n, spacing: RECOMMENDED_SPACING, billedHeight: 0, lines: [], total: 0, issues };
+    }
+    throw e;
+  }
+  const yi = t.y.values.indexOf(g.y), extra = Math.max(0, billedN - 40);
+  const lines: Line[] = [{ code: 'VERTO_PACKAGE', params: { profiles: Math.min(billedN, 40), height: g.y, length }, amount: g.price, source: { file: t.source.file, page: t.source.page, table: t.id } }];
+  if (extra) lines.push({ code: 'VERTO_ADDITIONAL', params: { profiles: extra, unit: t.meta.additionalProfile[yi]! }, amount: extra * t.meta.additionalProfile[yi]!, source: { file: t.source.file, page: t.source.page } });
+  return { ok: true, profiles: n, spacing: RECOMMENDED_SPACING, billedHeight: g.y, lines, total: round2(lines.reduce((s, l) => s + l.amount, 0)), issues };
+}
+
 export function vertoCornerPrice(cat: Catalog): number {
   return (cat.tables['verto.profiles']!.meta as { cornerConnection: number }).cornerConnection;
 }

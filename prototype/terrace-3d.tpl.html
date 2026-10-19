@@ -335,9 +335,9 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right' };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
-const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip', 'right-0': 'verto' };
+const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
 /* ---------- side pricing ---------- */
 // ASSUMPTION: opening = module width minus one post (130 mm), height = 2800 mm minus the crown. Clearances to confirm with the manufacturer.
@@ -600,13 +600,16 @@ function build() {
     });
   }
   // openings (sides) + their fillings
-  for (const o of openings(opt, sp)) {
+  migrateVerto();
+  const opsAll = openings(opt, sp);
+  for (const o of opsAll) {
     const fill = state.fills[o.id] || 'none';
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(o.len, o.h), M.pick.clone());
     plane.position.set(o.cx, o.h / 2, o.cz); plane.rotation.y = o.rotY; plane.userData = { opening: o };
     root.add(plane); pickables.push(plane);
     addFill(o, fill);
   }
+  drawVerto(opt, opsAll);
   applyAnim();
   renderLabels(opt);
   if (PHOTO.pts) applyPhotoCamera(); // a new size: the same 4 points, the pergola's real size → the camera again
@@ -714,6 +717,135 @@ function splitAtPosts(list, posts, sp) {
   }
   return out;
 }
+
+/* ---------- Win Verto packages (price list p.5–6, example configurations p.9–10) ----------
+ * A layer of vertical profiles, one package per side: on the outside of the frame (mounting A, B, D) — then ZIP or
+ * glass can still close the opening — or in the opening between the posts (C, only where the opening is open).
+ * packs[openingId] = { a?: n, b?: n, center?: n } or { full: 0 } (a / b = the ends of the side along its local x, n = profiles). */
+const VERTO_SIGN = { front: 1, right: 1, back: -1, left: -1 }; // outward side of the opening's local z
+const faceOf = (id) => id.split('-')[0];
+/** the viewer's right end of a side, seen from outside */
+const outRight = (face) => (face === 'front' || face === 'right' ? 'b' : 'a');
+const VERTO_DEFAULT_N = 7;
+function vertoGeom(o, pk, opt) { // pk = { pos, n }
+  const sp = SPEC[famKey(opt)], mount = state.verto.mount, surface = mount !== 'C';
+  const avail = surface ? o.len + 2 * sp.post : o.len; // on the frame the package can cover the posts too
+  const maxN = Math.max(2, DBCore.vertoMaxProfiles(Math.round(avail * 1000)));
+  const n = pk.pos === 'full' ? maxN : Math.max(2, Math.min(pk.n || VERTO_DEFAULT_N, maxN));
+  const w = DBCore.vertoPackageWidth(n) / 1000;
+  const pitch = pk.pos === 'full' && n > 1 ? (avail - 0.035) / (n - 1) : 0.09;
+  const x0 = pk.pos === 'a' || pk.pos === 'full' ? -avail / 2 : pk.pos === 'b' ? avail / 2 - w : -w / 2;
+  const length = DBCore.vertoProfileLength(mount, opt.family, state.po.postHeight);
+  return { n, maxN, x0, pitch, surface, length, z: surface ? VERTO_SIGN[faceOf(o.id)] * (sp.post / 2 + 0.035) : 0,
+    blocked: !surface && (state.fills[o.id] || 'none') !== 'none' };
+}
+/** pergola corners where packages of two sides meet (mounting D: corner connection, p.6) */
+function vertoCorners(opt, ops, packs) {
+  const W = opt.width / 1000, D = opt.depth / 1000, hits = {};
+  for (const { id, pk } of vertoList(packs)) {
+    const o = ops.find((x) => x.id === id); if (!o) continue;
+    const gm = vertoGeom(o, pk, opt), ends = [];
+    if (pk.pos === 'a' || pk.pos === 'full') ends.push(gm.x0);
+    if (pk.pos === 'b' || pk.pos === 'full') ends.push(gm.x0 + (gm.n - 1) * gm.pitch + 0.035);
+    for (const x of ends) {
+      const wx = o.axis === 'x' ? o.cx + x : o.cx, wz = o.axis === 'x' ? o.cz : o.cz - x;
+      for (const [cx, cz] of [[0, 0], [W, 0], [0, D], [W, D]]) if (Math.hypot(wx - cx, wz - cz) < 0.35) (hits[cx + ',' + cz] = hits[cx + ',' + cz] || new Set()).add(faceOf(id));
+    }
+  }
+  return Object.values(hits).filter((f) => f.size > 1).length;
+}
+/** price of a set of packages: per package (p.6 table) + corner connections for mounting D */
+function vertoQuote(opt, ops, packs) {
+  const items = [], bad = [];
+  let total = 0;
+  for (const { id, pk } of vertoList(packs)) {
+    const o = ops.find((x) => x.id === id); if (!o) continue;
+    const gm = vertoGeom(o, pk, opt);
+    if (gm.blocked) { if (!bad.some((b) => b.id === id)) bad.push({ id, why: 'closed' }); continue; }
+    const v = DBCore.priceVertoPackage(gm.n, gm.length, cat);
+    if (!v.ok) { bad.push({ id, why: 'height', max: v.issues[0].params.max }); continue; }
+    items.push({ id, o, pk, gm, v }); total += v.total;
+  }
+  const corners = state.verto.mount === 'D' ? vertoCorners(opt, ops, packs) : 0, cornerAmt = corners * DBCore.vertoCornerPrice(cat);
+  return { items, bad, corners, cornerAmt, total: total + cornerAmt };
+}
+/* example configurations 1–6 (p.9–10), the same for every mounting; L / R = the viewer's left / right end of a side
+ * seen from outside. ASSUMPTION: read from the pictures; with a wall the back side is the wall, its package moves to the right side. */
+const VERTO_PRESETS = {
+  1: [['left', 'R'], ['front', 'R'], ['right', 'R'], ['back', 'R']],
+  2: [['front', 'R'], ['back', 'L']],
+  3: [['front', 'R']],
+  4: [['left', 'R'], ['right', 'R']],
+  5: [['left', 'full'], ['right', 'full']],
+  6: [['front', 'C'], ['back', 'L']],
+};
+/** the corner a side end belongs to, and the other side at that corner (mounting D wraps the corner) */
+const VERTO_PARTNER = { 'front:L': ['left', 'R'], 'left:R': ['front', 'L'], 'front:R': ['right', 'L'], 'right:L': ['front', 'R'], 'right:R': ['back', 'L'], 'back:L': ['right', 'R'], 'back:R': ['left', 'L'], 'left:L': ['back', 'R'] };
+function vertoPresetPacks(k, opt, mount) {
+  const ops = openings(opt, SPEC[famKey(opt)]), wall = state.mount !== 'free';
+  const bays = (face) => ops.filter((o) => faceOf(o.id) === face).sort((p, q) => (p.axis === 'x' ? p.cx - q.cx : p.cz - q.cz));
+  const has = (face) => bays(face).length > 0;
+  let list = VERTO_PRESETS[k].map((e) => [...e]);
+  if (wall) list = list.map(([f, w]) => (f === 'back' ? (k === 1 ? null : ['right', 'R']) : [f, w])).filter(Boolean);
+  if (mount === 'D') for (const [f, w] of [...list]) { const p = VERTO_PARTNER[f + ':' + w]; if (p && has(p[0]) && !list.some(([a, b]) => a === p[0] && b === p[1])) list.push(p); }
+  const packs = {};
+  for (const [face, where] of list) {
+    const b = bays(face); if (!b.length) continue;
+    if (where === 'full') { for (const o of b) packs[o.id] = { full: 0 }; continue; }
+    if (where === 'C') { const id = b[Math.floor((b.length - 1) / 2)].id; packs[id] = { ...(packs[id] || {}), center: VERTO_DEFAULT_N }; continue; }
+    const end = where === 'R' ? outRight(face) : outRight(face) === 'b' ? 'a' : 'b';
+    // the outermost opening at that end: bays are sorted along world x / z; local +x is world +x on front/back, −z on the sides
+    const o = (end === 'b') === (b[0].axis === 'x') ? b[b.length - 1] : b[0];
+    if (!(packs[o.id] && packs[o.id].full !== undefined)) packs[o.id] = { ...(packs[o.id] || {}), [end]: VERTO_DEFAULT_N };
+  }
+  return packs;
+}
+function setVertoPreset(k) {
+  const opt = state.options[state.optIndex]; if (!opt) return;
+  state.verto.preset = k ? Number(k) : null;
+  state.verto.packs = k ? vertoPresetPacks(Number(k), opt, state.verto.mount) : {};
+  build(); renderEstimate();
+}
+function setVertoMount(m) {
+  state.verto.mount = m;
+  const opt = state.options[state.optIndex];
+  if (state.verto.preset && opt) state.verto.packs = vertoPresetPacks(state.verto.preset, opt, m); // D adds the corner partners
+  build(); renderEstimate();
+}
+/** the packages as a list: { id, pk: { pos, n } } */
+function vertoList(packs) {
+  const out = [];
+  for (const [id, m] of Object.entries(packs || {})) for (const pos of ['full', 'a', 'center', 'b']) if (m[pos] !== undefined) out.push({ id, pk: { pos, n: m[pos] } });
+  return out;
+}
+/** one side: 'none' clears it, 'full' = the whole side, a / b / center switch a package on or off; n = profiles (all packages of the side) */
+function setVertoPack(id, pos, n) {
+  const packs = state.verto.packs, cur = packs[id] || {};
+  if (pos === 'none') delete packs[id];
+  else if (pos === 'full') packs[id] = { full: 0 };
+  else if (pos === 'n') { for (const k of ['a', 'b', 'center']) if (cur[k] !== undefined) cur[k] = n; packs[id] = cur; }
+  else { const m = { ...cur }; delete m.full; if (m[pos] !== undefined) delete m[pos]; else m[pos] = n || Object.values(m)[0] || VERTO_DEFAULT_N; if (Object.keys(m).length) packs[id] = m; else delete packs[id]; }
+  state.verto.preset = null; build(); renderEstimate();
+}
+function migrateVerto() {
+  if (!state.verto || !state.verto.packs) state.verto = { mount: 'B', packs: {}, preset: null };
+  for (const [id, f] of Object.entries(state.fills)) if (f === 'verto') { delete state.fills[id]; state.verto.packs[id] = { full: 0 }; state.verto.mount = 'C'; }
+  for (const [id, m] of Object.entries(state.verto.packs)) if (m && m.pos) state.verto.packs[id] = { [m.pos]: m.n || 0 }; // first format: one package per side
+}
+function drawVerto(opt, ops) {
+  for (const { id, pk } of vertoList(state.verto.packs)) {
+    const o = ops.find((x) => x.id === id); if (!o) continue;
+    const gm = vertoGeom(o, pk, opt); if (gm.blocked) continue;
+    const g = new THREE.Group(); g.position.set(o.cx, 0, o.cz); g.rotation.y = o.rotY; root.add(g);
+    const top = gm.surface ? gm.length / 1000 : o.h;
+    for (let i = 0; i < gm.n; i++) {
+      const p = box(0.035, top, 0.06, M.slide, gm.x0 + 0.0175 + i * gm.pitch, top / 2, gm.z, g);
+      p.userData = { opening: o }; pickables.push(p);
+    }
+  }
+}
+window.setVertoPreset = setVertoPreset; window.setVertoMount = setVertoMount; window.setVertoPack = setVertoPack;
+window.vertoQuote = vertoQuote; window.vertoList = vertoList; window.vertoPresetPacks = vertoPresetPacks; window.vertoGeom = vertoGeom; window.outRight = outRight; window.faceOf = faceOf;
 
 function addFill(o, fill) {
   const g = new THREE.Group(); g.position.set(o.cx, 0, o.cz); g.rotation.y = o.rotY; root.add(g);
@@ -1136,7 +1268,7 @@ function renderMenu(o) {
   const fill = state.fills[o.id] || 'none';
   const head = `<div class="mh"><span class="t">${o.label} · ${mm(Math.round(o.len * 1000))} мм</span><button type="button" class="mx" data-close="1" aria-label="Закрыть">×</button></div>`;
   const rc = (attrs, glyph, cap, cur) => `<button type="button" class="rc" ${attrs} aria-current="${!!cur}"><span class="dot">${glyph}</span><span class="cap">${cap}</span></button>`;
-  let html = `<div class="t">Тип</div><div class="rrow">${Object.keys(FILL).map((k) => rc(`data-k="${k}"`, GLYPH[k], SHORT[k], fill === k)).join('')}</div>`;
+  let html = `<div class="t">Тип</div><div class="rrow">${Object.keys(FILL).filter((k) => k !== 'verto').map((k) => rc(`data-k="${k}"`, GLYPH[k], SHORT[k], fill === k)).join('')}</div>`;
   if (fill === 'glass') {
     const gs = glassFor(o), gt = glassType(o), own = !!state.glassOf[o.id], cfg = glassCfg(o);
     const dbl = !!(gs.best && gs.best.opening === 'double');
@@ -1174,6 +1306,19 @@ function renderMenu(o) {
     html += `<div class="t">Ламели панелей</div><div class="rrow">${Object.entries(SLATS).map(([k, t]) => rc(`data-slats="${k}"`, k === 'fixed' ? '≡' : '⟋', t, sl === k)).join('')}</div>`;
     html += `<div class="t">Монтаж</div><div class="rrow">${Object.entries(PMOUNT).map(([k, t]) => rc(`data-pmount="${k}"`, '•', t, mt === k)).join('')}</div>`;
   }
+  // Win Verto on this side (a layer: on the frame next to ZIP / glass, or in the opening for mounting C)
+  {
+    const opt = state.options[state.optIndex], m = state.verto.packs[o.id] || {}, list = vertoList({ [o.id]: m });
+    const R = outRight(faceOf(o.id)), L = R === 'b' ? 'a' : 'b';
+    html += `<div class="t">Win Verto на этой стороне</div><div class="rrow">${[['none', '○', 'нет'], [L, '◧', 'слева'], ['center', '▥', 'по центру'], [R, '◨', 'справа'], ['full', '▦', 'вся сторона']].map(([k, g, c]) => rc(`data-vpos="${k}"`, g, c, k === 'none' ? !list.length : m[k] !== undefined)).join('')}</div>`;
+    if (list.length) {
+      const gm = vertoGeom(o, list[0].pk, opt);
+      if (m.full === undefined) html += `<div class="rrow">${rc('data-vn="-1"', '−', 'меньше', false)}${rc('data-vn="1"', '+', 'больше', false)}</div>`;
+      html += `<div class="sub">${list.length > 1 ? list.length + ' пакета по ' : ''}${gm.n} ${plural(gm.n, 'профиль', 'профиля', 'профилей')} · ${mm(DBCore.vertoPackageWidth(gm.n))} мм · макс. ${gm.maxN} · длина ${mm(gm.length)} мм${gm.blocked ? ' · <b>монтаж C в закрытом проёме невозможен</b>' : ''}</div>`;
+    }
+    html += `<div class="t">Монтаж Verto (для всех)</div><div class="rrow">${[['A', 'над ламелями'], ['B', 'до верха короба'], ['C', 'в проёме'], ['D', 'угловое соед.']].map(([k, c]) => rc(`data-vmount="${k}"`, k, c, state.verto.mount === k)).join('')}</div>`;
+    html += `<div class="t">Готовые типы Verto (прайс стр. 9–10)</div><div class="rrow">${[1, 2, 3, 4, 5, 6].map((k) => rc(`data-vpreset="${k}"`, String(k), 'тип ' + k, state.verto.preset === k)).join('')}${rc('data-vpreset="0"', '○', 'убрать все', false)}</div>`;
+  }
   menu.innerHTML = head + `<div class="mbody">${html}</div><div class="mf"><button type="button" class="done" data-close="1">Готово</button></div>`;
 }
 const CTL_GLYPH = { remote: '◉', smart: '◎', pergola: '▣', switch: '⏽', solar: '☼' };
@@ -1194,6 +1339,10 @@ function onMenuClick(ev) {
     else { state.colors.fabric = fabricForOpenness(of); applyColors(); renderColors(); }
     renderEstimate(); return renderMenu(o);
   }
+  if (b.dataset.vpos) { setVertoPack(o.id, b.dataset.vpos); return renderMenu(o); }
+  if (b.dataset.vn) { const l = vertoList({ [o.id]: state.verto.packs[o.id] || {} }); if (l.length) { const gm = vertoGeom(o, l[0].pk, state.options[state.optIndex]); setVertoPack(o.id, 'n', Math.max(2, Math.min(gm.maxN, gm.n + Number(b.dataset.vn)))); } return renderMenu(o); }
+  if (b.dataset.vmount) { setVertoMount(b.dataset.vmount); return renderMenu(o); }
+  if (b.dataset.vpreset) { setVertoPreset(Number(b.dataset.vpreset)); return renderMenu(o); }
   if (b.dataset.var) { setCfg(o, { variant: b.dataset.var }); return again(); }
   if (b.dataset.park) { setCfg(o, { side: b.dataset.park === 'left' ? 'left' : 'right' }); return again(); }
   if (b.dataset.open) { setCfg(o, { open: Number(b.dataset.open) }); return again(); }
@@ -1303,6 +1452,7 @@ function screenWhyNot(r, req, mode) {
 function renderEstimate() {
   const o = state.options[state.optIndex], tb = $('lines');
   if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; state.q = { lines: [], total: 0, incomplete: 0, issues: [] }; if (typeof window.onEstimate === 'function') window.onEstimate(); return; }
+  migrateVerto();
   const ROLE = { single: 'отдельная пергола', base: 'базовый модуль', add: 'доп. модуль' };
   const MOUNT = { wall: '', free: ' · отдельностоящая', roof: '' };
   const Q = []; // structured lines: the customer view and the printable quote are built from these
@@ -1435,14 +1585,27 @@ function renderEstimate() {
       html += `<tr><td colspan="2"><div class="note">У Win Panels разные настройки.<button type="button" class="align" data-align-panels="${c}">Сделать у всех: ${SLATS[sl].toLowerCase()}, ${PMOUNT[mt].toLowerCase()}</button></div></td></tr>`;
     }
   }
-  // Win Verto corner connections: both sides of a pergola corner filled with Verto
-  const corners = [['front-0', 'left-' + (o.rows - 1)], ['front-' + (o.cols - 1), 'right-' + (o.rows - 1)]].concat(state.mount === 'free' ? [['back-0', 'left-0'], ['back-' + (o.cols - 1), 'right-0']] : []);
-  const nCorner = corners.filter(([a, b]) => state.fills[a] === 'verto' && state.fills[b] === 'verto').length;
-  if (nCorner) {
-    const cp = DBCore.vertoCornerPrice(cat), amt = nCorner * cp;
-    sides += amt; coat.push({ system: 'VERTO', base: amt, color: e.slide, label: 'verto' });
-    Q.push({ k: 'corner', n: nCorner, a: amt });
-    html += `<tr><td>Win Verto — угловое соединение${nCorner > 1 ? ' × ' + nCorner : ''}<span class="s">угол из двух профилей, ${eur(cp)} за угол · стр. ${cat.tables['verto.profiles'].source.page}</span></td><td class="a">${eur(amt)}</td></tr>`;
+  // Win Verto packages (the layer on the frame / in the openings): one line per package + corner connections (D)
+  const VM = { A: 'A — на раме до верха ламелей', B: 'B — на раме до верха короба', C: 'C — в проёме между стойками', D: 'D — на раме с угловым соединением' };
+  const VPOS = { a: 'у одного края', b: 'у другого края', center: 'по центру', full: 'на всю сторону' };
+  {
+    const vq = vertoQuote(o, ops, state.verto.packs);
+    for (const it of vq.items) {
+      const v = it.v, ex = v.lines.find((l) => l.code === 'VERTO_ADDITIONAL');
+      sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.slide, label: 'verto' });
+      Q.push({ k: 'vpack', id: it.id, pos: it.pk.pos, n: it.gm.n, mount: state.verto.mount, len: it.gm.length, a: v.total });
+      html += `<tr><td>Win Verto, ${it.o.label.toLowerCase()}<span class="s">${VPOS[it.pk.pos]}, ${it.gm.n} ${plural(it.gm.n, 'профиль', 'профиля', 'профилей')} 35 × 60 мм (${mm(DBCore.vertoPackageWidth(it.gm.n))} мм) · монтаж ${VM[state.verto.mount]} · длина ${mm(it.gm.length)} → по прайсу ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
+    }
+    for (const b of vq.bad) {
+      const op = ops.find((x) => x.id === b.id);
+      Q.push({ k: 'vbad', id: b.id, why: b.why, max: b.max || 0 });
+      html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${b.why === 'closed' ? 'монтаж C — в проёме, а проём уже закрыт (ZIP / стекло / панели): выберите монтаж на раме (A, B, D)' : 'длина профиля больше ' + mm(b.max) + ' мм — нет в прайсе'}</span></td><td class="a muted">—</td></tr>`;
+    }
+    if (vq.corners) {
+      sides += vq.cornerAmt; coat.push({ system: 'VERTO', base: vq.cornerAmt, color: e.slide, label: 'verto' });
+      Q.push({ k: 'corner', n: vq.corners, a: vq.cornerAmt });
+      html += `<tr><td>Win Verto — угловое соединение${vq.corners > 1 ? ' × ' + vq.corners : ''}<span class="s">угол из двух профилей, ${eur(DBCore.vertoCornerPrice(cat))} за угол · стр. ${cat.tables['verto.profiles'].source.page}</span></td><td class="a">${eur(vq.cornerAmt)}</td></tr>`;
+    }
   }
   // colour surcharges (engine: per item %, logistics minimum per colour batch)
   const cs = DBCore.coatingSurcharges(coat, cat);
@@ -1662,7 +1825,7 @@ function renderColorQuick() {
   // every element that is on the pergola now, in this order: glass, frame, louvres, ZIP box + guides (+ fabric shade),
   // profiles of the sliding systems; "as frame" keeps a part linked to the frame colour.
   // Short by default: as frame + the standard colours (+ the chosen one); the rest of the palette opens under "More colours".
-  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла, ламельной стены, панелей', asFrame: 'как рама', more: 'Другие цвета', groups: Object.fromEntries(GROUPS), noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
+  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла, Win Verto, панелей', asFrame: 'как рама', more: 'Другие цвета', groups: Object.fromEntries(GROUPS), noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
   const fills = Object.values(state.fills), e = colorsEff(), std = PALETTE.filter((c) => c.group === 'standard');
   const name = window.COLOR_NAME || ((c) => (c.custom ? c.nameRu : c.id + ' ' + c.nameRu));
   const sw = (attr, k, bg, label, cur, extra = '') => `<button type="button" ${attr}="${k}" ${extra} aria-pressed="${cur}"><span class="sw" style="background:${bg}"></span>${label}</button>`;
@@ -1693,7 +1856,7 @@ function renderColorQuick() {
     const ti = FABRIC_TONES.findIndex((x) => x[0] === state.colors.tone), tn = (i) => (tx.toneNames && tx.toneNames[i]) || FABRIC_TONES[i][1];
     h += head(tx.fabric, ti >= 0 ? tn(ti) : '') + `<div class="dots">${FABRIC_TONES.map(([hx], i) => `<button type="button" data-tone="${hx}" style="background:${hx}" title="${tn(i)}" aria-label="${tn(i)}" aria-pressed="${state.colors.tone === hx}"></button>`).join('')}</div>`;
   }
-  if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels')) h += colourBlock('slide', tx.slide);
+  if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels') || Object.keys(state.verto.packs).length) h += colourBlock('slide', tx.slide);
   $('tb-colors').innerHTML = h;
 }
 $('tb-colors').addEventListener('click', (e) => {

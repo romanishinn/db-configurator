@@ -53,7 +53,7 @@
       sockets: 'Steckdosen in der Stütze', socketsD: '230 V', on: 'Ja', off: 'Nein',
       // step 4
       s4: 'Welche Farbe passt zu Ihrem Haus?', s4l: 'Die zwei Standardfarben sind im Preis. Andere Farben kosten einen Aufpreis in Prozent.',
-      frame: 'Rahmen und Stützen', roof: 'Lamellen', slideCol: 'Profile von Glas, Lamellenwand, Paneelen', zipCol: 'ZIP-Kassette und Führungen', asFrame: 'wie Rahmen', moreColours: 'Weitere Farben', groups: { fine: 'Feinstruktur', smooth: 'Glatt matt', exclusive: 'Exklusiv', wood: 'Holzoptik' },
+      frame: 'Rahmen und Stützen', roof: 'Lamellen', slideCol: 'Profile von Glas, Win Verto, Paneelen', zipCol: 'ZIP-Kassette und Führungen', asFrame: 'wie Rahmen', moreColours: 'Weitere Farben', groups: { fine: 'Feinstruktur', smooth: 'Glatt matt', exclusive: 'Exklusiv', wood: 'Holzoptik' },
       fabricTone: 'Farbton des Stoffes', colourNote: 'Farben am Bildschirm sind Annäherungen. Vor der Bestellung zeigen wir Ihnen Originalmuster.',
       // step 5
       s5: 'Ihr Richtpreis', s5l: 'Auf Basis der Katalogpreise ' + CATALOGUE + '. Unverbindlich – der endgültige Preis folgt nach dem Aufmaß vor Ort.',
@@ -85,6 +85,12 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 Doppel' }, pergola: 'Lamellendach', panelsW: 'Flügel', profilesW: 'Profile', slatsFixed: 'feste Lamellen', slatsRot: 'drehbare Lamellen',
       opt: { OPT_POST_HEIGHT: 'Höhere Stützen', OPT_LED_LOUVRES: 'LED-Lichtband in den Lamellen', OPT_LED_GUTTER: 'LED-Licht in der Rinne', OPT_THERMAL: 'Dämmeinlage in den Lamellen', OPT_SENSOR: 'Wettersensoren', OPT_SMART: 'App-Steuerung', OPT_HEATERS: 'Heizstrahler', OPT_HEATER_PREP: 'Vorbereitung für Heizstrahler', OPT_INTERNAL_BOX: 'Innenliegende Elektrobox', OPT_AUDIO: 'Audiosystem', OPT_SOCKET: 'Steckdosen in der Stütze', OPT_SPOTS: 'LED-Spots in den Lamellen', OPT_LAMPS: 'LED-Leuchten in den Lamellen', OPT_CROWN_SPOTS: 'LED-Spots im Rahmen', OPT_VERTICAL_LAMPS: 'LED-Leuchten an den Stützen', OPT_INTERMEDIATE_POST: 'Zusätzliche Stützen' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Steuermodul für die Screens', CONTROL_REMOTE: 'Fernbedienung für die Screens', CONTROL_SMART: 'Smart-Home-Modul', CONTROL_WIND_SENSOR: 'Windsensor für die Screens', CONTROL_SWITCH: 'Wandschalter', CONTROL_PERGOLA_REMOTE_EXTRA: 'Zusätzliche Fernbedienung', CONTROL_CUSTOM: 'Steuerung' },
+      vertoT: 'Win Verto – Lamellen an der Pergola', vertoD: 'Feste Aluminiumprofile als Sicht- und Sonnenschutz, auch zusammen mit ZIP und Glas', vNone: 'Ohne',
+      vTypes: { 1: 'An jeder Ecke', 2: 'Vorne und hinten', 3: 'Ein Paket vorne', 4: 'An beiden Seiten', 5: 'Beide Seiten ganz', 6: 'Mitte vorne' }, vTypesWall: { 2: 'Vorne und seitlich', 6: 'Mitte vorne und seitlich' },
+      vMountT: 'Montage der Profile', vMounts: { A: 'Über das Dach hinaus', B: 'Bis Oberkante Rahmen', C: 'In der Öffnung', D: 'Mit Eckverbindung' },
+      vMountsD: { A: 'Profile enden über den Lamellen', B: 'Außen am Rahmen, bündig oben', C: 'Zwischen den Stützen – nur an offenen Seiten', D: 'Pakete laufen um die Ecke, je Ecke +53 €' },
+      vEdit: 'Tippen Sie im 3D auf eine Seite, um Pakete zu ändern.', vSide: 'Win Verto an dieser Seite', vPos: { none: 'Ohne', L: 'Links', center: 'Mitte', R: 'Rechts', full: 'Ganze Seite' },
+      vProf: 'Profile', vPack: 'Paket', vClosed: 'In der Öffnung nicht möglich – die Seite ist schon geschlossen. Montage am Rahmen wählen.', vHigh: 'Profile zu lang für die Preisliste', vMountW: 'Montage',
       coat: 'Farbaufpreis', coatMin: 'Mindermengenzuschlag Beschichtung', fabricS: 'Stoffaufpreis', corner: 'Eckverbindung Lamellenwand', tbdPanels: 'Farbaufpreis Paneele', onRequest: 'auf Anfrage', extra: 'Zuschlag',
       sysName: { S400: 'Pergola', S500: 'Pergola', GLASS: 'Schiebeglas', SCREEN_ZIP: 'ZIP-Screens', VERTO: 'Lamellenwand' },
       mailSubj: (s, p) => `Anfrage Lamellendach ${s} – Richtpreis ${p}`, mailHi: 'Guten Tag,\n\nich interessiere mich für folgende Konfiguration:', mailBye: 'Mit freundlichen Grüßen',
@@ -127,7 +133,7 @@
       audio: 'Music', audioD: '2 speakers, Bluetooth', thermal: 'Quieter in rain', thermalD: 'Insulating insert in the louvres',
       sockets: 'Sockets in the post', socketsD: '230 V', on: 'Yes', off: 'No',
       s4: 'Which colour suits your house?', s4l: 'The two standard colours are included. Other colours add a percentage.',
-      frame: 'Frame and posts', roof: 'Louvres', slideCol: 'Glass, louvre wall and panel profiles', zipCol: 'ZIP box and guides', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
+      frame: 'Frame and posts', roof: 'Louvres', slideCol: 'Glass, Win Verto and panel profiles', zipCol: 'ZIP box and guides', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
       fabricTone: 'Fabric shade', colourNote: 'Screen colours are approximate. We show you original samples before you order.',
       s5: 'Your indicative price', s5l: 'Based on catalogue prices ' + CATALOGUE + '. Not binding – the final price follows a site survey.',
       grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges' },
@@ -157,6 +163,12 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 double' }, pergola: 'Louvred roof', panelsW: 'panels', profilesW: 'profiles', slatsFixed: 'fixed slats', slatsRot: 'rotating slats',
       opt: { OPT_POST_HEIGHT: 'Taller posts', OPT_LED_LOUVRES: 'LED strip in the louvres', OPT_LED_GUTTER: 'LED light in the gutter', OPT_THERMAL: 'Insulating insert in the louvres', OPT_SENSOR: 'Weather sensors', OPT_SMART: 'App control', OPT_HEATERS: 'Heaters', OPT_HEATER_PREP: 'Heater preparation', OPT_INTERNAL_BOX: 'Internal electrical box', OPT_AUDIO: 'Audio system', OPT_SOCKET: 'Sockets in the post', OPT_SPOTS: 'LED spots in the louvres', OPT_LAMPS: 'LED lamps in the louvres', OPT_CROWN_SPOTS: 'LED spots in the frame', OPT_VERTICAL_LAMPS: 'LED lights on the posts', OPT_INTERMEDIATE_POST: 'Additional posts' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Control unit for the screens', CONTROL_REMOTE: 'Remote control for the screens', CONTROL_SMART: 'Smart home unit', CONTROL_WIND_SENSOR: 'Wind sensor for the screens', CONTROL_SWITCH: 'Wall switch', CONTROL_PERGOLA_REMOTE_EXTRA: 'Additional remote control', CONTROL_CUSTOM: 'Controls' },
+      vertoT: 'Win Verto – louvres on the pergola', vertoD: 'Fixed aluminium profiles for privacy and shade, also together with ZIP and glass', vNone: 'None',
+      vTypes: { 1: 'At every corner', 2: 'Front and back', 3: 'One package at the front', 4: 'On both sides', 5: 'Both sides full', 6: 'Front centre' }, vTypesWall: { 2: 'Front and side', 6: 'Front centre and side' },
+      vMountT: 'Mounting of the profiles', vMounts: { A: 'Above the roof', B: 'Up to the frame top', C: 'In the opening', D: 'With corner joint' },
+      vMountsD: { A: 'Profiles end above the louvres', B: 'Outside on the frame, flush at the top', C: 'Between the posts – open sides only', D: 'Packages wrap around the corner, +53 € per corner' },
+      vEdit: 'Tap a side in the 3D view to change its packages.', vSide: 'Win Verto on this side', vPos: { none: 'None', L: 'Left', center: 'Centre', R: 'Right', full: 'Whole side' },
+      vProf: 'profiles', vPack: 'package', vClosed: 'Not possible in the opening – the side is already closed. Choose mounting on the frame.', vHigh: 'Profiles too long for the price list', vMountW: 'mounting',
       coat: 'Colour surcharge', coatMin: 'Small-batch coating surcharge', fabricS: 'Fabric surcharge', corner: 'Louvre wall corner joint', tbdPanels: 'Panel colour surcharge', onRequest: 'on request', extra: 'surcharge',
       sysName: { S400: 'pergola', S500: 'pergola', GLASS: 'sliding glass', SCREEN_ZIP: 'ZIP screens', VERTO: 'louvre wall' },
       mailSubj: (s, p) => `Request: louvred roof ${s} – indicative price ${p}`, mailHi: 'Hello,\n\nI am interested in the following configuration:', mailBye: 'Kind regards',
@@ -199,7 +211,7 @@
       audio: 'Музыка', audioD: '2 колонки, Bluetooth', thermal: 'Тише в дождь', thermalD: 'Термовставка в ламелях',
       sockets: 'Розетки в стойке', socketsD: '230 В', on: 'Да', off: 'Нет',
       s4: 'Какой цвет подойдёт к дому?', s4l: 'Два стандартных цвета входят в цену. Другие цвета – доплата в процентах.',
-      frame: 'Рама и стойки', roof: 'Ламели', slideCol: 'Профили стекла, ламельной стены, панелей', zipCol: 'Короб и направляющие ZIP', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
+      frame: 'Рама и стойки', roof: 'Ламели', slideCol: 'Профили стекла, Win Verto, панелей', zipCol: 'Короб и направляющие ZIP', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
       fabricTone: 'Оттенок ткани', colourNote: 'Цвета на экране приблизительные. Перед заказом покажем оригинальные образцы.',
       s5: 'Ваша ориентировочная цена', s5l: 'По каталожным ценам ' + CATALOGUE + '. Без обязательств – окончательная цена после замера на месте.',
       grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты' },
@@ -229,6 +241,12 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная' }, pergola: 'Пергола с ламелями', panelsW: 'полотен', profilesW: 'профилей', slatsFixed: 'неподвижные ламели', slatsRot: 'поворотные ламели',
       opt: { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'LED-лента в ламелях', OPT_LED_GUTTER: 'LED-подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме', OPT_VERTICAL_LAMPS: 'Светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные стойки' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Блок управления скринами', CONTROL_REMOTE: 'Пульт для скринов', CONTROL_SMART: 'Блок умного дома', CONTROL_WIND_SENSOR: 'Датчик ветра для скринов', CONTROL_SWITCH: 'Настенный выключатель', CONTROL_PERGOLA_REMOTE_EXTRA: 'Дополнительный пульт', CONTROL_CUSTOM: 'Управление' },
+      vertoT: 'Win Verto – ламели на перголе', vertoD: 'Неподвижные алюминиевые профили от взглядов и солнца, можно вместе с ZIP и стеклом', vNone: 'Без',
+      vTypes: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, vTypesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' },
+      vMountT: 'Монтаж профилей', vMounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме', D: 'С угловым соединением' },
+      vMountsD: { A: 'Профили заканчиваются над ламелями', B: 'Снаружи на раме, вровень сверху', C: 'Между стойками – только на открытых сторонах', D: 'Пакеты огибают угол, +53 € за угол' },
+      vEdit: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', vSide: 'Win Verto на этой стороне', vPos: { none: 'Без', L: 'Слева', center: 'По центру', R: 'Справа', full: 'Вся сторона' },
+      vProf: 'профилей', vPack: 'пакет', vClosed: 'В проёме невозможно – сторона уже закрыта. Выберите монтаж на раме.', vHigh: 'Профили длиннее, чем в прайсе', vMountW: 'монтаж',
       coat: 'Доплата за цвет', coatMin: 'Минимальная партия покраски', fabricS: 'Доплата за ткань', corner: 'Угловое соединение ламельной стены', tbdPanels: 'Доплата за цвет панелей', onRequest: 'по запросу', extra: 'доплата',
       sysName: { S400: 'перголы', S500: 'перголы', GLASS: 'стекла', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'ламельной стены' },
       mailSubj: (s, p) => `Запрос: пергола ${s} – ориентировочно ${p}`, mailHi: 'Здравствуйте!\n\nМеня интересует такая конфигурация:', mailBye: 'С уважением',
@@ -318,7 +336,7 @@
   const toast = (msg) => { const d = document.createElement('div'); d.className = 'f-toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
 
   /* ---------- configuration <-> link / storage ---------- */
-  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote'];
+  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto'];
   const prune = (v) => { // drop empty values so the link stays short
     if (Array.isArray(v)) return v.map(prune);
     if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) { const p = prune(x); if (p === null || p === undefined || p === '' || (typeof p === 'object' && !Array.isArray(p) && !Object.keys(p).length)) continue; o[k] = p; } return o; }
@@ -334,6 +352,7 @@
     state.po = { ...JSON.parse(JSON.stringify(DEFAULT_PO)), ...(s.po || {}) };
     state.po.sockets = { power: 0, usb: 0, ...((s.po && s.po.sockets) || {}) };
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
+    if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
     state.colors = { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
     if (!cat.fabrics.collections.some((f) => f.id === state.colors.fabric)) state.colors.fabric = 'soltis-7635';
     $('w').value = state.width; $('d').value = state.depth;
@@ -371,7 +390,10 @@
     if (l.fill === 'zip' && l.why === 'size' && l.max) return t.zipMax(metres(l.max), l.axis);
     return t.notMade;
   }
-  const sideAmount = (id) => q().lines.filter((l) => l.id === id && l.a).reduce((s, l) => s + l.a, 0);
+  const sideAmount = (id) => q().lines.filter((l) => l.id === id && l.a && l.k !== 'vpack').reduce((s, l) => s + l.a, 0);
+  const vertoAmount = (id) => q().lines.filter((l) => l.id === id && l.k === 'vpack').reduce((s, l) => s + l.a, 0);
+  /** a package position in the customer's words: left / centre / right as seen from outside, or the whole side */
+  function vPosName(id, pos, t) { if (pos === 'full' || pos === 'center') return t.vPos[pos]; return t.vPos[pos === window.outRight(window.faceOf(id)) ? 'R' : 'L']; }
   function sideLabel(id, o) {
     const [side, i] = id.split('-'), n = Number(i);
     let s = L().sides[side];
@@ -420,6 +442,8 @@
       else if (l.k === 'unbuilt') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: badText(l.id), a: null });
       else if (l.k === 'pending') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: t.later, a: null });
       else if (l.k === 'corner') out.push({ g: 'sides', t: t.corner + (l.n > 1 ? ' × ' + l.n : ''), d: '', a: l.a });
+      else if (l.k === 'vpack') out.push({ g: 'sides', t: `Win Verto – ${sideLabel(l.id, o)}`, d: `${l.pos === 'full' ? t.vPos.full : t.vPack + ' ' + vPosName(l.id, l.pos, t).toLowerCase()} · ${l.n} ${t.vProf} · ${t.vMountW}: ${t.vMounts[l.mount]}`, a: l.a });
+      else if (l.k === 'vbad') out.push({ g: 'sides', t: `Win Verto – ${sideLabel(l.id, o)}`, d: l.why === 'closed' ? t.vClosed : t.vHigh, a: null });
       else if (l.k === 'fabric') out.push({ g: 'sides', t: `${t.fabricS} ${l.name}`, d: `OF ${l.of} %`, a: l.a });
       else if (l.k === 'control') out.push({ g: 'sides', t: t.ctl[l.code] || l.name, d: l.qty > 1 ? '× ' + l.qty : '', a: l.a });
       else if (l.k === 'coat') out.push({ g: 'colours', t: `${t.coat} ${t.sysName[l.sys]} (${l.pct} %)`, d: '', a: l.a });
@@ -587,6 +611,49 @@
     return h;
   }
 
+  /* ---------- Win Verto: example configurations 1–6 (price list p.9–10) as small top views, mounting, per side in the card ---------- */
+  /** top view: the pergola from above (front at the bottom), the wall as a thick line, the packages as bars outside the frame */
+  function vertoThumb(o, ops, packs) {
+    const W = o.width / 1000, D = o.depth / 1000, k = Math.min(52 / W, 28 / D), w = W * k, d = D * k, X0 = (64 - w) / 2, Y0 = (40 - d) / 2;
+    let svg = `<svg viewBox="0 0 64 40" width="64" height="40" aria-hidden="true"><rect x="${X0}" y="${Y0}" width="${w}" height="${d}" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1"/>`;
+    if (state.mount !== 'free') svg += `<line x1="${X0 - 3}" y1="${Y0 - 1.5}" x2="${X0 + w + 3}" y2="${Y0 - 1.5}" stroke="currentColor" stroke-opacity=".35" stroke-width="3"/>`;
+    for (const { id, pk } of window.vertoList(packs)) {
+      const op = ops.find((x) => x.id === id); if (!op) continue;
+      const gm = window.vertoGeom(op, pk, o), a = gm.x0, b = gm.x0 + (gm.n - 1) * gm.pitch + 0.035, f = window.faceOf(id), off = 2.6;
+      const P = (x) => (op.axis === 'x' ? [X0 + (op.cx + x) * k, f === 'front' ? Y0 + d + off : Y0 - off] : [f === 'left' ? X0 - off : X0 + w + off, Y0 + (op.cz - x) * k]);
+      const [x1, y1] = P(a), [x2, y2] = P(b);
+      svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="4" stroke-linecap="butt"/>`;
+    }
+    return svg + '</svg>';
+  }
+  function vertoSection(t, o, ops) {
+    const v = state.verto, any = window.vertoList(v.packs).length > 0;
+    const price = (packs) => window.vertoQuote(o, ops, packs).total;
+    let h = `<div class="f-h3"><span>${t.vertoT}</span></div><p class="f-lead" style="margin:-4px 0 8px;font-size:12.5px">${t.vertoD}</p>`;
+    const name = (k) => (state.mount !== 'free' && t.vTypesWall[k]) || t.vTypes[k];
+    h += `<div class="f-vt">` + `<button type="button" data-vpreset="0" aria-pressed="${!any}"><span class="th">${vertoThumb(o, ops, {})}</span><b>${t.vNone}</b><span class="pr"></span></button>` +
+      [1, 2, 3, 4, 5, 6].map((k) => { const packs = window.vertoPresetPacks(k, o, v.mount); return `<button type="button" data-vpreset="${k}" aria-pressed="${v.preset === k}"><span class="th">${vertoThumb(o, ops, packs)}</span><b>${k} · ${esc(name(k))}</b><span class="pr">+${fe(gross(price(packs)))}</span></button>`; }).join('') + `</div>`;
+    if (any) {
+      h += `<div class="f-h3"><span>${t.vMountT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.vMountsD[v.mount]}</span></div>`;
+      h += `<div class="f-chips">${['B', 'A', 'C', 'D'].map((m) => `<button type="button" class="f-chip" data-vmount="${m}" aria-pressed="${v.mount === m}">${m} · ${t.vMounts[m]}</button>`).join('')}</div>`;
+      h += `<p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.vEdit}</p>`;
+    }
+    return h;
+  }
+  /** the Verto part of the side card: positions (left / centre / right can be combined, or the whole side) and the profile count */
+  function vertoCard(t, o, op) {
+    const m = state.verto.packs[op.id] || {}, list = window.vertoList({ [op.id]: m }), R = window.outRight(window.faceOf(op.id)), Lp = R === 'b' ? 'a' : 'b';
+    const amt = vertoAmount(op.id), bad = q().lines.find((l) => l.k === 'vbad' && l.id === op.id);
+    let h = `<div class="fc-q">${t.vSide}${amt ? ` <span class="pr" style="float:right">+${fe(gross(amt))}</span>` : ''}</div><div class="f-chips">`;
+    h += [['none', 'none'], [Lp, 'L'], ['center', 'center'], [R, 'R'], ['full', 'full']].map(([pos, lbl]) => `<button type="button" class="f-chip" data-vpos="${pos}" data-id="${op.id}" aria-pressed="${pos === 'none' ? !list.length : m[pos] !== undefined}">${t.vPos[lbl]}</button>`).join('') + `</div>`;
+    if (list.length && m.full === undefined) {
+      const gm = window.vertoGeom(op, list[0].pk, o);
+      h += `<div class="f-vn"><button type="button" class="f-chip" data-vn="-1" data-id="${op.id}" ${gm.n <= 2 ? 'disabled' : ''} aria-label="−">−</button><span>${gm.n} ${t.vProf} · ${metres(DBCore.vertoPackageWidth(gm.n))} ${t.m}</span><button type="button" class="f-chip" data-vn="1" data-id="${op.id}" ${gm.n >= gm.maxN ? 'disabled' : ''} aria-label="+">+</button></div>`;
+    }
+    if (bad) h += `<div class="f-note">${bad.why === 'closed' ? t.vClosed : t.vHigh}</div>`;
+    return h;
+  }
+
   /* step 2: sides */
   function stepSides(t, o) {
     if (!o) return '';
@@ -597,12 +664,13 @@
     for (const op of ops) {
       const f = state.fills[op.id] || 'none', amt = sideAmount(op.id), bad = q().lines.some((l) => l.k === 'unbuilt' && l.id === op.id);
       h += `<div class="f-side${focusId === op.id ? ' hl' : ''}" data-side="${op.id}"><div class="top"><span class="nm">${sideLabel(op.id, o)}<small>${metres(Math.round(op.len * 1000))} ${t.m}</small></span><span class="pr">${f === 'none' ? '' : bad ? '—' : '+' + fe(gross(amt))}</span></div>
-        <div class="f-fills" role="group">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
+        <div class="f-fills" role="group">${['none', 'zip', 'glass', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
       if (f === 'glass' && !bad) h += glassPos(op, t);
       if (bad) h += `<div class="bad">${badText(op.id)}</div>`;
       h += `</div>`;
     }
     h += `</div>`;
+    h += vertoSection(t, o, ops);
     const used = new Set(ops.map((x) => state.fills[x.id]).filter(Boolean));
     if (used.has('zip')) {
       const curOf = fabricOf().openness;
@@ -618,7 +686,7 @@
         return `<button type="button" data-gl="${k}" aria-pressed="${state.glass.type === k}"><span class="c" style="background:#${g.col.toString(16).padStart(6, '0')};opacity:${Math.max(0.35, g.op + 0.25)}"></span>${t.tints[k]}<span class="pr">${rate ? '+' + rate + ' ' + t.perM2 : t.incl}</span></button>`;
       }).join('')}</div>`;
     }
-    const legend = ['zip', 'glass', 'verto', 'panels'].map((k) => `<li><b>${GL[k]} ${t.fills[k]}</b> – ${t.legend[k]}</li>`).join('');
+    const legend = ['zip', 'glass', 'panels'].map((k) => `<li><b>${GL[k]} ${t.fills[k]}</b> – ${t.legend[k]}</li>`).join('');
     h += `<ul class="f-legend">${legend}</ul>`;
     return h;
   }
@@ -659,7 +727,7 @@
     const std = PALETTE.filter((c) => c.group === 'standard');
     const fills = Object.values(state.fills);
     const rows = [['construction', t.frame], ['roof', t.roof]];
-    if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels')) rows.push(['slide', t.slideCol]);
+    if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels') || Object.keys(state.verto.packs || {}).length) rows.push(['slide', t.slideCol]);
     if (fills.includes('zip')) rows.push(['zip', t.zipCol]);
     const pct = (key, g) => {
       if (key === 'slide') return cat.coating.rates.GLASS[g] || 0;
@@ -772,7 +840,7 @@
     if (d.rooft) J.roofs.add(d.rooft);
     if (d.mount) J.mounts.add(d.mount);
     if (d.opt !== undefined || d.louv) J.layouts += 1;
-    if (d.fill || d.all || d.gtyp || d.gpos) J.sides += 1;
+    if (d.fill || d.all || d.gtyp || d.gpos || d.vpreset !== undefined || d.vpos || d.vn || d.vmount) J.sides += 1;
     if (d.of || d.gl || d.cl || d.frame || d.roofc || d.roof === 'same' || d.tone) J.colours += 1;
     if (d.light) J.lights += 1;
     if (d.heat || d.sensor || d.smart || d.thermal || d.audio || d.sock !== undefined) J.comfort += 1;
@@ -949,7 +1017,7 @@
     if (visited.has(i)) return true;
     const po = state.po;
     if (i === 0) return false; // the size is always looked at first
-    if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none');
+    if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none') || Object.keys(state.verto.packs || {}).length > 0;
     if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
     if (i === 3) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
     return false;
@@ -1014,6 +1082,10 @@
       renderEstimate(); return;
     }
     if (d.cardClose) { closeCard(); return; }
+    if (d.vpreset !== undefined) { window.setVertoPreset(Number(d.vpreset)); render(); return; }
+    if (d.vmount) { window.setVertoMount(d.vmount); render(); return; }
+    if (d.vpos) { window.setVertoPack(d.id, d.vpos); focusId = d.id; render(); return; }
+    if (d.vn) { const op = opsOf(o).find((x) => x.id === d.id), l = window.vertoList({ [d.id]: state.verto.packs[d.id] || {} }); if (op && l.length) { const gm = window.vertoGeom(op, l[0].pk, o); window.setVertoPack(d.id, 'n', Math.max(2, Math.min(gm.maxN, gm.n + Number(d.vn)))); } render(); return; }
     if (d.fill) { if (d.fill === 'none') delete state.fills[d.id]; else state.fills[d.id] = d.fill; focusId = d.id; rebuild(); applyAnim(); return; }
     if (d.all) { for (const x of opsOf(o)) { if (d.all === 'none') delete state.fills[x.id]; else state.fills[x.id] = d.all; } rebuild(); applyAnim(); return; }
     if (d.gtyp) { // opening type: the cheapest one-way system parking on that side, or the cheapest two-way system
@@ -1188,10 +1260,11 @@
     if (!op) { CARD.hidden = true; return; }
     const t = L(), f = state.fills[op.id] || 'none', bad = q().lines.some((l) => l.k === 'unbuilt' && l.id === op.id);
     let h = `<div class="fc-h"><b>${sideLabel(op.id, o)}</b><small>${metres(Math.round(op.len * 1000))} ${t.m}</small><span class="pr">${f === 'none' || bad ? '' : '+' + fe(gross(sideAmount(op.id)))}</span><button type="button" class="fc-x" data-card-close="1" aria-label="${esc(t.done)}">×</button></div>`;
-    h += `<div class="fc-q">${t.cardQ}</div><div class="fc-fills">${['none', 'zip', 'glass', 'verto', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
+    h += `<div class="fc-q">${t.cardQ}</div><div class="fc-fills">${['none', 'zip', 'glass', 'panels'].map((k) => `<button type="button" data-fill="${k}" data-id="${op.id}" aria-pressed="${f === k}"><span class="g">${GL[k]}</span>${t.fillsS[k]}</button>`).join('')}</div>`;
     if (bad) h += `<div class="f-note">${badText(op.id)}</div>`;
     if (f === 'zip' && !bad) h += `<div class="fc-q">${t.thisScreen}</div>${ctlRows(t, 'data-zctl', (m) => ctlOf(op.id) === m, (m) => (id) => (id === op.id ? m : ctlOf(id)), `data-id="${op.id}"`)}`;
     if (f === 'glass' && !bad) h += `<div style="margin-top:10px">${glassPos(op, t)}</div>`;
+    h += vertoCard(t, o, op);
     h += `<button type="button" class="f-btn primary fc-done" data-card-close="1">${t.done}</button>`;
     CARD.innerHTML = h; CARD.hidden = false;
   }

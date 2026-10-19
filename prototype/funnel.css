@@ -305,3 +305,13 @@ body.cust #hint { display: none !important; }
 /* offer step: one send button (in the bar); print / link are quiet text links under the form */
 .f-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
 .f-more { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); }
+
+/* Win Verto: example configurations as small top views */
+.f-vt { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.f-vt button { font: inherit; display: grid; grid-template-columns: 64px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center; text-align: left; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); cursor: pointer; }
+.f-vt button .th { grid-row: 1 / 3; color: var(--ink); line-height: 0; }
+.f-vt button b { font-weight: 500; font-size: 12.5px; }
+.f-vt button .pr { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.f-vt button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.f-vn { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 13px; }
+.f-vn .f-chip { min-width: 40px; justify-content: center; }
