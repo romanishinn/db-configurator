@@ -328,6 +328,7 @@ const TARGETS = [
   { k: 'construction', name: 'Конструкция', hint: 'стойки и рама', sys: null },
   { k: 'roof', name: 'Ламели', hint: 'крыша', sys: null, link: 'как конструкция' },
   { k: 'slide', name: 'Раздвижные системы', hint: 'профили Win Glass, Win Panels, Win Verto', sys: 'GLASS', link: 'как конструкция' },
+  { k: 'verto', name: 'Win Verto', hint: 'вертикальные профили', sys: 'VERTO', link: 'как конструкция' },
   { k: 'zip', name: 'ZIP-скрины', hint: 'кассета, направляющие, нижний профиль', sys: 'SCREEN_ZIP', link: 'как конструкция' },
   { k: 'fabric', name: 'Ткань ZIP', hint: 'коллекция и оттенок' },
   { k: 'glass', name: 'Стекло Win Glass', hint: 'тип остекления' },
@@ -335,9 +336,9 @@ const TARGETS = [
 // Visual fabric tones only: the fabric colour codes come from the manufacturer's fabric cards (not in the price list).
 const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит'], ['#7f8387', 'серый'], ['#b9b6ae', 'светло-серый'], ['#e7e4dc', 'белый'], ['#c8b799', 'бежевый'], ['#8b7d6c', 'тауп'], ['#1e1f21', 'чёрный']];
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
-const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction }; };
+const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -396,6 +397,7 @@ const M = {
   frame: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.7, metalness: 0.15 }),
   louver: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.6, metalness: 0.15 }),
   slide: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.6, metalness: 0.2 }),
+  verto: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.6, metalness: 0.2 }),
   zip: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.6, metalness: 0.2 }),
   wall: new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.95 }),
   deck: new THREE.MeshStandardMaterial({ color: 0x9c8f7d, roughness: 0.9 }),
@@ -841,7 +843,7 @@ function drawVerto(opt, ops) {
     const g = new THREE.Group(); g.position.set(o.cx, 0, o.cz); g.rotation.y = o.rotY; root.add(g);
     const top = gm.surface ? gm.length / 1000 : o.h;
     for (let i = 0; i < gm.n; i++) {
-      const p = box(0.035, top, 0.06, M.slide, gm.x0 + 0.0175 + i * gm.pitch, top / 2, gm.z, g);
+      const p = box(0.035, top, 0.06, M.verto, gm.x0 + 0.0175 + i * gm.pitch, top / 2, gm.z, g);
       p.userData = { opening: o }; pickables.push(p);
     }
   }
@@ -1564,7 +1566,7 @@ function renderEstimate() {
     } else if (f === 'verto') {
       const v = DBCore.priceVerto(Math.round(op.len * 1000), Math.round(op.h * 1000), cat);
       if (v.ok) {
-        sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.slide, label: 'verto' });
+        sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.verto, label: 'verto' });
         Q.push({ k: 'verto', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000), profiles: v.profiles, a: v.total });
         const ex = v.lines.find((l) => l.code === 'VERTO_ADDITIONAL');
         html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${size} · ${v.profiles} ${plural(v.profiles, 'профиль', 'профиля', 'профилей')} 35 × 60 мм, шаг ${v.spacing} мм, по прайсу высота ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
@@ -1605,7 +1607,7 @@ function renderEstimate() {
     const vq = vertoQuote(o, ops, state.verto.packs);
     for (const it of vq.items) {
       const v = it.v, ex = v.lines.find((l) => l.code === 'VERTO_ADDITIONAL');
-      sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.slide, label: 'verto' });
+      sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.verto, label: 'verto' });
       Q.push({ k: 'vpack', id: it.id, pos: it.pk.pos, n: it.gm.n, mount: state.verto.mount, len: it.gm.length, a: v.total });
       html += `<tr><td>Win Verto, ${it.o.label.toLowerCase()}<span class="s">${VPOS[it.pk.pos]}, ${it.gm.n} ${plural(it.gm.n, 'профиль', 'профиля', 'профилей')} 35 × 60 мм (${mm(DBCore.vertoPackageWidth(it.gm.n))} мм) · монтаж ${VM[state.verto.mount]} · длина ${mm(it.gm.length)} → по прайсу ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
     }
@@ -1615,7 +1617,7 @@ function renderEstimate() {
       html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${b.why === 'closed' ? 'монтаж C — в проёме, а проём уже закрыт (ZIP / стекло / панели): выберите монтаж на раме (A, B, D)' : 'длина профиля больше ' + mm(b.max) + ' мм — нет в прайсе'}</span></td><td class="a muted">—</td></tr>`;
     }
     if (vq.corners) {
-      sides += vq.cornerAmt; coat.push({ system: 'VERTO', base: vq.cornerAmt, color: e.slide, label: 'verto' });
+      sides += vq.cornerAmt; coat.push({ system: 'VERTO', base: vq.cornerAmt, color: e.verto, label: 'verto' });
       Q.push({ k: 'corner', n: vq.corners, a: vq.cornerAmt });
       html += `<tr><td>Win Verto — угловое соединение${vq.corners > 1 ? ' × ' + vq.corners : ''}<span class="s">угол из двух профилей, ${eur(DBCore.vertoCornerPrice(cat))} за угол · стр. ${cat.tables['verto.profiles'].source.page}</span></td><td class="a">${eur(vq.cornerAmt)}</td></tr>`;
     }
@@ -1627,7 +1629,7 @@ function renderEstimate() {
   for (const l of cs.lines.filter((l) => l.code === 'COATING_SURCHARGE')) { const k = l.params.system; (bySys[k] = bySys[k] || { sum: 0, pct: l.params.percent, n: 0 }); bySys[k].sum += l.amount; bySys[k].n++; }
   const SYSN = { S400: 'перголы', S500: 'перголы', SLIDE: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'Win Verto' };
   for (const [k, v] of Object.entries(bySys)) {
-    const what = k === 'GLASS' || k === 'VERTO' ? cname(e.slide) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
+    const what = k === 'GLASS' ? cname(e.slide) : k === 'VERTO' ? cname(e.verto) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
     Q.push({ k: 'coat', sys: k, pct: v.pct, a: v.sum });
     html += `<tr><td>Покраска ${SYSN[k]}, ${v.pct} %<span class="s">${what} · от каталожной цены${v.n > 1 ? ', ' + v.n + ' поз.' : ''}</span></td><td class="a">${eur(v.sum)}</td></tr>`;
   }
@@ -1838,7 +1840,7 @@ function renderColorQuick() {
   // every element that is on the pergola now, in this order: glass, frame, louvres, ZIP box + guides (+ fabric shade),
   // profiles of the sliding systems; "as frame" keeps a part linked to the frame colour.
   // Short by default: as frame + the standard colours (+ the chosen one); the rest of the palette opens under "More colours".
-  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла, Win Verto, панелей', asFrame: 'как рама', more: 'Другие цвета', groups: Object.fromEntries(GROUPS), noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
+  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла и панелей', asFrame: 'как рама', more: 'Другие цвета', groups: Object.fromEntries(GROUPS), noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
   const fills = Object.values(state.fills), e = colorsEff(), std = PALETTE.filter((c) => c.group === 'standard');
   const name = window.COLOR_NAME || ((c) => (c.custom ? c.nameRu : c.id + ' ' + c.nameRu));
   const sw = (attr, k, bg, label, cur, extra = '') => `<button type="button" ${attr}="${k}" ${extra} aria-pressed="${cur}"><span class="sw" style="background:${bg}"></span>${label}</button>`;
@@ -1869,7 +1871,8 @@ function renderColorQuick() {
     const ti = FABRIC_TONES.findIndex((x) => x[0] === state.colors.tone), tn = (i) => (tx.toneNames && tx.toneNames[i]) || FABRIC_TONES[i][1];
     h += head(tx.fabric, ti >= 0 ? tn(ti) : '') + `<div class="dots">${FABRIC_TONES.map(([hx], i) => `<button type="button" data-tone="${hx}" style="background:${hx}" title="${tn(i)}" aria-label="${tn(i)}" aria-pressed="${state.colors.tone === hx}"></button>`).join('')}</div>`;
   }
-  if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels') || Object.keys(state.verto.packs).length) h += colourBlock('slide', tx.slide);
+  if (fills.some((f) => f === 'glass' || f === 'panels')) h += colourBlock('slide', tx.slide);
+  if (Object.keys(state.verto.packs).length) h += colourBlock('verto', tx.verto || 'Win Verto');
   $('tb-colors').innerHTML = h;
 }
 $('tb-colors').addEventListener('click', (e) => {
@@ -1985,7 +1988,7 @@ function paint(mat, c) {
 function applyColors() {
   syncGlassControls();
   const e = colorsEff();
-  paint(M.frame, colorOf(e.construction)); paint(M.louver, colorOf(e.roof)); paint(M.slide, colorOf(e.slide)); paint(M.zip, colorOf(e.zip));
+  paint(M.frame, colorOf(e.construction)); paint(M.louver, colorOf(e.roof)); paint(M.slide, colorOf(e.slide)); paint(M.zip, colorOf(e.zip)); paint(M.verto, colorOf(e.verto));
   srgbCol(M.fabric.color, state.colors.tone);
   fabricLook();
 }

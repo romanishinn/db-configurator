@@ -53,7 +53,7 @@
       sockets: 'Steckdosen in der Stütze', socketsD: '230 V', on: 'Ja', off: 'Nein',
       // step 4
       s4: 'Welche Farbe passt zu Ihrem Haus?', s4l: 'Die zwei Standardfarben sind im Preis. Andere Farben kosten einen Aufpreis in Prozent.',
-      frame: 'Rahmen und Stützen', roof: 'Lamellen', slideCol: 'Profile von Glas, Win Verto, Paneelen', zipCol: 'ZIP-Kassette und Führungen', asFrame: 'wie Rahmen', moreColours: 'Weitere Farben', groups: { fine: 'Feinstruktur', smooth: 'Glatt matt', exclusive: 'Exklusiv', wood: 'Holzoptik' },
+      frame: 'Rahmen und Stützen', roof: 'Lamellen', slideCol: 'Profile von Glas und Paneelen', zipCol: 'ZIP-Kassette und Führungen', asFrame: 'wie Rahmen', moreColours: 'Weitere Farben', groups: { fine: 'Feinstruktur', smooth: 'Glatt matt', exclusive: 'Exklusiv', wood: 'Holzoptik' },
       fabricTone: 'Farbton des Stoffes', colourNote: 'Farben am Bildschirm sind Annäherungen. Vor der Bestellung zeigen wir Ihnen Originalmuster.',
       // step 5
       s5: 'Ihr Richtpreis', s5l: 'Auf Basis der Katalogpreise ' + CATALOGUE + '. Unverbindlich – der endgültige Preis folgt nach dem Aufmaß vor Ort.',
@@ -133,7 +133,7 @@
       audio: 'Music', audioD: '2 speakers, Bluetooth', thermal: 'Quieter in rain', thermalD: 'Insulating insert in the louvres',
       sockets: 'Sockets in the post', socketsD: '230 V', on: 'Yes', off: 'No',
       s4: 'Which colour suits your house?', s4l: 'The two standard colours are included. Other colours add a percentage.',
-      frame: 'Frame and posts', roof: 'Louvres', slideCol: 'Glass, Win Verto and panel profiles', zipCol: 'ZIP box and guides', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
+      frame: 'Frame and posts', roof: 'Louvres', slideCol: 'Glass and panel profiles', zipCol: 'ZIP box and guides', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
       fabricTone: 'Fabric shade', colourNote: 'Screen colours are approximate. We show you original samples before you order.',
       s5: 'Your indicative price', s5l: 'Based on catalogue prices ' + CATALOGUE + '. Not binding – the final price follows a site survey.',
       grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges' },
@@ -211,7 +211,7 @@
       audio: 'Музыка', audioD: '2 колонки, Bluetooth', thermal: 'Тише в дождь', thermalD: 'Термовставка в ламелях',
       sockets: 'Розетки в стойке', socketsD: '230 В', on: 'Да', off: 'Нет',
       s4: 'Какой цвет подойдёт к дому?', s4l: 'Два стандартных цвета входят в цену. Другие цвета – доплата в процентах.',
-      frame: 'Рама и стойки', roof: 'Ламели', slideCol: 'Профили стекла, Win Verto, панелей', zipCol: 'Короб и направляющие ZIP', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
+      frame: 'Рама и стойки', roof: 'Ламели', slideCol: 'Профили стекла и панелей', zipCol: 'Короб и направляющие ZIP', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
       fabricTone: 'Оттенок ткани', colourNote: 'Цвета на экране приблизительные. Перед заказом покажем оригинальные образцы.',
       s5: 'Ваша ориентировочная цена', s5l: 'По каталожным ценам ' + CATALOGUE + '. Без обязательств – окончательная цена после замера на месте.',
       grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты' },
@@ -353,7 +353,7 @@
     state.po.sockets = { power: 0, usb: 0, ...((s.po && s.po.sockets) || {}) };
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
     if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
-    state.colors = { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
+    state.colors = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
     if (!cat.fabrics.collections.some((f) => f.id === state.colors.fabric)) state.colors.fabric = 'soltis-7635';
     $('w').value = state.width; $('d').value = state.depth;
     $('mt-wall').setAttribute('aria-pressed', state.mount === 'wall'); $('mt-free').setAttribute('aria-pressed', state.mount === 'free');
@@ -727,10 +727,12 @@
     const std = PALETTE.filter((c) => c.group === 'standard');
     const fills = Object.values(state.fills);
     const rows = [['construction', t.frame], ['roof', t.roof]];
-    if (fills.some((f) => f === 'glass' || f === 'verto' || f === 'panels') || Object.keys(state.verto.packs || {}).length) rows.push(['slide', t.slideCol]);
+    if (fills.some((f) => f === 'glass' || f === 'panels')) rows.push(['slide', t.slideCol]);
+    if (Object.keys(state.verto.packs || {}).length) rows.push(['verto', 'Win Verto']);
     if (fills.includes('zip')) rows.push(['zip', t.zipCol]);
     const pct = (key, g) => {
       if (key === 'slide') return cat.coating.rates.GLASS[g] || 0;
+      if (key === 'verto') return cat.coating.rates.VERTO[g] || 0;
       if (key === 'zip') return cat.coating.rates.SCREEN_ZIP[g] || 0;
       const r = rates[g]; if (!r) return 0;
       return key === 'roof' ? r[1] : state.colors.roof ? r[0] : r[2];
@@ -1012,7 +1014,7 @@
   // the 3D view stays exactly as the customer left it when the step changes
   /* ---------- steps already answered: a ✓ on the step, and "Next" jumps over them ---------- */
   const visited = new Set(); // steps the customer went on from with "Next"
-  const DEF_COLORS = { construction: '04', roof: null, slide: null, zip: null, fabric: 'soltis-7635', tone: '#3a3d40' };
+  const DEF_COLORS = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' };
   function stepDone(i) {
     if (visited.has(i)) return true;
     const po = state.po;
@@ -1168,7 +1170,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; if (!$('tb-lights').hidden) renderLightPop();
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Win Verto', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; if (!$('tb-lights').hidden) renderLightPop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
