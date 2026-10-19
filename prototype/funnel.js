@@ -87,8 +87,8 @@
       ctl: { CONTROL_PERGOLA_UNIT: 'Steuermodul für die Screens', CONTROL_REMOTE: 'Fernbedienung für die Screens', CONTROL_SMART: 'Smart-Home-Modul', CONTROL_WIND_SENSOR: 'Windsensor für die Screens', CONTROL_SWITCH: 'Wandschalter', CONTROL_PERGOLA_REMOTE_EXTRA: 'Zusätzliche Fernbedienung', CONTROL_CUSTOM: 'Steuerung' },
       vertoT: 'Win Verto – Lamellen an der Pergola', vertoD: 'Feste Aluminiumprofile als Sicht- und Sonnenschutz, auch zusammen mit ZIP und Glas', vNone: 'Ohne',
       vTypes: { 1: 'An jeder Ecke', 2: 'Vorne und hinten', 3: 'Ein Paket vorne', 4: 'An beiden Seiten', 5: 'Beide Seiten ganz', 6: 'Mitte vorne' }, vTypesWall: { 2: 'Vorne und seitlich', 6: 'Mitte vorne und seitlich' },
-      vMountT: 'Montage der Profile', vMounts: { A: 'Über das Dach hinaus', B: 'Bis Oberkante Rahmen', C: 'In der Öffnung', D: 'Mit Eckverbindung' },
-      vMountsD: { A: 'Profile enden über den Lamellen', B: 'Außen am Rahmen, bündig oben', C: 'Zwischen den Stützen – nur an offenen Seiten', D: 'Pakete laufen um die Ecke, je Ecke +53 €' },
+      vTypesT: 'Beispiele', vMountT: 'Montage der Profile', vMounts: { A: 'Über das Dach hinaus', B: 'Bis Oberkante Rahmen', C: 'In der Öffnung', D: 'Mit Eckverbindung' },
+      vMountsD: { A: 'Profile enden über den Lamellen', B: 'Außen am Rahmen, bündig oben', C: 'Unter dem Rahmen zwischen den Stützen, außen bündig – ZIP oder Glas bleibt möglich', D: 'Pakete laufen um die Ecke, je Ecke +53 €' },
       vEdit: 'Tippen Sie im 3D auf eine Seite, um Pakete zu ändern.', vSide: 'Win Verto an dieser Seite', vPos: { none: 'Ohne', L: 'Links', center: 'Mitte', R: 'Rechts', full: 'Ganze Seite' },
       vProf: 'Profile', vPack: 'Paket', vClosed: 'In der Öffnung nicht möglich – die Seite ist schon geschlossen. Montage am Rahmen wählen.', vHigh: 'Profile zu lang für die Preisliste', vMountW: 'Montage',
       coat: 'Farbaufpreis', coatMin: 'Mindermengenzuschlag Beschichtung', fabricS: 'Stoffaufpreis', corner: 'Eckverbindung Lamellenwand', tbdPanels: 'Farbaufpreis Paneele', onRequest: 'auf Anfrage', extra: 'Zuschlag',
@@ -165,8 +165,8 @@
       ctl: { CONTROL_PERGOLA_UNIT: 'Control unit for the screens', CONTROL_REMOTE: 'Remote control for the screens', CONTROL_SMART: 'Smart home unit', CONTROL_WIND_SENSOR: 'Wind sensor for the screens', CONTROL_SWITCH: 'Wall switch', CONTROL_PERGOLA_REMOTE_EXTRA: 'Additional remote control', CONTROL_CUSTOM: 'Controls' },
       vertoT: 'Win Verto – louvres on the pergola', vertoD: 'Fixed aluminium profiles for privacy and shade, also together with ZIP and glass', vNone: 'None',
       vTypes: { 1: 'At every corner', 2: 'Front and back', 3: 'One package at the front', 4: 'On both sides', 5: 'Both sides full', 6: 'Front centre' }, vTypesWall: { 2: 'Front and side', 6: 'Front centre and side' },
-      vMountT: 'Mounting of the profiles', vMounts: { A: 'Above the roof', B: 'Up to the frame top', C: 'In the opening', D: 'With corner joint' },
-      vMountsD: { A: 'Profiles end above the louvres', B: 'Outside on the frame, flush at the top', C: 'Between the posts – open sides only', D: 'Packages wrap around the corner, +53 € per corner' },
+      vTypesT: 'Examples', vMountT: 'Mounting of the profiles', vMounts: { A: 'Above the roof', B: 'Up to the frame top', C: 'In the opening', D: 'With corner joint' },
+      vMountsD: { A: 'Profiles end above the louvres', B: 'Outside on the frame, flush at the top', C: 'Under the frame between the posts, flush outside – ZIP or glass still possible', D: 'Packages wrap around the corner, +53 € per corner' },
       vEdit: 'Tap a side in the 3D view to change its packages.', vSide: 'Win Verto on this side', vPos: { none: 'None', L: 'Left', center: 'Centre', R: 'Right', full: 'Whole side' },
       vProf: 'profiles', vPack: 'package', vClosed: 'Not possible in the opening – the side is already closed. Choose mounting on the frame.', vHigh: 'Profiles too long for the price list', vMountW: 'mounting',
       coat: 'Colour surcharge', coatMin: 'Small-batch coating surcharge', fabricS: 'Fabric surcharge', corner: 'Louvre wall corner joint', tbdPanels: 'Panel colour surcharge', onRequest: 'on request', extra: 'surcharge',
@@ -243,8 +243,8 @@
       ctl: { CONTROL_PERGOLA_UNIT: 'Блок управления скринами', CONTROL_REMOTE: 'Пульт для скринов', CONTROL_SMART: 'Блок умного дома', CONTROL_WIND_SENSOR: 'Датчик ветра для скринов', CONTROL_SWITCH: 'Настенный выключатель', CONTROL_PERGOLA_REMOTE_EXTRA: 'Дополнительный пульт', CONTROL_CUSTOM: 'Управление' },
       vertoT: 'Win Verto – ламели на перголе', vertoD: 'Неподвижные алюминиевые профили от взглядов и солнца, можно вместе с ZIP и стеклом', vNone: 'Без',
       vTypes: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, vTypesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' },
-      vMountT: 'Монтаж профилей', vMounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме', D: 'С угловым соединением' },
-      vMountsD: { A: 'Профили заканчиваются над ламелями', B: 'Снаружи на раме, вровень сверху', C: 'Между стойками – только на открытых сторонах', D: 'Пакеты огибают угол, +53 € за угол' },
+      vTypesT: 'Готовые типы', vMountT: 'Монтаж профилей', vMounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме', D: 'С угловым соединением' },
+      vMountsD: { A: 'Профили заканчиваются над ламелями', B: 'Снаружи на раме, вровень сверху', C: 'Под коробом между стойками, вровень снаружи – ZIP или стекло остаются возможны', D: 'Пакеты огибают угол, +53 € за угол' },
       vEdit: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', vSide: 'Win Verto на этой стороне', vPos: { none: 'Без', L: 'Слева', center: 'По центру', R: 'Справа', full: 'Вся сторона' },
       vProf: 'профилей', vPack: 'пакет', vClosed: 'В проёме невозможно – сторона уже закрыта. Выберите монтаж на раме.', vHigh: 'Профили длиннее, чем в прайсе', vMountW: 'монтаж',
       coat: 'Доплата за цвет', coatMin: 'Минимальная партия покраски', fabricS: 'Доплата за ткань', corner: 'Угловое соединение ламельной стены', tbdPanels: 'Доплата за цвет панелей', onRequest: 'по запросу', extra: 'доплата',
@@ -626,6 +626,7 @@
     }
     return svg + '</svg>';
   }
+  window.vertoThumb = vertoThumb;
   function vertoSection(t, o, ops) {
     const v = state.verto, any = window.vertoList(v.packs).length > 0;
     const price = (packs) => window.vertoQuote(o, ops, packs).total;
@@ -1170,7 +1171,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Win Verto', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; if (!$('tb-lights').hidden) renderLightPop();
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Win Verto', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.VERTO_TEXT = isCust() ? { none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
@@ -1268,7 +1269,8 @@
     if (f === 'glass' && !bad) h += `<div style="margin-top:10px">${glassPos(op, t)}</div>`;
     h += vertoCard(t, o, op);
     h += `<button type="button" class="f-btn primary fc-done" data-card-close="1">${t.done}</button>`;
-    CARD.innerHTML = h; CARD.hidden = false;
+    const top = CARD.scrollTop; // a choice must not scroll the card back to the top
+    CARD.innerHTML = h; CARD.hidden = false; CARD.scrollTop = top;
   }
   CARD.addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (!b) return; dirty = true; act(b.dataset); });
 
