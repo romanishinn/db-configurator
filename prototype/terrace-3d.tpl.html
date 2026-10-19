@@ -138,6 +138,8 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .align { font: inherit; font-size: 12px; margin-left: 6px; padding: 2px 8px; border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 4px; cursor: pointer; }
 .menu .sep { border-top: 1px solid #e2e6e9; margin: 4px 0 2px; }
 .menu.card { min-width: 300px; max-width: 340px; max-height: 70vh; display: flex; flex-direction: column; padding: 0; }
+/* Pro, desktop: the side menu is docked on the right of the 3D view (full height, scrolls inside); the picture moves left beside it */
+@media (min-width: 761px) { .menu.card { top: 8px !important; bottom: 8px; right: 8px; left: auto !important; width: 340px; max-height: none; } }
 .menu .mbody { overflow: auto; flex: 1 1 auto; min-height: 0; padding: 0 10px; }
 .menu .mh { padding: 10px 10px 4px; border-bottom: 1px solid #e2e6e9; }
 .menu .mh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -145,7 +147,7 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .menu .mx { border: 0; background: transparent; font-size: 22px; line-height: 1; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: #1c2226; }
 .menu .mx:hover, .menu .mx:focus-visible { background: #e1edf2; }
 .menu .mf { padding: 10px; border-top: 1px solid #e2e6e9; background: #fff; border-radius: 0 0 6px 6px; }
-.menu .done { width: 100%; font: inherit; font-size: 15px; font-weight: 600; border: 0; border-radius: 22px; padding: 12px; background: #2c6a86; color: #fff; cursor: pointer; }
+.menu .done { text-align: center; width: 100%; font: inherit; font-size: 15px; font-weight: 600; border: 0; border-radius: 22px; padding: 12px; background: #2c6a86; color: #fff; cursor: pointer; }
 @media (max-width: 700px) {
   .menu.card { position: fixed; left: 8px !important; right: 8px; bottom: 8px; top: auto !important; width: auto; min-width: 0; max-width: none; max-height: 64vh; border-radius: 14px; z-index: 50; }
 }
@@ -1224,7 +1226,18 @@ function placeLabels() {
     l.el.style.left = ((v.x + 1) / 2) * r.width + 'px'; l.el.style.top = ((1 - v.y) / 2) * r.height + 'px';
   }
 }
-function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); if (PHOTO.pts) applyPhotoCamera(); else if (!userMoved && state.options.length) setView(lastView); }
+/** while the side menu is docked on the right of the 3D view (Pro, desktop), the picture moves left so the pergola stays visible next to it */
+let menuShift = 0;
+function applyMenuShift() {
+  const r = view.getBoundingClientRect(), on = !!menu && !PHOTO.pts && r.width > 760 && !document.body.classList.contains('cust');
+  const sh = on ? (menu.offsetWidth || 340) + 16 : 0;
+  if (sh === menuShift) return;
+  menuShift = sh; resize();
+}
+function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false);
+  if (menuShift) { camera.setViewOffset(r.width + menuShift, r.height, menuShift, 0, r.width, r.height); camera.aspect = (r.width + menuShift) / Math.max(1, r.height); }
+  else { camera.clearViewOffset(); camera.aspect = r.width / Math.max(1, r.height); }
+  camera.updateProjectionMatrix(); if (PHOTO.pts) applyPhotoCamera(); else if (!userMoved && state.options.length) setView(lastView); }
 new ResizeObserver(resize).observe(view);
 (function loop(t) {
   requestAnimationFrame(loop);
@@ -1262,7 +1275,7 @@ function openMenu(o, e) {
   menuAt = { id: o.id, x: e.clientX - r.left, y: e.clientY - r.top };
   menu.style.left = Math.max(8, Math.min(menuAt.x, r.width - 300)) + 'px';
   menu.style.top = Math.max(8, Math.min(menuAt.y, r.height - 420)) + 'px';
-  renderMenu(o);
+  renderMenu(o); applyMenuShift();
 }
 function renderMenu(o) {
   const fill = state.fills[o.id] || 'none';
@@ -1370,7 +1383,7 @@ function syncGlassControls() {
   $('gopen-l').hidden = !used.includes('glass');
   $('drop-l').hidden = !used.includes('zip'); // the screen slider only when there is a screen
 }
-function closeMenu() { if (menu) { menu.remove(); menu = null; menuAt = null; } }
+function closeMenu() { if (menu) { menu.remove(); menu = null; menuAt = null; } applyMenuShift(); }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
 
 /* ---------- options + estimate ---------- */
