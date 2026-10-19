@@ -730,6 +730,101 @@
       <button type="submit" class="f-btn primary">${t.sendBtn}</button></form>`;
   }
 
+
+  /* ---------- the visitor's path on the site (goes with the request, nothing is sent anywhere else) ----------
+   * Kept in the browser only; the customer sees this block in the e-mail before sending it.
+   * ASSUMPTION: "active" time = page visible and a tap, key or scroll in the last 60 s; interest points below are a first guess. */
+  const J = { t0: Date.now(), active: 0, open: 0, stepSec: [0, 0, 0, 0, 0], last: Date.now(), sizes: new Set(), roofs: new Set(), mounts: new Set(),
+    sides: 0, colours: 0, lights: 0, comfort: 0, layouts: 0, rot: 0, views: new Set(), night: 0, printed: 0, linkCopied: 0, photo: 0, formOpened: 0, minP: Infinity, maxP: 0, visit: null };
+  (function initVisit() {
+    const qs = new URLSearchParams(location.search), utm = ['utm_source', 'utm_medium', 'utm_campaign'].map((k) => qs.get(k)).filter(Boolean).join(' / ');
+    let ref = ''; try { const r = document.referrer && new URL(document.referrer); if (r && r.host !== location.host) ref = r.host.replace(/^www\./, ''); } catch (e) { ref = ''; }
+    const src = utm || (qs.has('fbclid') ? 'facebook (ad)' : qs.has('gclid') ? 'google (ad)' : ref) || '';
+    let v = Store.get('db.visit') || { n: 0, first: Date.now(), src: '' };
+    let newSession = true; try { newSession = !sessionStorage.getItem('db.sess'); sessionStorage.setItem('db.sess', '1'); } catch (e) { newSession = true; }
+    if (newSession) v.n += 1;
+    if (!v.src && src) v.src = src; // first touch: where the customer came from the first time
+    Store.set('db.visit', v);
+    J.visit = { ...v, now: src };
+  })();
+  const poke = () => { J.last = Date.now(); };
+  for (const e of ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll']) window.addEventListener(e, poke, { capture: true, passive: true });
+  setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    J.open += 1;
+    if (Date.now() - J.last < 60000) { J.active += 1; if (isCust()) J.stepSec[step] = (J.stepSec[step] || 0) + 1; }
+  }, 1000);
+  (function track3D() { // turning the pergola with a finger or the mouse
+    const el = typeof renderer !== 'undefined' && renderer.domElement; if (!el) return;
+    let x = 0, y = 0, down = false;
+    el.addEventListener('pointerdown', (e) => { down = true; x = e.clientX; y = e.clientY; });
+    window.addEventListener('pointerup', (e) => { if (down && Math.hypot(e.clientX - x, e.clientY - y) > 25) J.rot += 1; down = false; });
+  })();
+  document.addEventListener('click', (e) => { // the buttons on the 3D view
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.closest('#tb-views')) J.views.add(b.id);
+    else if (b.id === 'evening') J.night += 1;
+    else if (b.closest('#tb-colors') && (b.dataset.qcol !== undefined || b.dataset.tone || b.dataset.gtint || b.dataset.qof)) J.colours += 1;
+    else if (b.closest('#tb-lights') && b.dataset.light) J.lights += 1;
+    else if (b.id === 'louv-dir') J.layouts += 1;
+  }, true);
+  const photoIn = $('photo-in'); if (photoIn) photoIn.addEventListener('change', () => { J.photo += 1; });
+  window.addEventListener('beforeprint', () => { if (isCust()) J.printed += 1; });
+  function trackAct(d) {
+    if (d.nudge || d.preset || d.fix) setTimeout(() => J.sizes.add(state.width + 'x' + state.depth), 0);
+    if (d.rooft) J.roofs.add(d.rooft);
+    if (d.mount) J.mounts.add(d.mount);
+    if (d.opt !== undefined || d.louv) J.layouts += 1;
+    if (d.fill || d.all || d.gtyp || d.gpos) J.sides += 1;
+    if (d.of || d.gl || d.cl || d.frame || d.roofc || d.roof === 'same' || d.tone) J.colours += 1;
+    if (d.light) J.lights += 1;
+    if (d.heat || d.sensor || d.smart || d.thermal || d.audio || d.sock !== undefined) J.comfort += 1;
+    if (d.act === 'share') J.linkCopied += 1;
+    if (d.act === 'form' || d.go === 'form') J.formOpened += 1;
+  }
+  function trackPrice() {
+    const t = q().total; if (!(t > 0) || q().incomplete) return;
+    J.minP = Math.min(J.minP, gross(t)); J.maxP = Math.max(J.maxP, gross(t));
+    J.sizes.add(state.width + 'x' + state.depth); J.roofs.add(state.roof); J.mounts.add(state.mount);
+  }
+  /** interest points: the longer and the deeper someone works with the configurator, the warmer the lead */
+  function interest() {
+    let p = 0;
+    if (J.active >= 180) p += 2; if (J.active >= 480) p += 2;
+    if (J.visit && J.visit.n > 1) p += 2;
+    if (J.sides) p += 1; if (J.colours) p += 1; if (J.lights || J.comfort) p += 1;
+    if (J.sizes.size > 1 || J.roofs.size > 1) p += 1;
+    if (J.printed) p += 2; if (J.photo) p += 2; if (J.linkCopied) p += 1;
+    if (J.rot >= 5) p += 1;
+    return { p, lvl: p >= 9 ? 'high' : p >= 5 ? 'mid' : 'low' };
+  }
+  const JT = {
+    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
+    en: { head: 'How I used the configurator (for your advice)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Sides', 'Comfort', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
+    ru: { head: 'Как я пользовался конфигуратором (для консультации)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
+  };
+  function journeyText() {
+    trackPrice();
+    const j = JT[lang] || JT.de, v = J.visit || { n: 1, first: Date.now(), src: '' };
+    const dur = (sec) => sec >= 60 ? `${Math.floor(sec / 60)} ${j.min} ${String(sec % 60).padStart(2, '0')} ${j.s}` : `${sec} ${j.s}`;
+    const dt = new Date(v.first).toLocaleDateString(lang === 'en' ? 'en-GB' : 'de-AT');
+    const src = v.src && v.now && v.now !== v.src ? `${v.src} (${v.now})` : v.src || v.now || j.direct;
+    const tried = [`${J.sizes.size} ${j.sizes}`, [...J.roofs].map((r) => j.roofs[r] || r).join(' + ')];
+    for (const [k, n] of [['sides', J.sides], ['colours', J.colours], ['lights', J.lights], ['comfort', J.comfort], ['layouts', J.layouts]]) if (n) tried.push(`${n} ${j[k]}`);
+    const look = [`${j.rot} ${J.rot}×`]; if (J.views.size) look.push(`${j.views} ${J.views.size}`); if (J.night) look.push(j.night);
+    const yn = (n) => (n ? j.yes : j.no), it = interest();
+    return [`— ${j.head} —`,
+      `${j.visit(v.n, dt)} · ${j.src}: ${src}`,
+      `${j.active}: ${dur(J.active)} (${j.open} ${dur(J.open)})`,
+      `${j.steps}: ${J.stepSec.map((sec, i) => (sec ? `${j.stepN[i]} ${dur(sec)}` : '')).filter(Boolean).join(' · ')}`,
+      `${j.tried}: ${tried.filter(Boolean).join(', ')}`,
+      J.maxP ? `${j.range}: ${fe(J.minP)} – ${fe(J.maxP)}` : '',
+      `${j.looked}: ${look.join(', ')}`,
+      `${j.printed}: ${yn(J.printed)} · ${j.link}: ${yn(J.linkCopied)} · ${j.photo}: ${yn(J.photo)}`,
+      `${j.interest}: ${j.lvl[it.lvl]} (${it.p} ${j.pts})`].filter(Boolean).join('\n');
+  }
+  window.journeyText = journeyText; // for the manager: journeyText() in the console
+
   /* ---------- request e-mail and quote ---------- */
   function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} ${L().m}` : ''; } // as built (louvre spacing may round the size)
   function mailText() {
@@ -744,7 +839,7 @@
     if (form.mount) parts.push('✓ ' + t.wantMount);
     if (form.visit) parts.push('✓ ' + t.wantVisit);
     if (form.msg) parts.push('', form.msg);
-    parts.push('', `${t.qLink}: ${shareUrl()}`, '', t.mailBye, form.name);
+    parts.push('', `${t.qLink}: ${shareUrl()}`, '', journeyText(), '', t.mailBye, form.name);
     return parts.join('\n');
   }
   let lastMailto = '';
@@ -890,6 +985,7 @@
     act(b.dataset);
   });
   function act(d) {
+    trackAct(d);
     const o = curOpt();
     if (d.lang) { setLang(d.lang); return; }
     if (d.mode) { setMode(d.mode); return; }
@@ -1100,7 +1196,7 @@
 
   /* ---------- hooks from the main script ---------- */
   window.onEstimate = () => {
-    persist();
+    persist(); trackPrice();
     if (!isCust()) return;
     // keep what the user is typing: re-render, then put the text and the caret back into the same field
     const a = document.activeElement;
