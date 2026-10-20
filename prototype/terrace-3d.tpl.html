@@ -1972,8 +1972,9 @@ function renderVertoPop() {
   const name = (k) => (state.mount !== 'free' && tx.typesWall[k]) || tx.types[k];
   let h = `<div class="t">${tx.typesT}</div><div class="vt"><button type="button" data-vtp="0" aria-pressed="${!any}">${th({})}<span>${tx.none}</span></button>` +
     [1, 2, 3, 4, 5, 6].map((k) => `<button type="button" data-vtp="${k}" aria-pressed="${v.preset === k}">${th(vertoPresetPacks(k, opt, v.mount))}<span>${k} · ${name(k)}</span></button>`).join('') + `</div>`;
-  if (any) h += colourKit().colourBlock('verto', (window.COLOR_TEXT && window.COLOR_TEXT.verto) || 'Win Verto');
-  if (any) h += `<div class="t">${tx.mountT}</div><div class="row">${['B', 'A', 'C', 'D'].map((m) => `<button type="button" data-vtm="${m}" aria-pressed="${v.mount === m}">${m} · ${tx.mounts[m]}</button>`).join('')}</div><div class="hint2">${tx.hint}</div>`;
+  // colour and mounting are always there (also before a type is chosen): the panel keeps its height, the 3D above does not jump
+  h += colourKit().colourBlock('verto', (window.COLOR_TEXT && window.COLOR_TEXT.verto) || 'Win Verto');
+  h += `<div class="t">${tx.mountT}</div><div class="row">${['B', 'A', 'C', 'D'].map((m) => `<button type="button" data-vtm="${m}" aria-pressed="${v.mount === m}">${m} · ${tx.mounts[m]}</button>`).join('')}</div><div class="hint2">${tx.hint}</div>`;
   const top = box.scrollTop; box.innerHTML = h; box.scrollTop = top;
 }
 $('tb-verto').onclick = () => { quickMore = null; renderVertoPop(); togglePop($('tb-verto'), $('tb-vertos')); };
@@ -2070,6 +2071,10 @@ $('tb-lights').addEventListener('click', (e) => { const b = e.target.closest('[d
   for (const k of ['left', 'right', 'bottom']) { set(k, !!saved[k]); $('fold-' + k).onclick = () => set(k, !document.body.classList.contains('fold-' + k)); }
   window.unfoldBottom = () => { if (document.body.classList.contains('fold-bottom')) set('bottom', false); };
 })();
+/* an open panel under the 3D never gets lower while choices are made in it: the 3D view keeps its height and does not jump */
+for (const pop of document.querySelectorAll('.toolbar .tb-pop')) {
+  new ResizeObserver(() => { if (pop.hidden) return; const h = pop.offsetHeight, m = parseFloat(pop.style.minHeight) || 0; if (h > m) pop.style.minHeight = h + 'px'; }).observe(pop);
+}
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
   // one panel at a time (view, movement, light, colour); the louvre and day/night buttons do not close it
@@ -2078,6 +2083,7 @@ function togglePop(btn, pop, force) {
   }
   if (open && window.unfoldBottom) window.unfoldBottom();
   pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+  if (!open) pop.style.minHeight = '';
 }
 $('tb-view').onclick = () => togglePop($('tb-view'), $('tb-views'));
 $('tb-move').onclick = () => togglePop($('tb-move'), $('tb-sliders'));
