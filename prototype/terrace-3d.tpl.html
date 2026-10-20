@@ -131,6 +131,9 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 .toolbar #tb-vertos .vt button { flex: 0 0 112px; }
 .toolbar #tb-vertos .vt button { display: grid; align-content: start; justify-items: center; gap: 2px; padding: 4px 6px 6px; font-size: 12px; line-height: 1.2; text-align: center; color: #1c2226; --accent: #2c6a86; }
 .toolbar #tb-vertos button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; font-weight: 600; }
+.toolbar #tb-vertos .row.vn { align-items: center; gap: 10px; flex-wrap: nowrap; }
+.toolbar #tb-vertos .row.vn button { min-width: 36px; justify-content: center; font-weight: 600; }
+.toolbar #tb-vertos .row.vn span { font-size: 13px; white-space: nowrap; }
 .toolbar #tb-vertos .hint2 { font-size: 12px; color: #5b666e; }
 .toolbar #tb-lights[hidden] { display: none; }
 .toolbar #tb-lights .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
@@ -1992,12 +1995,11 @@ function renderVertoPop() {
   const sel = ops.find((x) => x.id === vertoSideSel);
   if (sel) {
     const m = v.packs[sel.id] || {}, list = vertoList({ [sel.id]: m }), R = outRight(faceOf(sel.id)), L = R === 'b' ? 'a' : 'b';
-    h += `<div class="row">${[['none', 'none'], [L, 'L'], ['center', 'center'], [R, 'R'], ['full', 'full']].map(([pos, lbl]) => `<button type="button" data-vps="${pos}" aria-pressed="${pos === 'none' ? !list.length : m[pos] !== undefined}">${tx.pos[lbl]}</button>`).join('')}`;
-    if (list.length && m.full === undefined) {
+    h += `<div class="row">${[['none', 'none'], [L, 'L'], ['center', 'center'], [R, 'R'], ['full', 'full']].map(([pos, lbl]) => `<button type="button" data-vps="${pos}" aria-pressed="${pos === 'none' ? !list.length : m[pos] !== undefined}">${tx.pos[lbl]}</button>`).join('')}</div>`;
+    if (list.length && m.full === undefined) { // its own line: − 10 profiles · 845 mm +
       const gm = vertoGeom(sel, list[0].pk, opt);
-      h += `<button type="button" data-vnn="-1" ${gm.n <= 2 ? 'disabled' : ''}>−</button><span class="hint2" style="align-self:center">${gm.n} ${tx.prof} · ${mm(DBCore.vertoPackageWidth(gm.n))} мм</span><button type="button" data-vnn="1" ${gm.n >= gm.maxN ? 'disabled' : ''}>+</button>`;
+      h += `<div class="row vn"><button type="button" data-vnn="-1" ${gm.n <= 2 ? 'disabled' : ''} aria-label="−">−</button><span>${gm.n} ${tx.prof} · ${mm(DBCore.vertoPackageWidth(gm.n))} мм</span><button type="button" data-vnn="1" ${gm.n >= gm.maxN ? 'disabled' : ''} aria-label="+">+</button></div>`;
     }
-    h += `</div>`;
   }
   // the colour is always there (also before a type is chosen): the panel keeps its height
   h += colourKit().colourBlock('verto', (window.COLOR_TEXT && window.COLOR_TEXT.verto) || 'Decor');
