@@ -299,7 +299,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <button type="button" class="ib" id="tb-move" aria-expanded="false" aria-controls="tb-sliders" title="Движение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3zM12 12l8-4.7M12 12v9.2M12 12 4 7.3"/></svg><span class="cap">Движение</span></button>
         <button type="button" class="ib" id="evening" aria-pressed="false" title="День / ночь"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="bulb" d="M12 2.8a6.2 6.2 0 0 0-3.7 11.2c.7.5 1.1 1.3 1.1 2.1v.6h5.2v-.6c0-.8.4-1.6 1.1-2.1A6.2 6.2 0 0 0 12 2.8z"/><path d="M9.6 19.2h4.8M10.4 21.6h3.2"/></svg><span class="cap">Ночь</span></button>
         <button type="button" class="ib" id="tb-light" aria-expanded="false" aria-controls="tb-lights" title="Освещение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h18M5 6.5v2.2M19 6.5v2.2"/><path d="M8 10.5l-1.2 2.4M12 10.5v2.7M16 10.5l1.2 2.4" stroke-dasharray="1.6 1.4"/><circle cx="12" cy="17.5" r="2.6"/><path d="M12 13.2v1.7"/></svg><span class="cap">Свет</span></button>
-        <button type="button" class="ib" id="tb-verto" aria-expanded="false" aria-controls="tb-vertos" title="Win Verto – вертикальные профили"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5h18"/><path d="M6 7v13M9.5 7v13M13 7v13M16.5 7v13" stroke-width="2.2"/></svg><span class="cap">Win Verto</span></button>
+        <button type="button" class="ib" id="tb-verto" aria-expanded="false" aria-controls="tb-vertos" title="Decor – вертикальные профили"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5h18"/><path d="M6 7v13M9.5 7v13M13 7v13M16.5 7v13" stroke-width="2.2"/></svg><span class="cap">Decor</span></button>
         <button type="button" class="ib" id="tb-color" aria-expanded="false" aria-controls="tb-colors" title="Цвет стекла и рамы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.6 1.9-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.6" cy="11" r="1.3"/><circle cx="10.5" cy="7.2" r="1.3"/><circle cx="15" cy="7.4" r="1.3"/></svg><span class="cap">Цвет</span></button>
         <button type="button" class="ib" id="tb-photo" hidden aria-pressed="false" title="Посмотреть перголу на фото своей террасы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8.2c0-1 .8-1.8 1.8-1.8h2.4l1.5-2.2h5.6l1.5 2.2h2.4c1 0 1.8.8 1.8 1.8v9.6c0 1-.8 1.8-1.8 1.8H5.3c-1 0-1.8-.8-1.8-1.8z"/><circle cx="12" cy="13" r="3.6"/></svg><span class="cap">Фото</span></button>
         <button type="button" class="ib pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span><span class="cap">Цвета</span></button>
@@ -326,7 +326,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 
   <aside class="panel est pro-only" aria-labelledby="t3">
     <h1 id="t3">Расчёт</h1>
-    <p class="sub">Каталожные цены производителя 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass, ZIP-скрины, Win Verto и Win Panels — по прайсу.</p>
+    <p class="sub">Каталожные цены производителя 07.2026, EUR нетто, без доставки и монтажа. Перголы, Win Glass, ZIP-скрины, Decor (Win Verto) и Win Panels — по прайсу.</p>
     <div class="proj" id="ctl-proj" hidden>
       <label>Моторы <select id="brand"></select></label>
       <p class="sub" id="brand-hint" style="margin:0"></p>
@@ -357,7 +357,7 @@ const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a 
 const mm = (n) => n.toLocaleString('de-AT') ;
 const FAM = { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная', SLIDE: 'Slide' };
 const TAG = { cheapest: 'Дешевле всего', equal: 'Ровные модули', fewest: 'Меньше модулей', family: '' };
-const FILL = { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Стекло Win Glass', verto: 'Win Verto', panels: 'Win Panels' };
+const FILL = { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Стекло Win Glass', verto: 'Decor', panels: 'Win Panels' };
 /* ---------- colours ---------- */
 const PALETTE = cat.colors.colors;
 const GROUPS = [
@@ -368,8 +368,8 @@ const CUSTOM = [['ralAny', 'Любой RAL (мат, полумат, глянец
 const TARGETS = [
   { k: 'construction', name: 'Конструкция', hint: 'стойки и рама', sys: null },
   { k: 'roof', name: 'Ламели', hint: 'крыша', sys: null, link: 'как конструкция' },
-  { k: 'slide', name: 'Раздвижные системы', hint: 'профили Win Glass, Win Panels, Win Verto', sys: 'GLASS', link: 'как конструкция' },
-  { k: 'verto', name: 'Win Verto', hint: 'вертикальные профили', sys: 'VERTO', link: 'как конструкция' },
+  { k: 'slide', name: 'Раздвижные системы', hint: 'профили Win Glass, Win Panels', sys: 'GLASS', link: 'как конструкция' },
+  { k: 'verto', name: 'Decor', hint: 'вертикальные профили', sys: 'VERTO', link: 'как конструкция' },
   { k: 'zip', name: 'ZIP-скрины', hint: 'кассета, направляющие, нижний профиль', sys: 'SCREEN_ZIP', link: 'как конструкция' },
   { k: 'fabric', name: 'Ткань ZIP', hint: 'коллекция и оттенок' },
   { k: 'glass', name: 'Стекло Win Glass', hint: 'тип остекления' },
@@ -1338,7 +1338,7 @@ function pick(e) {
   ray.setFromCamera(ptr, camera); const hits = ray.intersectObjects(pickables, false); return hits[0] ? hits[0].object : null;
 }
 const GLYPH = { none: '○', zip: '▤', glass: '◇', verto: '▥', panels: '▦' };
-const SHORT = { none: 'Открыто', zip: 'ZIP', glass: 'Стекло', verto: 'Verto', panels: 'Panels' };
+const SHORT = { none: 'Открыто', zip: 'ZIP', glass: 'Стекло', verto: 'Decor', panels: 'Panels' };
 const GLS = { float: 'Прозр.', diamant: 'Diamant', milk: 'Milk', brown: 'Brown', graphite: 'Graphite', black: 'Black', mirror: 'Mirror' };
 let menuAt = null;
 /** Opening card: round chips for the type; the chosen type shows its own row (glass colour, screen control, fabric). */
@@ -1396,14 +1396,14 @@ function renderMenu(o) {
   {
     const opt = state.options[state.optIndex], m = state.verto.packs[o.id] || {}, list = vertoList({ [o.id]: m });
     const R = outRight(faceOf(o.id)), L = R === 'b' ? 'a' : 'b';
-    html += `<div class="t">Win Verto на этой стороне</div><div class="rrow">${[['none', '○', 'нет'], [L, '◧', 'слева'], ['center', '▥', 'по центру'], [R, '◨', 'справа'], ['full', '▦', 'вся сторона']].map(([k, g, c]) => rc(`data-vpos="${k}"`, g, c, k === 'none' ? !list.length : m[k] !== undefined)).join('')}</div>`;
+    html += `<div class="t">Decor на этой стороне</div><div class="rrow">${[['none', '○', 'нет'], [L, '◧', 'слева'], ['center', '▥', 'по центру'], [R, '◨', 'справа'], ['full', '▦', 'вся сторона']].map(([k, g, c]) => rc(`data-vpos="${k}"`, g, c, k === 'none' ? !list.length : m[k] !== undefined)).join('')}</div>`;
     if (list.length) {
       const gm = vertoGeom(o, list[0].pk, opt);
       if (m.full === undefined) html += `<div class="rrow">${rc('data-vn="-1"', '−', 'меньше', false)}${rc('data-vn="1"', '+', 'больше', false)}</div>`;
       html += `<div class="sub">${list.length > 1 ? list.length + ' пакета по ' : ''}${gm.n} ${plural(gm.n, 'профиль', 'профиля', 'профилей')} · ${mm(DBCore.vertoPackageWidth(gm.n))} мм · макс. ${gm.maxN} · длина ${mm(gm.length)} мм${gm.blocked ? '' : ''}</div>`;
     }
-    html += `<div class="t">Монтаж Verto (для всех)</div><div class="rrow">${[['A', 'над ламелями'], ['B', 'до верха короба'], ['C', 'в проёме, под коробом'], ['D', 'угловое соед.']].map(([k, c]) => rc(`data-vmount="${k}"`, k, c, state.verto.mount === k)).join('')}</div>`;
-    html += `<div class="t">Готовые типы Verto (прайс стр. 9–10)</div><div class="rrow">${[1, 2, 3, 4, 5, 6].map((k) => rc(`data-vpreset="${k}"`, String(k), 'тип ' + k, state.verto.preset === k)).join('')}${rc('data-vpreset="0"', '○', 'убрать все', false)}</div>`;
+    html += `<div class="t">Монтаж Decor (для всех)</div><div class="rrow">${[['A', 'над ламелями'], ['B', 'до верха короба'], ['C', 'в проёме, под коробом'], ['D', 'угловое соед.']].map(([k, c]) => rc(`data-vmount="${k}"`, k, c, state.verto.mount === k)).join('')}</div>`;
+    html += `<div class="t">Готовые типы Decor (прайс Win Verto, стр. 9–10)</div><div class="rrow">${[1, 2, 3, 4, 5, 6].map((k) => rc(`data-vpreset="${k}"`, String(k), 'тип ' + k, state.verto.preset === k)).join('')}${rc('data-vpreset="0"', '○', 'убрать все', false)}</div>`;
   }
   const keep = menu.querySelector('.mbody'), top = keep ? keep.scrollTop : 0; // a choice must not scroll the menu back to the top
   menu.innerHTML = head + `<div class="mbody">${html}</div><div class="mf"><button type="button" class="done" data-close="1">Готово</button></div>`;
@@ -1647,10 +1647,10 @@ function renderEstimate() {
         sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.verto, label: 'verto' });
         Q.push({ k: 'verto', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000), profiles: v.profiles, a: v.total });
         const ex = v.lines.find((l) => l.code === 'VERTO_ADDITIONAL');
-        html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${size} · ${v.profiles} ${plural(v.profiles, 'профиль', 'профиля', 'профилей')} 35 × 60 мм, шаг ${v.spacing} мм, по прайсу высота ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
+        html += `<tr><td>Decor (Win Verto), ${op.label.toLowerCase()}<span class="s">${size} · ${v.profiles} ${plural(v.profiles, 'профиль', 'профиля', 'профилей')} 35 × 60 мм, шаг ${v.spacing} мм, по прайсу высота ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
       } else {
         unbuilt.push(op); Q.push({ k: 'unbuilt', fill: 'verto', id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000) });
-        html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${size} · высота вне прайса (${mm(v.issues[0].params.min)}–${mm(v.issues[0].params.max)} мм)</span></td><td class="a muted">—</td></tr>`;
+        html += `<tr><td>Decor (Win Verto), ${op.label.toLowerCase()}<span class="s">${size} · высота вне прайса (${mm(v.issues[0].params.min)}–${mm(v.issues[0].params.max)} мм)</span></td><td class="a muted">—</td></tr>`;
       }
     } else if (f === 'panels') {
       const po = panelOpt(op.id), wood = colorOf(e.slide).group === 'wood';
@@ -1687,17 +1687,17 @@ function renderEstimate() {
       const v = it.v, ex = v.lines.find((l) => l.code === 'VERTO_ADDITIONAL');
       sides += v.total; coat.push({ system: 'VERTO', base: v.total, color: e.verto, label: 'verto' });
       Q.push({ k: 'vpack', id: it.id, pos: it.pk.pos, n: it.gm.n, mount: state.verto.mount, len: it.gm.length, a: v.total });
-      html += `<tr><td>Win Verto, ${it.o.label.toLowerCase()}<span class="s">${VPOS[it.pk.pos]}, ${it.gm.n} ${plural(it.gm.n, 'профиль', 'профиля', 'профилей')} 35 × 60 мм (${mm(DBCore.vertoPackageWidth(it.gm.n))} мм) · монтаж ${VM[state.verto.mount]} · длина ${mm(it.gm.length)} → по прайсу ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
+      html += `<tr><td>Decor (Win Verto), ${it.o.label.toLowerCase()}<span class="s">${VPOS[it.pk.pos]}, ${it.gm.n} ${plural(it.gm.n, 'профиль', 'профиля', 'профилей')} 35 × 60 мм (${mm(DBCore.vertoPackageWidth(it.gm.n))} мм) · монтаж ${VM[state.verto.mount]} · длина ${mm(it.gm.length)} → по прайсу ${mm(v.billedHeight)}${ex ? ` (40 + ${ex.params.profiles} доп. по ${eur(ex.params.unit)})` : ''} · стр. ${v.lines[0].source.page}</span></td><td class="a">${eur(v.total)}</td></tr>`;
     }
     for (const b of vq.bad) {
       const op = ops.find((x) => x.id === b.id);
       Q.push({ k: 'vbad', id: b.id, why: b.why, max: b.max || 0 });
-      html += `<tr><td>Win Verto, ${op.label.toLowerCase()}<span class="s">${b.why === 'closed' ? 'монтаж C — в проёме, а проём уже закрыт (ZIP / стекло / панели): выберите монтаж на раме (A, B, D)' : 'длина профиля больше ' + mm(b.max) + ' мм — нет в прайсе'}</span></td><td class="a muted">—</td></tr>`;
+      html += `<tr><td>Decor (Win Verto), ${op.label.toLowerCase()}<span class="s">${b.why === 'closed' ? 'монтаж C — в проёме, а проём уже закрыт (ZIP / стекло / панели): выберите монтаж на раме (A, B, D)' : 'длина профиля больше ' + mm(b.max) + ' мм — нет в прайсе'}</span></td><td class="a muted">—</td></tr>`;
     }
     if (vq.corners) {
       sides += vq.cornerAmt; coat.push({ system: 'VERTO', base: vq.cornerAmt, color: e.verto, label: 'verto' });
       Q.push({ k: 'corner', n: vq.corners, a: vq.cornerAmt });
-      html += `<tr><td>Win Verto — угловое соединение${vq.corners > 1 ? ' × ' + vq.corners : ''}<span class="s">угол из двух профилей, ${eur(DBCore.vertoCornerPrice(cat))} за угол · стр. ${cat.tables['verto.profiles'].source.page}</span></td><td class="a">${eur(vq.cornerAmt)}</td></tr>`;
+      html += `<tr><td>Decor (Win Verto) — угловое соединение${vq.corners > 1 ? ' × ' + vq.corners : ''}<span class="s">угол из двух профилей, ${eur(DBCore.vertoCornerPrice(cat))} за угол · стр. ${cat.tables['verto.profiles'].source.page}</span></td><td class="a">${eur(vq.cornerAmt)}</td></tr>`;
     }
   }
   // colour surcharges (engine: per item %, logistics minimum per colour batch)
@@ -1705,7 +1705,7 @@ function renderEstimate() {
   const cname = (id) => { const c = colorOf(id); return c.custom ? c.nameRu : c.id + ' ' + (c.group === 'wood' ? c.nameRu : c.nameRu.toLowerCase()); };
   const bySys = {};
   for (const l of cs.lines.filter((l) => l.code === 'COATING_SURCHARGE')) { const k = l.params.system; (bySys[k] = bySys[k] || { sum: 0, pct: l.params.percent, n: 0 }); bySys[k].sum += l.amount; bySys[k].n++; }
-  const SYSN = { S400: 'перголы', S500: 'перголы', SLIDE: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'Win Verto' };
+  const SYSN = { S400: 'перголы', S500: 'перголы', SLIDE: 'перголы', GLASS: 'Win Glass', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'Decor' };
   for (const [k, v] of Object.entries(bySys)) {
     const what = k === 'GLASS' ? cname(e.slide) : k === 'VERTO' ? cname(e.verto) : k === 'SCREEN_ZIP' ? cname(e.zip) : e.roof === e.construction ? cname(e.construction) : `конструкция ${cname(e.construction)}, ламели ${cname(e.roof)}`;
     Q.push({ k: 'coat', sys: k, pct: v.pct, a: v.sum });
@@ -1915,7 +1915,7 @@ $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.
 /* ---------- colour on the 3D: glass tint and frame colour with one tap ---------- */
 /** the pieces of the colour panel: one colour block (as frame + standard colours + 'more colours'), shared with the Win Verto panel */
 function colourKit() {
-  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла и панелей', verto: 'Win Verto', asFrame: 'как рама', more: 'Другие цвета', groups: Object.fromEntries(GROUPS), noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
+  const tx = window.COLOR_TEXT || { glass: 'Стекло', frame: 'Рама и стойки', roof: 'Ламели', zip: 'ZIP: короб и направляющие', fabric: 'Оттенок ткани ZIP', slide: 'Профили стекла и панелей', verto: 'Decor', asFrame: 'как рама', more: 'Другие цвета', groups: Object.fromEntries(GROUPS), noGlass: 'Стекло появится, когда закроете сторону стеклом', tints: GLS };
   const fills = Object.values(state.fills), e = colorsEff(), std = PALETTE.filter((c) => c.group === 'standard');
   const name = window.COLOR_NAME || ((c) => (c.custom ? c.nameRu : c.id + ' ' + c.nameRu));
   const sw = (attr, k, bg, label, cur, extra = '') => `<button type="button" ${attr}="${k}" ${extra} aria-pressed="${cur}"><span class="sw" style="background:${bg}"></span>${label}</button>`;
@@ -1955,7 +1955,7 @@ function renderColorQuick() {
     h += head(tx.fabric, ti >= 0 ? tn(ti) : '') + `<div class="dots">${FABRIC_TONES.map(([hx], i) => `<button type="button" data-tone="${hx}" style="background:${hx}" title="${tn(i)}" aria-label="${tn(i)}" aria-pressed="${state.colors.tone === hx}"></button>`).join('')}</div>`;
   }
   if (fills.some((f) => f === 'glass' || f === 'panels')) h += colourBlock('slide', tx.slide);
-  if (Object.keys(state.verto.packs).length) h += colourBlock('verto', tx.verto || 'Win Verto');
+  if (Object.keys(state.verto.packs).length) h += colourBlock('verto', tx.verto || 'Decor');
   $('tb-colors').innerHTML = h;
 }
 $('tb-colors').addEventListener('click', (e) => {
@@ -1973,7 +1973,7 @@ $('tb-colors').addEventListener('click', (e) => {
   if (g || c || t) { const top = $('tb-colors').scrollTop; renderColorQuick(); $('tb-colors').scrollTop = top; }
 });
 /* Win Verto on the 3D toolbar: example types 1–6 (small top views), mounting; a side is changed by tapping it in 3D */
-const VERTO_RU = { none: 'Без Verto', types: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, typesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' }, mountT: 'Монтаж', mounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме, под коробом', D: 'С угловым соединением' }, hint: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', typesT: 'Готовые типы' };
+const VERTO_RU = { none: 'Без Decor', types: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, typesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' }, mountT: 'Монтаж', mounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме, под коробом', D: 'С угловым соединением' }, hint: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', typesT: 'Готовые типы' };
 function renderVertoPop() {
   const box = $('tb-vertos'), tx = window.VERTO_TEXT || VERTO_RU, opt = state.options[state.optIndex]; if (!opt) { box.innerHTML = ''; return; }
   const ops = openings(opt, SPEC[famKey(opt)]), v = state.verto, any = vertoList(v.packs).length > 0;
@@ -1982,7 +1982,7 @@ function renderVertoPop() {
   let h = `<div class="t">${tx.typesT}</div><div class="vt"><button type="button" data-vtp="0" aria-pressed="${!any}">${th({})}<span>${tx.none}</span></button>` +
     [1, 2, 3, 4, 5, 6].map((k) => `<button type="button" data-vtp="${k}" aria-pressed="${v.preset === k}">${th(vertoPresetPacks(k, opt, v.mount))}<span>${k} · ${name(k)}</span></button>`).join('') + `</div>`;
   // colour and mounting are always there (also before a type is chosen): the panel keeps its height, the 3D above does not jump
-  h += colourKit().colourBlock('verto', (window.COLOR_TEXT && window.COLOR_TEXT.verto) || 'Win Verto');
+  h += colourKit().colourBlock('verto', (window.COLOR_TEXT && window.COLOR_TEXT.verto) || 'Decor');
   h += `<div class="t">${tx.mountT}</div><div class="row">${['B', 'A', 'C', 'D'].map((m) => `<button type="button" data-vtm="${m}" aria-pressed="${v.mount === m}">${m} · ${tx.mounts[m]}</button>`).join('')}</div><div class="hint2">${tx.hint}</div>`;
   const top = box.scrollTop; box.innerHTML = h; box.scrollTop = top;
 }

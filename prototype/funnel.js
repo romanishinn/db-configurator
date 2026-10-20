@@ -35,7 +35,7 @@
       s2: 'Welche Seiten möchten Sie schließen?', s2l: 'Jede Seite kann offen bleiben oder Sonnen-, Wind- oder Sichtschutz bekommen. Sie können auch im 3D-Bild auf eine Seite tippen.',
       fillsS: { none: 'Offen', zip: 'ZIP', glass: 'Glas', verto: 'Lamellen', panels: 'Paneele' },
       allSides: 'Alle Seiten', fills: { none: 'Offen', zip: 'ZIP-Screen', glass: 'Schiebeglas', verto: 'Lamellenwand', panels: 'Schiebepaneele' },
-      legend: { zip: 'Stoffbehang in seitlichen Führungen, motorisch – Sonnen- und Sichtschutz.', glass: 'Glas-Schiebeelemente (Win Glass) – Schutz vor Wind und Regen.', verto: 'Feste Aluminiumprofile (Win Verto) – Sichtschutz, Luft kommt durch.', panels: 'Aluminium-Lamellenpaneele auf Schienen (Win Panels) – verschiebbar.' },
+      legend: { zip: 'Stoffbehang in seitlichen Führungen, motorisch – Sonnen- und Sichtschutz.', glass: 'Glas-Schiebeelemente (Win Glass) – Schutz vor Wind und Regen.', verto: 'Feste Aluminiumprofile (Decor) – Sichtschutz, Luft kommt durch.', panels: 'Aluminium-Lamellenpaneele auf Schienen (Win Panels) – verschiebbar.' },
       sides: { front: 'Vorne', left: 'Links', right: 'Rechts', back: 'Hinten' }, field: 'Feld', row: 'Reihe',
       park: 'Glas', parkL: '← links', parkR: 'rechts →', parkBoth: '↔ offen', shut: 'zu',
       cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Lamellenwand', hsOpen: 'Seite wählen',
@@ -85,11 +85,11 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 Doppel' }, pergola: 'Lamellendach', panelsW: 'Flügel', profilesW: 'Profile', slatsFixed: 'feste Lamellen', slatsRot: 'drehbare Lamellen',
       opt: { OPT_POST_HEIGHT: 'Höhere Stützen', OPT_LED_LOUVRES: 'LED-Lichtband in den Lamellen', OPT_LED_GUTTER: 'LED-Licht in der Rinne', OPT_THERMAL: 'Dämmeinlage in den Lamellen', OPT_SENSOR: 'Wettersensoren', OPT_SMART: 'App-Steuerung', OPT_HEATERS: 'Heizstrahler', OPT_HEATER_PREP: 'Vorbereitung für Heizstrahler', OPT_INTERNAL_BOX: 'Innenliegende Elektrobox', OPT_AUDIO: 'Audiosystem', OPT_SOCKET: 'Steckdosen in der Stütze', OPT_SPOTS: 'LED-Spots in den Lamellen', OPT_LAMPS: 'LED-Leuchten in den Lamellen', OPT_CROWN_SPOTS: 'LED-Spots im Rahmen', OPT_VERTICAL_LAMPS: 'LED-Leuchten an den Stützen', OPT_INTERMEDIATE_POST: 'Zusätzliche Stützen' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Steuermodul für die Screens', CONTROL_REMOTE: 'Fernbedienung für die Screens', CONTROL_SMART: 'Smart-Home-Modul', CONTROL_WIND_SENSOR: 'Windsensor für die Screens', CONTROL_SWITCH: 'Wandschalter', CONTROL_PERGOLA_REMOTE_EXTRA: 'Zusätzliche Fernbedienung', CONTROL_CUSTOM: 'Steuerung' },
-      vertoT: 'Win Verto – Lamellen an der Pergola', vertoD: 'Feste Aluminiumprofile als Sicht- und Sonnenschutz, auch zusammen mit ZIP und Glas', vNone: 'Ohne',
+      vertoT: 'Decor – Lamellen an der Pergola', vertoD: 'Feste Aluminiumprofile als Sicht- und Sonnenschutz, auch zusammen mit ZIP und Glas', vNone: 'Ohne',
       vTypes: { 1: 'An jeder Ecke', 2: 'Vorne und hinten', 3: 'Ein Paket vorne', 4: 'An beiden Seiten', 5: 'Beide Seiten ganz', 6: 'Mitte vorne' }, vTypesWall: { 2: 'Vorne und seitlich', 6: 'Mitte vorne und seitlich' },
       vTypesT: 'Beispiele', vMountT: 'Montage der Profile', vMounts: { A: 'Über das Dach hinaus', B: 'Bis Oberkante Rahmen', C: 'In der Öffnung', D: 'Mit Eckverbindung' },
       vMountsD: { A: 'Profile enden über den Lamellen', B: 'Außen am Rahmen, bündig oben', C: 'Unter dem Rahmen zwischen den Stützen, außen bündig – ZIP oder Glas bleibt möglich', D: 'Pakete laufen um die Ecke, je Ecke +53 €' },
-      vEdit: 'Tippen Sie im 3D auf eine Seite, um Pakete zu ändern.', vSide: 'Win Verto an dieser Seite', vPos: { none: 'Ohne', L: 'Links', center: 'Mitte', R: 'Rechts', full: 'Ganze Seite' },
+      vEdit: 'Tippen Sie im 3D auf eine Seite, um Pakete zu ändern.', vSide: 'Decor an dieser Seite', vPos: { none: 'Ohne', L: 'Links', center: 'Mitte', R: 'Rechts', full: 'Ganze Seite' },
       vProf: 'Profile', vPack: 'Paket', vClosed: 'In der Öffnung nicht möglich – die Seite ist schon geschlossen. Montage am Rahmen wählen.', vHigh: 'Profile zu lang für die Preisliste', vMountW: 'Montage',
       coat: 'Farbaufpreis', coatMin: 'Mindermengenzuschlag Beschichtung', fabricS: 'Stoffaufpreis', corner: 'Eckverbindung Lamellenwand', tbdPanels: 'Farbaufpreis Paneele', onRequest: 'auf Anfrage', extra: 'Zuschlag',
       sysName: { S400: 'Pergola', S500: 'Pergola', GLASS: 'Schiebeglas', SCREEN_ZIP: 'ZIP-Screens', VERTO: 'Lamellenwand' },
@@ -117,7 +117,7 @@
       s2: 'Which sides would you like to close?', s2l: 'Each side can stay open or get sun, wind or privacy protection. You can also tap a side in the 3D view.',
       fillsS: { none: 'Open', zip: 'ZIP', glass: 'Glass', verto: 'Louvres', panels: 'Panels' },
       allSides: 'All sides', fills: { none: 'Open', zip: 'ZIP screen', glass: 'Sliding glass', verto: 'Louvre wall', panels: 'Sliding panels' },
-      legend: { zip: 'Fabric blind in side guides, motorised – sun and privacy protection.', glass: 'Sliding glass panels (Win Glass) – shelter from wind and rain.', verto: 'Fixed aluminium profiles (Win Verto) – privacy, air still flows.', panels: 'Aluminium louvre panels on rails (Win Panels) – slide aside.' },
+      legend: { zip: 'Fabric blind in side guides, motorised – sun and privacy protection.', glass: 'Sliding glass panels (Win Glass) – shelter from wind and rain.', verto: 'Fixed aluminium profiles (Decor) – privacy, air still flows.', panels: 'Aluminium louvre panels on rails (Win Panels) – slide aside.' },
       sides: { front: 'Front', left: 'Left', right: 'Right', back: 'Back' }, field: 'bay', row: 'row',
       park: 'Glass', parkL: '← left', parkR: 'right →', parkBoth: '↔ open', shut: 'closed',
       cta: 'Tap a ＋ to close a side – ZIP screen, glass or louvre wall', hsOpen: 'Choose side',
@@ -163,11 +163,11 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 double' }, pergola: 'Louvred roof', panelsW: 'panels', profilesW: 'profiles', slatsFixed: 'fixed slats', slatsRot: 'rotating slats',
       opt: { OPT_POST_HEIGHT: 'Taller posts', OPT_LED_LOUVRES: 'LED strip in the louvres', OPT_LED_GUTTER: 'LED light in the gutter', OPT_THERMAL: 'Insulating insert in the louvres', OPT_SENSOR: 'Weather sensors', OPT_SMART: 'App control', OPT_HEATERS: 'Heaters', OPT_HEATER_PREP: 'Heater preparation', OPT_INTERNAL_BOX: 'Internal electrical box', OPT_AUDIO: 'Audio system', OPT_SOCKET: 'Sockets in the post', OPT_SPOTS: 'LED spots in the louvres', OPT_LAMPS: 'LED lamps in the louvres', OPT_CROWN_SPOTS: 'LED spots in the frame', OPT_VERTICAL_LAMPS: 'LED lights on the posts', OPT_INTERMEDIATE_POST: 'Additional posts' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Control unit for the screens', CONTROL_REMOTE: 'Remote control for the screens', CONTROL_SMART: 'Smart home unit', CONTROL_WIND_SENSOR: 'Wind sensor for the screens', CONTROL_SWITCH: 'Wall switch', CONTROL_PERGOLA_REMOTE_EXTRA: 'Additional remote control', CONTROL_CUSTOM: 'Controls' },
-      vertoT: 'Win Verto – louvres on the pergola', vertoD: 'Fixed aluminium profiles for privacy and shade, also together with ZIP and glass', vNone: 'None',
+      vertoT: 'Decor – louvres on the pergola', vertoD: 'Fixed aluminium profiles for privacy and shade, also together with ZIP and glass', vNone: 'None',
       vTypes: { 1: 'At every corner', 2: 'Front and back', 3: 'One package at the front', 4: 'On both sides', 5: 'Both sides full', 6: 'Front centre' }, vTypesWall: { 2: 'Front and side', 6: 'Front centre and side' },
       vTypesT: 'Examples', vMountT: 'Mounting of the profiles', vMounts: { A: 'Above the roof', B: 'Up to the frame top', C: 'In the opening', D: 'With corner joint' },
       vMountsD: { A: 'Profiles end above the louvres', B: 'Outside on the frame, flush at the top', C: 'Under the frame between the posts, flush outside – ZIP or glass still possible', D: 'Packages wrap around the corner, +53 € per corner' },
-      vEdit: 'Tap a side in the 3D view to change its packages.', vSide: 'Win Verto on this side', vPos: { none: 'None', L: 'Left', center: 'Centre', R: 'Right', full: 'Whole side' },
+      vEdit: 'Tap a side in the 3D view to change its packages.', vSide: 'Decor on this side', vPos: { none: 'None', L: 'Left', center: 'Centre', R: 'Right', full: 'Whole side' },
       vProf: 'profiles', vPack: 'package', vClosed: 'Not possible in the opening – the side is already closed. Choose mounting on the frame.', vHigh: 'Profiles too long for the price list', vMountW: 'mounting',
       coat: 'Colour surcharge', coatMin: 'Small-batch coating surcharge', fabricS: 'Fabric surcharge', corner: 'Louvre wall corner joint', tbdPanels: 'Panel colour surcharge', onRequest: 'on request', extra: 'surcharge',
       sysName: { S400: 'pergola', S500: 'pergola', GLASS: 'sliding glass', SCREEN_ZIP: 'ZIP screens', VERTO: 'louvre wall' },
@@ -195,7 +195,7 @@
       s2: 'Какие стороны закрыть?', s2l: 'Каждая сторона может остаться открытой или получить защиту от солнца, ветра или взглядов. Можно нажать на сторону прямо на 3D.',
       fillsS: { none: 'Открыто', zip: 'ZIP', glass: 'Стекло', verto: 'Ламели', panels: 'Панели' },
       allSides: 'Все стороны', fills: { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Раздвижное стекло', verto: 'Ламельная стена', panels: 'Раздвижные панели' },
-      legend: { zip: 'Ткань в боковых направляющих, с мотором – от солнца и взглядов.', glass: 'Раздвижные стеклянные полотна (Win Glass) – от ветра и дождя.', verto: 'Неподвижные алюминиевые профили (Win Verto) – от взглядов, воздух проходит.', panels: 'Алюминиевые ламельные панели на направляющих (Win Panels) – сдвигаются.' },
+      legend: { zip: 'Ткань в боковых направляющих, с мотором – от солнца и взглядов.', glass: 'Раздвижные стеклянные полотна (Win Glass) – от ветра и дождя.', verto: 'Неподвижные алюминиевые профили (Decor) – от взглядов, воздух проходит.', panels: 'Алюминиевые ламельные панели на направляющих (Win Panels) – сдвигаются.' },
       sides: { front: 'Спереди', left: 'Слева', right: 'Справа', back: 'Сзади' }, field: 'проём', row: 'ряд',
       park: 'Стекло', parkL: '← влево', parkR: 'вправо →', parkBoth: '↔ открыто', shut: 'закрыто',
       cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или ламельная стена', hsOpen: 'Выбрать сторону',
@@ -241,11 +241,11 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная' }, pergola: 'Пергола с ламелями', panelsW: 'полотен', profilesW: 'профилей', slatsFixed: 'неподвижные ламели', slatsRot: 'поворотные ламели',
       opt: { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'LED-лента в ламелях', OPT_LED_GUTTER: 'LED-подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме', OPT_VERTICAL_LAMPS: 'Светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные стойки' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Блок управления скринами', CONTROL_REMOTE: 'Пульт для скринов', CONTROL_SMART: 'Блок умного дома', CONTROL_WIND_SENSOR: 'Датчик ветра для скринов', CONTROL_SWITCH: 'Настенный выключатель', CONTROL_PERGOLA_REMOTE_EXTRA: 'Дополнительный пульт', CONTROL_CUSTOM: 'Управление' },
-      vertoT: 'Win Verto – ламели на перголе', vertoD: 'Неподвижные алюминиевые профили от взглядов и солнца, можно вместе с ZIP и стеклом', vNone: 'Без',
+      vertoT: 'Decor – ламели на перголе', vertoD: 'Неподвижные алюминиевые профили от взглядов и солнца, можно вместе с ZIP и стеклом', vNone: 'Без',
       vTypes: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, vTypesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' },
       vTypesT: 'Готовые типы', vMountT: 'Монтаж профилей', vMounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме', D: 'С угловым соединением' },
       vMountsD: { A: 'Профили заканчиваются над ламелями', B: 'Снаружи на раме, вровень сверху', C: 'Под коробом между стойками, вровень снаружи – ZIP или стекло остаются возможны', D: 'Пакеты огибают угол, +53 € за угол' },
-      vEdit: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', vSide: 'Win Verto на этой стороне', vPos: { none: 'Без', L: 'Слева', center: 'По центру', R: 'Справа', full: 'Вся сторона' },
+      vEdit: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', vSide: 'Decor на этой стороне', vPos: { none: 'Без', L: 'Слева', center: 'По центру', R: 'Справа', full: 'Вся сторона' },
       vProf: 'профилей', vPack: 'пакет', vClosed: 'В проёме невозможно – сторона уже закрыта. Выберите монтаж на раме.', vHigh: 'Профили длиннее, чем в прайсе', vMountW: 'монтаж',
       coat: 'Доплата за цвет', coatMin: 'Минимальная партия покраски', fabricS: 'Доплата за ткань', corner: 'Угловое соединение ламельной стены', tbdPanels: 'Доплата за цвет панелей', onRequest: 'по запросу', extra: 'доплата',
       sysName: { S400: 'перголы', S500: 'перголы', GLASS: 'стекла', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'ламельной стены' },
@@ -443,8 +443,8 @@
       else if (l.k === 'pending') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: t.later, a: null });
       else if (l.k === 'corner') out.push({ g: 'sides', t: t.corner + (l.n > 1 ? ' × ' + l.n : ''), d: '', a: l.a });
       else if (l.k === 'zipled') out.push({ g: 'sides', t: `${t.zipLedT} – ${sideLabel(l.id, o)}`, d: t.zipLedD, a: l.a });
-      else if (l.k === 'vpack') out.push({ g: 'sides', t: `Win Verto – ${sideLabel(l.id, o)}`, d: `${l.pos === 'full' ? t.vPos.full : t.vPack + ' ' + vPosName(l.id, l.pos, t).toLowerCase()} · ${l.n} ${t.vProf} · ${t.vMountW}: ${t.vMounts[l.mount]}`, a: l.a });
-      else if (l.k === 'vbad') out.push({ g: 'sides', t: `Win Verto – ${sideLabel(l.id, o)}`, d: l.why === 'closed' ? t.vClosed : t.vHigh, a: null });
+      else if (l.k === 'vpack') out.push({ g: 'sides', t: `Decor – ${sideLabel(l.id, o)}`, d: `${l.pos === 'full' ? t.vPos.full : t.vPack + ' ' + vPosName(l.id, l.pos, t).toLowerCase()} · ${l.n} ${t.vProf} · ${t.vMountW}: ${t.vMounts[l.mount]}`, a: l.a });
+      else if (l.k === 'vbad') out.push({ g: 'sides', t: `Decor – ${sideLabel(l.id, o)}`, d: l.why === 'closed' ? t.vClosed : t.vHigh, a: null });
       else if (l.k === 'fabric') out.push({ g: 'sides', t: `${t.fabricS} ${l.name}`, d: `OF ${l.of} %`, a: l.a });
       else if (l.k === 'control') out.push({ g: 'sides', t: t.ctl[l.code] || l.name, d: l.qty > 1 ? '× ' + l.qty : '', a: l.a });
       else if (l.k === 'coat') out.push({ g: 'colours', t: `${t.coat} ${t.sysName[l.sys]} (${l.pct} %)`, d: '', a: l.a });
@@ -730,7 +730,7 @@
     const fills = Object.values(state.fills);
     const rows = [['construction', t.frame], ['roof', t.roof]];
     if (fills.some((f) => f === 'glass' || f === 'panels')) rows.push(['slide', t.slideCol]);
-    if (Object.keys(state.verto.packs || {}).length) rows.push(['verto', 'Win Verto']);
+    if (Object.keys(state.verto.packs || {}).length) rows.push(['verto', 'Decor']);
     if (fills.includes('zip')) rows.push(['zip', t.zipCol]);
     const pct = (key, g) => {
       if (key === 'slide') return cat.coating.rates.GLASS[g] || 0;
@@ -1172,7 +1172,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Win Verto', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.VERTO_TEXT = isCust() ? { none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop();
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.VERTO_TEXT = isCust() ? { none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
