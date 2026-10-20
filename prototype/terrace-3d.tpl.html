@@ -623,7 +623,7 @@ function build() {
   for (const o of opsAll) {
     const fill = state.fills[o.id] || 'none';
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(o.len, o.h), M.pick.clone());
-    plane.position.set(o.cx, o.h / 2, o.cz); plane.rotation.y = o.rotY; plane.userData = { opening: o };
+    plane.position.set(o.cx, o.h / 2, o.cz); plane.rotation.y = o.rotY; plane.userData = { opening: o }; o.pickPlane = plane;
     root.add(plane); pickables.push(plane);
     addFill(o, fill);
   }
@@ -859,7 +859,7 @@ function drawVerto(opt, ops) {
     const top = gm.surface ? gm.length / 1000 : o.h;
     for (let i = 0; i < gm.n; i++) {
       const p = box(0.035, top, 0.06, M.verto, gm.x0 + 0.0175 + i * gm.pitch, top / 2, gm.z, g);
-      p.userData = { opening: o }; pickables.push(p);
+      p.userData = { opening: o, plane: o.pickPlane }; pickables.push(p); // hovering a profile lights its side's pick plane, never the profile material
     }
   }
 }
@@ -1271,7 +1271,8 @@ const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
 let menu = null, downAt = null, hovered = null;
 renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
 renderer.domElement.addEventListener('pointermove', (e) => {
-  const hit = pick(e); if (hovered && hovered !== hit) hovered.material.opacity = 0;
+  const h0 = pick(e), hit = h0 && h0.userData.plane ? h0.userData.plane : h0; // only the invisible pick planes change their opacity
+  if (hovered && hovered !== hit) hovered.material.opacity = 0;
   hovered = hit; if (hit) hit.material.opacity = 0.22; renderer.domElement.style.cursor = hit ? 'pointer' : 'grab';
 });
 renderer.domElement.addEventListener('pointerup', (e) => {
@@ -2038,7 +2039,7 @@ function paint(mat, c) {
 function applyColors() {
   syncGlassControls();
   const e = colorsEff();
-  paint(M.frame, colorOf(e.construction)); paint(M.louver, colorOf(e.roof)); paint(M.slide, colorOf(e.slide)); paint(M.zip, colorOf(e.zip)); paint(M.verto, colorOf(e.verto));
+  paint(M.frame, colorOf(e.construction)); paint(M.louver, colorOf(e.roof)); paint(M.slide, colorOf(e.slide)); paint(M.zip, colorOf(e.zip)); paint(M.verto, colorOf(e.verto)); M.verto.opacity = 1;
   srgbCol(M.fabric.color, state.colors.tone);
   fabricLook();
 }
