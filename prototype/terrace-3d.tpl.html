@@ -113,7 +113,10 @@ body:not(.cust).fold-left.fold-right .app, body.cust.fold-right .app { grid-temp
 /* folded bottom: the option panels and the notes go, the buttons stay over the 3D without a bar behind them */
 body.fold-bottom .stage .toolbar { position: absolute; left: 0; right: 0; bottom: 8px; background: transparent; border-top: 0; padding: 0 12px; z-index: 3; pointer-events: none; }
 body.fold-bottom .stage .toolbar .tb-row { pointer-events: auto; }
-body.fold-bottom .stage .toolbar .tb-pop, body.fold-bottom .stage .toolbar #louv-info, body.fold-bottom .stage .toolbar .clr-pop { display: none !important; }
+body.fold-bottom .stage .toolbar #louv-info { display: none !important; }
+/* full screen: a panel slides out on the left over the 3D (a drawer) — the picture keeps its size */
+body.fold-bottom .stage .toolbar .tb-pop:not([hidden]), body.fold-bottom .stage .toolbar .clr-pop:not([hidden]) { position: absolute; left: 28px; bottom: 56px; width: min(400px, calc(100% - 56px)); height: auto; max-height: calc(100vh - 150px); overflow-y: auto; pointer-events: auto; z-index: 4; background: rgba(238,240,241,.97); box-shadow: 0 8px 28px rgba(0,0,0,.22); animation: drawer-in .18s ease-out; }
+@keyframes drawer-in { from { transform: translateX(-24px); opacity: 0; } to { transform: none; opacity: 1; } }
 body.fold-bottom .stage .toolbar .ib { box-shadow: 0 1px 6px rgba(0,0,0,.18); }
 body.fold-bottom #fold-bottom { bottom: 56px; }
 /* desktop: every panel under the 3D has the same height (longer ones scroll inside) — switching panels does not resize the 3D */
@@ -2083,7 +2086,6 @@ function togglePop(btn, pop, force) {
   if (open) for (const [b, p] of [['tb-view', 'tb-views'], ['tb-move', 'tb-sliders'], ['tb-light', 'tb-lights'], ['tb-verto', 'tb-vertos'], ['tb-color', 'tb-colors']]) {
     if (p !== pop.id) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); }
   }
-  if (open && window.unfoldBottom) window.unfoldBottom();
   pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));
   if (!open) pop.style.minHeight = '';
 }
