@@ -1427,7 +1427,7 @@ function onMenuClick(ev) {
     else { state.colors.fabric = fabricForOpenness(of); applyColors(); renderColors(); }
     renderEstimate(); return renderMenu(o);
   }
-  if (b.dataset.vpos) { setVertoPack(o.id, b.dataset.vpos); return renderMenu(o); }
+  if (b.dataset.vpos) { setVertoPack(o.id, b.dataset.vpos); vertoSideSel = o.id; return renderMenu(o); }
   if (b.dataset.vn) { const l = vertoList({ [o.id]: state.verto.packs[o.id] || {} }); if (l.length) { const gm = vertoGeom(o, l[0].pk, state.options[state.optIndex]); setVertoPack(o.id, 'n', Math.max(2, Math.min(gm.maxN, gm.n + Number(b.dataset.vn)))); } return renderMenu(o); }
   if (b.dataset.vmount) { setVertoMount(b.dataset.vmount); return renderMenu(o); }
   if (b.dataset.vpreset) { setVertoPreset(Number(b.dataset.vpreset)); return renderMenu(o); }
@@ -1973,7 +1973,8 @@ $('tb-colors').addEventListener('click', (e) => {
   if (g || c || t) { const top = $('tb-colors').scrollTop; renderColorQuick(); $('tb-colors').scrollTop = top; }
 });
 /* Win Verto on the 3D toolbar: example types 1–6 (small top views), mounting; a side is changed by tapping it in 3D */
-const VERTO_RU = { none: 'Без Decor', types: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, typesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' }, mountT: 'Монтаж', mounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме, под коробом', D: 'С угловым соединением' }, hint: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', typesT: 'Готовые типы' };
+let vertoSideSel = null;
+const VERTO_RU = { sideT: 'Сторона', pos: { none: 'Нет', L: 'Слева', center: 'По центру', R: 'Справа', full: 'Вся сторона' }, prof: 'профилей', none: 'Без Decor', types: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, typesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' }, mountT: 'Монтаж', mounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме, под коробом', D: 'С угловым соединением' }, hint: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', typesT: 'Готовые типы' };
 function renderVertoPop() {
   const box = $('tb-vertos'), tx = window.VERTO_TEXT || VERTO_RU, opt = state.options[state.optIndex]; if (!opt) { box.innerHTML = ''; return; }
   const ops = openings(opt, SPEC[famKey(opt)]), v = state.verto, any = vertoList(v.packs).length > 0;
@@ -1984,6 +1985,20 @@ function renderVertoPop() {
   let h = `<div class="t">${tx.mountT}</div><div class="row">${M4.map((m) => `<button type="button" data-vtm="${m}" aria-pressed="${v.mount === m}">${m} · ${tx.mounts[m]}</button>`).join('')}</div>`;
   h += `<div class="t">${tx.typesT}</div><div class="vt"><button type="button" data-vtp="0" aria-pressed="${!any}">${th({})}<span>${tx.none}</span></button>` +
     [1, 2, 3, 4, 5, 6].map((k) => `<button type="button" data-vtp="${k}" aria-pressed="${v.preset === k}">${th(vertoPresetPacks(k, opt, v.mount))}<span><b>${v.mount}-${k}</b> · ${name(k)}</span></button>`).join('') + `</div>`;
+  // one side by hand: pick the side, then the packages on it (left / centre / right can be combined, or the whole side) and the profiles
+  if (!ops.some((x) => x.id === vertoSideSel)) vertoSideSel = (ops.find((x) => v.packs[x.id]) || ops[0] || {}).id;
+  const sideName = (id) => (window.SIDE_NAME ? window.SIDE_NAME(id) : (ops.find((x) => x.id === id) || {}).label || id);
+  h += `<div class="t">${tx.sideT}</div><div class="row">${ops.map((x) => `<button type="button" data-vsd="${x.id}" aria-pressed="${vertoSideSel === x.id}">${sideName(x.id)}${v.packs[x.id] ? ' •' : ''}</button>`).join('')}</div>`;
+  const sel = ops.find((x) => x.id === vertoSideSel);
+  if (sel) {
+    const m = v.packs[sel.id] || {}, list = vertoList({ [sel.id]: m }), R = outRight(faceOf(sel.id)), L = R === 'b' ? 'a' : 'b';
+    h += `<div class="row">${[['none', 'none'], [L, 'L'], ['center', 'center'], [R, 'R'], ['full', 'full']].map(([pos, lbl]) => `<button type="button" data-vps="${pos}" aria-pressed="${pos === 'none' ? !list.length : m[pos] !== undefined}">${tx.pos[lbl]}</button>`).join('')}`;
+    if (list.length && m.full === undefined) {
+      const gm = vertoGeom(sel, list[0].pk, opt);
+      h += `<button type="button" data-vnn="-1" ${gm.n <= 2 ? 'disabled' : ''}>−</button><span class="hint2" style="align-self:center">${gm.n} ${tx.prof} · ${mm(DBCore.vertoPackageWidth(gm.n))} мм</span><button type="button" data-vnn="1" ${gm.n >= gm.maxN ? 'disabled' : ''}>+</button>`;
+    }
+    h += `</div>`;
+  }
   // the colour is always there (also before a type is chosen): the panel keeps its height
   h += colourKit().colourBlock('verto', (window.COLOR_TEXT && window.COLOR_TEXT.verto) || 'Decor');
   h += `<div class="hint2">${tx.hint}</div>`;
@@ -1993,6 +2008,13 @@ $('tb-verto').onclick = () => { quickMore = null; renderVertoPop(); togglePop($(
 $('tb-vertos').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.qmore) { quickMore = quickMore === b.dataset.qmore ? null : b.dataset.qmore; renderVertoPop(); return; }
+  if (b.dataset.vsd) { vertoSideSel = b.dataset.vsd; renderVertoPop(); return; }
+  if (b.dataset.vps) { setVertoPack(vertoSideSel, b.dataset.vps); if (typeof window.onEstimate === 'function') window.onEstimate(); renderVertoPop(); return; }
+  if (b.dataset.vnn) {
+    const opt = state.options[state.optIndex], op = openings(opt, SPEC[famKey(opt)]).find((x) => x.id === vertoSideSel), l = vertoList({ [vertoSideSel]: state.verto.packs[vertoSideSel] || {} });
+    if (op && l.length) { const gm = vertoGeom(op, l[0].pk, opt); setVertoPack(vertoSideSel, 'n', Math.max(2, Math.min(gm.maxN, gm.n + Number(b.dataset.vnn)))); }
+    if (typeof window.onEstimate === 'function') window.onEstimate(); renderVertoPop(); return;
+  }
   if (b.dataset.qcol !== undefined) { if (b.dataset.qcol) setColor('verto', b.dataset.qcol); else { state.colors.verto = null; applyColors(); renderColors(); renderEstimate(); } renderVertoPop(); return; }
   if (b.dataset.vtp !== undefined) setVertoPreset(Number(b.dataset.vtp));
   else if (b.dataset.vtm) setVertoMount(b.dataset.vtm);
