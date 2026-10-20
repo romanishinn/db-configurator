@@ -935,23 +935,24 @@ function addFill(o, fill) {
     const dbl = gs.best && gs.best.opening === 'double';
     const side = dbl ? 0 : (glassCfg(o).side || state.glassSide) === 'left' ? -1 : 1;     // 0 = both sides
     const per = dbl ? Math.ceil(nP / 2) : nP;
-    const track = gs.best && gs.best.tracks === 6 ? [-0.03, 0, 0.03] : [-0.025, 0.025];
+    // every panel runs in its own track, one behind the other (telescopic): the panel at the parking side is the back one,
+    // each next panel towards the leading edge one track further out; a panel never changes its track while sliding
+    const pitch = Math.min(0.026, 0.15 / Math.max(1, per));
     for (const sd of dbl ? [-1, 1] : [side]) {
       const z0 = sd * (o.len / 2 - parkW / 2);
       box(parkW, 0.012, 0.16, M.slide, z0, 0.008, 0, g).material = new THREE.MeshBasicMaterial({ color: 0x2c6a86, transparent: true, opacity: 0.35 });
     }
     for (let i = 0; i < nP; i++) {
-      const z = track[i % track.length];
       const x = -o.len / 2 + pw * (i + 0.5);
       // parked slot: panels nearest the parking side go there first
       const dist = dbl ? (i < per ? i : nP - 1 - i) : (side > 0 ? nP - 1 - i : i);
       const sd = dbl ? (i < per ? -1 : 1) : side;
-      const slot = dbl ? (i < per ? per - 1 - dist : dist - per) : dist;
+      const slot = dist; // 0 = the panel at the parking edge (also for the two halves of a centre opening)
       // ASSUMPTION: parked panels stay inside the catalogue parking width (p.15). The first panel parks at the frame edge,
       // the others step inward by the spare width and each sits in its own depth plane, so no panel leaves the opening.
       const step = per > 1 ? Math.max(0, (parkW - pw) / (per - 1)) : 0;
       const parkX = sd * (o.len / 2 - pw / 2) - sd * slot * step;
-      const parkZ = (slot - (per - 1) / 2) * 0.03;
+      const z = ((slot - (per - 1) / 2) * pitch + (dbl && i >= per ? pitch / 2 : 0)) * (VERTO_SIGN[faceOf(o.id)] || 1), parkZ = z; // slot 0 (parking side) at the back (inside), the leading panel outside
       const node = new THREE.Group(); node.position.set(x, 0, z); g.add(node);
       // neighbouring panels overlap (they run in different tracks), as in the real system: no see-through slit between them
       const pwv = pw + 0.03;
