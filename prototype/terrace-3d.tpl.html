@@ -120,7 +120,7 @@ body.fold-bottom .stage .toolbar .tb-pop:not([hidden]), body.fold-bottom .stage 
 body.fold-bottom .stage .toolbar .ib { box-shadow: 0 1px 6px rgba(0,0,0,.18); }
 body.fold-bottom #fold-bottom { bottom: 56px; }
 /* desktop: every panel under the 3D has the same height (longer ones scroll inside) — switching panels does not resize the 3D */
-@media (min-width: 761px) { .toolbar .tb-pop { height: clamp(150px, 27vh, 250px); overflow-y: auto; overscroll-behavior: contain; align-content: start; box-sizing: border-box; } }
+@media (min-width: 761px) { .toolbar .tb-pop { height: clamp(150px, 27vh, 250px); overflow-y: auto; overscroll-behavior: contain; align-content: start; grid-auto-rows: max-content; box-sizing: border-box; } }
 .toolbar #tb-vertos { display: grid; gap: 6px; }
 .toolbar #tb-vertos[hidden] { display: none; }
 .toolbar #tb-vertos .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
@@ -1403,7 +1403,7 @@ function renderMenu(o) {
       html += `<div class="sub">${list.length > 1 ? list.length + ' пакета по ' : ''}${gm.n} ${plural(gm.n, 'профиль', 'профиля', 'профилей')} · ${mm(DBCore.vertoPackageWidth(gm.n))} мм · макс. ${gm.maxN} · длина ${mm(gm.length)} мм${gm.blocked ? '' : ''}</div>`;
     }
     html += `<div class="t">Монтаж Decor (для всех)</div><div class="rrow">${[['A', 'над ламелями'], ['B', 'до верха короба'], ['C', 'в проёме, под коробом'], ['D', 'угловое соед.']].map(([k, c]) => rc(`data-vmount="${k}"`, k, c, state.verto.mount === k)).join('')}</div>`;
-    html += `<div class="t">Готовые типы Decor (прайс Win Verto, стр. 9–10)</div><div class="rrow">${[1, 2, 3, 4, 5, 6].map((k) => rc(`data-vpreset="${k}"`, String(k), 'тип ' + k, state.verto.preset === k)).join('')}${rc('data-vpreset="0"', '○', 'убрать все', false)}</div>`;
+    html += `<div class="t">Готовые типы Decor (прайс Win Verto, стр. 9–10)</div><div class="rrow">${[1, 2, 3, 4, 5, 6].map((k) => rc(`data-vpreset="${k}"`, state.verto.mount + '-' + k, 'тип ' + state.verto.mount + '-' + k, state.verto.preset === k)).join('')}${rc('data-vpreset="0"', '○', 'убрать все', false)}</div>`;
   }
   const keep = menu.querySelector('.mbody'), top = keep ? keep.scrollTop : 0; // a choice must not scroll the menu back to the top
   menu.innerHTML = head + `<div class="mbody">${html}</div><div class="mf"><button type="button" class="done" data-close="1">Готово</button></div>`;
@@ -1979,11 +1979,14 @@ function renderVertoPop() {
   const ops = openings(opt, SPEC[famKey(opt)]), v = state.verto, any = vertoList(v.packs).length > 0;
   const th = (packs) => (window.vertoThumb ? window.vertoThumb(opt, ops, packs) : '');
   const name = (k) => (state.mount !== 'free' && tx.typesWall[k]) || tx.types[k];
-  let h = `<div class="t">${tx.typesT}</div><div class="vt"><button type="button" data-vtp="0" aria-pressed="${!any}">${th({})}<span>${tx.none}</span></button>` +
-    [1, 2, 3, 4, 5, 6].map((k) => `<button type="button" data-vtp="${k}" aria-pressed="${v.preset === k}">${th(vertoPresetPacks(k, opt, v.mount))}<span>${k} · ${name(k)}</span></button>`).join('') + `</div>`;
-  // colour and mounting are always there (also before a type is chosen): the panel keeps its height, the 3D above does not jump
+  // as in the price list (p.9-10): the mounting letter A-D first, then the type 1-6 → "B-1" … "D-6"
+  const M4 = ['B', 'A', 'C', 'D'];
+  let h = `<div class="t">${tx.mountT}</div><div class="row">${M4.map((m) => `<button type="button" data-vtm="${m}" aria-pressed="${v.mount === m}">${m} · ${tx.mounts[m]}</button>`).join('')}</div>`;
+  h += `<div class="t">${tx.typesT}</div><div class="vt"><button type="button" data-vtp="0" aria-pressed="${!any}">${th({})}<span>${tx.none}</span></button>` +
+    [1, 2, 3, 4, 5, 6].map((k) => `<button type="button" data-vtp="${k}" aria-pressed="${v.preset === k}">${th(vertoPresetPacks(k, opt, v.mount))}<span><b>${v.mount}-${k}</b> · ${name(k)}</span></button>`).join('') + `</div>`;
+  // the colour is always there (also before a type is chosen): the panel keeps its height
   h += colourKit().colourBlock('verto', (window.COLOR_TEXT && window.COLOR_TEXT.verto) || 'Decor');
-  h += `<div class="t">${tx.mountT}</div><div class="row">${['B', 'A', 'C', 'D'].map((m) => `<button type="button" data-vtm="${m}" aria-pressed="${v.mount === m}">${m} · ${tx.mounts[m]}</button>`).join('')}</div><div class="hint2">${tx.hint}</div>`;
+  h += `<div class="hint2">${tx.hint}</div>`;
   const top = box.scrollTop; box.innerHTML = h; box.scrollTop = top;
 }
 $('tb-verto').onclick = () => { quickMore = null; renderVertoPop(); togglePop($('tb-verto'), $('tb-vertos')); };

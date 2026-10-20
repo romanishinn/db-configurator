@@ -633,13 +633,12 @@
     const price = (packs) => window.vertoQuote(o, ops, packs).total;
     let h = `<div class="f-h3"><span>${t.vertoT}</span></div><p class="f-lead" style="margin:-4px 0 8px;font-size:12.5px">${t.vertoD}</p>`;
     const name = (k) => (state.mount !== 'free' && t.vTypesWall[k]) || t.vTypes[k];
+    // as in the price list (p.9-10): mounting A-D, then the types → "B-1" … "D-6"; prices follow the mounting
+    h += `<div class="f-h3"><span>${t.vMountT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.vMountsD[v.mount]}</span></div>`;
+    h += `<div class="f-chips" style="margin-bottom:8px">${['B', 'A', 'C', 'D'].map((m) => `<button type="button" class="f-chip" data-vmount="${m}" aria-pressed="${v.mount === m}">${m} · ${t.vMounts[m]}</button>`).join('')}</div>`;
     h += `<div class="f-vt">` + `<button type="button" data-vpreset="0" aria-pressed="${!any}"><span class="th">${vertoThumb(o, ops, {})}</span><b>${t.vNone}</b><span class="pr"></span></button>` +
-      [1, 2, 3, 4, 5, 6].map((k) => { const packs = window.vertoPresetPacks(k, o, v.mount); return `<button type="button" data-vpreset="${k}" aria-pressed="${v.preset === k}"><span class="th">${vertoThumb(o, ops, packs)}</span><b>${k} · ${esc(name(k))}</b><span class="pr">+${fe(gross(price(packs)))}</span></button>`; }).join('') + `</div>`;
-    if (any) {
-      h += `<div class="f-h3"><span>${t.vMountT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.vMountsD[v.mount]}</span></div>`;
-      h += `<div class="f-chips">${['B', 'A', 'C', 'D'].map((m) => `<button type="button" class="f-chip" data-vmount="${m}" aria-pressed="${v.mount === m}">${m} · ${t.vMounts[m]}</button>`).join('')}</div>`;
-      h += `<p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.vEdit}</p>`;
-    }
+      [1, 2, 3, 4, 5, 6].map((k) => { const packs = window.vertoPresetPacks(k, o, v.mount); return `<button type="button" data-vpreset="${k}" aria-pressed="${v.preset === k}"><span class="th">${vertoThumb(o, ops, packs)}</span><b>${v.mount}-${k} · ${esc(name(k))}</b><span class="pr">+${fe(gross(price(packs)))}</span></button>`; }).join('') + `</div>`;
+    if (any) h += `<p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.vEdit}</p>`;
     return h;
   }
   /** the Verto part of the side card: positions (left / centre / right can be combined, or the whole side) and the profile count */
