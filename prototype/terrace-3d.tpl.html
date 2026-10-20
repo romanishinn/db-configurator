@@ -747,7 +747,8 @@ const outRight = (face) => (face === 'front' || face === 'right' ? 'b' : 'a');
 const VERTO_DEFAULT_N = 7;
 function vertoGeom(o, pk, opt) { // pk = { pos, n }
   const sp = SPEC[famKey(opt)], mount = state.verto.mount, surface = mount !== 'C';
-  const avail = surface ? o.len + 2 * sp.post : o.len; // on the frame the package can cover the posts too
+  // on the frame the package can reach the outer faces of the posts (o.len runs between the post centres); in the recess the gap between them
+  const avail = surface ? o.len + sp.post : o.len - sp.post;
   const maxN = Math.max(2, DBCore.vertoMaxProfiles(Math.round(avail * 1000)));
   const n = pk.pos === 'full' ? maxN : Math.max(2, Math.min(pk.n || VERTO_DEFAULT_N, maxN));
   const w = DBCore.vertoPackageWidth(n) / 1000;
