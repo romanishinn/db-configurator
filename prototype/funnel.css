@@ -294,8 +294,7 @@ body.cust #hint { display: none !important; }
   body.cust .toolbar .tb-pop { max-height: calc(100vh - 34vh - 56px - 76px - 6px); max-height: calc(100dvh - 34vh - 56px - 76px - 6px); overflow-y: auto; }
   /* compact chips in the colour / light panels */
   body.cust .toolbar :is(#tb-colors, #tb-vertos) .row button { font-size: 12px; padding: 4px 8px 4px 4px; }
-  body.cust .toolbar #tb-vertos .vt { grid-template-columns: repeat(3, 1fr); }
-  body.cust .toolbar #tb-vertos .vt button { font-size: 11px; padding: 3px 4px 5px; }
+  body.cust .toolbar #tb-vertos .vt button { font-size: 11px; padding: 3px 4px 5px; flex-basis: 96px; }
   body.cust .toolbar #tb-vertos .t { font-size: 10px; }
   body.cust .toolbar #tb-lights button { font-size: 12px; padding: 5px 9px; }
   body.cust .toolbar #tb-lights .t { font-size: 10px; }
