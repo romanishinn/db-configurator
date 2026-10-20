@@ -98,6 +98,24 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar :is(#tb-colors, #tb-vertos) .row button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; color: #1c2226; font-weight: 600; }
 .toolbar #tb-lights { display: grid; gap: 6px; }
 .toolbar .ib .cap { white-space: nowrap; }
+/* fold the columns and the panels under the 3D (desktop): triangles on the edges of the 3D view */
+.fold { position: absolute; z-index: 4; display: none; place-items: center; border: 1px solid rgba(0,0,0,.12); background: rgba(255,255,255,.82); color: #1c2226; cursor: pointer; padding: 0; font-size: 11px; line-height: 1; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.fold:hover, .fold:focus-visible { background: #fff; }
+#fold-left { left: 0; top: 50%; width: 20px; height: 48px; margin-top: -24px; border-left: 0; border-radius: 0 8px 8px 0; }
+#fold-right { right: 0; top: 50%; width: 20px; height: 48px; margin-top: -24px; border-right: 0; border-radius: 8px 0 0 8px; }
+#fold-bottom { bottom: 0; left: 50%; width: 52px; height: 18px; margin-left: -26px; border-bottom: 0; border-radius: 8px 8px 0 0; }
+@media (min-width: 761px) { .fold { display: grid; } }
+body:not(.cust).fold-left .app > aside.panel:not(.est) { display: none; }
+body.fold-right .app > aside.panel.est, body.fold-right .app > aside.funnel { display: none; }
+body:not(.cust).fold-left .app { grid-template-columns: minmax(0, 1fr) 300px; }
+body:not(.cust).fold-right .app { grid-template-columns: 300px minmax(0, 1fr); }
+body:not(.cust).fold-left.fold-right .app, body.cust.fold-right .app { grid-template-columns: minmax(0, 1fr); }
+/* folded bottom: the option panels and the notes go, the buttons stay over the 3D without a bar behind them */
+body.fold-bottom .stage .toolbar { position: absolute; left: 0; right: 0; bottom: 8px; background: transparent; border-top: 0; padding: 0 12px; z-index: 3; pointer-events: none; }
+body.fold-bottom .stage .toolbar .tb-row { pointer-events: auto; }
+body.fold-bottom .stage .toolbar .tb-pop, body.fold-bottom .stage .toolbar #louv-info, body.fold-bottom .stage .toolbar .clr-pop { display: none !important; }
+body.fold-bottom .stage .toolbar .ib { box-shadow: 0 1px 6px rgba(0,0,0,.18); }
+body.fold-bottom #fold-bottom { bottom: 56px; }
 .toolbar #tb-vertos { display: grid; gap: 6px; }
 .toolbar #tb-vertos[hidden] { display: none; }
 .toolbar #tb-vertos .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
@@ -262,6 +280,10 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <svg id="photo-marks" class="hide" aria-hidden="true"></svg>
       <div id="photo-bar" hidden><span class="txt-s" id="photo-txt-s">Перетащите 4 точки на углы будущей перголы</span><span class="txt" id="photo-txt">Перетащите 4 точки туда, где будут стоять стойки перголы: 1 и 2 — у стены (слева и справа), 3 и 4 — впереди. Пергола сама встанет в перспективу фото.</span><button type="button" id="photo-pts" aria-pressed="true">Точки</button><button type="button" id="photo-shot" class="pr">Сохранить снимок</button><button type="button" id="photo-new">Другое фото</button><button type="button" id="photo-off">Убрать фото</button></div>
       <input type="file" id="photo-in" accept="image/*" hidden>
+      <!-- fold the side columns and the panels under the 3D away: the 3D on the whole screen, only the buttons stay -->
+      <button type="button" class="fold pro-only" id="fold-left" aria-pressed="false" title="Левую панель скрыть / показать"><span>◀</span></button>
+      <button type="button" class="fold" id="fold-right" aria-pressed="false" title="Правую панель скрыть / показать"><span>▶</span></button>
+      <button type="button" class="fold" id="fold-bottom" aria-pressed="false" title="Панели под 3D скрыть / показать"><span>▼</span></button>
       <div class="hint" id="hint">Нажмите на проём между стойками, чтобы выбрать заполнение. Тяните мышью — вращение, колесо — масштаб.</div>
     </div>
     <div class="toolbar">
@@ -2009,12 +2031,25 @@ $('tb-lights').addEventListener('click', (e) => { const b = e.target.closest('[d
   }, true);
   for (const ev of ['wheel', 'touchmove', 'keydown']) window.addEventListener(ev, release, { passive: true });
 })();
+/* the fold triangles: remembered per browser; opening a panel under the 3D unfolds the bottom again */
+(function folds() {
+  const KEY = 'db.folds', arrow = { left: ['◀', '▶'], right: ['▶', '◀'], bottom: ['▼', '▲'] };
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+  const set = (k, on) => {
+    document.body.classList.toggle('fold-' + k, on); saved[k] = on;
+    const b = $('fold-' + k); b.setAttribute('aria-pressed', String(on)); b.firstElementChild.textContent = arrow[k][on ? 1 : 0];
+    try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* private mode */ }
+  };
+  for (const k of ['left', 'right', 'bottom']) { set(k, !!saved[k]); $('fold-' + k).onclick = () => set(k, !document.body.classList.contains('fold-' + k)); }
+  window.unfoldBottom = () => { if (document.body.classList.contains('fold-bottom')) set('bottom', false); };
+})();
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
   // one panel at a time (view, movement, light, colour); the louvre and day/night buttons do not close it
   if (open) for (const [b, p] of [['tb-view', 'tb-views'], ['tb-move', 'tb-sliders'], ['tb-light', 'tb-lights'], ['tb-verto', 'tb-vertos'], ['tb-color', 'tb-colors']]) {
     if (p !== pop.id) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); }
   }
+  if (open && window.unfoldBottom) window.unfoldBottom();
   pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));
 }
 $('tb-view').onclick = () => togglePop($('tb-view'), $('tb-views'));
