@@ -116,6 +116,8 @@ body.fold-bottom .stage .toolbar .tb-row { pointer-events: auto; }
 body.fold-bottom .stage .toolbar .tb-pop, body.fold-bottom .stage .toolbar #louv-info, body.fold-bottom .stage .toolbar .clr-pop { display: none !important; }
 body.fold-bottom .stage .toolbar .ib { box-shadow: 0 1px 6px rgba(0,0,0,.18); }
 body.fold-bottom #fold-bottom { bottom: 56px; }
+/* desktop: every panel under the 3D has the same height (longer ones scroll inside) — switching panels does not resize the 3D */
+@media (min-width: 761px) { .toolbar .tb-pop { height: clamp(150px, 27vh, 250px); overflow-y: auto; overscroll-behavior: contain; align-content: start; box-sizing: border-box; } }
 .toolbar #tb-vertos { display: grid; gap: 6px; }
 .toolbar #tb-vertos[hidden] { display: none; }
 .toolbar #tb-vertos .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
@@ -2071,9 +2073,9 @@ $('tb-lights').addEventListener('click', (e) => { const b = e.target.closest('[d
   for (const k of ['left', 'right', 'bottom']) { set(k, !!saved[k]); $('fold-' + k).onclick = () => set(k, !document.body.classList.contains('fold-' + k)); }
   window.unfoldBottom = () => { if (document.body.classList.contains('fold-bottom')) set('bottom', false); };
 })();
-/* an open panel under the 3D never gets lower while choices are made in it: the 3D view keeps its height and does not jump */
+/* phones: an open panel never gets lower while choices are made in it (desktop panels have one fixed height, see CSS) */
 for (const pop of document.querySelectorAll('.toolbar .tb-pop')) {
-  new ResizeObserver(() => { if (pop.hidden) return; const h = pop.offsetHeight, m = parseFloat(pop.style.minHeight) || 0; if (h > m) pop.style.minHeight = h + 'px'; }).observe(pop);
+  new ResizeObserver(() => { if (pop.hidden || window.innerWidth > 760) return; const h = pop.offsetHeight, m = parseFloat(pop.style.minHeight) || 0; if (h > m) pop.style.minHeight = h + 'px'; }).observe(pop);
 }
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
