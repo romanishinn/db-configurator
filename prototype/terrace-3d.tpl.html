@@ -1992,6 +1992,23 @@ function setLight(v) {
 window.lightGroups = lightGroups; window.lightPatch = lightPatch; window.lightCurOf = lightCurOf;
 $('tb-light').onclick = () => { renderLightPop(); togglePop($('tb-light'), $('tb-lights')); };
 $('tb-lights').addEventListener('click', (e) => { const b = e.target.closest('[data-light]'); if (b) setLight(b.dataset.light); });
+/* A choice in the panels under the 3D (light, Win Verto, colour, movement) re-renders the side columns (options, estimate);
+ * their height changes and the browser would move the page. The page stays exactly where the user had it. */
+(function keepPageOnToolbarChoice() {
+  let lockY = null;
+  const app = document.querySelector('.app');
+  const release = () => { lockY = null; if (app) app.style.minHeight = ''; };
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.toolbar')) return;
+    const y = window.scrollY;
+    if (app) app.style.minHeight = app.offsetHeight + 'px'; // the columns cannot get shorter under the user (the sticky 3D would move up)
+    lockY = y;
+    const back = () => { if (lockY !== null && Math.abs(window.scrollY - lockY) > 1) window.scrollTo(0, lockY); };
+    requestAnimationFrame(() => { back(); requestAnimationFrame(back); });
+    setTimeout(back, 120);
+  }, true);
+  for (const ev of ['wheel', 'touchmove', 'keydown']) window.addEventListener(ev, release, { passive: true });
+})();
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
   // one panel at a time (view, movement, light, colour); the louvre and day/night buttons do not close it
