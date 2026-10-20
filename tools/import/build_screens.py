@@ -113,10 +113,55 @@ def build_motors(pdf):
     print(f'motors: {len(motors)} WIN CONTROL motors, both readings agree')
 
 
+# ---------- LED lighting in the ZIP guide rails (ZIP 130 only, p.23-24) ----------
+GUIDE_PAGE, GUIDE_LIGHT_PAGE = 24, 23
+# column x ranges (PDF points) of the "Surcharge for guide rail change" block, p.24, read with both tools
+GUIDE_COLS = {'P4': (1147, 1162), 'Z5': (1166, 1181)}
+
+
+def guide_led(pdf):
+    """Surcharge for changing the guide rails of a ZIP 130 screen to a rail with integrated LED (p.24, per height row;
+    the price includes the LED strip and the 24 V power supply, p.23), and the WIN CONTROL ON/OFF control unit (p.23)."""
+    heights = json.load(open(f'{OUT}/tables/zip130.adaptive.json'))['y']['values']
+    out = {}
+    with pdfplumber.open(pdf) as d:
+        page = d.pages[GUIDE_PAGE - 1]
+        for name, (x0, x1) in GUIDE_COLS.items():
+            # reading 1: upright characters in the column, grouped by line
+            rows = {}
+            for c in page.chars:
+                if c['upright'] and x0 <= (c['x0'] + c['x1']) / 2 < x1 - 2 and 100 < c['top'] < 700: # by the centre: digits of the banded neighbour columns stay out
+                    rows.setdefault(round(c['top']), []).append(c)
+            a = [int(''.join(ch['text'] for ch in sorted(r, key=lambda ch: ch['x0']))) for _, r in sorted(rows.items())]
+            a = [v for v in a if v >= 100]
+            # reading 2: pdftotext of the cropped column (single stray digits of the neighbour columns dropped)
+            txt = subprocess.run(['pdftotext', '-f', str(GUIDE_PAGE), '-l', str(GUIDE_PAGE), '-r', '72', '-x', str(x0), '-y', '100', '-W', str(x1 - x0), '-H', '600',
+                                  '-layout', pdf, '-'], capture_output=True, text=True, check=True).stdout
+            b = [int(t) for t in txt.split() if t.isdigit() and len(t) >= 3]
+            if a != b or len(a) != len(heights) or a != sorted(a):
+                raise SystemExit(f'guide LED {name}: readings differ or wrong length ({len(a)}/{len(b)}/{len(heights)})\n{a}\n{b}')
+            out[name] = a
+        light = d.pages[GUIDE_LIGHT_PAGE - 1].extract_text() or ''
+    m = re.findall(r'Control unit for WIN CONTROL lighting – ON/OFF \(can be installed inside the box or guide rail\) (\d+) €', light)
+    lay = subprocess.run(['pdftotext', '-f', str(GUIDE_LIGHT_PAGE), '-l', str(GUIDE_LIGHT_PAGE), '-layout', pdf, '-'], capture_output=True, text=True, check=True).stdout
+    m2 = re.findall(r'Control unit for WIN CONTROL lighting – ON/OFF \(can be installed inside the box or guide rail\)\s+(\d+) €', lay)
+    if not m or m != m2:
+        raise SystemExit(f'guide LED control unit unclear {m} {m2}')
+    t = {'id': 'zip130.adaptive.guideLed', 'title': 'ZIP 130 — направляющие со встроенной LED-подсветкой (доплата за замену)', 'kind': 'list',
+         'source': {'file': FILE, 'page': GUIDE_PAGE, 'pages': [GUIDE_LIGHT_PAGE, GUIDE_PAGE]},
+         'heights': heights, 'rails': out, 'controlUnit': int(m[0]),
+         'meta': {'rails': {'P4': 'WS ZIP P4 — recessed rail for concealed installation with spacer + 1 x LED', 'Z5': 'WS ZIP Z5 — integrated rail + 1 x LED'},
+                  'includes': 'LED WHITE IP67 7.5 W strip (3000 K or 4000 K) + 24 V SLIM IP67 power supply (p.23)'}}
+    with open(f'{OUT}/tables/zip130.adaptive.guideLed.json', 'w') as f:
+        json.dump(t, f, separators=(',', ':'))
+    print(f'guide LED: {len(heights)} heights, P4 {out["P4"][0]}–{out["P4"][-1]} €, Z5 {out["Z5"][0]}–{out["Z5"][-1]} €, control unit {t["controlUnit"]} €; both readings agree')
+
+
 if __name__ == '__main__':
     pdf = os.path.join(SRC, FILE)
     for tid, (pg, title) in TABLES.items():
         build_table(pdf, tid, pg, title)
     build_motors(pdf)
+    guide_led(pdf)
     import build_controls  # adds the solar kit to screen-motors.json and writes screen-controls.json
     build_controls.build()

@@ -29,7 +29,17 @@ export interface ScreenRequest {
    * openness factor that is (e.g. Serge 600, also OF 5 %). The result then carries a FABRIC_SUBSTITUTED issue.
    */
   fabricFallback?: 'sameOpenness';
+  /**
+   * LED lighting in the guide rails (price list p.23-24): ZIP 130 only. The guide rails are changed to WS ZIP Z5
+   * (integrated rail + 1 x LED); surcharge by the screen's height row, includes the LED strip and the 24 V power supply.
+   * A control unit is not included: lighting only in the rails needs one (WIN CONTROL ON/OFF, p.23).
+   * ASSUMPTION: Z5 (not P4 — recessed rail for concealed installation) for screens on a pergola; one control unit per screen.
+   */
+  ledGuides?: boolean;
 }
+
+interface GuideLedTable { heights: number[]; rails: Record<string, number[]>; controlUnit: number; source: { file: string; page: number } }
+export const GUIDE_LED_RAIL = 'Z5';
 
 interface ScreenMeta {
   torqueNm: (number | null)[][];
@@ -109,6 +119,16 @@ export function priceScreenIn(system: ScreenSystem, req: ScreenRequest, cat: Cat
   ];
   const f = fabricSurcharge(req.width, req.height, fabric, cat);
   if (f.amount > 0) lines.push(f);
+  if (req.ledGuides) {
+    const gl = cat.tables[`${system}.guideLed`] as unknown as GuideLedTable | undefined;
+    if (!gl) {
+      issues.push({ severity: 'block', code: 'SCREEN_LED_GUIDES_NOT_IN_SYSTEM', params: { system } });
+      return { option: null, issues };
+    }
+    const hi = gl.heights.indexOf(g.y);
+    lines.push({ code: 'SCREEN_LED_GUIDES', params: { rail: GUIDE_LED_RAIL, height: g.y }, amount: gl.rails[GUIDE_LED_RAIL]![hi]!, source: { file: gl.source.file, page: gl.source.page } });
+    lines.push({ code: 'SCREEN_LED_CONTROL', params: { unit: 'WIN CONTROL ON/OFF' }, amount: gl.controlUnit, source: { file: gl.source.file, page: 23 } });
+  }
   return {
     option: { system, billed: { width: g.x, height: g.y }, gridPrice: g.price, torqueNm: nm, motor, lines, total: round2(lines.reduce((s, l) => s + l.amount, 0)) },
     issues,

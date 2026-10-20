@@ -886,6 +886,19 @@ function drawVerto(opt, ops) {
     }
   }
 }
+/** what LED in the ZIP guide rails adds: per ZIP screen with and without (the screen may change from ZIP 110 to ZIP 130) */
+function zipLedDelta() {
+  const o = state.options[state.optIndex]; if (!o) return 0;
+  let d = 0;
+  for (const op of openings(o, SPEC[famKey(o)])) {
+    if (state.fills[op.id] !== 'zip') continue;
+    const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), control: DBCore.MOTOR_FOR_MODE[ctlOf(op.id)], brand: state.brand, customMotor: { name: state.custom.name, price: state.custom.motor }, fabricFallback: 'sameOpenness' };
+    const a = DBCore.selectScreen({ ...req, ledGuides: false }, cat).best, b = DBCore.selectScreen({ ...req, ledGuides: true }, cat).best;
+    if (a && b) d += b.total - a.total;
+  }
+  return d;
+}
+window.zipLedDelta = zipLedDelta;
 window.setVertoPreset = setVertoPreset; window.setVertoMount = setVertoMount; window.setVertoPack = setVertoPack;
 window.vertoQuote = vertoQuote; window.vertoList = vertoList; window.vertoPresetPacks = vertoPresetPacks; window.vertoGeom = vertoGeom; window.outRight = outRight; window.faceOf = faceOf;
 
@@ -894,6 +907,12 @@ function addFill(o, fill) {
   if (fill === 'zip') {
     box(o.len, 0.13, 0.13, M.zip, 0, o.h - 0.065, 0, g); // cassette
     box(0.04, o.h, 0.06, M.zip, -o.len / 2 + 0.02, o.h / 2, 0, g); box(0.04, o.h, 0.06, M.zip, o.len / 2 - 0.02, o.h / 2, 0, g);
+    if (state.po.zipLed) { // LED strip on the inner face of both guide rails (WS ZIP Z5 + 1 x LED, Win Screen p.23-24), lights the fabric at night
+      // the rails sit in the posts: a light line on the inner face of each post, on both sides of the fabric
+      const pp = SPEC[famKey(state.options[state.optIndex])].post / 2;
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) animated.leds.push(box(0.008, o.h - 0.2, 0.022, M.led, sx * (o.len / 2 - pp - 0.004), (o.h - 0.13) / 2, sz * 0.02, g));
+      const pl = new THREE.PointLight(0xfff1dc, 0, Math.max(2.5, o.len), 2); pl.position.set(0, o.h * 0.45, 0.25); g.add(pl); animated.lights = (animated.lights || []).concat(pl);
+    }
     const fab = new THREE.Mesh(new THREE.PlaneGeometry(o.len - 0.06, 1), M.fabric); fab.castShadow = true;
     fab.userData = { top: o.h - 0.13, h: o.h - 0.13 }; g.add(fab); animated.screens.push(fab);
     box(o.len - 0.06, 0.04, 0.05, M.zip, 0, 0, 0, g).userData.bar = fab; // bottom bar follows the fabric
@@ -1586,7 +1605,7 @@ function renderEstimate() {
       }
     } else if (f === 'zip') {
       const mode = ctlOf(op.id);
-      const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), control: DBCore.MOTOR_FOR_MODE[mode], brand: state.brand, customMotor: { name: state.custom.name, price: state.custom.motor } };
+      const req = { width: Math.round(op.len * 1000), height: Math.round(op.h * 1000), fabric: zipFabId(op), control: DBCore.MOTOR_FOR_MODE[mode], brand: state.brand, customMotor: { name: state.custom.name, price: state.custom.motor }, ledGuides: !!state.po.zipLed };
       // a fabric not made this wide/high is replaced by the cheapest one with the same openness (engine: fabricFallback)
       const r = DBCore.selectScreen({ ...req, fabricFallback: 'sameOpenness' }, cat);
       const swap = r.issues.find((i) => i.code === 'FABRIC_SUBSTITUTED');
@@ -1599,6 +1618,11 @@ function renderEstimate() {
         zipOps.push({ m2: req.width * req.height / 1e6, fabric: fab ? fab.amount : 0, mode, sys: zipReqs.at(-1).sys, fid: req.fabric });
         sides += b.gridPrice + b.motor.price; coat.push({ system: 'SCREEN_ZIP', base: b.gridPrice, color: e.zip, label: 'zip' });
         Q.push({ k: 'zip', id: op.id, w: req.width, h: req.height, fabric: req.fabric, swapFrom: swap ? swap.params.from : null, mode, a: b.gridPrice + b.motor.price });
+        const led = b.lines.filter((l) => l.code === 'SCREEN_LED_GUIDES' || l.code === 'SCREEN_LED_CONTROL'), ledA = led.reduce((a2, l) => a2 + l.amount, 0);
+        if (ledA) {
+          sides += ledA; Q.push({ k: 'zipled', id: op.id, a: ledA });
+          html += `<tr><td>LED в направляющих ZIP, ${op.label.toLowerCase()}<span class="s">направляющие WS ZIP Z5 + 1 × LED (лента 7,5 Вт, блок питания 24 В), по прайсу высота ${mm(b.billed.height)} — ${eur(led[0].amount)} · стр. 24; блок управления WIN CONTROL ON/OFF ${eur(led[1].amount)} · стр. 23</span></td><td class="a">${eur(ledA)}</td></tr>`;
+        }
         if (swap) { const fn = (id) => cat.fabrics.collections.find((x) => x.id === id).name; html += `<tr><td colspan="2"><div class="note">Ткань ${fn(swap.params.to)} вместо ${fn(swap.params.from)}: ${fn(swap.params.from)} не производится такой ширины/высоты (линии ограничений в таблице прайса); та же проницаемость, доплата по ${fn(swap.params.to)}.</div></td></tr>`; }
         html += `<tr class="nb"><td>ZIP-скрин, ${op.label.toLowerCase()}<span class="s">${size} · ${SCREEN_NAME[b.system]}, по прайсу ${mm(b.billed.width)} × ${mm(b.billed.height)} — ${eur(b.gridPrice)} · стр. ${cat.tables[b.system].source.page}<br>мотор ${motorName(b.motor)}, ${MOTOR_CTL[b.motor.control]}, ${b.motor.nm} Нм (нужно ${b.torqueNm} Нм) — ${eur(b.motor.price)}${b.motor.source ? ' · стр. ' + b.motor.source.page : ''}</span></td><td class="a">${eur(b.gridPrice + b.motor.price)}</td></tr><tr><td colspan="2">${ctlSel}</td></tr>`;
       } else {
@@ -1975,6 +1999,7 @@ function lightGroups() {
   g.push({ k: 'gutter', items: slide ? ['none', 'bwhite', 'brgbw', 'cwhitergb'] : ['none', 'bwhite', 'brgb', 'brgbw', 'cwhitergb'] });
   if (!slide) g.push({ k: 'crown', items: ['none', 'crown8'] });
   if (o.family !== 'S400') g.push({ k: 'posts', items: ['none', 'postsAll'] });
+  if (Object.values(state.fills).includes('zip')) g.push({ k: 'zipled', items: ['none', 'zipLedOn'] });
   return g;
 }
 const postLightCount = (o) => Math.min(10, Math.max(2, (o && o.posts) || 2));
@@ -1983,6 +2008,7 @@ function lightPatch(g, k) {
   if (g === 'louvre') return { ledLouvres: ['white', 'rgb', 'rgbw'].includes(k) ? { colour: k, louvres: 5 } : null, spots: k === 'spots' ? { perLouvre: 3, louvres: 5 } : null, lamps: k === 'lamps' ? { perLouvre: 2, louvres: 5 } : null };
   if (g === 'gutter') return { ledGutter: k === 'none' ? null : k };
   if (g === 'crown') return { crownSpots: k === 'none' ? 0 : 8 };
+  if (g === 'zipled') return { zipLed: k !== 'none' };
   return { verticalLamps: k === 'none' ? 0 : postLightCount(o) };
 }
 function lightCurOf(g) {
@@ -1990,9 +2016,10 @@ function lightCurOf(g) {
   if (g === 'louvre') return po.ledLouvres ? po.ledLouvres.colour : po.spots ? 'spots' : po.lamps ? 'lamps' : 'none';
   if (g === 'gutter') return po.ledGutter || 'none';
   if (g === 'crown') return po.crownSpots > 0 ? 'crown8' : 'none';
+  if (g === 'zipled') return po.zipLed ? 'zipLedOn' : 'none';
   return po.verticalLamps > 0 ? 'postsAll' : 'none';
 }
-const LIGHT_RU = { groups: { louvre: 'В ламелях', gutter: 'В желобе по периметру', crown: 'Споты в раме', posts: 'На стойках' }, none: 'Нет', white: 'LED-лента, тёплый белый', rgb: 'LED-лента RGB', rgbw: 'LED-лента RGBW', spots: 'LED-споты, 3 в ламели', lamps: 'LED-лампы, 2 в ламели', bwhite: 'тёплый белый', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'белый + RGB', crown8: '8 LED-спотов', postsAll: 'светильник на каждой стойке' };
+const LIGHT_RU = { groups: { louvre: 'В ламелях', gutter: 'В желобе по периметру', crown: 'Споты в раме', posts: 'На стойках', zipled: 'В направляющих ZIP' }, none: 'Нет', zipLedOn: 'LED в направляющих', white: 'LED-лента, тёплый белый', rgb: 'LED-лента RGB', rgbw: 'LED-лента RGBW', spots: 'LED-споты, 3 в ламели', lamps: 'LED-лампы, 2 в ламели', bwhite: 'тёплый белый', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'белый + RGB', crown8: '8 LED-спотов', postsAll: 'светильник на каждой стойке' };
 function renderLightPop() {
   const box = $('tb-lights'), tx = window.LIGHT_TEXT || LIGHT_RU;
   box.innerHTML = lightGroups().map((g) => `<div class="t">${tx.groups[g.k]}</div><div class="row">${g.items.map((k) => `<button type="button" data-light="${g.k}:${k}" aria-pressed="${lightCurOf(g.k) === k}">${tx[k] || k}</button>`).join('')}</div>`).join('');

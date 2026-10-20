@@ -262,7 +262,7 @@
       roofSlideD: 'Die Lamellen kippen und falten sich zur Seite zusammen – der Himmel wird frei.',
       slideStack: (st, rest, side) => `Ganz geöffnet liegen die Lamellen gefaltet ${side}: ca. ${st} m, ${rest} m sind offen.`, sideWall: 'an der Hauswand', sideEdge: 'an einer Seite',
       reqPosts: 'Zusätzliche Stützen (Tiefe über 6 m)', pergolaSlide: 'Lamellen-Schiebedach', part: 'Teil',
-      lightG: { louvre: 'In den Lamellen', gutter: 'In der Rinne, rundum', crown: 'Spots im Rahmen', posts: 'An den Stützen' }, lightI: { none: 'Ohne', white: 'LED-Band warmweiß', rgb: 'LED-Band RGB', rgbw: 'LED-Band RGBW', spots: 'LED-Spots, 3 pro Lamelle', lamps: 'LED-Lampen, 2 pro Lamelle', bwhite: 'warmweiß', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'weiß + RGB', crown8: '8 LED-Spots', postsAll: 'Leuchte an jeder Stütze' }, crownNote: 'Nur an Seiten ohne Glas oder ZIP-Screen', perLouvre: 'pro Lamelle', lightsSlide: { none: 'Kein Licht', bwhite: 'LED in der Rinne, warmweiß', brgb: 'LED in der Rinne, RGB', brgbw: 'LED in der Rinne, RGBW', cwhitergb: 'LED in der Rinne, weiß + RGB' },
+      lightG: { louvre: 'In den Lamellen', gutter: 'In der Rinne, rundum', crown: 'Spots im Rahmen', posts: 'An den Stützen', zipled: 'In den ZIP-Führungen' }, lightI: { none: 'Ohne', white: 'LED-Band warmweiß', rgb: 'LED-Band RGB', rgbw: 'LED-Band RGBW', spots: 'LED-Spots, 3 pro Lamelle', lamps: 'LED-Lampen, 2 pro Lamelle', bwhite: 'warmweiß', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'weiß + RGB', crown8: '8 LED-Spots', postsAll: 'Leuchte an jeder Stütze', zipLedOn: 'LED-Licht in den Führungen' }, zipLedT: 'LED-Licht in den ZIP-Führungen', zipLedD: 'Führungsschienen mit LED-Band, Netzteil und Schalter', crownNote: 'Nur an Seiten ohne Glas oder ZIP-Screen', perLouvre: 'pro Lamelle', lightsSlide: { none: 'Kein Licht', bwhite: 'LED in der Rinne, warmweiß', brgb: 'LED in der Rinne, RGB', brgbw: 'LED in der Rinne, RGBW', cwhitergb: 'LED in der Rinne, weiß + RGB' },
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `gefaltet ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
@@ -276,7 +276,7 @@
       roofSlideD: 'The louvres tilt and fold together to one side – the sky opens up.',
       slideStack: (st, rest, side) => `Fully open, the folded louvres sit ${side}: about ${st} m, ${rest} m are open.`, sideWall: 'at the house wall', sideEdge: 'on one side',
       reqPosts: 'Additional posts (depth over 6 m)', pergolaSlide: 'Sliding louvre roof', part: 'part',
-      lightG: { louvre: 'In the louvres', gutter: 'In the gutter, all round', crown: 'Spots in the frame', posts: 'On the posts' }, lightI: { none: 'None', white: 'LED strip, warm white', rgb: 'LED strip, RGB', rgbw: 'LED strip, RGBW', spots: 'LED spots, 3 per louvre', lamps: 'LED lamps, 2 per louvre', bwhite: 'warm white', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'white + RGB', crown8: '8 LED spots', postsAll: 'a light on every post' }, crownNote: 'Only on sides without glass or a ZIP screen', perLouvre: 'per louvre', lightsSlide: { none: 'No light', bwhite: 'LED in the gutter, warm white', brgb: 'LED in the gutter, RGB', brgbw: 'LED in the gutter, RGBW', cwhitergb: 'LED in the gutter, white + RGB' },
+      lightG: { louvre: 'In the louvres', gutter: 'In the gutter, all round', crown: 'Spots in the frame', posts: 'On the posts', zipled: 'In the ZIP guide rails' }, lightI: { none: 'None', white: 'LED strip, warm white', rgb: 'LED strip, RGB', rgbw: 'LED strip, RGBW', spots: 'LED spots, 3 per louvre', lamps: 'LED lamps, 2 per louvre', bwhite: 'warm white', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'white + RGB', crown8: '8 LED spots', postsAll: 'a light on every post', zipLedOn: 'LED light in the rails' }, zipLedT: 'LED light in the ZIP guide rails', zipLedD: 'guide rails with LED strip, power supply and switch', crownNote: 'Only on sides without glass or a ZIP screen', perLouvre: 'per louvre', lightsSlide: { none: 'No light', bwhite: 'LED in the gutter, warm white', brgb: 'LED in the gutter, RGB', brgbw: 'LED in the gutter, RGBW', cwhitergb: 'LED in the gutter, white + RGB' },
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `folded ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
@@ -290,7 +290,7 @@
       roofSlideD: 'Ламели наклоняются и складываются к одной стороне – открывается небо.',
       slideStack: (st, rest, side) => `Полностью открытые ламели лежат пакетом ${side}: около ${st} м, открыто ${rest} м.`, sideWall: 'у стены дома', sideEdge: 'с одной стороны',
       reqPosts: 'Дополнительные стойки (глубина больше 6 м)', pergolaSlide: 'Пергола с раздвижной крышей', part: 'часть',
-      lightG: { louvre: 'В ламелях', gutter: 'В желобе по периметру', crown: 'Споты в раме', posts: 'На стойках' }, lightI: { none: 'Нет', white: 'LED-лента, тёплый белый', rgb: 'LED-лента RGB', rgbw: 'LED-лента RGBW', spots: 'LED-споты, 3 в ламели', lamps: 'LED-лампы, 2 в ламели', bwhite: 'тёплый белый', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'белый + RGB', crown8: '8 LED-спотов', postsAll: 'светильник на каждой стойке' }, crownNote: 'Только на сторонах без стекла и ZIP-скрина', perLouvre: 'в ламели', lightsSlide: { none: 'Без света', bwhite: 'LED в желобе, тёплый белый', brgb: 'LED в желобе, RGB', brgbw: 'LED в желобе, RGBW', cwhitergb: 'LED в желобе, белый + RGB' },
+      lightG: { louvre: 'В ламелях', gutter: 'В желобе по периметру', crown: 'Споты в раме', posts: 'На стойках', zipled: 'В направляющих ZIP' }, lightI: { none: 'Нет', white: 'LED-лента, тёплый белый', rgb: 'LED-лента RGB', rgbw: 'LED-лента RGBW', spots: 'LED-споты, 3 в ламели', lamps: 'LED-лампы, 2 в ламели', bwhite: 'тёплый белый', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'белый + RGB', crown8: '8 LED-спотов', postsAll: 'светильник на каждой стойке', zipLedOn: 'LED в направляющих' }, zipLedT: 'LED в направляющих ZIP', zipLedD: 'направляющие с LED-лентой, блок питания и выключатель', crownNote: 'Только на сторонах без стекла и ZIP-скрина', perLouvre: 'в ламели', lightsSlide: { none: 'Без света', bwhite: 'LED в желобе, тёплый белый', brgb: 'LED в желобе, RGB', brgbw: 'LED в желобе, RGBW', cwhitergb: 'LED в желобе, белый + RGB' },
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `сложены ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
@@ -442,6 +442,7 @@
       else if (l.k === 'unbuilt') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: badText(l.id), a: null });
       else if (l.k === 'pending') out.push({ g: 'sides', t: `${t.fills[l.fill]} – ${sideLabel(l.id, o)}`, d: t.later, a: null });
       else if (l.k === 'corner') out.push({ g: 'sides', t: t.corner + (l.n > 1 ? ' × ' + l.n : ''), d: '', a: l.a });
+      else if (l.k === 'zipled') out.push({ g: 'sides', t: `${t.zipLedT} – ${sideLabel(l.id, o)}`, d: t.zipLedD, a: l.a });
       else if (l.k === 'vpack') out.push({ g: 'sides', t: `Win Verto – ${sideLabel(l.id, o)}`, d: `${l.pos === 'full' ? t.vPos.full : t.vPack + ' ' + vPosName(l.id, l.pos, t).toLowerCase()} · ${l.n} ${t.vProf} · ${t.vMountW}: ${t.vMounts[l.mount]}`, a: l.a });
       else if (l.k === 'vbad') out.push({ g: 'sides', t: `Win Verto – ${sideLabel(l.id, o)}`, d: l.why === 'closed' ? t.vClosed : t.vHigh, a: null });
       else if (l.k === 'fabric') out.push({ g: 'sides', t: `${t.fabricS} ${l.name}`, d: `OF ${l.of} %`, a: l.a });
@@ -703,7 +704,7 @@
     let h = `<h2>${t.s3}</h2><p class="f-lead">${t.s3l}</p>`;
     const recess = Object.values(state.fills).some((f) => f === 'glass' || f === 'zip');
     window.lightGroups().forEach((g, i) => {
-      const chips = g.items.map((k) => chip(`data-light="${g.k}:${k}"`, window.lightCurOf(g.k) === k, t.lightI[k], k === 'none' ? undefined : optDelta(window.lightPatch(g.k, k)))).join('');
+      const chips = g.items.map((k) => chip(`data-light="${g.k}:${k}"`, window.lightCurOf(g.k) === k, t.lightI[k], k === 'none' ? undefined : g.k === 'zipled' ? window.zipLedDelta() : optDelta(window.lightPatch(g.k, k)))).join('');
       h += card(i === 0 ? `${t.light} · ${t.lightG[g.k]}` : t.lightG[g.k], i === 0 ? t.lightD : g.k === 'crown' && recess ? t.crownNote : '', chips);
     });
     const heaters = cat.optionScalars.heaters[slide ? 'slide' : s500 ? 's500' : 's400'].sets.map((x) => x.id);
@@ -1021,7 +1022,7 @@
     const po = state.po;
     if (i === 0) return false; // the size is always looked at first
     if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none') || Object.keys(state.verto.packs || {}).length > 0;
-    if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
+    if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.zipLed || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
     if (i === 3) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
     return false;
   }
