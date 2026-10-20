@@ -1244,7 +1244,7 @@ function placeLabels() {
   }
 }
 /** while the side menu is docked on the right of the 3D view (Pro, desktop), the picture moves left so the pergola stays visible next to it */
-let menuShift = 0;
+let menuShift = 0, lastFitW = 0;
 function applyMenuShift() {
   const r = view.getBoundingClientRect(), on = !!menu && !PHOTO.pts && r.width > 760 && !document.body.classList.contains('cust');
   const sh = on ? (menu.offsetWidth || 340) + 16 : 0;
@@ -1254,7 +1254,11 @@ function applyMenuShift() {
 function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false);
   if (menuShift) { camera.setViewOffset(r.width + menuShift, r.height, menuShift, 0, r.width, r.height); camera.aspect = (r.width + menuShift) / Math.max(1, r.height); }
   else { camera.clearViewOffset(); camera.aspect = r.width / Math.max(1, r.height); }
-  camera.updateProjectionMatrix(); if (PHOTO.pts) applyPhotoCamera(); else if (!userMoved && state.options.length) setView(lastView); }
+  camera.updateProjectionMatrix();
+  // the camera is re-framed only when the width really changes (window, phone turned); a panel opening under the 3D
+  // or a choice (Verto, colour, light) changes only the height — the view stays exactly where it is
+  const widthChanged = Math.abs(r.width - lastFitW) > 2; lastFitW = r.width;
+  if (PHOTO.pts) applyPhotoCamera(); else if (widthChanged && !userMoved && state.options.length) setView(lastView); }
 new ResizeObserver(resize).observe(view);
 (function loop(t) {
   requestAnimationFrame(loop);
