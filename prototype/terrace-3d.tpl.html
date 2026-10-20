@@ -953,9 +953,11 @@ function addFill(o, fill) {
       const parkX = sd * (o.len / 2 - pw / 2) - sd * slot * step;
       const parkZ = (slot - (per - 1) / 2) * 0.03;
       const node = new THREE.Group(); node.position.set(x, 0, z); g.add(node);
-      const pm = new THREE.Mesh(new THREE.BoxGeometry(pw - 0.012, o.h - 0.1, 0.01), mat);
+      // neighbouring panels overlap (they run in different tracks), as in the real system: no see-through slit between them
+      const pwv = pw + 0.03;
+      const pm = new THREE.Mesh(new THREE.BoxGeometry(pwv, o.h - 0.1, 0.01), mat);
       pm.position.set(0, o.h / 2, 0); pm.renderOrder = 1; node.add(pm);
-      const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(pw - 0.012, o.h - 0.1, 0.012)), new THREE.LineBasicMaterial({ color: 0x2b2f31 }));
+      const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(pwv, o.h - 0.1, 0.012)), new THREE.LineBasicMaterial({ color: 0x2b2f31 }));
       edge.position.y = o.h / 2; node.add(edge);
       // round pull handle (TYP-A, price list p.8) only on the leading panel — the one that is pulled — on its free edge:
       // one-way: the panel farthest from the parking side; from the centre: the two middle panels
