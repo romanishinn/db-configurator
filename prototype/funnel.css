@@ -150,6 +150,12 @@ body.cust #hint { max-width: 340px; }
 .q .hdr { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 8px; margin-bottom: 12px; }
 .q .hdr .brand { font-family: var(--f-display); font-weight: 700; font-size: 14pt; }
 .q .hdr .meta { text-align: right; font-size: 9.5pt; color: #444; }
+.q .hdr .meta .no { font-family: var(--f-mono); font-size: 13pt; font-weight: 700; color: #111; margin-bottom: 2px; }
+.q .hdr .meta .brand { margin-top: 4px; color: #111; font-size: 11pt; }
+.q .hdr .client { font-size: 10pt; line-height: 1.4; min-width: 62mm; }
+.q .hdr .client .lb { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .06em; color: #666; margin-bottom: 2px; }
+.q .hdr .client b { font-size: 11.5pt; }
+.q .hdr .client .ln { border-bottom: 1px solid #bbb; height: 6mm; width: 62mm; }
 .q img { width: 100%; height: 60mm; object-fit: cover; border: 1px solid #ccc; border-radius: 3px; margin: 4px 0 10px; }
 .q h2 { font-family: var(--f-display); font-size: 12pt; margin: 10px 0 4px; }
 .q table { width: 100%; border-collapse: collapse; }

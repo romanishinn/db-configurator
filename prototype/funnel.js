@@ -79,7 +79,7 @@
       hint: 'Ziehen zum Drehen. Tippen Sie auf eine Seite, um sie zu schließen.',
       tb: { ang: 'Lamellen', drop: 'Screens', gopen: 'Glas', evening: 'Abend', front: 'Vorne', top: 'Oben', closed: 'zu', open: 'offen', louv: 'Lamellenrichtung drehen', view: 'Ansicht', louvCap: 'Lamellen', move: 'Bewegen', night: 'Nacht', nightT: 'Tag / Nacht – Licht einschalten', moveT: 'Lamellen drehen, Glas und Screens bewegen' },
       // quote
-      qTitle: 'Richtpreisangebot', qNo: 'Nr.', qDate: 'Datum', qConfig: 'Ihre Konfiguration', qPrice: 'Preis', qItem: 'Position', qNet: 'Summe netto', qVat: 'USt. 20 %', qGross: 'Gesamt inkl. USt.',
+      qClient: 'Kunde', qTitle: 'Richtpreisangebot', qNo: 'Nr.', qDate: 'Datum', qConfig: 'Ihre Konfiguration', qPrice: 'Preis', qItem: 'Position', qNet: 'Summe netto', qVat: 'USt. 20 %', qGross: 'Gesamt inkl. USt.',
       qFacts: { size: 'Größe', mount: 'Montage', model: 'Modell', height: 'Stützenhöhe', sides: 'Seiten', colours: 'Farben', comfort: 'Komfort' },
       qNotes: ['Richtpreis auf Basis der Katalogpreise ' + CATALOGUE + ', unverbindlich.', 'Nicht enthalten: Lieferung, Montage, Fundamente, Elektroanschluss, Genehmigungen.', 'Der endgültige Preis folgt nach dem Aufmaß vor Ort.', 'Farben am Bildschirm sind Annäherungen.'],
       qLink: 'Konfiguration online öffnen', none: 'keine', open: 'offen',
@@ -159,7 +159,7 @@
       ],
       hint: 'Drag to rotate. Tap a side to close it.',
       tb: { ang: 'Louvres', drop: 'Screens', gopen: 'Glass', evening: 'Evening', front: 'Front', top: 'Top', closed: 'closed', open: 'open', louv: 'Turn the louvre direction', view: 'View', louvCap: 'Louvres', move: 'Move', night: 'Night', nightT: 'Day / night – switch the lights on', moveT: 'Tilt the louvres, move glass and screens' },
-      qTitle: 'Indicative quote', qNo: 'No.', qDate: 'Date', qConfig: 'Your configuration', qPrice: 'Price', qItem: 'Item', qNet: 'Total net', qVat: 'VAT 20 %', qGross: 'Total incl. VAT',
+      qClient: 'Customer', qTitle: 'Indicative quote', qNo: 'No.', qDate: 'Date', qConfig: 'Your configuration', qPrice: 'Price', qItem: 'Item', qNet: 'Total net', qVat: 'VAT 20 %', qGross: 'Total incl. VAT',
       qFacts: { size: 'Size', mount: 'Mounting', model: 'Model', height: 'Post height', sides: 'Sides', colours: 'Colours', comfort: 'Comfort' },
       qNotes: ['Indicative price based on catalogue prices ' + CATALOGUE + ', not binding.', 'Not included: delivery, installation, foundations, electrical connection, permits.', 'The final price follows a site survey.', 'Screen colours are approximate.'],
       qLink: 'Open the configuration online', none: 'none', open: 'open',
@@ -239,7 +239,7 @@
       ],
       hint: 'Тяните, чтобы вращать. Нажмите на сторону, чтобы закрыть её.',
       tb: { ang: 'Ламели', drop: 'Скрины', gopen: 'Остекление', evening: 'Вечер', front: 'Спереди', top: 'Сверху', closed: 'закрыто', open: 'открыто', louv: 'Повернуть ламели', view: 'Вид', louvCap: 'Ламели', move: 'Движение', night: 'Ночь', nightT: 'День / ночь – включить свет', moveT: 'Повернуть ламели, открыть стекло и скрины' },
-      qTitle: 'Предварительное предложение', qNo: '№', qDate: 'Дата', qConfig: 'Ваша конфигурация', qPrice: 'Цена', qItem: 'Позиция', qNet: 'Итого без НДС', qVat: 'НДС 20 %', qGross: 'Итого с НДС',
+      qClient: 'Клиент', qTitle: 'Предварительное предложение', qNo: '№', qDate: 'Дата', qConfig: 'Ваша конфигурация', qPrice: 'Цена', qItem: 'Позиция', qNet: 'Итого без НДС', qVat: 'НДС 20 %', qGross: 'Итого с НДС',
       qFacts: { size: 'Размер', mount: 'Установка', model: 'Модель', height: 'Высота стоек', sides: 'Стороны', colours: 'Цвета', comfort: 'Комфорт' },
       qNotes: ['Ориентировочная цена по каталогу ' + CATALOGUE + ', без обязательств.', 'Не входит: доставка, монтаж, фундамент, подключение электричества, разрешения.', 'Окончательная цена – после замера на месте.', 'Цвета на экране приблизительные.'],
       qLink: 'Открыть конфигурацию онлайн', none: 'нет', open: 'открыто',
@@ -958,6 +958,15 @@
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
   function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return (OFFICE.name ? 'DB-' : '') + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
+  /** offer number DDMMYY-N: N counts the PDFs generated today and starts at 1 the next day.
+   * ASSUMPTION: no server, so the counter lives in this browser — unique per device, two devices can give the same number. */
+  const dayKey = (d = new Date()) => String(d.getDate()).padStart(2, '0') + String(d.getMonth() + 1).padStart(2, '0') + String(d.getFullYear()).slice(2);
+  function nextQuoteNo(take) {
+    const day = dayKey(), c = Store.get('db.qno'), n = c && c.d === day ? c.n + 1 : 1;
+    if (take) Store.set('db.qno', { d: day, n });
+    return day + '-' + n;
+  }
+  let quoteNum = null; // the number of the PDF being printed; null = preview shows the next free number
   let lastImg = '';
   function snapshotImage() {
     // on the customer's photo: exactly what they set up (photo + pergola), no camera change
@@ -966,8 +975,16 @@
     const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved, asp = camera.aspect;
     const size = renderer.getSize(new THREE.Vector2()), pr = renderer.getPixelRatio();
     try {
-      renderer.setPixelRatio(1); renderer.setSize(1680, 600, false); camera.aspect = 1680 / 600; // the A4 picture's own proportion camera.updateProjectionMatrix();
-      setView('iso'); camera.position.sub(controls.target).multiplyScalar(1.12).add(controls.target); camera.updateMatrixWorld(); // a little air around it
+      renderer.setPixelRatio(1); renderer.setSize(1680, 600, false); camera.aspect = 1680 / 600; camera.updateProjectionMatrix(); // the A4 picture's own proportion
+      setView('front'); // straight from the front, as "Vorne" on the screen
+      { // then step in until the pergola itself fills the picture (the screen view keeps room for the labels)
+        const { W, D } = bounds(), c = controls.target, off = camera.position.clone().sub(c), pts = [];
+        for (const x of [0, W]) for (const y of [0, H + 0.1]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, y, z));
+        const fit = (k) => { camera.position.copy(c).addScaledVector(off, k); camera.lookAt(c); camera.updateMatrixWorld(); return Math.max(...pts.map((p) => { const v = p.clone().project(camera); return v.z > 1 ? 9 : Math.max(Math.abs(v.x), Math.abs(v.y)); })); };
+        let lo = 0.2, hi = 1;
+        for (let i = 0; i < 18; i++) { const mid = (lo + hi) / 2; if (fit(mid) > 0.9) lo = mid; else hi = mid; }
+        fit(hi);
+      }
       renderer.render(scene, camera);
       const url = renderer.domElement.toDataURL('image/jpeg', 0.88);
       if (url.length > 1000) lastImg = url; // a hidden canvas (print layout) gives an empty picture: keep the last good one
@@ -997,7 +1014,11 @@
       return `<tr class="g"><td colspan="2">${esc(t.grp[g])}</td></tr>` + ls.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s"> · ${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(l.a)}</td></tr>`).join('');
     }).join('');
     const contact = [OFFICE.email, OFFICE.phone, OFFICE.web].filter(Boolean).join(' · ');
-    return `<div class="q"><div class="hdr"><div>${OFFICE.name ? `<div class="brand">${esc(OFFICE.name)}</div>` : ''}${contact ? `<div style="font-size:9pt;color:#444">${esc(contact)}</div>` : ''}</div><div class="meta"><h1>${t.qTitle}</h1>${t.qNo} ${quoteNo()} · ${t.qDate} ${date}</div></div>
+    // top left: the customer from the request form (empty lines to fill in by hand when nothing is typed yet)
+    const cl = [form.name, form.phone, form.email].map((x) => String(x || '').trim());
+    const client = `<div class="client"><div class="lb">${t.qClient}</div>${cl.some(Boolean) ? `${cl[0] ? `<b>${esc(cl[0])}</b>` : ''}${cl[1] ? `<div>${esc(cl[1])}</div>` : ''}${cl[2] ? `<div>${esc(cl[2])}</div>` : ''}` : '<div class="ln"></div><div class="ln"></div><div class="ln"></div>'}</div>`;
+    const no = quoteNum || nextQuoteNo(false);
+    return `<div class="q"><div class="hdr">${client}<div class="meta"><div class="no">${t.qNo} ${no}</div><h1>${t.qTitle}</h1>${t.qDate} ${date}${OFFICE.name ? `<div class="brand">${esc(OFFICE.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
       <h2>${t.qConfig}</h2><table class="facts"><tbody>${facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
       <div><h2>${t.qPrice}</h2><table><thead><tr><th>${t.qItem}</th><th class="a">${t.net}</th></tr></thead><tbody>${rows}
@@ -1005,7 +1026,7 @@
         <tr class="sumrow"><td>${t.qVat}</td><td class="a">${fe(total * VAT)}</td></tr>
         <tr class="tot"><td>${t.qGross}${q().incomplete ? ' (' + t.from + ')' : ''}</td><td class="a">${fe(gross(total))}</td></tr></tbody></table></div>
       <ul class="notes">${t.qNotes.map((n, i) => `<li>${i === 1 && q().lines.some((l) => l.k === 'mont') ? t.qExclM : n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
-      <div class="foot"><a href="${esc(shareUrl())}">${t.qLink}</a> · ${quoteNo()}</div></div>`;
+      <div class="foot"><a href="${esc(shareUrl())}">${t.qLink}</a> · ${no}</div></div>`;
   }
   /** the offer always fits one A4 page: measured at print width, a long one is scaled down a little */
   function fitQuote() {
@@ -1019,6 +1040,7 @@
     if (h > avail) q0.style.zoom = String(Math.max(0.6, avail / h));
   }
   function printQuote() {
+    quoteNum = nextQuoteNo(true); // every generated PDF gets its own number
     $('quote').innerHTML = buildQuote(); fitQuote();
     document.body.classList.add('printing');
     setTimeout(() => window.print(), 60);
@@ -1027,11 +1049,11 @@
   // the offer is rebuilt right before printing; print CSS shows only #quote in the customer view.
   window.addEventListener('beforeprint', () => {
     if (!isCust() || !curOpt()) return;
-    // on the offer step the offer is already up to date (rebuilt on every change); elsewhere build it now
-    if (step !== 4 || !$('quote').querySelector('.q')) { $('quote').innerHTML = buildQuote(); fitQuote(); }
+    // printed from the browser menu: this PDF needs its own number too (the button has already taken one)
+    if (!quoteNum) { quoteNum = nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
     document.body.classList.add('printing');
   });
-  window.addEventListener('afterprint', () => document.body.classList.remove('printing'));
+  window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); quoteNum = null; });
   function saveFile() {
     const blob = new Blob([JSON.stringify(snapshot(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `pergola-${quoteNo()}.json`; document.body.appendChild(a); a.click();

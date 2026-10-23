@@ -159,3 +159,10 @@ Win Verto теперь не «заполнение проёма», а отдел
 - Every joint between two modules is an opening of its own: `joint-<k>_<row>` (between columns) and `jrow-<k>_<row>` (between rows). Customer label "Zwischen Modul a und b", modules numbered row by row.
 - ZIP, glass or panels can close it and are priced like an outer side of the same size (ASSUMPTION). S400: the opening is the near pergola's side (each pergola has its own posts); modular systems share the post line.
 - Not part of "Alle Seiten", no Decor there.
+
+## Offer header and number
+
+- Picture: front view ("Vorne"), zoomed so the pergola fills the frame.
+- Top left: customer name, phone, e-mail from the request form (empty lines to fill in by hand if nothing is typed).
+- Top right: number `DDMMYY-N` (e.g. 231026-1). Every generated PDF (button or browser print) takes the next N; N starts at 1 each day.
+- ASSUMPTION: no server, so the counter is kept in the browser (`db.qno`): unique per device, not across devices.
