@@ -382,7 +382,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -444,6 +444,7 @@ const M = {
   verto: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.6, metalness: 0.2 }),
   zip: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.6, metalness: 0.2 }),
   wall: new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.95 }),
+  parapet: new THREE.MeshStandardMaterial({ color: 0xcdc6ba, roughness: 0.95 }),
   deck: new THREE.MeshStandardMaterial({ color: 0x9c8f7d, roughness: 0.9 }),
   fabric: new THREE.MeshStandardMaterial({ color: 0x2b2f31, roughness: 0.95, transparent: true, opacity: 0.78, side: THREE.DoubleSide }),
   glass: new THREE.MeshPhysicalMaterial({ color: 0xcfe3ea, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.22, side: THREE.DoubleSide }),
@@ -633,6 +634,7 @@ function build() {
   }
   // posts
   const posts = postPositions(opt);
+  drawParapets(opt, sp);
   for (const [x, z] of posts) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
   // Slide: posts the catalogue requires for a projection above 6000 mm (middle of each beam along the projection)
   for (const [x, z] of requiredPostPositions(opt)) box(sp.post, H - sp.crown, sp.post, M.frame, x, (H - sp.crown) / 2, z);
@@ -653,7 +655,7 @@ function build() {
   for (const o of opsAll) {
     const fill = state.fills[o.id] || 'none';
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(o.len, o.h), M.pick.clone());
-    plane.position.set(o.cx, o.h / 2, o.cz); plane.rotation.y = o.rotY; plane.userData = { opening: o }; o.pickPlane = plane;
+    plane.position.set(o.cx, (o.y0 || 0) + o.h / 2, o.cz); plane.rotation.y = o.rotY; plane.userData = { opening: o }; o.pickPlane = plane;
     root.add(plane); pickables.push(plane);
     addFill(o, fill);
   }
@@ -747,8 +749,26 @@ function openings(opt, sp) {
   if (state.mount === 'free') {
     opt.modules.filter((m) => m.row === 0).forEach((m, i) => out.push({ mod: m, id: 'back-' + i, label: 'Сзади, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: sp.post / 2, rotY: 0, axis: 'x' }));
   }
+  for (const o of out) { const ph = parapetOf(faceOf(o.id)) / 1000; if (ph > 0) { o.y0 = ph; o.h = Math.max(0.3, h - ph); } }
   return splitAtPosts(out, requiredPostPositions(opt), sp);
 }
+/* ---------- parapet (a low wall) on one or more sides ----------
+ * The posts stand on the ground right inside the parapet; glass, ZIP or panels of that side stand on the parapet, so the
+ * opening is lower by the parapet height (priced at that height). Decor on that side starts on top of the parapet. */
+function parapetOf(face) { const p = state.parapet; return p && p.sides && p.sides.includes(face) ? Math.max(0, Number(p.h) || 0) : 0; }
+const PARAPET_T = 0.24; // wall thickness, m (only for the picture)
+function drawParapets(opt, sp) {
+  const W = opt.width / 1000, D = opt.depth / 1000;
+  for (const face of (state.parapet && state.parapet.sides) || []) {
+    const ph = parapetOf(face) / 1000; if (!(ph > 0)) continue;
+    if (face === 'back' && state.mount !== 'free') continue; // with a wall the back is the house
+    const t = PARAPET_T, alongX = face === 'front' || face === 'back';
+    const len = (alongX ? W : D) + (alongX ? 2 * t : 0);
+    const cx = face === 'left' ? -t / 2 : face === 'right' ? W + t / 2 : W / 2, cz = face === 'front' ? D + t / 2 : face === 'back' ? -t / 2 : D / 2;
+    const m = box(alongX ? len : t, ph, alongX ? t : len, M.parapet, cx, ph / 2, cz); m.receiveShadow = true;
+  }
+}
+window.parapetOf = parapetOf;
 /** a side with a required post in its middle becomes two openings (id, id + '-b'), each filled on its own */
 function splitAtPosts(list, posts, sp) {
   if (!posts.length) return list;
@@ -784,7 +804,7 @@ function vertoGeom(o, pk, opt) { // pk = { pos, n }
   const w = DBCore.vertoPackageWidth(n) / 1000;
   const pitch = pk.pos === 'full' && n > 1 ? (avail - 0.035) / (n - 1) : 0.09;
   const x0 = pk.pos === 'a' || pk.pos === 'full' ? -avail / 2 : pk.pos === 'b' ? avail / 2 - w : -w / 2;
-  const length = DBCore.vertoProfileLength(mount, opt.family, state.po.postHeight);
+  const length = DBCore.vertoProfileLength(mount, opt.family, state.po.postHeight) - parapetOf(faceOf(o.id)); // on a parapet the profiles are shorter
   // C (in the recess, p.5): under the crown, flush with the outer face of the frame — a ZIP screen or glass still fits
   // behind it in the same opening. ASSUMPTION: read from the p.5 picture; the depth behind the profiles is to confirm.
   return { n, maxN, x0, pitch, surface, length, z: VERTO_SIGN[faceOf(o.id)] * (surface ? sp.post / 2 + 0.035 : sp.post / 2 - 0.032), blocked: false };
@@ -886,7 +906,7 @@ function drawVerto(opt, ops) {
   for (const { id, pk } of vertoList(state.verto.packs)) {
     const o = ops.find((x) => x.id === id); if (!o) continue;
     const gm = vertoGeom(o, pk, opt); if (gm.blocked) continue;
-    const g = new THREE.Group(); g.position.set(o.cx, 0, o.cz); g.rotation.y = o.rotY; root.add(g);
+    const g = new THREE.Group(); g.position.set(o.cx, o.y0 || 0, o.cz); g.rotation.y = o.rotY; root.add(g); // on a parapet: from its top
     const top = gm.surface ? gm.length / 1000 : o.h;
     for (let i = 0; i < gm.n; i++) {
       const p = box(0.035, top, 0.06, M.verto, gm.x0 + 0.0175 + i * gm.pitch, top / 2, gm.z, g);
@@ -911,7 +931,7 @@ window.setVertoPreset = setVertoPreset; window.setVertoMount = setVertoMount; wi
 window.vertoQuote = vertoQuote; window.vertoList = vertoList; window.vertoPresetPacks = vertoPresetPacks; window.vertoGeom = vertoGeom; window.outRight = outRight; window.faceOf = faceOf;
 
 function addFill(o, fill) {
-  const g = new THREE.Group(); g.position.set(o.cx, 0, o.cz); g.rotation.y = o.rotY; root.add(g);
+  const g = new THREE.Group(); g.position.set(o.cx, o.y0 || 0, o.cz); g.rotation.y = o.rotY; root.add(g);
   if (fill === 'zip') {
     box(o.len, 0.13, 0.13, M.zip, 0, o.h - 0.065, 0, g); // cassette
     box(0.04, o.h, 0.06, M.zip, -o.len / 2 + 0.02, o.h / 2, 0, g); box(0.04, o.h, 0.06, M.zip, o.len / 2 - 0.02, o.h / 2, 0, g);
@@ -1820,7 +1840,10 @@ function renderPergolaOptions() {
   const litItems = [po.ledLouvres, po.ledGutter, po.spots, po.lamps, po.crownSpots, po.verticalLamps].filter(Boolean).length;
   const litSum = optDelta({ ledLouvres: po.ledLouvres, ledGutter: po.ledGutter, spots: po.spots, lamps: po.lamps, crownSpots: po.crownSpots, verticalLamps: po.verticalLamps });
   const spotN = po.spots ? po.spots.louvres : 5, lampN = po.lamps ? po.lamps.louvres : 4, dbl = o.family === 'S500_DOUBLE';
+  const pp = state.parapet, pfaces = state.mount === 'free' ? ['front', 'left', 'right', 'back'] : ['front', 'left', 'right'], PF = { front: 'спереди', left: 'слева', right: 'справа', back: 'сзади' };
   $('popts').innerHTML = `
+    <label>Парапет (стойки рядом, стекло / ZIP на парапете)<span class="row2">${pfaces.map((f) => `<label class="chk" style="display:inline-flex;gap:4px;margin-right:8px"><input type="checkbox" id="o-pp-${f}" ${pp.sides.includes(f) ? 'checked' : ''}> ${PF[f]}</label>`).join('')}</span></label>
+    <label>Высота парапета, мм<input type="number" id="o-pph" min="100" max="1500" step="50" value="${pp.h}"></label>
     <label>Высота стоек<select id="o-h">${hs.map((h, i) => `<option value="${h}" ${po.postHeight === h ? 'selected' : ''}>${i === 0 ? 'до ' + mm(h) + ' мм — стандарт' : 'до ' + mm(h) + ' мм'} · ${pr(optDelta({ postHeight: h }))}</option>`).join('')}</select></label>
     <label>Доп. промежуточные стойки<select id="o-ip">${[0, 1, 2, 3, 4, 5, 6].map((k) => `<option value="${k}" ${po.intermediatePosts === k ? 'selected' : ''}>${k ? k + ' шт. · +' + eur(optDelta({ intermediatePosts: k, postHeight: po.postHeight }) - optDelta({ postHeight: po.postHeight })) : 'нет'}</option>`).join('')}</select></label>
     <details class="lightbox"${litItems ? ' open' : ''}><summary>Освещение${litItems ? ` · ${litItems} ${plural(litItems, 'вид', 'вида', 'видов')} · ${pr(litSum)}` : ' · нет'}</summary>
@@ -1845,6 +1868,8 @@ function renderPergolaOptions() {
 $('popts').addEventListener('change', (e) => {
   const po = state.po, v = e.target.value, id = e.target.id;
   if (id === 'o-h') po.postHeight = Number(v);
+  if (id.startsWith('o-pp-')) { const f = id.slice(5), set = new Set(state.parapet.sides); if (e.target.checked) set.add(f); else set.delete(f); state.parapet.sides = [...set]; }
+  if (id === 'o-pph') state.parapet.h = Math.max(100, Math.min(1500, Math.round((Number(v) || 0) / 10) * 10));
   if (id === 'o-led') po.ledLouvres = v ? { colour: v, louvres: Number($('o-ledn').value) } : null;
   if (id === 'o-ledn') { if (po.ledLouvres) po.ledLouvres.louvres = Number(v); else po.ledLouvres = { colour: 'white', louvres: Number(v) }; }
   if (id === 'o-gut') po.ledGutter = v || null;

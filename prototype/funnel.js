@@ -85,6 +85,7 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 Doppel' }, pergola: 'Lamellendach', panelsW: 'Flügel', profilesW: 'Profile', slatsFixed: 'feste Lamellen', slatsRot: 'drehbare Lamellen',
       opt: { OPT_POST_HEIGHT: 'Höhere Stützen', OPT_LED_LOUVRES: 'LED-Lichtband in den Lamellen', OPT_LED_GUTTER: 'LED-Licht in der Rinne', OPT_THERMAL: 'Dämmeinlage in den Lamellen', OPT_SENSOR: 'Wettersensoren', OPT_SMART: 'App-Steuerung', OPT_HEATERS: 'Heizstrahler', OPT_HEATER_PREP: 'Vorbereitung für Heizstrahler', OPT_INTERNAL_BOX: 'Innenliegende Elektrobox', OPT_AUDIO: 'Audiosystem', OPT_SOCKET: 'Steckdosen in der Stütze', OPT_SPOTS: 'LED-Spots in den Lamellen', OPT_LAMPS: 'LED-Leuchten in den Lamellen', OPT_CROWN_SPOTS: 'LED-Spots im Rahmen', OPT_VERTICAL_LAMPS: 'LED-Leuchten an den Stützen', OPT_INTERMEDIATE_POST: 'Zusätzliche Stützen' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Steuermodul für die Screens', CONTROL_REMOTE: 'Fernbedienung für die Screens', CONTROL_SMART: 'Smart-Home-Modul', CONTROL_WIND_SENSOR: 'Windsensor für die Screens', CONTROL_SWITCH: 'Wandschalter', CONTROL_PERGOLA_REMOTE_EXTRA: 'Zusätzliche Fernbedienung', CONTROL_CUSTOM: 'Steuerung' },
+      parT: 'Brüstung', parD: 'Stützen direkt an der Mauer, Glas / ZIP stehen darauf', parNone: 'Keine', parH: 'Höhe der Brüstung',
       vertoT: 'Decor – Lamellen an der Pergola', vertoD: 'Feste Aluminiumprofile als Sicht- und Sonnenschutz, auch zusammen mit ZIP und Glas', vNone: 'Ohne',
       vTypes: { 1: 'An jeder Ecke', 2: 'Vorne und hinten', 3: 'Ein Paket vorne', 4: 'An beiden Seiten', 5: 'Beide Seiten ganz', 6: 'Mitte vorne' }, vTypesWall: { 2: 'Vorne und seitlich', 6: 'Mitte vorne und seitlich' },
       vTypesT: 'Beispiele', vSideT: 'Seite', vMountT: 'Montage der Profile', vMounts: { A: 'Über das Dach hinaus', B: 'Bis Oberkante Rahmen', C: 'In der Öffnung', D: 'Mit Eckverbindung' },
@@ -163,6 +164,7 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 double' }, pergola: 'Louvred roof', panelsW: 'panels', profilesW: 'profiles', slatsFixed: 'fixed slats', slatsRot: 'rotating slats',
       opt: { OPT_POST_HEIGHT: 'Taller posts', OPT_LED_LOUVRES: 'LED strip in the louvres', OPT_LED_GUTTER: 'LED light in the gutter', OPT_THERMAL: 'Insulating insert in the louvres', OPT_SENSOR: 'Weather sensors', OPT_SMART: 'App control', OPT_HEATERS: 'Heaters', OPT_HEATER_PREP: 'Heater preparation', OPT_INTERNAL_BOX: 'Internal electrical box', OPT_AUDIO: 'Audio system', OPT_SOCKET: 'Sockets in the post', OPT_SPOTS: 'LED spots in the louvres', OPT_LAMPS: 'LED lamps in the louvres', OPT_CROWN_SPOTS: 'LED spots in the frame', OPT_VERTICAL_LAMPS: 'LED lights on the posts', OPT_INTERMEDIATE_POST: 'Additional posts' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Control unit for the screens', CONTROL_REMOTE: 'Remote control for the screens', CONTROL_SMART: 'Smart home unit', CONTROL_WIND_SENSOR: 'Wind sensor for the screens', CONTROL_SWITCH: 'Wall switch', CONTROL_PERGOLA_REMOTE_EXTRA: 'Additional remote control', CONTROL_CUSTOM: 'Controls' },
+      parT: 'Parapet wall', parD: 'Posts right next to the wall, glass / ZIP stand on it', parNone: 'None', parH: 'Parapet height',
       vertoT: 'Decor – louvres on the pergola', vertoD: 'Fixed aluminium profiles for privacy and shade, also together with ZIP and glass', vNone: 'None',
       vTypes: { 1: 'At every corner', 2: 'Front and back', 3: 'One package at the front', 4: 'On both sides', 5: 'Both sides full', 6: 'Front centre' }, vTypesWall: { 2: 'Front and side', 6: 'Front centre and side' },
       vTypesT: 'Examples', vSideT: 'Side', vMountT: 'Mounting of the profiles', vMounts: { A: 'Above the roof', B: 'Up to the frame top', C: 'In the opening', D: 'With corner joint' },
@@ -241,6 +243,7 @@
       fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная' }, pergola: 'Пергола с ламелями', panelsW: 'полотен', profilesW: 'профилей', slatsFixed: 'неподвижные ламели', slatsRot: 'поворотные ламели',
       opt: { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'LED-лента в ламелях', OPT_LED_GUTTER: 'LED-подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме', OPT_VERTICAL_LAMPS: 'Светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные стойки' },
       ctl: { CONTROL_PERGOLA_UNIT: 'Блок управления скринами', CONTROL_REMOTE: 'Пульт для скринов', CONTROL_SMART: 'Блок умного дома', CONTROL_WIND_SENSOR: 'Датчик ветра для скринов', CONTROL_SWITCH: 'Настенный выключатель', CONTROL_PERGOLA_REMOTE_EXTRA: 'Дополнительный пульт', CONTROL_CUSTOM: 'Управление' },
+      parT: 'Парапет', parD: 'Стойки рядом с парапетом, стекло / ZIP стоят на нём', parNone: 'Нет', parH: 'Высота парапета',
       vertoT: 'Decor – ламели на перголе', vertoD: 'Неподвижные алюминиевые профили от взглядов и солнца, можно вместе с ZIP и стеклом', vNone: 'Без',
       vTypes: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, vTypesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' },
       vTypesT: 'Готовые типы', vSideT: 'Сторона', vMountT: 'Монтаж профилей', vMounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме', D: 'С угловым соединением' },
@@ -336,7 +339,7 @@
   const toast = (msg) => { const d = document.createElement('div'); d.className = 'f-toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
 
   /* ---------- configuration <-> link / storage ---------- */
-  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto'];
+  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet'];
   const prune = (v) => { // drop empty values so the link stays short
     if (Array.isArray(v)) return v.map(prune);
     if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) { const p = prune(x); if (p === null || p === undefined || p === '' || (typeof p === 'object' && !Array.isArray(p) && !Object.keys(p).length)) continue; o[k] = p; } return o; }
@@ -353,6 +356,7 @@
     state.po.sockets = { power: 0, usb: 0, ...((s.po && s.po.sockets) || {}) };
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
     if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
+    if (!s.parapet) state.parapet = { sides: [], h: 900 };
     state.colors = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
     if (!cat.fabrics.collections.some((f) => f.id === state.colors.fabric)) state.colors.fabric = 'soltis-7635';
     $('w').value = state.width; $('d').value = state.depth;
@@ -577,6 +581,13 @@
     h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
     const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6600, 3500], [8000, 4000]];
     h += `<div class="f-h3"><span>${t.presets}</span></div><div class="f-chips">${presets.map(([w, d]) => `<button type="button" class="f-chip" data-preset="${w}x${d}" aria-pressed="${state.width === w && state.depth === d}">${metres(w).replace(/,00|\.00/, '')} × ${metres(d).replace(/,00|\.00/, '')} ${t.m}</button>`).join('')}</div>`;
+    // a parapet (low wall) on one or more sides: posts right inside it, glass / ZIP of that side stand on it
+    {
+      const pp = state.parapet, faces = wall ? ['front', 'left', 'right'] : ['front', 'left', 'right', 'back'];
+      h += `<div class="f-h3"><span>${t.parT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.parD}</span></div>`;
+      h += `<div class="f-chips">${`<button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${t.parNone}</button>`}${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${t.sides[f]}</button>`).join('')}</div>`;
+      if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="f-ph">${t.parH}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="f-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
+    }
     // size problems: plain-language fix buttons
     const r = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: famFilter() }, cat);
     for (const s of r.suggestions) h += `<div class="f-note">${t.sugg[s.code] || s.code}${s.params && s.params.suggested ? ` <button type="button" class="f-link" data-fix="${s.code}" data-v="${s.params.suggested}">${t.suggFix(metres(s.params.suggested))}</button>` : ''}</div>`;
@@ -959,6 +970,7 @@
       [t.qFacts.size, `${sizeText()} · ${state.mount === 'wall' ? t.wall : t.free}`],
       [t.qFacts.model, `${o.family === 'SLIDE' ? t.pergolaSlide : t.pergola} ${t.fam[o.family]} · ${t.modules(o.modules.length)} (${o.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ')} ${t.m}) · ${t.posts(o.posts)}`],
       [t.qFacts.height, `≤ ${metres(state.po.postHeight)} ${t.m}`],
+      ...(state.parapet.sides.length ? [[t.parT, `${state.parapet.sides.map((f) => t.sides[f]).join(', ')} · ${metres(state.parapet.h)} ${t.m}`]] : []),
       [t.qFacts.sides, ops.length ? ops.map((x) => `${sideLabel(x.id, o)}: ${t.fills[state.fills[x.id]]}`).join('; ') : t.open],
       [t.qFacts.colours, `${t.frame}: ${cname(e.construction)}${state.colors.roof ? '; ' + t.roof + ': ' + cname(e.roof) : ''}`],
     ];
@@ -1069,6 +1081,8 @@
       } go(Number(d.go)); return; }
     if (d.resume) { const s = resumeOffer; resumeOffer = null; if (d.resume === 'yes' && s) restore(s); else { dirty = true; render(); persist(); } return; }
     if (d.mount) { setMount(d.mount); return; }
+    if (d.par) { const pp = state.parapet; if (d.par === 'none') pp.sides = []; else { const st = new Set(pp.sides); if (st.has(d.par)) st.delete(d.par); else st.add(d.par); pp.sides = [...st]; } rebuild(); applyAnim(); return; }
+    if (d.parh) { state.parapet.h = Math.max(100, Math.min(1500, state.parapet.h + Number(d.parh))); rebuild(); applyAnim(); return; }
     if (d.nudge) { const k = d.nudge, v = (k === 'w' ? state.width : state.depth) + Number(d.d); if (k === 'w') setDims(v, state.depth); else setDims(state.width, v); return; }
     if (d.preset) { const [w, dd] = d.preset.split('x').map(Number); setDims(w, dd); return; }
     if (d.fix) { if (d.fix.startsWith('DEPTH')) setDims(state.width, Number(d.v)); else setDims(Number(d.v), state.depth); return; }
@@ -1148,6 +1162,7 @@
     if (el.dataset.sel) { if (el.value !== '') { dirty = true; lastTap = selOf(el); act({ [el.dataset.sel]: el.value }); } return; } // "More …" dropdown
     if (el.form && el.form.id === 'f-form' && el.name) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
     if (el.dataset.dim) { clearTimeout(dimT); applyDim(el); }
+    if (el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } }
     if (el.id === 'f-file' && el.files && el.files[0]) { const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(el.files[0]); }
   });
   F.addEventListener('submit', (ev) => { ev.preventDefault(); sendRequest(); });
