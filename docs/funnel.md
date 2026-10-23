@@ -138,3 +138,11 @@ Win Verto теперь не «заполнение проёма», а отдел
 ## Парапет
 
 На шаге «Größe» (у клиента) и в «Опциях перголы» (Pro) можно отметить одну или несколько сторон с парапетом (низкой стенкой) и задать его высоту (по умолчанию 0,9 м, шаг 5 см, 0,1–1,5 м). Стойки стоят на земле вплотную к парапету изнутри; стекло, ZIP и панели этой стороны стоят на парапете — проём ниже на высоту парапета и считается по прайсу по этой высоте (пример: 6,47 × 2,59 м стекло → 6,47 × 1,74 м при парапете 0,85 м). Decor на этой стороне начинается на парапете, профили короче на высоту парапета. Сам парапет в цену не входит (это стройка заказчика); в КП он указан в описании конфигурации.
+
+## Montage and free text positions (manager)
+
+- In `?pro`, under "Итого по каталогу": a fixed **Montage** line and free text positions (`+ Позиция` adds, `×` removes).
+- Amounts are net €, typed by the manager; the text goes into the offer exactly as written (write it in German).
+- Stored in `state.extra = { mont, items: [{ t, a }] }`, part of the saved/shared configuration.
+- They are added to the total immediately. The customer view and the PDF offer show them in the group "Montage und Zusatzleistungen" (gross on screen, net in the PDF table).
+- When Montage is priced, "Montage" is dropped from the "not included" notes.

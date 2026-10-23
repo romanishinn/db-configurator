@@ -222,6 +222,22 @@ table.lines td.a { text-align: right; font-family: var(--f-mono); white-space: n
 table.lines .s { display: block; font-size: 11.5px; color: var(--muted); }
 table.lines tr.nb td { border-bottom: 0; padding-bottom: 0; }
 table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; font-size: 15px; }
+/* manager's own lines under the catalogue total: Montage + free text positions (net €) */
+#extras { margin-top: 6px; }
+#extras table { table-layout: fixed; }
+#extras td.a { width: 92px; }
+#extras .exh td { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding-top: 12px; }
+#extras .exr td { padding: 4px 0; vertical-align: middle; }
+#extras .exr .tx { display: flex; gap: 6px; align-items: center; }
+#extras input { font: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg, #fff); color: inherit; min-width: 0; }
+#extras input[data-ex="t"] { flex: 1 1 auto; width: 100%; }
+#extras input[data-ex="a"] { width: 86px; text-align: right; font-family: var(--f-mono); }
+#extras .exr td.a { padding-left: 6px; }
+#extras .x { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 2px 4px; }
+#extras .x:hover { color: #b3261e; }
+#extras .add { border: 1px dashed #9aa4ab; background: none; border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 13px; cursor: pointer; color: inherit; margin-top: 6px; }
+#extras .add:hover { border-color: var(--accent); color: var(--accent); }
+#extras .lbl { font-size: 13px; flex: 1; }
 .muted { color: var(--muted); }
 .clr { display: grid; gap: 6px; }
 .popts { display: grid; gap: 8px; }
@@ -342,6 +358,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <label><input type="checkbox" id="wind" checked><span id="wind-t">Датчик ветра</span></label>
     </div>
     <table class="lines"><tbody id="lines"></tbody></table>
+    <div id="extras"><table class="lines"><tbody id="ex-rows"></tbody><tbody id="ex-total"></tbody></table></div>
     <div id="issues"></div>
   </aside>
   <aside class="panel funnel cust-only" id="funnel" aria-live="polite"></aside>
@@ -382,7 +399,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, extra: { mont: 0, items: [] } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -1560,6 +1577,29 @@ function screenWhyNot(r, req, mode) {
   if (oor) return `вне размеров ZIP: ${oor.params.axis === 'width' ? 'ширина' : 'высота'} ${mm(oor.params.min)}–${mm(oor.params.max)} мм`;
   return 'такой размер ZIP не производится';
 }
+/** editor of the manager's own lines: Montage (always there) + text positions added with "+" and removed with "×" */
+function renderExtras() {
+  const ex = state.extra || (state.extra = { mont: 0, items: [] });
+  const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const num = (v) => (Number(v) ? String(v).replace('.', ',') : '');
+  let h = `<tr class="exh"><td colspan="2">Монтаж и доп. позиции · € нетто</td></tr>`;
+  h += `<tr class="exr"><td><div class="tx"><span class="lbl">Montage</span></div></td><td class="a"><input type="text" inputmode="decimal" data-ex="a" data-i="-1" value="${num(ex.mont)}" placeholder="0" aria-label="Montage, €"></td></tr>`;
+  h += ex.items.map((it, i) => `<tr class="exr"><td><div class="tx"><input type="text" data-ex="t" data-i="${i}" value="${esc(it.t)}" placeholder="Text der Position (DE)" aria-label="Текст позиции"><button type="button" class="x" data-exdel="${i}" title="Удалить" aria-label="Удалить позицию">×</button></div></td><td class="a"><input type="text" inputmode="decimal" data-ex="a" data-i="${i}" value="${num(it.a)}" placeholder="0" aria-label="Сумма, €"></td></tr>`).join('');
+  h += `<tr><td colspan="2" style="border-bottom:0"><button type="button" class="add" data-exadd="1">+ Позиция</button></td></tr>`;
+  $('ex-rows').innerHTML = h;
+}
+$('extras').addEventListener('input', (e) => {
+  const el = e.target.closest('[data-ex]'); if (!el) return;
+  const i = Number(el.dataset.i), ex = state.extra;
+  if (el.dataset.ex === 't') ex.items[i].t = el.value;
+  else { const v = parseFloat(el.value.replace(/\s/g, '').replace(',', '.')); const n = Number.isFinite(v) ? Math.round(v * 100) / 100 : 0; if (i < 0) ex.mont = n; else ex.items[i].a = n; }
+  renderEstimate();
+});
+$('extras').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.exadd) { state.extra.items.push({ t: '', a: 0 }); renderExtras(); renderEstimate(); const ins = $('ex-rows').querySelectorAll('input[data-ex="t"]'); if (ins.length) ins[ins.length - 1].focus(); return; }
+  if (b.dataset.exdel !== undefined) { state.extra.items.splice(Number(b.dataset.exdel), 1); renderExtras(); renderEstimate(); }
+});
 function renderEstimate() {
   const o = state.options[state.optIndex], tb = $('lines');
   if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; state.q = { lines: [], total: 0, incomplete: 0, issues: [] }; if (typeof window.onEstimate === 'function') window.onEstimate(); return; }
@@ -1780,6 +1820,14 @@ function renderEstimate() {
   }
   html += `<tr class="t"><td>Итого по каталогу${pending.length || unbuilt.length || panelsCustomColour ? `<span class="s">без ${[pending.length ? 'позиций «позже»' : '', unbuilt.length ? 'позиций «—»' : '', panelsCustomColour ? 'покраски «уточнить»' : ''].filter(Boolean).join(', ')}</span>` : ''}</td><td class="a">${eur(o.total + sides)}</td></tr>`;
   tb.innerHTML = html;
+  // the manager's own lines (net €): Montage and free text positions — part of the offer and of the total
+  const ex = state.extra || (state.extra = { mont: 0, items: [] }), exAmt = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+  let exSum = 0;
+  if (exAmt(ex.mont)) { Q.push({ k: 'mont', a: exAmt(ex.mont) }); exSum += exAmt(ex.mont); }
+  for (const it of ex.items) if ((it.t || '').trim() || exAmt(it.a)) { Q.push({ k: 'extra', t: (it.t || '').trim(), a: exAmt(it.a) }); exSum += exAmt(it.a); }
+  if (!$('extras').contains(document.activeElement)) renderExtras();
+  $('ex-total').innerHTML = exSum ? `<tr class="t"><td>Итого с монтажом и доп. позициями</td><td class="a">${eur(o.total + sides + exSum)}</td></tr>` : '';
+  sides += exSum;
   state.q = { lines: Q, total: o.total + sides, incomplete: pending.length + unbuilt.length + (panelsCustomColour ? 1 : 0), issues: o.issues.map((i) => i.code) };
   if (typeof window.onEstimate === 'function') window.onEstimate();
   const anyRemote = zipOps.some((z) => z.mode === 'remote' || z.mode === 'solar');

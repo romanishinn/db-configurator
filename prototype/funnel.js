@@ -57,7 +57,8 @@
       fabricTone: 'Farbton des Stoffes', colourNote: 'Farben am Bildschirm sind Annäherungen. Vor der Bestellung zeigen wir Ihnen Originalmuster.',
       // step 5
       s5: 'Ihr Richtpreis', s5l: 'Auf Basis der Katalogpreise ' + CATALOGUE + '. Unverbindlich – der endgültige Preis folgt nach dem Aufmaß vor Ort.',
-      grp: { pergola: 'Pergola', sides: 'Seiten', comfort: 'Komfort', colours: 'Farben und Zuschläge' },
+      grp: { pergola: 'Pergola', sides: 'Seiten', comfort: 'Komfort', colours: 'Farben und Zuschläge', extra: 'Montage und Zusatzleistungen' },
+      montT: 'Montage', delivery: 'Lieferung', extraT: 'Zusatzleistung', qExclM: 'Nicht enthalten: Lieferung, Fundamente, Elektroanschluss, Genehmigungen.',
       notIncl: 'Nicht im Preis enthalten', notInclList: ['Lieferung und Montage', 'Fundamente und Elektroanschluss', 'Behördliche Genehmigungen, falls nötig'],
       incomplete: 'Einige Positionen sind in dieser Größe nicht lieferbar und nicht im Preis.',
       print: 'Angebot drucken oder als PDF speichern', printS: 'Angebot als PDF speichern', request: 'Unverbindliche Anfrage senden', requestS: 'Wir melden uns persönlich bei Ihnen', share: 'Link kopieren', shareS: 'zum Teilen oder später weitermachen', copied: 'Link kopiert',
@@ -137,7 +138,8 @@
       frame: 'Frame and posts', roof: 'Louvres', slideCol: 'Glass and panel profiles', zipCol: 'ZIP box and guides', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
       fabricTone: 'Fabric shade', colourNote: 'Screen colours are approximate. We show you original samples before you order.',
       s5: 'Your indicative price', s5l: 'Based on catalogue prices ' + CATALOGUE + '. Not binding – the final price follows a site survey.',
-      grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges' },
+      grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges', extra: 'Installation and extras' },
+      montT: 'Installation', delivery: 'Delivery', extraT: 'Additional item', qExclM: 'Not included: delivery, foundations, electrical connection, permits.',
       notIncl: 'Not included', notInclList: ['Delivery and installation', 'Foundations and electrical connection', 'Building permits, if required'],
       incomplete: 'Some items are not available in this size and are not in the price.',
       print: 'Print the quote or save it as PDF', printS: 'Save the offer as PDF', request: 'Send a free request', requestS: 'We will get back to you personally', share: 'Copy link', shareS: 'to share or continue later', copied: 'Link copied',
@@ -216,7 +218,8 @@
       frame: 'Рама и стойки', roof: 'Ламели', slideCol: 'Профили стекла и панелей', zipCol: 'Короб и направляющие ZIP', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
       fabricTone: 'Оттенок ткани', colourNote: 'Цвета на экране приблизительные. Перед заказом покажем оригинальные образцы.',
       s5: 'Ваша ориентировочная цена', s5l: 'По каталожным ценам ' + CATALOGUE + '. Без обязательств – окончательная цена после замера на месте.',
-      grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты' },
+      grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты', extra: 'Монтаж и доп. позиции' },
+      montT: 'Монтаж', delivery: 'Доставка', extraT: 'Доп. позиция', qExclM: 'Не входит: доставка, фундамент, подключение электричества, разрешения.',
       notIncl: 'Не входит в цену', notInclList: ['Доставка и монтаж', 'Фундамент и подключение электричества', 'Разрешения, если нужны'],
       incomplete: 'Некоторые позиции в таком размере не производятся и не вошли в цену.',
       print: 'Распечатать или сохранить PDF', printS: 'Сохранить предложение в PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
@@ -339,7 +342,7 @@
   const toast = (msg) => { const d = document.createElement('div'); d.className = 'f-toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
 
   /* ---------- configuration <-> link / storage ---------- */
-  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet'];
+  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet', 'extra'];
   const prune = (v) => { // drop empty values so the link stays short
     if (Array.isArray(v)) return v.map(prune);
     if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) { const p = prune(x); if (p === null || p === undefined || p === '' || (typeof p === 'object' && !Array.isArray(p) && !Object.keys(p).length)) continue; o[k] = p; } return o; }
@@ -357,6 +360,7 @@
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
     if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
     if (!s.parapet) state.parapet = { sides: [], h: 900 };
+    state.extra = { mont: 0, items: [], ...(s.extra || {}) }; state.extra.items = (state.extra.items || []).map((x) => ({ t: x.t || '', a: Number(x.a) || 0 }));
     state.colors = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
     if (!cat.fabrics.collections.some((f) => f.id === state.colors.fabric)) state.colors.fabric = 'soltis-7635';
     $('w').value = state.width; $('d').value = state.depth;
@@ -453,11 +457,13 @@
       else if (l.k === 'control') out.push({ g: 'sides', t: t.ctl[l.code] || l.name, d: l.qty > 1 ? '× ' + l.qty : '', a: l.a });
       else if (l.k === 'coat') out.push({ g: 'colours', t: `${t.coat} ${t.sysName[l.sys]} (${l.pct} %)`, d: '', a: l.a });
       else if (l.k === 'coatMin') out.push({ g: 'colours', t: t.coatMin, d: '', a: l.a });
+      else if (l.k === 'mont') out.push({ g: 'extra', t: t.montT, d: '', a: l.a });
+      else if (l.k === 'extra') out.push({ g: 'extra', t: l.t || t.extraT, d: '', a: l.a });
       else if (l.k === 'tbd') out.push({ g: 'colours', t: t.tbdPanels, d: t.onRequest, a: null });
     }
     return out;
   }
-  const groupsOrder = ['pergola', 'sides', 'comfort', 'colours'];
+  const groupsOrder = ['pergola', 'sides', 'comfort', 'colours', 'extra'];
 
   /* ---------- rendering ---------- */
   const F = $('funnel');
@@ -786,7 +792,7 @@
       h += `<tr class="g"><td colspan="2">${t.grp[g]}</td></tr>` + ls.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s">${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(gross(l.a))}</td></tr>`).join('');
     }
     h += `</tbody></table><p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.gross}</p>`;
-    h += `<div class="f-h3"><span>${t.notIncl}</span></div><ul class="f-incl">${t.notInclList.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+    h += `<div class="f-h3"><span>${t.notIncl}</span></div><ul class="f-incl">${t.notInclList.map((x, i) => `<li>${i === 0 && q().lines.some((l) => l.k === 'mont') ? t.delivery : x}</li>`).join('')}</ul>`;
     h += formHtml(t);
     h += `<div class="f-h3" style="margin-top:22px"><span>${t.faqT}</span></div><div class="f-faq">${t.faq.map(([qq, a]) => `<details><summary>${qq}</summary><p>${a}</p></details>`).join('')}</div>`;
     return h;
@@ -988,7 +994,7 @@
         <tr class="sumrow"><td style="padding-top:8px">${t.qNet}</td><td class="a" style="padding-top:8px">${fe(total)}</td></tr>
         <tr class="sumrow"><td>${t.qVat}</td><td class="a">${fe(total * VAT)}</td></tr>
         <tr class="tot"><td>${t.qGross}${q().incomplete ? ' (' + t.from + ')' : ''}</td><td class="a">${fe(gross(total))}</td></tr></tbody></table></div>
-      <ul class="notes">${t.qNotes.map((n) => `<li>${n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
+      <ul class="notes">${t.qNotes.map((n, i) => `<li>${i === 1 && q().lines.some((l) => l.k === 'mont') ? t.qExclM : n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
       <div class="foot"><a href="${esc(shareUrl())}">${t.qLink}</a> · ${quoteNo()}</div></div>`;
   }
   /** the offer always fits one A4 page: measured at print width, a long one is scaled down a little */
