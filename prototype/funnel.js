@@ -1103,8 +1103,8 @@
     if (d.vmount) { window.setVertoMount(d.vmount); render(); return; }
     if (d.vpos) { window.setVertoPack(d.id, d.vpos); focusId = d.id; render(); return; }
     if (d.vn) { const op = opsOf(o).find((x) => x.id === d.id), l = window.vertoList({ [d.id]: state.verto.packs[d.id] || {} }); if (op && l.length) { const gm = window.vertoGeom(op, l[0].pk, o); window.setVertoPack(d.id, 'n', Math.max(2, Math.min(gm.maxN, gm.n + Number(d.vn)))); } render(); return; }
-    if (d.fill) { if (d.fill === 'none') delete state.fills[d.id]; else state.fills[d.id] = d.fill; focusId = d.id; rebuild(); applyAnim(); return; }
-    if (d.all) { for (const x of opsOf(o)) { if (d.all === 'none') delete state.fills[x.id]; else state.fills[x.id] = d.all; } rebuild(); applyAnim(); return; }
+    if (d.fill) { state.fills[d.id] = d.fill; /* 'none' is kept: the side was answered "nothing" (its + turns see-through) */ focusId = d.id; rebuild(); applyAnim(); return; }
+    if (d.all) { for (const x of opsOf(o)) state.fills[x.id] = d.all; rebuild(); applyAnim(); return; }
     if (d.gtyp) { // opening type: the cheapest one-way system parking on that side, or the cheapest two-way system
       const op = openingById(d.id); if (!op) return;
       const g = glassFor(op), want = d.gtyp === 'center' ? 'double' : 'single';
@@ -1228,12 +1228,14 @@
   let hsSig = '';
   function renderHotspots() {
     const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
-    CTA.hidden = anyFill || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span><span class="l">${esc(L().cta)}</span><span class="s">${esc(L().ctaS)}</span>`;
-    const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || 'none')).join(',') + '|' + (focusId || '');
+    const anySet = ops.some((x) => state.fills[x.id]); // a side answered "nothing" also stops the pulse
+    CTA.hidden = anySet || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span><span class="l">${esc(L().cta)}</span><span class="s">${esc(L().ctaS)}</span>`;
+    const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || '?')).join(',') + '|' + (focusId || '');
     if (sig === hsSig) return; hsSig = sig;
     HS.innerHTML = ops.map((x) => {
       const f = state.fills[x.id] || 'none', lab = `${sideLabel(x.id, o)} · ${f === 'none' ? L().hsOpen : L().fills[f]}`;
-      return `<button type="button" class="hs${f === 'none' ? '' : ' filled'}${!anyFill ? ' pulse' : ''}${focusId === x.id ? ' on' : ''}" data-hs="${x.id}" title="${esc(lab)}" aria-label="${esc(lab)}">${f === 'none' ? '+' : GL[f]}</button>`;
+      const no = state.fills[x.id] === 'none'; // chosen "nothing": a see-through +, still tappable
+      return `<button type="button" class="hs${f === 'none' ? '' : ' filled'}${no ? ' nofill' : ''}${!anySet ? ' pulse' : ''}${focusId === x.id ? ' on' : ''}" data-hs="${x.id}" title="${esc(lab)}" aria-label="${esc(lab)}">${f === 'none' ? '+' : GL[f]}</button>`;
     }).join('');
   }
   const hv = new THREE.Vector3();
