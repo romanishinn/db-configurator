@@ -25,6 +25,21 @@ export interface TerraceRequest {
   louvres?: LouvreDirection;
   /** limit the options to these families (e.g. the customer chose a sliding roof); default: all */
   families?: Family[];
+  /**
+   * Manual division into modules for one family, in catalogue axes: u = louvre lengths, v = projections
+   * (each list in order from the terrace corner). A part list that is missing keeps the automatic splits.
+   * Valid parts give one extra option tagged 'manual'; invalid ones are ignored (issue SPLIT_INVALID).
+   */
+  split?: ManualSplit;
+}
+
+export interface ManualSplit { family: Family; u?: number[]; v?: number[] }
+
+/** Limits a manual division must respect (per module): louvre length and projection range, projection step. */
+export function splitLimits(family: Family): { uMin: number; uMax: number; vMin: number; vMax: number; vStep: number; vFixed: boolean } | null {
+  const spec = SPECS.find((x) => x.family === family);
+  if (!spec) return null;
+  return { uMin: spec.minWidth, uMax: spec.widths.at(-1)!, vMin: spec.minDepth, vMax: spec.maxDepth, vStep: spec.depthStep ?? 10, vFixed: !!spec.ranges };
 }
 
 /** S400 / S500 / S500_DOUBLE: rotating louvres. SLIDE: sliding roof, louvres fold together towards one end. */
@@ -264,8 +279,53 @@ export function compose(req: TerraceRequest, cat: Catalog): { options: Compositi
     }
   }
   const options = rank(all);
+  const manual = req.split ? manualOption(req, louvres, uLen, vLen, cat) : null;
+  if (manual && 'issue' in manual) options.forEach((o) => o.issues.push(manual.issue));
+  else if (manual) {
+    const same = options.find((o) => key(o) === key(manual));
+    if (same) same.tags = [...new Set([...same.tags, 'manual'])];
+    else { manual.tags = ['manual']; options.push(manual); options.sort((a, b) => a.total - b.total); }
+  }
   const suggestions = options.length ? [] : suggest(req);
   return { options, suggestions };
+}
+
+/** The division the manager set by hand: parts must fit the family's module limits and add up to the terrace. */
+function manualOption(req: TerraceRequest, louvres: LouvreDirection, uLen: number, vLen: number, cat: Catalog): Composition | { issue: Issue } | null {
+  const sp = req.split!, spec = SPECS.find((x) => x.family === sp.family);
+  if (!spec || (req.families && !req.families.includes(spec.family))) return null;
+  const bad = (why: string): { issue: Issue } => ({ issue: { severity: 'warn', code: 'SPLIT_INVALID', params: { family: sp.family, why } } });
+  const ok = (xs: number[]) => xs.length > 0 && xs.every((x) => Number.isInteger(x) && x > 0);
+  let u: number[] | null = null;
+  if (sp.u) {
+    if (!ok(sp.u) || sp.u.reduce((a, b) => a + b, 0) !== uLen) return bad('u-sum');
+    if (sp.u.some((x) => x < spec.minWidth || x > spec.widths.at(-1)!)) return bad('u-range');
+    if (spec.modular && sp.u.length > (spec.maxCols ?? MAX_GRID)) return bad('u-count');
+    u = sp.u;
+  }
+  let vs: VSplit | null = null;
+  if (sp.v && !spec.ranges) {
+    let d = vLen; const issues: Issue[] = [];
+    if (spec.depthStep && d % spec.depthStep !== 0) {
+      const snapped = Math.ceil(d / spec.depthStep) * spec.depthStep;
+      issues.push({ severity: 'warn', code: 'DEPTH_SNAPPED', params: { requested: d, built: snapped, step: spec.depthStep } });
+      d = snapped;
+    }
+    if (!ok(sp.v) || sp.v.reduce((a, b) => a + b, 0) !== d) return bad('v-sum');
+    if (sp.v.some((x) => x < spec.minDepth || x > spec.maxDepth || (spec.depthStep && x % spec.depthStep !== 0))) return bad('v-range');
+    if (sp.v.length > 1 && spec.family === 'S500_DOUBLE') return bad('v-count');
+    vs = { parts: sp.v, issues };
+  }
+  if (!u && !vs) return null;
+  // the side not set by hand keeps the automatic split that the cheapest option of this family uses
+  const uCands = u ? [u] : lengthSplits(spec, uLen);
+  const vCands = vs ? [vs] : (projectionSplits(spec, vLen, cat) ?? []);
+  let best: Composition | null = null;
+  for (const v of vCands) for (const uu of uCands) {
+    const c = build(spec, req, louvres, uu, v.parts, v.issues, cat);
+    if (c && (!best || c.total < best.total)) best = c;
+  }
+  return best ?? bad('price');
 }
 
 function build(spec: FamilySpec, req: TerraceRequest, louvres: LouvreDirection, uParts: number[], vParts: number[], issues: Issue[], cat: Catalog): Composition | null {

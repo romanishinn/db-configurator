@@ -47,6 +47,17 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .opt .delta { color: var(--muted); font-family: var(--f-mono); font-size: 12px; }
 .tags { display: flex; gap: 4px; flex-wrap: wrap; }
 .tag { font-size: 11px; border-radius: 3px; padding: 1px 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.spl { display: grid; gap: 6px; margin: 8px 0 4px; font-size: 13px; }
+.spl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.spl-l { color: var(--muted); font-size: 12px; min-width: 76px; }
+.spl-p { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+.spl-b { display: inline-flex; align-items: center; gap: 2px; }
+.spl-b i { font-style: normal; font-size: 11px; color: var(--muted); margin-right: 2px; }
+.spl button { border: 1px solid var(--line); background: var(--bg, #fff); color: inherit; border-radius: 6px; padding: 4px 9px; font: inherit; font-size: 12.5px; cursor: pointer; }
+.spl button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.spl button:disabled { opacity: .35; cursor: default; }
+.spl .spl-auto { justify-self: start; }
+.spl-n { font-size: 11.5px; color: var(--muted); }
 .tag.cheapest { color: var(--good); border-color: var(--good); }
 .note { font-size: 12.5px; border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 7px 10px; border-radius: 4px; margin-top: 8px; }
 .stage { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); height: calc(100vh - 32px); min-height: 520px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); align-self: start; display: flex; flex-direction: column; }
@@ -289,6 +300,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     </div>
     <h2>Варианты компоновки</h2>
     <div class="opts" id="opts"></div>
+    <div id="splitbox"></div>
     <div id="sugg"></div>
     <h2>Опции перголы</h2>
     <div class="popts" id="popts"></div>
@@ -376,7 +388,7 @@ const eur = (n) => n.toLocaleString('de-AT', { maximumFractionDigits: 0 }) + ' �
 const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
 const mm = (n) => n.toLocaleString('de-AT') ;
 const FAM = { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная', SLIDE: 'Slide' };
-const TAG = { cheapest: 'Дешевле всего', equal: 'Ровные модули', fewest: 'Меньше модулей', family: '' };
+const TAG = { cheapest: 'Дешевле всего', equal: 'Ровные модули', fewest: 'Меньше модулей', manual: 'Деление вручную', family: '' };
 const FILL = { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Стекло Win Glass', verto: 'Decor', panels: 'Win Panels' };
 /* ---------- colours ---------- */
 const PALETTE = cat.colors.colors;
@@ -399,7 +411,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, extra: { mont: 0, items: [] } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, split: null, extra: { mont: 0, items: [] } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -1502,12 +1514,17 @@ function closeMenu() { if (menu) { menu.remove(); menu = null; menuAt = null; } 
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
 
 /* ---------- options + estimate ---------- */
-function recompute(resetFills) {
+function recompute(resetFills, keepView) {
   const req = { mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: famFilter() };
+  // a manual division belongs to one size, mount and louvre direction: any of them changes → back to automatic
+  const sp = state.split;
+  if (sp && (sp.W !== state.width || sp.D !== state.depth || sp.mount !== state.mount || sp.louvres !== state.louvres || !famFilter().includes(sp.family))) state.split = null;
+  if (state.split) req.split = { family: state.split.family, ...(state.split.u ? { u: state.split.u } : {}), ...(state.split.v ? { v: state.split.v } : {}) };
   const r = DBCore.compose(req, cat);
   const other = DBCore.compose({ ...req, louvres: state.louvres === 'parallel' ? 'perpendicular' : 'parallel' }, cat);
   renderLouvreInfo(r.options[0], other.options[0]);
-  state.options = r.options; state.optIndex = 0;
+  state.options = r.options; state.optIndex = Math.max(0, r.options.findIndex((o) => o.tags.includes('manual')));
+  if (state.split && !r.options.some((o) => o.tags.includes('manual'))) state.split = null;
   // fills stay with their sides when the size or layout changes (openings that no longer exist are simply not drawn)
   const opts = $('opts'), cheapest = r.options[0] ? r.options[0].total : 0;
   opts.innerHTML = r.options.map((o, i) => {
@@ -1515,15 +1532,72 @@ function recompute(resetFills) {
     const lens = [...new Set(o.modules.map((m) => m.louvreLength))].map(mm).join('/');
     const tags = o.tags.filter((t) => TAG[t]).map((t) => `<span class="tag ${t}">${TAG[t]}</span>`).join('');
     const delta = i === 0 ? '' : `<span class="delta">+${eur(o.total - cheapest)}</span>`;
-    return `<button type="button" class="opt" data-i="${i}" aria-pressed="${i === 0}">
+    return `<button type="button" class="opt" data-i="${i}" aria-pressed="${i === state.optIndex}">
       <span class="row"><span class="name">${FAM[o.family]} × ${o.modules.length}</span><span class="price">${eur(o.total)}</span></span>
       <span class="meta">${widths} · ламели ${lens} мм · стоек: ${o.posts}</span>
       <span class="row"><span class="tags">${tags}</span>${delta}</span></button>`;
   }).join('');
   const NAMES = { DEPTH_TOO_SMALL: 'Глубина меньше минимальной', WIDTH_TOO_SMALL: 'Ширина меньше минимальной', DEPTH_TOO_LARGE: 'Глубина больше возможной', WIDTH_TOO_LARGE: 'Ширина больше возможной', NO_COMBINATION: 'Такой размер не собирается из каталога' };
   $('sugg').innerHTML = r.suggestions.map((s) => `<div class="note">${NAMES[s.code] || s.code}${s.params && s.params.suggested ? `. Можно сделать <button type="button" class="chip" data-fix="${s.code}" data-v="${s.params.suggested}">${mm(s.params.suggested)} мм</button>` : ''}</div>`).join('');
-  build(); refit(); renderEstimate(); renderColors(); renderPergolaOptions();
+  build(); if (!keepView) refit(); renderEstimate(); renderColors(); renderPergolaOptions();
 }
+/* ---------- manual division into modules: move the joint between two modules, or split evenly ---------- */
+/** module lengths of an option in catalogue axes: u = louvre lengths, v = projections, each from the terrace corner */
+function splitParts(o) {
+  const par = o.louvres === 'parallel';
+  const u = o.modules.filter((m) => (par ? m.row : m.col) === 0).sort((a, b) => (par ? a.col - b.col : a.row - b.row)).map((m) => m.louvreLength);
+  const v = o.modules.filter((m) => (par ? m.col : m.row) === 0).sort((a, b) => (par ? a.row - b.row : a.col - b.col)).map((m) => m.projection);
+  return { u, v };
+}
+/** the step a joint moves by, and the limits of one module */
+function splitStep(o, axis) { const L = DBCore.splitLimits(o.family); return axis === 'u' ? 50 : Math.max(50, L.vStep); }
+function splitOk(o, axis, parts) {
+  const L = DBCore.splitLimits(o.family); if (!L) return false;
+  if (axis === 'v' && L.vFixed) return false;
+  const [lo, hi] = axis === 'u' ? [L.uMin, L.uMax] : [L.vMin, L.vMax];
+  return parts.every((x) => x >= lo && x <= hi && (axis === 'u' || x % L.vStep === 0));
+}
+function splitEven(total, n, step) { const k = Math.round(total / step), q = Math.floor(k / n), r = k % n; const p = Array.from({ length: n }, (_, i) => (q + (i < r ? 1 : 0)) * step); p[n - 1] += total - p.reduce((a, b) => a + b, 0); return p; }
+/** cmd: "auto" | "<axis>:even" | "<axis>:<joint>:<+|->" */
+function splitAct(cmd) {
+  const o = state.options[state.optIndex]; if (!o) return;
+  if (cmd === 'auto') { state.split = null; recompute(false, true); return; }
+  const [axis, a, dir] = cmd.split(':'), cur = splitParts(o)[axis];
+  let parts = [...cur];
+  if (a === 'even') parts = splitEven(cur.reduce((x, y) => x + y, 0), cur.length, axis === 'u' ? 10 : DBCore.splitLimits(o.family).vStep);
+  else { const k = Number(a), d = splitStep(o, axis) * (dir === '+' ? 1 : -1); parts[k] += d; parts[k + 1] -= d; }
+  if (!splitOk(o, axis, parts)) return;
+  const keep = state.split && state.split.family === o.family ? state.split : {};
+  const pp = splitParts(o);
+  state.split = { family: o.family, W: state.width, D: state.depth, mount: state.mount, louvres: state.louvres, u: keep.u || pp.u, v: keep.v || pp.v, [axis]: parts };
+  if (DBCore.splitLimits(o.family).vFixed) delete state.split.v;
+  recompute(false, true);
+}
+window.splitAct = splitAct; window.splitParts = splitParts; window.splitOk = splitOk; window.splitStep = splitStep;
+/** rows of the division control; tx: texts (Russian for the manager, the funnel passes its own language) */
+function splitHtml(o, tx, fmt) {
+  if (!o) return '';
+  const pp = splitParts(o), par = o.louvres === 'parallel', L = DBCore.splitLimits(o.family);
+  const axes = ['u', 'v'].filter((a) => pp[a].length > 1 && !(a === 'v' && L.vFixed));
+  if (!axes.length) return '';
+  let h = '';
+  for (const a of axes) {
+    const parts = pp[a], st = splitStep(o, a), along = (a === 'u') === par ? tx.alongW : tx.alongD;
+    h += `<div class="spl-row"><span class="spl-l">${along}</span><span class="spl-p">${parts.map(fmt).join(' + ')}</span>`;
+    for (let k = 0; k < parts.length - 1; k++) {
+      const m = (d) => { const p = [...parts]; p[k] += d; p[k + 1] -= d; return splitOk(o, a, p); };
+      h += `<span class="spl-b">${parts.length > 2 ? `<i>${k + 1}|${k + 2}</i>` : ''}<button type="button" data-spl="${a}:${k}:-" ${m(-st) ? '' : 'disabled'} aria-label="${tx.left}">◀</button><button type="button" data-spl="${a}:${k}:+" ${m(st) ? '' : 'disabled'} aria-label="${tx.right}">▶</button></span>`;
+    }
+    const tot = parts.reduce((x, y) => x + y, 0), ev = splitEven(tot, parts.length, a === 'u' ? 10 : L.vStep);
+    h += `<button type="button" class="spl-eq" data-spl="${a}:even" ${splitOk(o, a, ev) && ev.join() !== parts.join() ? '' : 'disabled'}>${tx.even}</button></div>`;
+  }
+  if (o.tags.includes('manual')) h += `<button type="button" class="spl-auto" data-spl="auto">${tx.auto}</button>`;
+  return `<div class="spl">${h}<div class="spl-n">${tx.note(fmt(L.uMin), fmt(L.uMax))}</div></div>`;
+}
+window.splitHtml = splitHtml;
+const SPLIT_RU = { alongW: 'По ширине', alongD: 'По глубине', left: 'Стык влево', right: 'Стык вправо', even: 'Поровну', auto: '↺ Автоматически', note: (a, b) => `стык сдвигается стрелками · модуль по ламели ${a}–${b}; цена — по следующей ширине таблицы` };
+function renderSplitPro() { const box = $('splitbox'); if (box) box.innerHTML = splitHtml(state.options[state.optIndex], SPLIT_RU, (x) => mm(x)); }
+$('splitbox').addEventListener('click', (e) => { const b = e.target.closest('[data-spl]'); if (b && !b.disabled) splitAct(b.dataset.spl); });
 $('opts').addEventListener('click', (e) => {
   const b = e.target.closest('.opt'); if (!b) return;
   state.optIndex = Number(b.dataset.i);
@@ -1601,6 +1675,7 @@ $('extras').addEventListener('click', (e) => {
   if (b.dataset.exdel !== undefined) { state.extra.items.splice(Number(b.dataset.exdel), 1); renderExtras(); renderEstimate(); }
 });
 function renderEstimate() {
+  renderSplitPro();
   const o = state.options[state.optIndex], tb = $('lines');
   if (!o) { tb.innerHTML = ''; $('issues').innerHTML = ''; state.q = { lines: [], total: 0, incomplete: 0, issues: [] }; if (typeof window.onEstimate === 'function') window.onEstimate(); return; }
   migrateVerto();

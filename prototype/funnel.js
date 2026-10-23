@@ -58,7 +58,7 @@
       // step 5
       s5: 'Ihr Richtpreis', s5l: 'Auf Basis der Katalogpreise ' + CATALOGUE + '. Unverbindlich – der endgültige Preis folgt nach dem Aufmaß vor Ort.',
       grp: { pergola: 'Pergola', sides: 'Seiten', comfort: 'Komfort', colours: 'Farben und Zuschläge', extra: 'Montage und Zusatzleistungen' },
-      montT: 'Montage', delivery: 'Lieferung', extraT: 'Zusatzleistung', qExclM: 'Nicht enthalten: Lieferung, Fundamente, Elektroanschluss, Genehmigungen.',
+      split: { title: 'Aufteilung der Module', alongW: 'Breite', alongD: 'Tiefe', left: 'Stoß nach links', right: 'Stoß nach rechts', even: 'Gleich teilen', auto: '↺ Automatisch', note: (a, b) => `Pfeile verschieben den Stoß · ein Modul ${a} bis ${b}` }, montT: 'Montage', delivery: 'Lieferung', extraT: 'Zusatzleistung', qExclM: 'Nicht enthalten: Lieferung, Fundamente, Elektroanschluss, Genehmigungen.',
       notIncl: 'Nicht im Preis enthalten', notInclList: ['Lieferung und Montage', 'Fundamente und Elektroanschluss', 'Behördliche Genehmigungen, falls nötig'],
       incomplete: 'Einige Positionen sind in dieser Größe nicht lieferbar und nicht im Preis.',
       print: 'Angebot drucken oder als PDF speichern', printS: 'Angebot als PDF speichern', request: 'Unverbindliche Anfrage senden', requestS: 'Wir melden uns persönlich bei Ihnen', share: 'Link kopieren', shareS: 'zum Teilen oder später weitermachen', copied: 'Link kopiert',
@@ -139,7 +139,7 @@
       fabricTone: 'Fabric shade', colourNote: 'Screen colours are approximate. We show you original samples before you order.',
       s5: 'Your indicative price', s5l: 'Based on catalogue prices ' + CATALOGUE + '. Not binding – the final price follows a site survey.',
       grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges', extra: 'Installation and extras' },
-      montT: 'Installation', delivery: 'Delivery', extraT: 'Additional item', qExclM: 'Not included: delivery, foundations, electrical connection, permits.',
+      split: { title: 'Module division', alongW: 'Width', alongD: 'Depth', left: 'Joint to the left', right: 'Joint to the right', even: 'Split evenly', auto: '↺ Automatic', note: (a, b) => `Arrows move the joint · one module ${a} to ${b}` }, montT: 'Installation', delivery: 'Delivery', extraT: 'Additional item', qExclM: 'Not included: delivery, foundations, electrical connection, permits.',
       notIncl: 'Not included', notInclList: ['Delivery and installation', 'Foundations and electrical connection', 'Building permits, if required'],
       incomplete: 'Some items are not available in this size and are not in the price.',
       print: 'Print the quote or save it as PDF', printS: 'Save the offer as PDF', request: 'Send a free request', requestS: 'We will get back to you personally', share: 'Copy link', shareS: 'to share or continue later', copied: 'Link copied',
@@ -219,7 +219,7 @@
       fabricTone: 'Оттенок ткани', colourNote: 'Цвета на экране приблизительные. Перед заказом покажем оригинальные образцы.',
       s5: 'Ваша ориентировочная цена', s5l: 'По каталожным ценам ' + CATALOGUE + '. Без обязательств – окончательная цена после замера на месте.',
       grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты', extra: 'Монтаж и доп. позиции' },
-      montT: 'Монтаж', delivery: 'Доставка', extraT: 'Доп. позиция', qExclM: 'Не входит: доставка, фундамент, подключение электричества, разрешения.',
+      split: { title: 'Деление на модули', alongW: 'Ширина', alongD: 'Глубина', left: 'Стык влево', right: 'Стык вправо', even: 'Поровну', auto: '↺ Автоматически', note: (a, b) => `Стрелки двигают стык · модуль от ${a} до ${b}` }, montT: 'Монтаж', delivery: 'Доставка', extraT: 'Доп. позиция', qExclM: 'Не входит: доставка, фундамент, подключение электричества, разрешения.',
       notIncl: 'Не входит в цену', notInclList: ['Доставка и монтаж', 'Фундамент и подключение электричества', 'Разрешения, если нужны'],
       incomplete: 'Некоторые позиции в таком размере не производятся и не вошли в цену.',
       print: 'Распечатать или сохранить PDF', printS: 'Сохранить предложение в PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
@@ -342,7 +342,7 @@
   const toast = (msg) => { const d = document.createElement('div'); d.className = 'f-toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
 
   /* ---------- configuration <-> link / storage ---------- */
-  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet', 'extra'];
+  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet', 'extra', 'split'];
   const prune = (v) => { // drop empty values so the link stays short
     if (Array.isArray(v)) return v.map(prune);
     if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) { const p = prune(x); if (p === null || p === undefined || p === '' || (typeof p === 'object' && !Array.isArray(p) && !Object.keys(p).length)) continue; o[k] = p; } return o; }
@@ -360,6 +360,7 @@
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
     if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
     if (!s.parapet) state.parapet = { sides: [], h: 900 };
+    if (!s.split) state.split = null;
     state.extra = { mont: 0, items: [], ...(s.extra || {}) }; state.extra.items = (state.extra.items || []).map((x) => ({ t: x.t || '', a: Number(x.a) || 0 }));
     state.colors = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
     if (!cat.fabrics.collections.some((f) => f.id === state.colors.fabric)) state.colors.fabric = 'soltis-7635';
@@ -604,12 +605,15 @@
     // layout: recommended first, alternatives folded away
     const opts = state.options, cheapest = opts[0].total;
     const lay = (x, i) => {
-      const widths = x.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ');
+      const widths = x.modules.filter((m) => m.row === 0).map((m) => metres(m.width)).join(' + ') + (x.rows > 1 ? ' × ' + x.modules.filter((m) => m.col === 0).map((m) => metres(m.depth)).join(' + ') : '');
       return `<button type="button" data-opt="${i}" aria-pressed="${i === state.optIndex}"><span><b>${t.modules(x.modules.length)}</b>${i === 0 ? `<span class="f-badge">${t.cheapest}</span>` : ''}<span class="m">${widths} ${t.m} · ${t.fam[x.family]} · ${t.posts(x.posts)}</span></span><span class="pr">${i === 0 ? fe(gross(x.total)) : '+' + fe(gross(x.total - cheapest))}</span></button>`;
     };
     h += `<div class="f-h3"><span>${t.layout}</span></div><div class="f-lay">${lay(opts[0], 0)}${state.optIndex > 0 ? lay(opts[state.optIndex], state.optIndex) : ''}</div>`;
     const rest = opts.map((x, i) => [x, i]).filter(([, i]) => i !== 0 && i !== state.optIndex);
     if (rest.length) h += `<details class="f-more"><summary>${t.otherLayouts(rest.length)}</summary><div class="f-lay" style="margin-top:6px">${rest.map(([x, i]) => lay(x, i)).join('')}</div></details>`;
+    // move the joint between modules (e.g. two equal halves) — only when the layout has more than one module
+    const spl = window.splitHtml(o, t.split, (x) => metres(x) + ' ' + t.m);
+    if (spl) h += `<div class="f-h3"><span>${t.split.title}</span></div>${spl}`;
     if (o.width !== state.width) h += `<div class="f-note">${t.snapped(metres(o.width), metres(state.width))}</div>`;
     if (o.depth !== state.depth) h += `<div class="f-note">${t.snapped(metres(o.depth), metres(state.depth))}</div>`;
     if (o.issues.some((i) => i.code === 'MULTI_ROW_ASSUMPTION')) h += `<div class="f-note">${t.multiRow}</div>`;
@@ -859,7 +863,7 @@
     if (d.nudge || d.preset || d.fix) setTimeout(() => J.sizes.add(state.width + 'x' + state.depth), 0);
     if (d.rooft) J.roofs.add(d.rooft);
     if (d.mount) J.mounts.add(d.mount);
-    if (d.opt !== undefined || d.louv) J.layouts += 1;
+    if (d.opt !== undefined || d.louv || d.spl) J.layouts += 1;
     if (d.fill || d.all || d.gtyp || d.gpos || d.vpreset !== undefined || d.vpos || d.vn || d.vmount) J.sides += 1;
     if (d.of || d.gl || d.cl || d.frame || d.roofc || d.roof === 'same' || d.tone) J.colours += 1;
     if (d.light) J.lights += 1;
@@ -1095,6 +1099,7 @@
     if (d.h) { state.po.postHeight = Number(d.h); rebuild(); return; }
     if (d.rooft) { if (d.rooft === state.roof) return; state.roof = d.rooft; syncRoofButtons(); keepCamera(() => recompute(false)); return; }
     if (d.opt !== undefined) { choose(Number(d.opt)); return; }
+    if (d.spl) { keepCamera(() => window.splitAct(d.spl)); return; }
     if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(false)); return; }
     if (d.zctlall || d.zctl) { // the motor brand follows the control if needed (see brandFor)
       const ids = zipIds(), cur = Object.fromEntries(ids.map((id) => [id, ctlOf(id)]));

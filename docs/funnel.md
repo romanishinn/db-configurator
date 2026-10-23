@@ -146,3 +146,10 @@ Win Verto теперь не «заполнение проёма», а отдел
 - Stored in `state.extra = { mont, items: [{ t, a }] }`, part of the saved/shared configuration.
 - They are added to the total immediately. The customer view and the PDF offer show them in the group "Montage und Zusatzleistungen" (gross on screen, net in the PDF table).
 - When Montage is priced, "Montage" is dropped from the "not included" notes.
+
+## Manual division into modules
+
+- Step 1 (customer view) "Aufteilung der Module" and the Pro panel under the layout variants: ◀ ▶ move the joint between two modules (50 mm along the louvre; along the projection by the table step, S400 200 mm), "Gleich teilen" splits evenly, "↺ Automatisch" goes back.
+- Engine: `compose({ ..., split: { family, u?, v? } })` adds one option tagged `manual` (u = louvre lengths, v = projections); limits from `splitLimits(family)`; invalid parts are ignored with `SPLIT_INVALID`. Golden test: 5300 × 5500 free, perpendicular, halves 2750 + 2750 → 2 × 11 301 € (S400 p.14, width 3000 × 5400).
+- Each module is priced at the next width step of the table, so an even split can cost more than the automatic one.
+- `state.split` is saved with the configuration and dropped when the size, mount or louvre direction changes.
