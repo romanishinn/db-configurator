@@ -1018,7 +1018,7 @@
     const cl = [form.name, form.phone, form.email].map((x) => String(x || '').trim());
     const client = `<div class="client"><div class="lb">${t.qClient}</div>${cl.some(Boolean) ? `${cl[0] ? `<b>${esc(cl[0])}</b>` : ''}${cl[1] ? `<div>${esc(cl[1])}</div>` : ''}${cl[2] ? `<div>${esc(cl[2])}</div>` : ''}` : '<div class="ln"></div><div class="ln"></div><div class="ln"></div>'}</div>`;
     const no = quoteNum || nextQuoteNo(false);
-    return `<div class="q"><div class="hdr">${client}<div class="meta"><div class="no">${t.qNo} ${no}</div><h1>${t.qTitle}</h1>${t.qDate} ${date}${OFFICE.name ? `<div class="brand">${esc(OFFICE.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
+    return `<div class="q"><div class="hdr">${client}<div class="meta"><h1>${t.qTitle}</h1>${t.qNo} ${no} · ${t.qDate} ${date}${OFFICE.name ? `<div class="brand">${esc(OFFICE.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
       <h2>${t.qConfig}</h2><table class="facts"><tbody>${facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
       <div><h2>${t.qPrice}</h2><table><thead><tr><th>${t.qItem}</th><th class="a">${t.net}</th></tr></thead><tbody>${rows}
@@ -1039,8 +1039,12 @@
     const avail = 297 - 20 - 4; // A4 minus the page margins, a little slack
     if (h > avail) q0.style.zoom = String(Math.max(0.6, avail / h));
   }
+  /** the browser names the PDF after the page title: "Quotation 231026-4" while printing, then the normal title again */
+  let titleBefore = null;
+  function pdfTitle() { if (titleBefore === null) titleBefore = document.title; document.title = 'Quotation ' + quoteNum; }
   function printQuote() {
     quoteNum = nextQuoteNo(true); // every generated PDF gets its own number
+    pdfTitle();
     $('quote').innerHTML = buildQuote(); fitQuote();
     document.body.classList.add('printing');
     setTimeout(() => window.print(), 60);
@@ -1051,9 +1055,10 @@
     if (!isCust() || !curOpt()) return;
     // printed from the browser menu: this PDF needs its own number too (the button has already taken one)
     if (!quoteNum) { quoteNum = nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
+    pdfTitle();
     document.body.classList.add('printing');
   });
-  window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); quoteNum = null; });
+  window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); quoteNum = null; if (titleBefore !== null) { document.title = titleBefore; titleBefore = null; } });
   function saveFile() {
     const blob = new Blob([JSON.stringify(snapshot(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `pergola-${quoteNo()}.json`; document.body.appendChild(a); a.click();

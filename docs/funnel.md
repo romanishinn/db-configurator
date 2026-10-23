@@ -164,5 +164,5 @@ Win Verto теперь не «заполнение проёма», а отдел
 
 - Picture: front view ("Vorne"), zoomed so the pergola fills the frame.
 - Top left: customer name, phone, e-mail from the request form (empty lines to fill in by hand if nothing is typed).
-- Top right: number `DDMMYY-N` (e.g. 231026-1). Every generated PDF (button or browser print) takes the next N; N starts at 1 each day.
+- Top right: title, then "Nr. DDMMYY-N · Datum" as plain text; the PDF file is named "Quotation DDMMYY-N" (page title while printing). Number `DDMMYY-N` (e.g. 231026-1). Every generated PDF (button or browser print) takes the next N; N starts at 1 each day.
 - ASSUMPTION: no server, so the counter is kept in the browser (`db.qno`): unique per device, not across devices.
