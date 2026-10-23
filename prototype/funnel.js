@@ -58,7 +58,7 @@
       // step 5
       s5: 'Ihr Richtpreis', s5l: 'Auf Basis der Katalogpreise ' + CATALOGUE + '. Unverbindlich – der endgültige Preis folgt nach dem Aufmaß vor Ort.',
       grp: { pergola: 'Pergola', sides: 'Seiten', comfort: 'Komfort', colours: 'Farben und Zuschläge', extra: 'Montage und Zusatzleistungen' },
-      split: { title: 'Aufteilung der Module', alongW: 'Breite', alongD: 'Tiefe', left: 'Stoß nach links', right: 'Stoß nach rechts', even: 'Gleich teilen', auto: '↺ Automatisch', note: (a, b) => `Pfeile verschieben den Stoß · ein Modul ${a} bis ${b}` }, montT: 'Montage', delivery: 'Lieferung', extraT: 'Zusatzleistung', qExclM: 'Nicht enthalten: Lieferung, Fundamente, Elektroanschluss, Genehmigungen.',
+      split: { title: 'Aufteilung der Module', alongW: 'Breite', alongD: 'Tiefe', left: 'Stoß nach links', right: 'Stoß nach rechts', even: 'Gleich teilen', auto: '↺ Automatisch', note: (a, b) => `Pfeile verschieben den Stoß · ein Modul ${a} bis ${b}` }, jointT: (a, b) => `Zwischen Modul ${a} und ${b}`, montT: 'Montage', delivery: 'Lieferung', extraT: 'Zusatzleistung', qExclM: 'Nicht enthalten: Lieferung, Fundamente, Elektroanschluss, Genehmigungen.',
       notIncl: 'Nicht im Preis enthalten', notInclList: ['Lieferung und Montage', 'Fundamente und Elektroanschluss', 'Behördliche Genehmigungen, falls nötig'],
       incomplete: 'Einige Positionen sind in dieser Größe nicht lieferbar und nicht im Preis.',
       print: 'Angebot drucken oder als PDF speichern', printS: 'Angebot als PDF speichern', request: 'Unverbindliche Anfrage senden', requestS: 'Wir melden uns persönlich bei Ihnen', share: 'Link kopieren', shareS: 'zum Teilen oder später weitermachen', copied: 'Link kopiert',
@@ -139,7 +139,7 @@
       fabricTone: 'Fabric shade', colourNote: 'Screen colours are approximate. We show you original samples before you order.',
       s5: 'Your indicative price', s5l: 'Based on catalogue prices ' + CATALOGUE + '. Not binding – the final price follows a site survey.',
       grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges', extra: 'Installation and extras' },
-      split: { title: 'Module division', alongW: 'Width', alongD: 'Depth', left: 'Joint to the left', right: 'Joint to the right', even: 'Split evenly', auto: '↺ Automatic', note: (a, b) => `Arrows move the joint · one module ${a} to ${b}` }, montT: 'Installation', delivery: 'Delivery', extraT: 'Additional item', qExclM: 'Not included: delivery, foundations, electrical connection, permits.',
+      split: { title: 'Module division', alongW: 'Width', alongD: 'Depth', left: 'Joint to the left', right: 'Joint to the right', even: 'Split evenly', auto: '↺ Automatic', note: (a, b) => `Arrows move the joint · one module ${a} to ${b}` }, jointT: (a, b) => `Between module ${a} and ${b}`, montT: 'Installation', delivery: 'Delivery', extraT: 'Additional item', qExclM: 'Not included: delivery, foundations, electrical connection, permits.',
       notIncl: 'Not included', notInclList: ['Delivery and installation', 'Foundations and electrical connection', 'Building permits, if required'],
       incomplete: 'Some items are not available in this size and are not in the price.',
       print: 'Print the quote or save it as PDF', printS: 'Save the offer as PDF', request: 'Send a free request', requestS: 'We will get back to you personally', share: 'Copy link', shareS: 'to share or continue later', copied: 'Link copied',
@@ -219,7 +219,7 @@
       fabricTone: 'Оттенок ткани', colourNote: 'Цвета на экране приблизительные. Перед заказом покажем оригинальные образцы.',
       s5: 'Ваша ориентировочная цена', s5l: 'По каталожным ценам ' + CATALOGUE + '. Без обязательств – окончательная цена после замера на месте.',
       grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты', extra: 'Монтаж и доп. позиции' },
-      split: { title: 'Деление на модули', alongW: 'Ширина', alongD: 'Глубина', left: 'Стык влево', right: 'Стык вправо', even: 'Поровну', auto: '↺ Автоматически', note: (a, b) => `Стрелки двигают стык · модуль от ${a} до ${b}` }, montT: 'Монтаж', delivery: 'Доставка', extraT: 'Доп. позиция', qExclM: 'Не входит: доставка, фундамент, подключение электричества, разрешения.',
+      split: { title: 'Деление на модули', alongW: 'Ширина', alongD: 'Глубина', left: 'Стык влево', right: 'Стык вправо', even: 'Поровну', auto: '↺ Автоматически', note: (a, b) => `Стрелки двигают стык · модуль от ${a} до ${b}` }, jointT: (a, b) => `Между модулями ${a} и ${b}`, montT: 'Монтаж', delivery: 'Доставка', extraT: 'Доп. позиция', qExclM: 'Не входит: доставка, фундамент, подключение электричества, разрешения.',
       notIncl: 'Не входит в цену', notInclList: ['Доставка и монтаж', 'Фундамент и подключение электричества', 'Разрешения, если нужны'],
       incomplete: 'Некоторые позиции в таком размере не производятся и не вошли в цену.',
       print: 'Распечатать или сохранить PDF', printS: 'Сохранить предложение в PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
@@ -404,6 +404,11 @@
   /** a package position in the customer's words: left / centre / right as seen from outside, or the whole side */
   function vPosName(id, pos, t) { if (pos === 'full' || pos === 'center') return t.vPos[pos]; return t.vPos[pos === window.outRight(window.faceOf(id)) ? 'R' : 'L']; }
   function sideLabel(id, o) {
+    if (window.isJoint(id)) { // between two modules: "Zwischen Modul 1 und 2"
+      // modules numbered row by row from the terrace corner, as in the layout
+      const [kind, rest] = id.split('-'), [k, r] = rest.replace(/-b$/, '').split('_').map(Number), c = (o && o.cols) || 1, a = r * c + k + 1;
+      return L().jointT(a, kind === 'joint' ? a + 1 : a + c);
+    }
     const [side, i] = id.split('-'), n = Number(i);
     let s = L().sides[side];
     if ((side === 'front' || side === 'back') && o && o.cols > 1) s += ' · ' + L().field + ' ' + (n + 1);
@@ -664,6 +669,7 @@
   }
   /** the Verto part of the side card: positions (left / centre / right can be combined, or the whole side) and the profile count */
   function vertoCard(t, o, op) {
+    if (window.isJoint(op.id)) return ''; // Decor only on the outer sides
     const m = state.verto.packs[op.id] || {}, list = window.vertoList({ [op.id]: m }), R = window.outRight(window.faceOf(op.id)), Lp = R === 'b' ? 'a' : 'b';
     const amt = vertoAmount(op.id), bad = q().lines.find((l) => l.k === 'vbad' && l.id === op.id);
     let h = `<div class="fc-q">${t.vSide}${amt ? ` <span class="pr" style="float:right">+${fe(gross(amt))}</span>` : ''}</div><div class="f-chips">`;
@@ -681,7 +687,7 @@
     if (!o) return '';
     const ops = opsOf(o);
     let h = `<h2>${t.s2}</h2><p class="f-lead">${t.s2l}</p>`;
-    h += `<div class="f-h3"><span>${t.allSides}</span></div><div class="f-chips" style="margin-bottom:12px">${['none', 'zip', 'glass'].map((f) => `<button type="button" class="f-chip" data-all="${f}" aria-pressed="${ops.every((x) => (state.fills[x.id] || 'none') === f)}">${GL[f]} ${t.fills[f]}</button>`).join('')}</div>`;
+    h += `<div class="f-h3"><span>${t.allSides}</span></div><div class="f-chips" style="margin-bottom:12px">${['none', 'zip', 'glass'].map((f) => `<button type="button" class="f-chip" data-all="${f}" aria-pressed="${ops.filter((x) => !window.isJoint(x.id)).every((x) => (state.fills[x.id] || 'none') === f)}">${GL[f]} ${t.fills[f]}</button>`).join('')}</div>`;
     h += `<div class="f-sides">`;
     for (const op of ops) {
       const f = state.fills[op.id] || 'none', amt = sideAmount(op.id), bad = q().lines.some((l) => l.k === 'unbuilt' && l.id === op.id);
@@ -692,7 +698,7 @@
       h += `</div>`;
     }
     h += `</div>`;
-    h += vertoSection(t, o, ops);
+    h += vertoSection(t, o, ops.filter((x) => !window.isJoint(x.id)));
     const used = new Set(ops.map((x) => state.fills[x.id]).filter(Boolean));
     if (used.has('zip')) {
       const curOf = fabricOf().openness;
@@ -1115,7 +1121,7 @@
     if (d.vpos) { window.setVertoPack(d.id, d.vpos); focusId = d.id; render(); return; }
     if (d.vn) { const op = opsOf(o).find((x) => x.id === d.id), l = window.vertoList({ [d.id]: state.verto.packs[d.id] || {} }); if (op && l.length) { const gm = window.vertoGeom(op, l[0].pk, o); window.setVertoPack(d.id, 'n', Math.max(2, Math.min(gm.maxN, gm.n + Number(d.vn)))); } render(); return; }
     if (d.fill) { state.fills[d.id] = d.fill; /* 'none' is kept: the side was answered "nothing" (its + turns see-through) */ focusId = d.id; rebuild(); applyAnim(); return; }
-    if (d.all) { for (const x of opsOf(o)) state.fills[x.id] = d.all; rebuild(); applyAnim(); return; }
+    if (d.all) { for (const x of opsOf(o)) if (!window.isJoint(x.id)) state.fills[x.id] = d.all; rebuild(); applyAnim(); return; }
     if (d.gtyp) { // opening type: the cheapest one-way system parking on that side, or the cheapest two-way system
       const op = openingById(d.id); if (!op) return;
       const g = glassFor(op), want = d.gtyp === 'center' ? 'double' : 'single';

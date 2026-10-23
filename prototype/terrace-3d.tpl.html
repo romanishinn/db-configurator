@@ -778,6 +778,23 @@ function openings(opt, sp) {
   if (state.mount === 'free') {
     opt.modules.filter((m) => m.row === 0).forEach((m, i) => out.push({ mod: m, id: 'back-' + i, label: 'Сзади, модуль ' + (i + 1), len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: sp.post / 2, rotY: 0, axis: 'x' }));
   }
+  // inner joints between two modules: ZIP / glass / panels can close them too (e.g. a screen between two pergolas).
+  // S400 pergolas stand each on their own posts: the opening is the near pergola's side; modular systems share the post line.
+  // ASSUMPTION: an inner screen is mounted and priced like an outer one of the same size.
+  const own = opt.family === 'S400' ? sp.post / 2 : 0;
+  for (let r = 0; r < opt.rows; r++) {
+    const row = opt.modules.filter((m) => m.row === r).sort((a, b) => a.col - b.col);
+    for (let k = 0; k < row.length - 1; k++) {
+      const m = row[k], line = (m.x + m.width) / 1000;
+      out.push({ mod: m, id: `joint-${k}_${r}`, label: `Между модулями ${r * opt.cols + k + 1} и ${r * opt.cols + k + 2}`, len: m.depth / 1000 - sp.post, h, cx: line - own, cz: (m.y + m.depth / 2) / 1000, rotY: Math.PI / 2, axis: 'z', joint: true });
+    }
+  }
+  for (let r = 0; r < opt.rows - 1; r++) {
+    opt.modules.filter((m) => m.row === r).sort((a, b) => a.col - b.col).forEach((m, k) => {
+      const line = (m.y + m.depth) / 1000;
+      out.push({ mod: m, id: `jrow-${k}_${r}`, label: `Между модулями ${r * opt.cols + k + 1} и ${(r + 1) * opt.cols + k + 1}`, len: m.width / 1000 - sp.post, h, cx: (m.x + m.width / 2) / 1000, cz: line - own, rotY: 0, axis: 'x', joint: true });
+    });
+  }
   for (const o of out) { const ph = parapetOf(faceOf(o.id)) / 1000; if (ph > 0) { o.y0 = ph; o.h = Math.max(0.3, h - ph); } }
   return splitAtPosts(out, requiredPostPositions(opt), sp);
 }
@@ -821,6 +838,9 @@ function splitAtPosts(list, posts, sp) {
  * packs[openingId] = { a?: n, b?: n, center?: n } or { full: 0 } (a / b = the ends of the side along its local x, n = profiles). */
 const VERTO_SIGN = { front: 1, right: 1, back: -1, left: -1 }; // outward side of the opening's local z
 const faceOf = (id) => id.split('-')[0];
+/** an inner opening between two modules (no Decor there, not part of "all sides") */
+const isJoint = (id) => /^j(oint|row)-/.test(id);
+window.isJoint = isJoint;
 /** the viewer's right end of a side, seen from outside */
 const outRight = (face) => (face === 'front' || face === 'right' ? 'b' : 'a');
 const VERTO_DEFAULT_N = 7;
@@ -1445,7 +1465,7 @@ function renderMenu(o) {
     html += `<div class="t">Монтаж</div><div class="rrow">${Object.entries(PMOUNT).map(([k, t]) => rc(`data-pmount="${k}"`, '•', t, mt === k)).join('')}</div>`;
   }
   // Win Verto on this side (a layer: on the frame next to ZIP / glass, or in the opening for mounting C)
-  {
+  if (!isJoint(o.id)) {
     const opt = state.options[state.optIndex], m = state.verto.packs[o.id] || {}, list = vertoList({ [o.id]: m });
     const R = outRight(faceOf(o.id)), L = R === 'b' ? 'a' : 'b';
     html += `<div class="t">Decor на этой стороне</div><div class="rrow">${[['none', '○', 'нет'], [L, '◧', 'слева'], ['center', '▥', 'по центру'], [R, '◨', 'справа'], ['full', '▦', 'вся сторона']].map(([k, g, c]) => rc(`data-vpos="${k}"`, g, c, k === 'none' ? !list.length : m[k] !== undefined)).join('')}</div>`;
@@ -2128,7 +2148,7 @@ let vertoSideSel = null;
 const VERTO_RU = { sideT: 'Сторона', pos: { none: 'Нет', L: 'Слева', center: 'По центру', R: 'Справа', full: 'Вся сторона' }, prof: 'профилей', none: 'Без Decor', types: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, typesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' }, mountT: 'Монтаж', mounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме, под коробом', D: 'С угловым соединением' }, hint: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', typesT: 'Готовые типы' };
 function renderVertoPop() {
   const box = $('tb-vertos'), tx = window.VERTO_TEXT || VERTO_RU, opt = state.options[state.optIndex]; if (!opt) { box.innerHTML = ''; return; }
-  const ops = openings(opt, SPEC[famKey(opt)]), v = state.verto, any = vertoList(v.packs).length > 0;
+  const ops = openings(opt, SPEC[famKey(opt)]).filter((x) => !isJoint(x.id)), v = state.verto, any = vertoList(v.packs).length > 0;
   const th = (packs) => (window.vertoThumb ? window.vertoThumb(opt, ops, packs) : '');
   const name = (k) => (state.mount !== 'free' && tx.typesWall[k]) || tx.types[k];
   // as in the price list (p.9-10): the mounting letter A-D first, then the type 1-6 → "B-1" … "D-6"

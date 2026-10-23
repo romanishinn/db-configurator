@@ -153,3 +153,9 @@ Win Verto теперь не «заполнение проёма», а отдел
 - Engine: `compose({ ..., split: { family, u?, v? } })` adds one option tagged `manual` (u = louvre lengths, v = projections); limits from `splitLimits(family)`; invalid parts are ignored with `SPLIT_INVALID`. Golden test: 5300 × 5500 free, perpendicular, halves 2750 + 2750 → 2 × 11 301 € (S400 p.14, width 3000 × 5400).
 - Each module is priced at the next width step of the table, so an even split can cost more than the automatic one.
 - `state.split` is saved with the configuration and dropped when the size, mount or louvre direction changes.
+
+## Inner openings between modules
+
+- Every joint between two modules is an opening of its own: `joint-<k>_<row>` (between columns) and `jrow-<k>_<row>` (between rows). Customer label "Zwischen Modul a und b", modules numbered row by row.
+- ZIP, glass or panels can close it and are priced like an outer side of the same size (ASSUMPTION). S400: the opening is the near pergola's side (each pergola has its own posts); modular systems share the post line.
+- Not part of "Alle Seiten", no Decor there.
