@@ -1058,7 +1058,11 @@
     pdfTitle();
     document.body.classList.add('printing');
   });
-  window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); quoteNum = null; if (titleBefore !== null) { document.title = titleBefore; titleBefore = null; } });
+  window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); quoteNum = null; });
+  // Chrome closes the print preview (afterprint) before its "Save as" dialog takes the file name from the title:
+  // the title stays "Quotation …" until the next click or key on the page, so the PDF keeps that name.
+  const titleBack = () => { if (titleBefore !== null && !quoteNum) { document.title = titleBefore; titleBefore = null; } };
+  document.addEventListener('pointerdown', titleBack, true); document.addEventListener('keydown', titleBack, true);
   function saveFile() {
     const blob = new Blob([JSON.stringify(snapshot(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `pergola-${quoteNo()}.json`; document.body.appendChild(a); a.click();
