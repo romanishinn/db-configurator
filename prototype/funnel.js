@@ -12,7 +12,7 @@
   const CATALOGUE = '07/2026';
   // Visitor analytics (PostHog, EU cloud Frankfurt): funnel by step, sources, session recordings.
   // TODO(office): paste the Project API key (phc_…). While empty nothing is loaded and no consent banner is shown.
-  const ANALYTICS = { posthogKey: '', host: 'https://eu.i.posthog.com' };
+  const ANALYTICS = { posthogKey: 'phc_BMUEnuCKmhWZbpcLAPzGuUboWQdnUjE5BUknxKgkCc2b', host: 'https://eu.i.posthog.com' };
 
   const T = {
     de: {
