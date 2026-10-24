@@ -1012,6 +1012,8 @@
     const subj = t.mailSubj(sizeText(), (q().incomplete ? t.from + ' ' : '') + fe(gross(q().total)));
     lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
     openMail();
+    // with the database switched on the request is also stored as a lead (the office sees it on its board)
+    if (window.Backend) window.Backend.submitRequest({ name: form.name, phone: form.phone, email: form.email, address: form.place, postcode: (String(form.place || '').match(/\b\d{4}\b/) || [''])[0], note: [form.msg, form.mount ? t.wantMount : '', form.visit ? t.wantVisit : ''].filter(Boolean).join(' · ') }, journeyText());
     A.track('request_sent', { total_gross: Math.round(gross(q().total)), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
     sentOk = true; render();
   }
@@ -1310,6 +1312,8 @@
   $('gopen').addEventListener('input', gopenText);
   function setLang(l) { lang = l; Store.set('db.lang', l); translateToolbar(); render(); persist(); A.banner(); A.track('language', { to: l }); }
   function setMode(m) {
+    // with the partner login switched on, Pro opens only for staff (seller, dealer, superdealer, superadmin)
+    if (m === 'pro' && window.Backend && !window.Backend.allowPro()) { window.Backend.gate(); m = 'cust'; }
     document.body.classList.toggle('cust', m === 'cust');
     Store.set('db.mode', m);
     translateToolbar(); render();
@@ -1432,5 +1436,7 @@
     const saved = Store.get('db.cfg');
     if (saved && JSON.stringify(saved) !== JSON.stringify(snapshot())) resumeOffer = saved;
   }
+  // what the partner login (backend.js) needs from the configurator
+  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}) };
   setMode(mode);
 })();

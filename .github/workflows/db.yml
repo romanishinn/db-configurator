@@ -1,0 +1,35 @@
+name: Database
+on:
+  push:
+    branches: [main]
+    paths: ['db/**', '.github/workflows/db.yml']
+  pull_request:
+    paths: ['db/**', '.github/workflows/db.yml']
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y -q postgresql-client >/dev/null
+      - name: Access rules (roles, leads, quotes)
+        run: sh db/test/run.sh
+        env: { PGURL: 'postgresql://postgres:postgres@localhost:5432/postgres' }
+  migrate:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y -q postgresql-client >/dev/null
+      - name: Apply new migrations to the Supabase database
+        env: { DATABASE_URL: '${{ secrets.SUPABASE_DB_URL }}' }
+        run: |
+          if [ -z "$DATABASE_URL" ]; then echo "SUPABASE_DB_URL secret not set yet: nothing to migrate"; exit 0; fi
+          sh db/migrate.sh
