@@ -324,3 +324,12 @@ body.cust #hint { display: none !important; }
 .f-vt button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
 .f-vn { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 13px; }
 .f-vn .f-chip { min-width: 40px; justify-content: center; }
+
+/* analytics consent: a small card at the bottom left of the 3D view (never over the price bar) */
+#f-consent { position: absolute; left: 12px; bottom: 74px; z-index: 6; max-width: 340px; background: #fff; color: #1c2226; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.18); padding: 12px 14px; font: 400 13px/1.45 var(--f-body); }
+#f-consent p { margin: 0 0 10px; }
+#f-consent div { display: flex; gap: 8px; justify-content: flex-end; }
+#f-consent button { border: 1px solid var(--line); background: #fff; color: inherit; border-radius: 8px; padding: 7px 12px; font: 600 13px/1 var(--f-body); cursor: pointer; }
+#f-consent button.y { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (max-width: 760px) { #f-consent { left: 8px; right: 8px; bottom: 64px; max-width: none; } }
+@media print { #f-consent { display: none !important; } }

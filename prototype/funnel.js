@@ -10,6 +10,9 @@
   // Brand hidden for a demo video: put the company name back into name to show it again (header, quote, tab title).
   const OFFICE = { name: '', email: '', phone: '', web: '' };
   const CATALOGUE = '07/2026';
+  // Visitor analytics (PostHog, EU cloud Frankfurt): funnel by step, sources, session recordings.
+  // TODO(office): paste the Project API key (phc_…). While empty nothing is loaded and no consent banner is shown.
+  const ANALYTICS = { posthogKey: '', host: 'https://eu.i.posthog.com' };
 
   const T = {
     de: {
@@ -38,7 +41,7 @@
       legend: { zip: 'Stoffbehang in seitlichen Führungen, motorisch – Sonnen- und Sichtschutz.', glass: 'Glas-Schiebeelemente (Win Glass) – Schutz vor Wind und Regen.', verto: 'Feste Aluminiumprofile (Decor) – Sichtschutz, Luft kommt durch.', panels: 'Aluminium-Lamellenpaneele auf Schienen (Win Panels) – verschiebbar.' },
       sides: { front: 'Vorne', left: 'Links', right: 'Rechts', back: 'Hinten' }, field: 'Feld', row: 'Reihe',
       park: 'Glas', parkL: '← links', parkR: 'rechts →', parkBoth: '↔ offen', shut: 'zu',
-      cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Lamellenwand', hsOpen: 'Seite wählen',
+      cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Paneele', hsOpen: 'Seite wählen',
       notMade: 'In dieser Größe nicht lieferbar – andere Variante wählen.', zipFabricOnly: (s) => `In dieser Größe nur mit Stoff ${s} – oben bei „Stoff der ZIP-Screens“ wählen.`, zipMax: (m, ax) => `ZIP-Screens gibt es bis ${m} m ${ax === 'height' ? 'Höhe' : 'Breite'}.`, swapped: (a, b) => `Stoff ${a} statt ${b} – ${b} gibt es nicht so groß`, later: 'Preis auf Anfrage',
       fabric: 'Stoff der ZIP-Screens', ofName: { 14: 'Luftig, viel Durchsicht', 5: 'Sonnen- und Sichtschutz', 4: 'Sicht- und Sonnenschutz, etwas dichter', 1: 'Fast blickdicht', 0: 'Verdunkelung' },
       perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.', ctlT: 'Bedienung der Screens', ctlD: 'alle Screens mit Motor', ctlM: { pergola: 'Mit der Pergola-Fernbedienung', remote: 'Separate Fernbedienung', smart: 'Smartphone-App', switch: 'Schalter an der Wand', solar: 'Solar, ohne Stromkabel' }, ctlStd: 'Standard', cardQ: 'Was kommt auf diese Seite?', done: 'Fertig', thisScreen: 'Bedienung dieses Screens',
@@ -122,7 +125,7 @@
       legend: { zip: 'Fabric blind in side guides, motorised – sun and privacy protection.', glass: 'Sliding glass panels (Win Glass) – shelter from wind and rain.', verto: 'Fixed aluminium profiles (Decor) – privacy, air still flows.', panels: 'Aluminium louvre panels on rails (Win Panels) – slide aside.' },
       sides: { front: 'Front', left: 'Left', right: 'Right', back: 'Back' }, field: 'bay', row: 'row',
       park: 'Glass', parkL: '← left', parkR: 'right →', parkBoth: '↔ open', shut: 'closed',
-      cta: 'Tap a ＋ to close a side – ZIP screen, glass or louvre wall', hsOpen: 'Choose side',
+      cta: 'Tap a ＋ to close a side – ZIP screen, glass or panels', hsOpen: 'Choose side',
       notMade: 'Not available in this size – please choose another option.', zipFabricOnly: (s) => `In this size only with fabric ${s} – choose it under “ZIP screen fabric” above.`, zipMax: (m, ax) => `ZIP screens are made up to ${m} m ${ax === 'height' ? 'high' : 'wide'}.`, swapped: (a, b) => `fabric ${a} instead of ${b} – ${b} is not made this large`, later: 'price on request',
       fabric: 'ZIP screen fabric', ofName: { 14: 'Airy, lots of view', 5: 'Sun and privacy', 4: 'Sun and privacy, a little denser', 1: 'Almost opaque', 0: 'Blackout' },
       perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.', ctlT: 'Screen control', ctlD: 'all screens are motorised', ctlM: { pergola: 'With the pergola remote', remote: 'Separate remote', smart: 'Smartphone app', switch: 'Wall switch', solar: 'Solar, no power cable' }, ctlStd: 'standard', cardQ: 'What goes on this side?', done: 'Done', thisScreen: 'Control of this screen',
@@ -202,7 +205,7 @@
       legend: { zip: 'Ткань в боковых направляющих, с мотором – от солнца и взглядов.', glass: 'Раздвижные стеклянные полотна (Win Glass) – от ветра и дождя.', verto: 'Неподвижные алюминиевые профили (Decor) – от взглядов, воздух проходит.', panels: 'Алюминиевые ламельные панели на направляющих (Win Panels) – сдвигаются.' },
       sides: { front: 'Спереди', left: 'Слева', right: 'Справа', back: 'Сзади' }, field: 'проём', row: 'ряд',
       park: 'Стекло', parkL: '← влево', parkR: 'вправо →', parkBoth: '↔ открыто', shut: 'закрыто',
-      cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или ламельная стена', hsOpen: 'Выбрать сторону',
+      cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или панели', hsOpen: 'Выбрать сторону',
       notMade: 'В таком размере не производится – выберите другой вариант.', zipFabricOnly: (s) => `В таком размере только с тканью ${s} – выберите её выше в «Ткань ZIP-скринов».`, zipMax: (m, ax) => `ZIP-скрины делают до ${m} м по ${ax === 'height' ? 'высоте' : 'ширине'}.`, swapped: (a, b) => `ткань ${a} вместо ${b} – ${b} не делают такого размера`, later: 'цена по запросу',
       fabric: 'Ткань ZIP-скринов', ofName: { 14: 'Лёгкая, хорошо видно наружу', 5: 'От солнца и взглядов', 4: 'От солнца и взглядов, чуть плотнее', 1: 'Почти непрозрачная', 0: 'Блэкаут' },
       perM2: '€/м²', zipCtl: 'Управление с пульта перголы.', ctlT: 'Управление скринами', ctlD: 'все скрины с мотором', ctlM: { pergola: 'С пульта перголы', remote: 'Отдельный пульт', smart: 'Приложение на телефоне', switch: 'Выключатель на стене', solar: 'Солнечная батарея, без кабеля' }, ctlStd: 'стандарт', cardQ: 'Что поставить на эту сторону?', done: 'Готово', thisScreen: 'Управление этим скрином',
@@ -829,6 +832,49 @@
   /* ---------- the visitor's path on the site (goes with the request, nothing is sent anywhere else) ----------
    * Kept in the browser only; the customer sees this block in the e-mail before sending it.
    * ASSUMPTION: "active" time = page visible and a tap, key or scroll in the last 60 s; interest points below are a first guess. */
+  /* ---------- visitor analytics (PostHog) ----------
+   * Loaded only in the customer view and only after the visitor accepted the banner (consent kept in Store 'db.consent').
+   * Recordings mask every input (name, phone, e-mail, address are never recorded); no personal data is sent with events.
+   * ASSUMPTION: consent text and privacy policy to be checked by D&B (GDPR / Austrian TKG). */
+  const A = (() => {
+    const key = ANALYTICS.posthogKey, on = () => !!key && Store.get('db.consent') === 'yes';
+    let started = false;
+    const AT = {
+      de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', yes: 'Einverstanden', no: 'Ablehnen' },
+      en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', yes: 'Accept', no: 'Decline' },
+      ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', yes: 'Согласен', no: 'Отказаться' },
+    };
+    function load() {
+      if (started || !on() || !isCust()) return; started = true;
+      /* eslint-disable */ // official PostHog loader snippet (stub queue, then array.js from the EU assets host)
+      !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session identify setPersonProperties reset get_distinct_id get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+      /* eslint-enable */
+      window.posthog.init(key, {
+        api_host: ANALYTICS.host,
+        person_profiles: 'identified_only', // visitors stay anonymous
+        capture_pageview: true, autocapture: true,
+        session_recording: { maskAllInputs: true, maskTextSelector: '#f-form, .q .client' },
+      });
+      window.posthog.register({ lang, app: 'configurator' });
+    }
+    const loaded = () => window.posthog && window.posthog.__loaded;
+    return {
+      init() { load(); },
+      track(name, props) { if (on() && isCust()) { load(); window.posthog.capture(name, { ...(props || {}), step: (props && props.step) || step + 1, lang }); } },
+      replayUrl() { try { return loaded() ? window.posthog.get_session_replay_url({ withTimestamp: false }) : ''; } catch (e) { return ''; } },
+      /** a small card at the bottom of the 3D view, once per browser until answered */
+      banner() {
+        if (!key || !isCust() || Store.get('db.consent')) { const b = $('f-consent'); if (b) b.remove(); return; }
+        let b = $('f-consent');
+        if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); $('view').parentElement.appendChild(b);
+          b.addEventListener('click', (e) => { const x = e.target.closest('[data-consent]'); if (!x) return; Store.set('db.consent', x.dataset.consent); b.remove(); if (x.dataset.consent === 'yes') { load(); A.track('consent_given'); } }); }
+        const t = AT[lang] || AT.de;
+        b.innerHTML = `<p>${esc(t.t)}</p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;
+      },
+      /** the manager view is never recorded */
+      mode(cust) { if (!loaded()) return; try { if (cust) window.posthog.startSessionRecording(); else window.posthog.stopSessionRecording(); } catch (e) { /* older loader */ } },
+    };
+  })();
   const J = { t0: Date.now(), active: 0, open: 0, stepSec: [0, 0, 0, 0, 0], last: Date.now(), sizes: new Set(), roofs: new Set(), mounts: new Set(),
     sides: 0, colours: 0, lights: 0, comfort: 0, layouts: 0, rot: 0, views: new Set(), night: 0, printed: 0, linkCopied: 0, photo: 0, formOpened: 0, minP: Infinity, maxP: 0, visit: null };
   (function initVisit() {
@@ -863,9 +909,20 @@
     else if (b.closest('#tb-lights') && b.dataset.light) J.lights += 1;
     else if (b.id === 'louv-dir') J.layouts += 1;
   }, true);
-  const photoIn = $('photo-in'); if (photoIn) photoIn.addEventListener('change', () => { J.photo += 1; });
+  const photoIn = $('photo-in'); if (photoIn) photoIn.addEventListener('change', () => { J.photo += 1; A.track('photo_uploaded'); });
   window.addEventListener('beforeprint', () => { if (isCust()) J.printed += 1; });
   function trackAct(d) {
+    // the same actions as named events for the analytics (no personal data, only what was chosen)
+    if (d.step !== undefined) A.track('step_opened', { step: Number(d.step) + 1, via: 'tab' });
+    if (d.fill) A.track('side_set', { fill: d.fill, inner: window.isJoint(d.id) });
+    if (d.all) A.track('all_sides_set', { fill: d.all });
+    if (d.rooft) A.track('roof_type', { roof: d.rooft });
+    if (d.mount) A.track('mount', { mount: d.mount });
+    if (d.light) A.track('light', { light: d.light });
+    if (d.opt !== undefined || d.louv || d.spl) A.track('layout_changed');
+    if (d.vpreset !== undefined || d.vpos) A.track('decor_changed');
+    if (d.act === 'share') A.track('link_copied');
+    if (d.act === 'photo') A.track('photo_clicked');
     if (d.nudge || d.preset || d.fix) setTimeout(() => J.sizes.add(state.width + 'x' + state.depth), 0);
     if (d.rooft) J.roofs.add(d.rooft);
     if (d.mount) J.mounts.add(d.mount);
@@ -894,9 +951,9 @@
     return { p, lvl: p >= 9 ? 'high' : p >= 5 ? 'mid' : 'low' };
   }
   const JT = {
-    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
-    en: { head: 'How I used the configurator (for your advice)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Sides', 'Comfort', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
-    ru: { head: 'Как я пользовался конфигуратором (для консультации)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
+    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', replay: 'Sitzungsaufzeichnung (intern)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
+    en: { head: 'How I used the configurator (for your advice)', replay: 'Session recording (internal)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Sides', 'Comfort', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
+    ru: { head: 'Как я пользовался конфигуратором (для консультации)', replay: 'Запись сессии (для офиса)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
   };
   function journeyText() {
     trackPrice();
@@ -916,7 +973,8 @@
       J.maxP ? `${j.range}: ${fe(J.minP)} – ${fe(J.maxP)}` : '',
       `${j.looked}: ${look.join(', ')}`,
       `${j.printed}: ${yn(J.printed)} · ${j.link}: ${yn(J.linkCopied)} · ${j.photo}: ${yn(J.photo)}`,
-      `${j.interest}: ${j.lvl[it.lvl]} (${it.p} ${j.pts})`].filter(Boolean).join('\n');
+      `${j.interest}: ${j.lvl[it.lvl]} (${it.p} ${j.pts})`,
+      A.replayUrl() ? `${j.replay}: ${A.replayUrl()}` : ''].filter(Boolean).join('\n');
   }
   window.journeyText = journeyText; // for the manager: journeyText() in the console
 
@@ -954,6 +1012,7 @@
     const subj = t.mailSubj(sizeText(), (q().incomplete ? t.from + ' ' : '') + fe(gross(q().total)));
     lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
     openMail();
+    A.track('request_sent', { total_gross: Math.round(gross(q().total)), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
     sentOk = true; render();
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
@@ -1044,7 +1103,7 @@
   function pdfTitle() { if (titleBefore === null) titleBefore = document.title; document.title = 'Quotation ' + quoteNum; }
   function printQuote() {
     quoteNum = nextQuoteNo(true); // every generated PDF gets its own number
-    pdfTitle();
+    pdfTitle(); A.track('pdf_generated', { quote_no: quoteNum, total_gross: Math.round(gross(q().total)) });
     $('quote').innerHTML = buildQuote(); fitQuote();
     document.body.classList.add('printing');
     setTimeout(() => window.print(), 60);
@@ -1088,6 +1147,7 @@
   function nextStep() { for (let i = step + 1; i < 4; i++) if (!stepDone(i)) return i; return 4; }
   function go(d) {
     if (d > 0) { visited.add(step); step = nextStep(); } else step = Math.max(0, step - 1);
+    A.track('step_opened', { step: step + 1, via: d > 0 ? 'next' : 'back' });
     focusId = null; lastTap = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   let dimT = 0;
@@ -1248,11 +1308,12 @@
   }
   function gopenText() { const tb = isCust() ? L().tb : TB_RU, v = state.glassOpen; $('gopenv').textContent = v === 0 ? tb.closed : v === 100 ? tb.open : v + '%'; }
   $('gopen').addEventListener('input', gopenText);
-  function setLang(l) { lang = l; Store.set('db.lang', l); translateToolbar(); render(); persist(); }
+  function setLang(l) { lang = l; Store.set('db.lang', l); translateToolbar(); render(); persist(); A.banner(); A.track('language', { to: l }); }
   function setMode(m) {
     document.body.classList.toggle('cust', m === 'cust');
     Store.set('db.mode', m);
     translateToolbar(); render();
+    A.mode(m === 'cust'); A.init(); A.banner();
     const r = $('mode-cust'); if (r) r.hidden = m === 'cust';
     for (const x of document.querySelectorAll('.pro-file')) x.hidden = m === 'cust';
   }
@@ -1277,7 +1338,7 @@
   function renderHotspots() {
     const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
     const anySet = ops.some((x) => state.fills[x.id]); // a side answered "nothing" also stops the pulse
-    CTA.hidden = anySet || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span><span class="l">${esc(L().cta)}</span><span class="s">${esc(L().ctaS)}</span>`;
+    CTA.hidden = anySet || Object.keys(state.verto.packs || {}).length > 0 || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span><span class="l">${esc(L().cta)}</span><span class="s">${esc(L().ctaS)}</span>`;
     const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || '?')).join(',') + '|' + (focusId || '');
     if (sig === hsSig) return; hsSig = sig;
     HS.innerHTML = ops.map((x) => {

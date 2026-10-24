@@ -166,3 +166,12 @@ Win Verto теперь не «заполнение проёма», а отдел
 - Top left: customer name, phone, e-mail from the request form (empty lines to fill in by hand if nothing is typed).
 - Top right: title, then "Nr. DDMMYY-N · Datum" as plain text; the PDF file is named "Quotation DDMMYY-N" (page title while printing). Number `DDMMYY-N` (e.g. 231026-1). Every generated PDF (button or browser print) takes the next N; N starts at 1 each day.
 - ASSUMPTION: no server, so the counter is kept in the browser (`db.qno`): unique per device, not across devices.
+
+## Visitor analytics (PostHog, EU Frankfurt)
+
+- Key in `ANALYTICS.posthogKey` at the top of `prototype/funnel.js` (public `phc_…` key). Empty = nothing loaded, no banner.
+- Customer view only, after consent (small card at the bottom left of the 3D: "Einverstanden / Ablehnen", kept in `db.consent`). The manager view stops the recording.
+- Session recordings mask every input; the request form and the customer block of the offer are masked too. Events carry no personal data.
+- Events: `step_opened`, `side_set` (fill, inner), `all_sides_set`, `roof_type`, `mount`, `light`, `layout_changed`, `decor_changed`, `link_copied`, `photo_clicked`, `photo_uploaded`, `language`, `pdf_generated` (quote no, total), `request_sent` (total, size, roof, mount, interest), `consent_given`; plus PostHog pageviews and autocapture.
+- The request e-mail gets a "Sitzungsaufzeichnung (intern)" link to the visitor's recording when it exists.
+- ASSUMPTION: consent text and privacy policy to be checked by D&B (GDPR / TKG).
