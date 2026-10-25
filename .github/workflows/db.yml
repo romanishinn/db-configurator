@@ -43,3 +43,5 @@ jobs:
           fi
           echo "::notice::Connected to $hostport"
           sh db/migrate.sh
+          echo "::notice::Applied migrations: $(psql "$DATABASE_URL" -X -tAc "select string_agg(name, ', ' order by name) from ops.migrations")"
+          echo "::notice::Tables: $(psql "$DATABASE_URL" -X -tAc "select string_agg(tablename, ', ' order by tablename) from pg_tables where schemaname = 'public'") · project ref: $(printf '%s' "$DATABASE_URL" | sed -nE 's#^[a-z]+://postgres\.([a-z0-9]+):.*#\1#p')"
