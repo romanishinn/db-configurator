@@ -4,10 +4,10 @@
  * Staff (seller, dealer, superdealer, superadmin) log in to open Pro; the public request form also stores a lead.
  */
 (() => {
-  // TODO(office): Supabase project URL and the public "anon" key (Project Settings → API). Both are safe in the page.
-  const BACKEND = { url: '', anonKey: '' };
+  // Supabase project URL and the publishable key (Project Settings → API). Both are safe in the page: RLS guards the data.
+  const BACKEND = { url: 'https://zypujyrvbegilvtvqras.supabase.co', anonKey: 'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9' };
   if (!BACKEND.url || !BACKEND.anonKey) return;
-  const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+  const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
   const STAGES = { new: 'Новый', contacted: 'Связался', visit_agreed: 'Договорились о выезде', consultation: 'Консультация', measured: 'Замер', quote_issued: 'КП выдано', negotiation: 'Предложение / переговоры', won: 'Заказ', lost: 'Отказ' };
   const ROLES = { client: 'клиент', seller: 'продавец', dealer: 'дилер', superdealer: 'супердилер', superadmin: 'суперадмин' };
   const STAFF = ['seller', 'dealer', 'superdealer', 'superadmin'];
