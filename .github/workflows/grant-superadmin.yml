@@ -1,0 +1,23 @@
+name: Grant superadmin
+# One-off bootstrap: make an existing user the first superadmin (further roles are set from the app afterwards).
+# The user must have signed up once first, so their profile row exists.
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: E-mail of the user to make superadmin
+        required: true
+jobs:
+  grant:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -q postgresql-client >/dev/null
+      - name: Set role = superadmin
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          EMAIL: ${{ inputs.email }}
+        run: |
+          [ -n "$DATABASE_URL" ] || { echo "::error::SUPABASE_DB_URL secret not set"; exit 1; }
+          n=$(psql "$DATABASE_URL" -X -tAc "update public.profiles set role = 'superadmin', active = true where email = '$EMAIL'; select count(*) from public.profiles where email = '$EMAIL' and role = 'superadmin'")
+          if [ "$n" = 1 ]; then echo "::notice::$EMAIL is now superadmin";
+          else echo "::error::No profile for $EMAIL — the user must sign up once first (Supabase → Authentication → Users), then re-run"; exit 1; fi
