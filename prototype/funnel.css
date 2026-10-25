@@ -345,6 +345,8 @@ body.cust #hint { display: none !important; }
 #bk-login .row button { border: 0; background: none; color: var(--accent); font: inherit; font-size: 13px; cursor: pointer; padding: 0; }
 #bk-login .msg { min-height: 1.2em; font-size: 13px; color: #b3261e; }
 #bk-login .note { margin: 0; font-size: 12px; color: #666; }
+/* Turnstile: invisible by default; if Cloudflare shows an interactive challenge, centre it over the page */
+#bk-turnstile:not(:empty) { position: fixed; inset: 0; z-index: 60; background: rgba(20,24,28,.45); display: grid; place-items: center; }
 #bk-pro { clear: both; border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin: 0 0 12px; font-size: 13px; display: grid; gap: 8px; }
 #bk-pro:empty { display: none; }
 #bk-pro button, #bk-pro select, #bk-pro input { font: inherit; font-size: 12.5px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); padding: 4px 8px; }

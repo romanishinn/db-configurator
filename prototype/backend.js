@@ -9,9 +9,15 @@
   if (!BACKEND.url || !BACKEND.anonKey) return;
   const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
   const STAFF = ['seller', 'dealer', 'superdealer', 'superadmin'];
+  // Bot protection: a public request is only accepted with a valid Cloudflare Turnstile token,
+  // checked server-side by the submit-request Edge Function. 1x…AA is Cloudflare's "always passes"
+  // TEST site key — replace with D&B's real site key (the secret goes into the function's env).
+  const TURNSTILE = { siteKey: '1x00000000000000000000AA', api: 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit' };
+  const SUBMIT_FN = BACKEND.url + '/functions/v1/submit-request';
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   let sb = null, me = null, modeling = false, handoff = null;
+  let tsReady = null, tsWidget = null, tsResolve = null;
 
   const ready = new Promise((res) => {
     const s = document.createElement('script'); s.src = SDK; s.async = true;
@@ -115,12 +121,55 @@
     modelBar();
   }
 
-  /* ---------- public request form: store as a lead with its quote ---------- */
+  /* ---------- Cloudflare Turnstile: a silent "are you human" token for the public request ---------- */
+  function loadTurnstile() {
+    if (tsReady) return tsReady;
+    tsReady = new Promise((res) => {
+      const s = document.createElement('script'); s.src = TURNSTILE.api; s.async = true; s.defer = true;
+      s.onload = () => res(true); s.onerror = () => res(false);
+      document.head.appendChild(s);
+    });
+    return tsReady;
+  }
+  // Resolves with a fresh single-use token; the widget stays invisible unless Cloudflare decides a
+  // challenge is needed (then a small dialog appears — that is the "only humans" case).
+  async function turnstileToken() {
+    if (!(await loadTurnstile()) || !window.turnstile) return '';
+    if (tsWidget == null) {
+      let host = $('bk-turnstile');
+      if (!host) { host = document.createElement('div'); host.id = 'bk-turnstile'; document.body.appendChild(host); }
+      try {
+        tsWidget = window.turnstile.render(host, {
+          sitekey: TURNSTILE.siteKey, execution: 'execute', appearance: 'interaction-only',
+          callback: (tok) => { if (tsResolve) { const r = tsResolve; tsResolve = null; r(tok); } },
+          'error-callback': () => { if (tsResolve) { const r = tsResolve; tsResolve = null; r(''); } },
+          'timeout-callback': () => { if (tsResolve) { const r = tsResolve; tsResolve = null; r(''); } },
+        });
+      } catch (e) { return ''; }
+    }
+    return new Promise((resolve) => {
+      tsResolve = resolve;
+      try { window.turnstile.reset(tsWidget); } catch (e) {}
+      try { window.turnstile.execute(tsWidget); } catch (e) { tsResolve = null; resolve(''); }
+      setTimeout(() => { if (tsResolve === resolve) { tsResolve = null; resolve(''); } }, 12000);
+    });
+  }
+
+  /* ---------- public request form: store as a lead with its quote (via the Edge Function) ---------- */
   async function submitRequest(contact, journey) {
-    if (!(await ready)) return null;
-    const A = window.DBApp;
-    const r = await sb.rpc('submit_request', { p_contact: contact, p_quote: { catalog: A.catalog, config: A.snapshot(), lines: A.lines(), total_net: Math.round(A.totalNet() * 100) / 100 }, p_utm: A.utm(), p_journey: journey });
-    return r.error ? null : r.data;
+    const A = window.DBApp; if (!A) return null;
+    const quote = { catalog: A.catalog, config: A.snapshot(), lines: A.lines(), total_net: Math.round(A.totalNet() * 100) / 100 };
+    const token = await turnstileToken();
+    try {
+      const res = await fetch(SUBMIT_FN, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', apikey: BACKEND.anonKey, Authorization: 'Bearer ' + BACKEND.anonKey },
+        body: JSON.stringify({ token, contact, quote, utm: A.utm(), journey }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.number ? data.number : null;
+    } catch (e) { return null; }
   }
 
   window.Backend = {

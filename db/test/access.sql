@@ -9,13 +9,16 @@ create function pg_temp.as_anon() returns void language sql as $$
   select set_config('role', 'anon', false), set_config('request.jwt.claim.sub', '', false) $$;
 create function pg_temp.as_root() returns void language sql as $$
   select set_config('role', 'postgres', false), set_config('request.jwt.claim.sub', '', false) $$;
+-- act as the submit-request Edge Function: the server-side role, after it has verified the Turnstile token
+create function pg_temp.as_service() returns void language sql as $$
+  select set_config('role', 'service_role', false), set_config('request.jwt.claim.sub', '', false) $$;
 -- true when the statement fails with an error containing the text
 create function pg_temp.fails(stmt text, msg text) returns boolean language plpgsql as $$
 begin execute stmt; return false;
 exception when others then return position(msg in sqlerrm) > 0 or position(msg in sqlstate) > 0; end $$;
 create function pg_temp.check(ok boolean, msg text) returns void language plpgsql as $$
 begin if ok is not true then raise exception 'FAILED: %', msg; end if; end $$;
-grant execute on all functions in schema pg_temp to anon, authenticated;
+grant execute on all functions in schema pg_temp to anon, authenticated, service_role;
 
 -- ---------- people ----------
 insert into public.organizations (id, name, kind, city) values
@@ -45,15 +48,18 @@ update public.profiles set role = 'dealer', discount_limit = 8, org_id = '000000
 \set client '00000000-0000-0000-0000-000000000007'
 \set newbie '00000000-0000-0000-0000-000000000008'
 
--- ---------- 1. the public site sends a request: lead + quote with a server number DDMMYY-N ----------
-select pg_temp.as_anon();
+-- ---------- 1. the public site sends a request (via the Edge Function): lead + quote with a server number DDMMYY-N ----------
+select pg_temp.as_service();
 select public.submit_request('{"name":"Maria Huber","phone":"+43 660 1","email":"maria@x.at","address":"Hauptstr. 1, 8010 Graz","postcode":"8010","note":"Montage gewünscht"}',
   '{"catalog":"catalog-2026-07","config":{"width":6600},"lines":[{"t":"S400","a":13891}],"total_net":13891}', '{"utm_source":"facebook"}', 'Erster Besuch') as n1 \gset
 select public.submit_request('{"name":"Karl","phone":"+43 660 2"}', '{"catalog":"catalog-2026-07","config":{},"total_net":9000}') as n2 \gset
 select pg_temp.check(:'n1' = to_char((now() at time zone 'Europe/Vienna')::date, 'DDMMYY') || '-1', 'first number of the day ends in -1');
 select pg_temp.check(:'n2' like '%-2', 'numbers count up for everybody');
-select pg_temp.check(pg_temp.fails($q$select * from public.leads$q$, 'permission denied'), 'the public site cannot read leads');
 select pg_temp.check(pg_temp.fails($q$select public.submit_request('{}', '{"catalog":"c","config":{},"total_net":1}')$q$, 'CONTACT_REQUIRED'), 'a request needs a phone or an e-mail');
+-- the public site itself (anon) can neither read leads nor reach the request RPC directly
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$select * from public.leads$q$, 'permission denied'), 'the public site cannot read leads');
+select pg_temp.check(pg_temp.fails($q$select public.submit_request('{"phone":"+43 1"}', '{"catalog":"c","config":{},"total_net":1}')$q$, 'permission denied'), 'the public site cannot call submit_request directly (bot protection)');
 
 -- ---------- 2. superadmin sees everything and was notified ----------
 select pg_temp.as_user(:'admin');
@@ -149,5 +155,12 @@ select pg_temp.as_user(:'admin');
 select pg_temp.check((select stale from public.lead_board where id = :'lead_karl'), 'a lead without movement for 7 days is flagged');
 select pg_temp.check(not (select stale from public.lead_board where id = :'lead_maria'), 'a closed lead is not flagged');
 select pg_temp.check((select assignee_org from public.lead_board where id = :'lead_anna') = 'Dealer Linz', 'the board shows the company of the assignee');
+
+-- ---------- 9. bot protection: the public lead write is closed to the browser roles ----------
+-- (0002) a non-logged-in visitor must not be able to call submit_request directly; only the
+-- Edge Function (service_role), after a Turnstile check, may create a lead from the web.
+select pg_temp.check(not has_function_privilege('anon',          'public.submit_request(jsonb,jsonb,jsonb,text)', 'execute'), 'anon cannot call submit_request directly');
+select pg_temp.check(not has_function_privilege('authenticated', 'public.submit_request(jsonb,jsonb,jsonb,text)', 'execute'), 'a logged-in user cannot call submit_request directly');
+select pg_temp.check(    has_function_privilege('service_role',  'public.submit_request(jsonb,jsonb,jsonb,text)', 'execute'), 'the Edge Function (service_role) may call submit_request');
 
 select 'access tests passed' as result;
