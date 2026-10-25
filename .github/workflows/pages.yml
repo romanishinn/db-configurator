@@ -27,6 +27,7 @@ jobs:
         run: |
           mkdir -p _site
           { printf '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'; cat prototype/dist/terrace-3d.html; printf '</body></html>'; } > _site/index.html
+          cp prototype/cabinet.html _site/cabinet.html
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:

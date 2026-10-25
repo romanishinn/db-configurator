@@ -1074,12 +1074,15 @@
       const ls = lines.filter((l) => l.g === g); if (!ls.length) return '';
       return `<tr class="g"><td colspan="2">${esc(t.grp[g])}</td></tr>` + ls.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s"> · ${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(l.a)}</td></tr>`).join('');
     }).join('');
-    const contact = [OFFICE.email, OFFICE.phone, OFFICE.web].filter(Boolean).join(' · ');
+    // brand: the logged-in dealer's brand (window.DBBrand) overrides OFFICE, so the dealer's PDF carries their logo and details
+    const BR = (window.DBBrand && window.DBBrand.name) ? window.DBBrand : OFFICE;
+    const contact = [BR.email, BR.phone, BR.web].filter(Boolean).join(' · ');
+    const logoImg = BR.logo ? `<img src="${esc(BR.logo)}" alt="" style="height:30px;max-width:130px;object-fit:contain;display:block;margin:0 0 5px auto">` : '';
     // top left: the customer from the request form (empty lines to fill in by hand when nothing is typed yet)
     const cl = [form.name, form.phone, form.email].map((x) => String(x || '').trim());
     const client = `<div class="client"><div class="lb">${t.qClient}</div>${cl.some(Boolean) ? `${cl[0] ? `<b>${esc(cl[0])}</b>` : ''}${cl[1] ? `<div>${esc(cl[1])}</div>` : ''}${cl[2] ? `<div>${esc(cl[2])}</div>` : ''}` : '<div class="ln"></div><div class="ln"></div><div class="ln"></div>'}</div>`;
     const no = quoteNum || nextQuoteNo(false);
-    return `<div class="q"><div class="hdr">${client}<div class="meta"><h1>${t.qTitle}</h1>${t.qNo} ${no} · ${t.qDate} ${date}${OFFICE.name ? `<div class="brand">${esc(OFFICE.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
+    return `<div class="q"><div class="hdr">${client}<div class="meta">${logoImg}<h1>${t.qTitle}</h1>${t.qNo} ${no} · ${t.qDate} ${date}${BR.name ? `<div class="brand">${esc(BR.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
       <h2>${t.qConfig}</h2><table class="facts"><tbody>${facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
       <div><h2>${t.qPrice}</h2><table><thead><tr><th>${t.qItem}</th><th class="a">${t.net}</th></tr></thead><tbody>${rows}
@@ -1177,7 +1180,7 @@
     trackAct(d);
     const o = curOpt();
     if (d.lang) { setLang(d.lang); return; }
-    if (d.mode) { setMode(d.mode); return; }
+    if (d.mode) { if (window.Backend && window.Backend.onMode && window.Backend.onMode(d.mode)) return; setMode(d.mode); return; }
     if (d.step !== undefined) { step = Number(d.step); focusId = null; render(); return; }
     if (d.go) {
       if (d.go === 'form') { // "Send request" in the bar: send when the form is filled, otherwise go to the first missing field
@@ -1312,8 +1315,8 @@
   $('gopen').addEventListener('input', gopenText);
   function setLang(l) { lang = l; Store.set('db.lang', l); translateToolbar(); render(); persist(); A.banner(); A.track('language', { to: l }); }
   function setMode(m) {
-    // with the partner login switched on, Pro opens only for staff (seller, dealer, superdealer, superadmin)
-    if (m === 'pro' && window.Backend && !window.Backend.allowPro()) { window.Backend.gate(); m = 'cust'; }
+    // with the partner login switched on, Pro opens only for staff; routing (login / cabinet) is handled by Backend on load
+    if (m === 'pro' && window.Backend && !window.Backend.allowPro()) { m = 'cust'; }
     document.body.classList.toggle('cust', m === 'cust');
     Store.set('db.mode', m);
     translateToolbar(); render();
@@ -1437,6 +1440,6 @@
     if (saved && JSON.stringify(saved) !== JSON.stringify(snapshot())) resumeOffer = saved;
   }
   // what the partner login (backend.js) needs from the configurator
-  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}) };
+  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 4) render(); } catch (e) { /* not ready */ } } };
   setMode(mode);
 })();
