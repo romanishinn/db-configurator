@@ -163,4 +163,20 @@ select pg_temp.check(not has_function_privilege('anon',          'public.submit_
 select pg_temp.check(not has_function_privilege('authenticated', 'public.submit_request(jsonb,jsonb,jsonb,text)', 'execute'), 'a logged-in user cannot call submit_request directly');
 select pg_temp.check(    has_function_privilege('service_role',  'public.submit_request(jsonb,jsonb,jsonb,text)', 'execute'), 'the Edge Function (service_role) may call submit_request');
 
+-- ---------- 10. quote revisions: a correction keeps the base number and adds a version (0003) ----------
+select pg_temp.as_user(:'graz1');  -- the dealer the Maria lead was assigned to
+insert into public.quotes (lead_id, owner, catalog, config, lines, total_net)
+  values (:'lead_maria', :'graz1', 'c', '{}'::jsonb, '[]'::jsonb, 1000) returning id as qbase_id, number as qbase_no \gset
+insert into public.quotes (lead_id, owner, catalog, config, lines, total_net, revises)
+  values (:'lead_maria', :'graz1', 'c', '{}'::jsonb, '[]'::jsonb, 1100, :'qbase_id') returning id as qrev2_id, number as qrev2 \gset
+insert into public.quotes (lead_id, owner, catalog, config, lines, total_net, revises)
+  values (:'lead_maria', :'graz1', 'c', '{}'::jsonb, '[]'::jsonb, 1200, :'qbase_id') returning number as qrev3 \gset
+select pg_temp.check(:'qrev2' = :'qbase_no' || '.2', 'first correction is <base>.2');
+select pg_temp.check(:'qrev3' = :'qbase_no' || '.3', 'second correction is <base>.3');
+-- correcting a revision stays in the same family, counting from the base
+insert into public.quotes (lead_id, owner, catalog, config, lines, total_net, revises)
+  values (:'lead_maria', :'graz1', 'c', '{}'::jsonb, '[]'::jsonb, 1300, :'qrev2_id') returning number as qrev4 \gset
+select pg_temp.check(:'qrev4' = :'qbase_no' || '.4', 'correcting a revision still extends the base family (.4)');
+select pg_temp.check((select count(*) from public.quotes where number = :'qbase_no' or number like :'qbase_no' || '.%') = 4, 'the family holds the base and its three revisions');
+
 select 'access tests passed' as result;

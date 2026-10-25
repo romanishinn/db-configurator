@@ -90,9 +90,11 @@
     let bar = $('bk-modelbar');
     if (!bar) { bar = document.createElement('div'); bar.id = 'bk-modelbar'; document.body.appendChild(bar); }
     const leadName = handoff && handoff.leadName ? handoff.leadName : null;
+    const quoteNo = handoff && handoff.quoteNo ? handoff.quoteNo : null;
+    const label = quoteNo ? 'Корректировка КП ' + esc(quoteNo) + ' → новая версия' : (leadName ? 'Лид: ' + esc(leadName) : 'Новый расчёт');
     bar.innerHTML = `<button type="button" class="b" data-cab="1">← Кабинет</button>
-      <span class="lead">${leadName ? 'Лид: ' + esc(leadName) : 'Новый расчёт'}</span>
-      <button type="button" class="b primary" data-savq="1">Сохранить КП</button>`;
+      <span class="lead">${label}</span>
+      <button type="button" class="b primary" data-savq="1">${quoteNo ? 'Сохранить версию' : 'Сохранить КП'}</button>`;
     bar.querySelector('[data-cab]').onclick = toCabinet;
     bar.querySelector('[data-savq]').onclick = saveQuote;
   }
@@ -106,7 +108,7 @@
       if (r.error) return toast(humanError(r.error));
       leadId = r.data.id;
     }
-    const q = await sb.from('quotes').insert({ owner: me.id, lead_id: leadId, catalog: A.catalog, config: A.snapshot(), lines: A.lines(), total_net: Math.round(A.totalNet() * 100) / 100 }).select('number').single();
+    const q = await sb.from('quotes').insert({ owner: me.id, lead_id: leadId, catalog: A.catalog, config: A.snapshot(), lines: A.lines(), total_net: Math.round(A.totalNet() * 100) / 100, revises: (handoff && handoff.quoteId) || null }).select('number').single();
     if (q.error) return toast(humanError(q.error));
     try { localStorage.removeItem('db.handoff'); } catch (e) {}
     toast('Сохранено: КП ' + q.data.number);

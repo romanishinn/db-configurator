@@ -106,6 +106,8 @@ select,.inp{font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--
 .quote-row .qd{font-size:11.5px;color:var(--muted)}
 .quote-row .qamt{margin-left:auto;font-family:var(--mono);font-weight:600;font-size:13px}
 .quote-row .qv{font-size:11px;color:var(--good)}
+.quote-row .qedit{font:600 12px/1 var(--f-ui,inherit);color:var(--accent);background:none;border:1px solid var(--line);border-radius:7px;padding:7px 11px;cursor:pointer;white-space:nowrap}
+.quote-row .qedit:hover{background:var(--bg)}
 .timeline{display:flex;flex-direction:column;gap:0}
 .tl{display:grid;grid-template-columns:14px 1fr;gap:10px;padding-bottom:12px;position:relative}
 .tl .td{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:4px}
@@ -345,7 +347,7 @@ function leadCard(l){
     `<div class="c-name"><div class="l1"><span class="nm">${esc(l.contact_name||'—')}</span>${l.stale?'<span class="stale-badge">7+ дней</span>':''}</div>
       <div class="meta"><span class="mono">${esc(l.phone||'')}</span><span>${esc(l.postcode||l.object_address||'')}</span><span>· ${esc(srcOf(l))}</span></div></div>
     <div class="c-status">${stagePill(l)}${who}</div><div class="c-amt">${amt}</div>`);
-  b.onclick=async()=>{state.sel=l.id;state.stage=l.stage;const r=await sb.from('lead_events').select('*').eq('lead_id',l.id).order('at');events[l.id]=r.data||[];const q=await sb.from('quotes').select('number,created_at,total_net,valid_until,config').eq('lead_id',l.id).order('created_at',{ascending:false});l._quotes=q.data||[];render();};
+  b.onclick=async()=>{state.sel=l.id;state.stage=l.stage;const r=await sb.from('lead_events').select('*').eq('lead_id',l.id).order('at');events[l.id]=r.data||[];const q=await sb.from('quotes').select('id,number,created_at,total_net,valid_until,config').eq('lead_id',l.id).order('created_at',{ascending:false});l._quotes=q.data||[];render();};
   return b;
 }
 function detailPanel(){
@@ -373,8 +375,11 @@ function detailPanel(){
   // quotes
   const q=el('div','sec');q.appendChild(el('h4',null,'Коммерческие предложения'));
   const qs=l._quotes||[];
-  if(qs.length){qs.forEach(x=>{const exp=x.valid_until&&new Date(x.valid_until)<new Date();q.appendChild(el('div','quote-row',`<div><div class="qn">КП ${esc(x.number)}</div><div class="qd">${day(x.created_at)}</div></div><div style="text-align:right"><div class="qamt">${eur(x.total_net)}</div><div class="qv" style="color:${exp?'var(--muted)':'var(--good)'}">${exp?'истёк':'до '+day(x.valid_until)}</div></div>`))});
-    const o=el('button','btn','Открыть / скорректировать');o.style.marginTop='10px';o.onclick=()=>gotoModel(l.id,qs[0].config);q.appendChild(o);
+  if(qs.length){qs.forEach(x=>{const exp=x.valid_until&&new Date(x.valid_until)<new Date();
+      const row=el('div','quote-row',`<div><div class="qn">КП ${esc(x.number)}</div><div class="qd">${day(x.created_at)}</div></div><div style="text-align:right;margin-left:auto"><div class="qamt">${eur(x.total_net)}</div><div class="qv" style="color:${exp?'var(--muted)':'var(--good)'}">${exp?'истёк':'до '+day(x.valid_until)}</div></div>`);
+      const ed=el('button','qedit','Скорректировать');ed.title='Открыть и сохранить как новую версию '+esc(x.number)+'.N';ed.onclick=()=>gotoModel(l.id,x.config,x.id,x.number);row.appendChild(ed);
+      q.appendChild(row)});
+    const o=el('button','btn','Новый расчёт для лида');o.style.marginTop='10px';o.onclick=()=>gotoModel(l.id,null);q.appendChild(o);
   }else{q.appendChild(el('div','hint','КП ещё нет. Соберите конфигурацию — она привяжется к этому лиду.'));const mk=el('button','btn primary','Собрать перголу');mk.style.marginTop='10px';mk.onclick=()=>gotoModel(l.id,null);q.appendChild(mk);}
   body.appendChild(q);
   // comment
@@ -407,8 +412,8 @@ async function newLead(){
   if(r.error)return toast(humanError(r.error));
   await refresh();state.sel=r.data.id;render();
 }
-function gotoModel(leadId,config){
-  try{localStorage.setItem('db.handoff',JSON.stringify({leadId:leadId||null,config:config||null,ts:Date.now()}))}catch(e){}
+function gotoModel(leadId,config,quoteId,quoteNo){
+  try{localStorage.setItem('db.handoff',JSON.stringify({leadId:leadId||null,config:config||null,quoteId:quoteId||null,quoteNo:quoteNo||null,ts:Date.now()}))}catch(e){}
   location.href=CFG.site+'?pro&model';
 }
 function modelView(){
