@@ -10,9 +10,9 @@
   const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
   const STAFF = ['seller', 'dealer', 'superdealer', 'superadmin'];
   // Bot protection: a public request is only accepted with a valid Cloudflare Turnstile token,
-  // checked server-side by the submit-request Edge Function. 1x…AA is Cloudflare's "always passes"
-  // TEST site key — replace with D&B's real site key (the secret goes into the function's env).
-  const TURNSTILE = { siteKey: '1x00000000000000000000AA', api: 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit' };
+  // checked server-side by the submit-request Edge Function. Public site key for the "D&B configurator"
+  // widget (hostname romanishinn.github.io); the matching secret lives in the function's TURNSTILE_SECRET env.
+  const TURNSTILE = { siteKey: '0x4AAAAAAFlRMtBteuJ_-n1B', api: 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit' };
   const SUBMIT_FN = BACKEND.url + '/functions/v1/submit-request';
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
