@@ -32,4 +32,14 @@ jobs:
         env: { DATABASE_URL: '${{ secrets.SUPABASE_DB_URL }}' }
         run: |
           if [ -z "$DATABASE_URL" ]; then echo "SUPABASE_DB_URL secret not set yet: nothing to migrate"; exit 0; fi
+          # readable hints as annotations (the password never appears: only host, port and psql's own message)
+          hostport=$(printf '%s' "$DATABASE_URL" | sed -E 's#^[a-z]+://[^@]*@([^/?]+).*#\1#')
+          case "$DATABASE_URL" in *YOUR-PASSWORD*|*'['*']'*) echo "::error::SUPABASE_DB_URL still contains the [YOUR-PASSWORD] placeholder: put the database password in its place"; exit 1;; esac
+          if ! err=$(psql "$DATABASE_URL" -X -q -tAc 'select 1' 2>&1 >/dev/null); then
+            msg=$(printf '%s' "$err" | tr '\n' ' ' | sed -E 's#postgres(ql)?://[^ ]*#<url>#g' | cut -c1-300)
+            echo "::error::Cannot connect to $hostport: $msg"
+            case "$hostport" in db.*.supabase.co*) echo "::error::This is Supabase's direct connection (IPv6 only); GitHub runners have no IPv6. Use Connect → Session pooler (host aws-…pooler.supabase.com, port 5432, user postgres.<project-ref>)";; esac
+            exit 1
+          fi
+          echo "::notice::Connected to $hostport"
           sh db/migrate.sh
