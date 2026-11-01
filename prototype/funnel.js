@@ -490,13 +490,10 @@
   };
   const GL = { none: '○', zip: '▤', glass: '◇', verto: '▥', panels: '▦' };
 
-  // Product catalog — entry screen. Extensible: add entries to offer more products as the range grows.
-  const PRODUCTS = [
-    { id: 'louvered', roof: 'rotating', ic: '\u25a4', name: { de: 'Bioklimatische Pergola', en: 'Bioclimatic pergola', ru: '\u041f\u0435\u0440\u0433\u043e\u043b\u0430 \u0431\u0438\u043e\u043a\u043b\u0438\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f' }, tag: { de: 'Drehbare Lamellen', en: 'Rotating louvres', ru: '\u041f\u043e\u0432\u043e\u0440\u043e\u0442\u043d\u044b\u0435 \u043b\u0430\u043c\u0435\u043b\u0438' } },
-    { id: 'slide', roof: 'sliding', ic: '\u229f', name: { de: 'Schiebedach', en: 'Sliding roof', ru: '\u0420\u0430\u0437\u0434\u0432\u0438\u0436\u043d\u0430\u044f \u043a\u0440\u044b\u0448\u0430' }, tag: { de: 'Lamellen falten sich zur Seite', en: 'Louvres fold to the side', ru: '\u041b\u0430\u043c\u0435\u043b\u0438 \u0441\u043a\u043b\u0430\u0434\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0432 \u0441\u0442\u043e\u0440\u043e\u043d\u0443' } },
-    // locked / coming soon \u2014 shown greyed with a padlock; add roof+pricing when it launches
-    { id: 'carport', locked: true, ic: '\u25ad', name: { de: 'Carport', en: 'Carport', ru: '\u041d\u0430\u0432\u0435\u0441 \u0434\u043b\u044f \u0430\u0432\u0442\u043e' }, tag: { de: 'Bald verf\u00fcgbar', en: 'Coming soon', ru: '\u0421\u043a\u043e\u0440\u043e' } },
-  ];
+  // Product catalog — entry screen. Products are modules in @db/products (bundled to
+  // window.DBProducts); add a product there, not here. Empty fallback keeps the funnel
+  // working if the bundle is ever missing.
+  const PRODUCTS = (window.DBProducts && window.DBProducts.PRODUCTS) || [];
   T.de.catT = 'Modell w\u00e4hlen'; T.de.catL = 'Welches Dach Ihre Pergola hat. Danach: Gr\u00f6\u00dfe, Seiten, Komfort und Farben.'; T.de.catChange = '\u00e4ndern';
   T.en.catT = 'Choose a model'; T.en.catL = 'Which roof your pergola has. Then: size, sides, comfort and colours.'; T.en.catChange = 'change';
   T.ru.catT = '\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043c\u043e\u0434\u0435\u043b\u044c'; T.ru.catL = '\u0421 \u043a\u0430\u043a\u043e\u0439 \u043a\u0440\u044b\u0448\u0435\u0439 \u0431\u0443\u0434\u0435\u0442 \u0432\u0430\u0448\u0430 \u043f\u0435\u0440\u0433\u043e\u043b\u0430. \u0414\u0430\u043b\u044c\u0448\u0435 \u2014 \u0440\u0430\u0437\u043c\u0435\u0440\u044b, \u0441\u0442\u043e\u0440\u043e\u043d\u044b, \u043a\u043e\u043c\u0444\u043e\u0440\u0442 \u0438 \u0446\u0432\u0435\u0442\u0430.'; T.ru.catChange = '\u0441\u043c\u0435\u043d\u0438\u0442\u044c';
