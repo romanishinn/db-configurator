@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Активация доступа — D&B Pergola</title>
+<style>
+  :root { --bg:#eef0f1; --panel:#fff; --ink:#1c2226; --muted:#5b666e; --line:#d6dadd; --accent:#2c6a86; --accent-soft:#e1edf2; --good:#2f7d4f; --bad:#b2402f; --f:"Helvetica Neue",Arial,sans-serif; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14181b; --panel:#1c2125; --ink:#e6e9eb; --muted:#9aa5ad; --line:#30373e; --accent:#72b6d6; --accent-soft:#1d333e; --good:#6cc592; --bad:#e2795f; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--f); display:flex; min-height:100vh; align-items:center; justify-content:center; padding:16px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:24px; width:100%; max-width:420px; }
+  h1 { font-size:20px; margin:0 0 2px; letter-spacing:-.01em; }
+  .sub { color:var(--muted); font-size:13.5px; margin:0 0 18px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 4px; }
+  input { width:100%; font:inherit; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:var(--bg); color:var(--ink); }
+  input:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .row { display:flex; gap:10px; } .row > div { flex:1; }
+  .req { list-style:none; padding:0; margin:8px 0 0; font-size:12.5px; color:var(--muted); display:grid; gap:3px; }
+  .req li::before { content:"○ "; color:var(--muted); }
+  .req li.ok { color:var(--good); } .req li.ok::before { content:"✓ "; color:var(--good); }
+  button.primary { width:100%; margin-top:18px; font:inherit; font-size:15px; font-weight:600; padding:11px; border:0; border-radius:9px; background:var(--accent); color:#fff; cursor:pointer; }
+  button.primary:disabled { opacity:.5; cursor:not-allowed; }
+  .msg { margin-top:12px; font-size:13.5px; padding:9px 11px; border-radius:8px; display:none; }
+  .msg.err { display:block; background:color-mix(in srgb,var(--bad) 12%,transparent); color:var(--bad); border:1px solid var(--bad); }
+  .msg.ok { display:block; background:color-mix(in srgb,var(--good) 14%,transparent); color:var(--good); border:1px solid var(--good); }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+  <form class="card" id="f" novalidate>
+    <h1>Активация доступа</h1>
+    <p class="sub" id="sub">Заполните данные и задайте пароль — так вы создаёте свой аккаунт D&B&nbsp;Pergola.</p>
+
+    <div class="row">
+      <div><label for="first">Имя</label><input id="first" autocomplete="given-name" required></div>
+      <div><label for="last">Фамилия</label><input id="last" autocomplete="family-name" required></div>
+    </div>
+    <label for="email">E-mail</label><input id="email" type="email" autocomplete="email" required>
+    <label for="location">Локация (город, страна)</label><input id="location" autocomplete="address-level2" required>
+
+    <label for="pw">Пароль</label><input id="pw" type="password" autocomplete="new-password" required>
+    <ul class="req" id="req" aria-live="polite">
+      <li data-k="len">минимум 8 символов</li>
+      <li data-k="letter">буквы</li>
+      <li data-k="digit">цифры</li>
+      <li data-k="special">спецсимвол (!@#$%…)</li>
+    </ul>
+    <label for="pw2">Повторите пароль</label><input id="pw2" type="password" autocomplete="new-password" required>
+
+    <button class="primary" id="go" type="submit" disabled>Создать аккаунт</button>
+    <div class="msg" id="msg" role="status"></div>
+  </form>
+
+<script>
+(function () {
+  var BACKEND = { url: 'https://zypujyrvbegilvtvqras.supabase.co', anonKey: 'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9' };
+  var FN = BACKEND.url + '/functions/v1/accept-invite';
+  var $ = function (id) { return document.getElementById(id); };
+  var token = new URLSearchParams(location.search).get('token') || '';
+
+  // same rules as the server (supabase/functions/_shared/password.ts)
+  var checks = {
+    len: function (v) { return v.length >= 8; },
+    letter: function (v) { return /[A-Za-z]/.test(v); },
+    digit: function (v) { return /\d/.test(v); },
+    special: function (v) { return /[^A-Za-z0-9]/.test(v); }
+  };
+  function pwOk(v) { return checks.len(v) && checks.letter(v) && checks.digit(v) && checks.special(v); }
+
+  function show(kind, text) { var m = $('msg'); m.className = 'msg ' + kind; m.textContent = text; }
+
+  if (!token) { show('err', 'Ссылка-приглашение неполная или устарела. Запросите новую у администратора.'); $('go').disabled = true; }
+
+  function revalidate() {
+    var v = $('pw').value;
+    [].forEach.call($('req').children, function (li) { li.classList.toggle('ok', checks[li.dataset.k](v)); });
+    var filled = $('first').value.trim() && $('last').value.trim() && $('email').value.trim() && $('location').value.trim();
+    var match = v && v === $('pw2').value;
+    $('go').disabled = !(token && filled && pwOk(v) && match);
+  }
+  $('f').addEventListener('input', revalidate);
+
+  $('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if ($('pw').value !== $('pw2').value) { show('err', 'Пароли не совпадают.'); return; }
+    if (!pwOk($('pw').value)) { show('err', 'Пароль должен содержать буквы, цифры и спецсимвол, минимум 8 символов.'); return; }
+    $('go').disabled = true; show('ok', 'Создаём аккаунт…');
+    fetch(FN, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'apikey': BACKEND.anonKey, 'authorization': 'Bearer ' + BACKEND.anonKey },
+      body: JSON.stringify({
+        token: token, email: $('email').value.trim(), first_name: $('first').value.trim(),
+        last_name: $('last').value.trim(), location: $('location').value.trim(), password: $('pw').value
+      })
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.j.ok) {
+          $('f').querySelectorAll('input,button').forEach(function (el) { el.disabled = true; });
+          show('ok', 'Аккаунт создан. Теперь войдите по своему e-mail и паролю: ' );
+          var a = document.createElement('a'); a.href = 'cabinet.html'; a.textContent = 'перейти ко входу'; $('msg').appendChild(a);
+        } else {
+          var map = {
+            invite_invalid: 'Приглашение не найдено.', invite_used: 'Это приглашение уже использовано.',
+            invite_expired: 'Срок приглашения истёк — запросите новое.', bad_email: 'Проверьте e-mail.',
+            weak_password: 'Пароль слишком простой: нужны буквы, цифры и спецсимвол, минимум 8 символов.',
+            fields_required: 'Заполните все поля.', create_failed: 'Такой e-mail уже зарегистрирован или произошла ошибка.'
+          };
+          show('err', map[res.j.error] || ('Ошибка: ' + (res.j.message || res.j.error || 'неизвестно')));
+          $('go').disabled = false;
+        }
+      }).catch(function () { show('err', 'Сеть недоступна. Попробуйте ещё раз.'); $('go').disabled = false; });
+  });
+  revalidate();
+})();
+</script>
+</body>
+</html>
