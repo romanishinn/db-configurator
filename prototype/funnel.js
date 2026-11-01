@@ -227,7 +227,10 @@
     return out;
   }
   const groupsOrder = ['pergola', 'sides', 'comfort', 'colours', 'extra'];
-  // default-on services derived from the goods subtotal; the customer can switch each off in the offer
+  // default-on services derived from the goods subtotal; the customer can switch each off in the offer.
+  // RULE (D&B 01.11): installation and delivery are computed on the FULL, pre-discount goods subtotal
+  // and are NOT subject to any dealer discount — they stay exactly as calculated. A discount applies
+  // only to pergola/sides; these service lines are never part of the discount base.
   const SVC_DEFAULT = { install: 0.10, deliv: 0.04 };
   const svcRate = (k) => { const v = window.DBPricing && window.DBPricing[k]; return (typeof v === 'number' && v >= 0) ? v : SVC_DEFAULT[k]; };
   const svcOn = (k) => state[k] !== false;
