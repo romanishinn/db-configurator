@@ -513,6 +513,8 @@
   }
   function render() {
     if (!isCust()) return;
+    // catalog screen shows products only — hide the 3D stage/toolbar until a model is picked
+    document.body.classList.toggle('cat-only', product === null);
     const t = L(), o = curOpt();
     const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
       <span class="f-lang" role="group" aria-label="Language">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${k.toUpperCase()}</button>`).join('')}</span>

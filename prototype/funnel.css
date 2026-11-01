@@ -462,3 +462,9 @@ body:has(#bk-modelbar) .app { margin-top: 46px; }
 .f-prod.locked:hover { border-color: var(--line); transform: none; }
 .f-prod.locked .f-prod-ic { color: var(--muted); }
 .f-prod-lock { position: absolute; top: 10px; right: 10px; font-size: 15px; line-height: 1; filter: grayscale(1); opacity: .9; }
+
+/* Catalog screen: products only — the 3D stage and toolbar stay hidden
+   until a model is chosen, then the full configurator appears. */
+body.cust.cat-only .stage { display: none; }
+body.cust.cat-only .app { grid-template-columns: minmax(0, 720px); justify-content: center; }
+@media (max-width: 760px) { body.cust.cat-only .app { grid-template-columns: 1fr; } }
