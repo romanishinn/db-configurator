@@ -59,6 +59,124 @@
   var $ = function (id) { return document.getElementById(id); };
   var token = new URLSearchParams(location.search).get('token') || '';
 
+  // ----- i18n (visible strings) -----
+  var I18N = {
+    ru: {
+      title: "Активация доступа",
+      sub: "Заполните данные и задайте пароль — так вы создаёте свой аккаунт D&B Pergola.",
+      first: "Имя", last: "Фамилия", email: "E-mail", location: "Локация (город, страна)",
+      pw: "Пароль", pw2: "Повторите пароль",
+      reqLen: "минимум 8 символов", reqLetter: "буквы", reqDigit: "цифры", reqSpecial: "спецсимвол (!@#$%…)",
+      create: "Создать аккаунт",
+      linkIncomplete: "Ссылка-приглашение неполная или устарела. Запросите новую у администратора.",
+      pwMismatch: "Пароли не совпадают.",
+      pwWeak: "Пароль должен содержать буквы, цифры и спецсимвол, минимум 8 символов.",
+      creating: "Создаём аккаунт…",
+      created: "Аккаунт создан. Теперь войдите по своему e-mail и паролю: ",
+      goLogin: "перейти ко входу",
+      invite_invalid: "Приглашение не найдено.",
+      invite_used: "Это приглашение уже использовано.",
+      invite_expired: "Срок приглашения истёк — запросите новое.",
+      bad_email: "Проверьте e-mail.",
+      weak_password: "Пароль слишком простой: нужны буквы, цифры и спецсимвол, минимум 8 символов.",
+      fields_required: "Заполните все поля.",
+      create_failed: "Такой e-mail уже зарегистрирован или произошла ошибка.",
+      errPrefix: "Ошибка: ", errUnknown: "неизвестно",
+      netError: "Сеть недоступна. Попробуйте ещё раз."
+    },
+    en: {
+      title: "Access activation",
+      sub: "Fill in your details and set a password — this creates your D&B Pergola account.",
+      first: "First name", last: "Last name", email: "E-mail", location: "Location (city, country)",
+      pw: "Password", pw2: "Repeat password",
+      reqLen: "at least 8 characters", reqLetter: "letters", reqDigit: "digits", reqSpecial: "special character (!@#$%…)",
+      create: "Create account",
+      linkIncomplete: "The invite link is incomplete or expired. Request a new one from the administrator.",
+      pwMismatch: "Passwords do not match.",
+      pwWeak: "The password must contain letters, digits and a special character, at least 8 characters.",
+      creating: "Creating account…",
+      created: "Account created. Now sign in with your e-mail and password: ",
+      goLogin: "go to sign-in",
+      invite_invalid: "Invite not found.",
+      invite_used: "This invite has already been used.",
+      invite_expired: "The invite has expired — request a new one.",
+      bad_email: "Check the e-mail.",
+      weak_password: "Password too weak: letters, digits and a special character required, at least 8 characters.",
+      fields_required: "Fill in all fields.",
+      create_failed: "This e-mail is already registered or an error occurred.",
+      errPrefix: "Error: ", errUnknown: "unknown",
+      netError: "Network unavailable. Please try again."
+    },
+    de: {
+      title: "Zugang aktivieren",
+      sub: "Tragen Sie Ihre Daten ein und legen Sie ein Passwort fest — so erstellen Sie Ihr D&B Pergola-Konto.",
+      first: "Vorname", last: "Nachname", email: "E-Mail", location: "Standort (Stadt, Land)",
+      pw: "Passwort", pw2: "Passwort wiederholen",
+      reqLen: "mindestens 8 Zeichen", reqLetter: "Buchstaben", reqDigit: "Ziffern", reqSpecial: "Sonderzeichen (!@#$%…)",
+      create: "Konto erstellen",
+      linkIncomplete: "Der Einladungslink ist unvollständig oder abgelaufen. Fordern Sie beim Administrator einen neuen an.",
+      pwMismatch: "Passwörter stimmen nicht überein.",
+      pwWeak: "Das Passwort muss Buchstaben, Ziffern und ein Sonderzeichen enthalten, mindestens 8 Zeichen.",
+      creating: "Konto wird erstellt…",
+      created: "Konto erstellt. Melden Sie sich jetzt mit E-Mail und Passwort an: ",
+      goLogin: "zur Anmeldung",
+      invite_invalid: "Einladung nicht gefunden.",
+      invite_used: "Diese Einladung wurde bereits verwendet.",
+      invite_expired: "Die Einladung ist abgelaufen — fordern Sie eine neue an.",
+      bad_email: "Prüfen Sie die E-Mail.",
+      weak_password: "Passwort zu schwach: Buchstaben, Ziffern und ein Sonderzeichen erforderlich, mindestens 8 Zeichen.",
+      fields_required: "Alle Felder ausfüllen.",
+      create_failed: "Diese E-Mail ist bereits registriert oder ein Fehler ist aufgetreten.",
+      errPrefix: "Fehler: ", errUnknown: "unbekannt",
+      netError: "Netzwerk nicht verfügbar. Bitte erneut versuchen."
+    },
+    hr: {
+      title: "Aktivacija pristupa",
+      sub: "Ispunite podatke i postavite lozinku — tako stvarate svoj D&B Pergola račun.",
+      first: "Ime", last: "Prezime", email: "E-mail", location: "Lokacija (grad, država)",
+      pw: "Lozinka", pw2: "Ponovite lozinku",
+      reqLen: "najmanje 8 znakova", reqLetter: "slova", reqDigit: "brojke", reqSpecial: "poseban znak (!@#$%…)",
+      create: "Stvori račun",
+      linkIncomplete: "Poveznica za poziv nepotpuna je ili je istekla. Zatražite novu od administratora.",
+      pwMismatch: "Lozinke se ne podudaraju.",
+      pwWeak: "Lozinka mora sadržavati slova, brojke i poseban znak, najmanje 8 znakova.",
+      creating: "Stvaramo račun…",
+      created: "Račun je stvoren. Sada se prijavite svojim e-mailom i lozinkom: ",
+      goLogin: "idi na prijavu",
+      invite_invalid: "Poziv nije pronađen.",
+      invite_used: "Ovaj poziv već je iskorišten.",
+      invite_expired: "Poziv je istekao — zatražite novi.",
+      bad_email: "Provjerite e-mail.",
+      weak_password: "Lozinka je preslaba: potrebni su slova, brojke i poseban znak, najmanje 8 znakova.",
+      fields_required: "Ispunite sva polja.",
+      create_failed: "Ovaj e-mail već je registriran ili je došlo do pogreške.",
+      errPrefix: "Pogreška: ", errUnknown: "nepoznato",
+      netError: "Mreža nije dostupna. Pokušajte ponovno."
+    }
+  };
+  var lang = new URLSearchParams(location.search).get('lang') || 'ru';
+  if (!I18N[lang]) lang = 'ru';
+  var L = I18N[lang];
+
+  function applyLang() {
+    try { document.documentElement.lang = lang; } catch (e) {}
+    var set = function (sel, txt) { var el = document.querySelector(sel); if (el) el.textContent = txt; };
+    set('.card h1', L.title);
+    set('#sub', L.sub);
+    set('label[for="first"]', L.first);
+    set('label[for="last"]', L.last);
+    set('label[for="email"]', L.email);
+    set('label[for="location"]', L.location);
+    set('label[for="pw"]', L.pw);
+    set('label[for="pw2"]', L.pw2);
+    set('#req li[data-k="len"]', L.reqLen);
+    set('#req li[data-k="letter"]', L.reqLetter);
+    set('#req li[data-k="digit"]', L.reqDigit);
+    set('#req li[data-k="special"]', L.reqSpecial);
+    set('#go', L.create);
+  }
+  applyLang();
+
   // same rules as the server (supabase/functions/_shared/password.ts)
   var checks = {
     len: function (v) { return v.length >= 8; },
@@ -70,7 +188,7 @@
 
   function show(kind, text) { var m = $('msg'); m.className = 'msg ' + kind; m.textContent = text; }
 
-  if (!token) { show('err', 'Ссылка-приглашение неполная или устарела. Запросите новую у администратора.'); $('go').disabled = true; }
+  if (!token) { show('err', L.linkIncomplete); $('go').disabled = true; }
 
   function revalidate() {
     var v = $('pw').value;
@@ -83,9 +201,9 @@
 
   $('f').addEventListener('submit', function (e) {
     e.preventDefault();
-    if ($('pw').value !== $('pw2').value) { show('err', 'Пароли не совпадают.'); return; }
-    if (!pwOk($('pw').value)) { show('err', 'Пароль должен содержать буквы, цифры и спецсимвол, минимум 8 символов.'); return; }
-    $('go').disabled = true; show('ok', 'Создаём аккаунт…');
+    if ($('pw').value !== $('pw2').value) { show('err', L.pwMismatch); return; }
+    if (!pwOk($('pw').value)) { show('err', L.pwWeak); return; }
+    $('go').disabled = true; show('ok', L.creating);
     fetch(FN, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'apikey': BACKEND.anonKey, 'authorization': 'Bearer ' + BACKEND.anonKey },
@@ -97,19 +215,19 @@
       .then(function (res) {
         if (res.ok && res.j.ok) {
           $('f').querySelectorAll('input,button').forEach(function (el) { el.disabled = true; });
-          show('ok', 'Аккаунт создан. Теперь войдите по своему e-mail и паролю: ' );
-          var a = document.createElement('a'); a.href = 'cabinet.html'; a.textContent = 'перейти ко входу'; $('msg').appendChild(a);
+          show('ok', L.created);
+          var a = document.createElement('a'); a.href = 'cabinet.html'; a.textContent = L.goLogin; $('msg').appendChild(a);
         } else {
           var map = {
-            invite_invalid: 'Приглашение не найдено.', invite_used: 'Это приглашение уже использовано.',
-            invite_expired: 'Срок приглашения истёк — запросите новое.', bad_email: 'Проверьте e-mail.',
-            weak_password: 'Пароль слишком простой: нужны буквы, цифры и спецсимвол, минимум 8 символов.',
-            fields_required: 'Заполните все поля.', create_failed: 'Такой e-mail уже зарегистрирован или произошла ошибка.'
+            invite_invalid: L.invite_invalid, invite_used: L.invite_used,
+            invite_expired: L.invite_expired, bad_email: L.bad_email,
+            weak_password: L.weak_password,
+            fields_required: L.fields_required, create_failed: L.create_failed
           };
-          show('err', map[res.j.error] || ('Ошибка: ' + (res.j.message || res.j.error || 'неизвестно')));
+          show('err', map[res.j.error] || (L.errPrefix + (res.j.message || res.j.error || L.errUnknown)));
           $('go').disabled = false;
         }
-      }).catch(function () { show('err', 'Сеть недоступна. Попробуйте ещё раз.'); $('go').disabled = false; });
+      }).catch(function () { show('err', L.netError); $('go').disabled = false; });
   });
   revalidate();
 })();
