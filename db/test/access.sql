@@ -189,4 +189,24 @@ select pg_temp.as_user(:'admin');  -- superadmin
 update public.pricing_config set install_pct = 12 where id = 1;
 select pg_temp.check((select install_pct from public.pricing_config where id = 1) = 12, 'superadmin can change pricing_config');
 
+-- ---------- 12. partner onboarding: access requests + invites (0005) ----------
+-- anyone may submit an access request
+select pg_temp.as_anon();
+insert into public.access_requests (company, first_name, last_name, location, email)
+  values ('Graz Pergolas', 'Max', 'Muster', 'Graz, AT', 'max@graz.test');
+-- a non-superadmin cannot read requests
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
+select pg_temp.check((select count(*) from public.access_requests) = 0, 'a seller cannot see access requests');
+-- the superadmin sees them
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.access_requests) >= 1, 'superadmin sees access requests');
+-- only the superadmin may create an invite
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
+select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('dealer')$$, 'row-level'), 'a seller cannot create an invite');
+select pg_temp.as_user(:'admin');
+insert into public.invites (role, discount_group_id) values ('dealer', (select id from public.discount_groups where code = 'dealer'));
+select pg_temp.check((select count(*) from public.invites where role = 'dealer') = 1, 'superadmin can create an invite');
+-- an invite is only for dealer or architect
+select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('client')$$, 'invites_role_check'), 'an invite role must be dealer or architect');
+
 select 'access tests passed' as result;
