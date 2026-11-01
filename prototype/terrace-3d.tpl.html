@@ -1,3 +1,4 @@
+<script>try{if(!/[?&]pro\b/.test(location.search))document.documentElement.classList.add("boot-cat");}catch(e){}</script>
 <title>3D-конфигуратор</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2101,7 +2102,9 @@ function colourKit() {
   const head = (title, cur) => `<div class="t">${title}${cur ? `<span class="cur"> · ${cur}</span>` : ''}</div>`;
   const colourBlock = (key, title) => {
     const linked = key !== 'construction' && !state.colors[key], cur = colorOf(e[key]), open = quickMore === key;
-    const list = std.some((c) => c.id === cur.id) || cur.custom || linked ? std : [...std, cur];
+    // Decor (Win Verto) shows a third default swatch — golden oak 16D — next to the two standard tones
+    const baseStd = key === 'verto' ? [...std, colorOf('16D')] : std;
+    const list = baseStd.some((c) => c.id === cur.id) || cur.custom || linked ? baseStd : [...baseStd, cur];
     let r = key !== 'construction' ? sw('data-qcol', '', swatchBg(colorOf(e.construction)), tx.asFrame, linked, `data-part="${key}"`) : '';
     r += list.map((c) => sw('data-qcol', c.id, swatchBg(c), name(c), !linked && e[key] === c.id, `data-part="${key}"`)).join('');
     r += `<button type="button" class="more" data-qmore="${key}" aria-expanded="${open}">${tx.more} <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;

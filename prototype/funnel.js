@@ -373,13 +373,14 @@
   /** glass on one side: how it opens (left → right, right → left, from the centre) and closed / open.
    *  "From the centre" is a two-way Win Glass system (the panels part in the middle); the others park on one side.
    *  A way that this size is not made in is greyed out. */
-  const GLASS_TYP_ICON = { ltr: '⇥', rtl: '⇤', center: '⇹' };
+  // opening direction shown as a clean arrow: opens to the right →, to the left ←, from the centre ⇄ (two arrows)
+  const GLASS_TYP_ICON = { ltr: '→', rtl: '←', center: '⇄' };
   function glassTyp(op) { const g = glassFor(op), cfg = glassCfg(op); return g.best && g.best.opening === 'double' ? 'center' : (cfg.side || state.glassSide) === 'left' ? 'rtl' : 'ltr'; }
   function glassPos(op, t) {
     const g = glassFor(op), cfg = glassCfg(op), typ = glassTyp(op);
     const has = (o) => g.options.some((x) => x.opening === o);
     const isOpen = (cfg.open ?? state.glassOpen) > 0;
-    const tb = (v, cur, ok) => `<button type="button" class="f-chip" data-gtyp="${v}" data-id="${op.id}" aria-pressed="${cur}" ${ok ? '' : 'disabled'}>${GLASS_TYP_ICON[v]} ${esc(t.glTyp[v])}</button>`;
+    const tb = (v, cur, ok) => `<button type="button" class="f-chip gtyp" data-gtyp="${v}" data-id="${op.id}" aria-pressed="${cur}" aria-label="${esc(t.glTyp[v])}" title="${esc(t.glTyp[v])}" ${ok ? '' : 'disabled'}>${GLASS_TYP_ICON[v]}</button>`;
     const sb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
     return `<div class="sub2">${t.glTypT}: ${tb('ltr', typ === 'ltr', has('single'))}${tb('rtl', typ === 'rtl', has('single'))}${tb('center', typ === 'center', has('double'))}</div>`
       + `<div class="sub2" style="margin-top:6px">${t.park}: ${sb('close', '○ ' + t.shut, !isOpen)}${sb('open', '◫ ' + t.glOpen, isOpen)}</div>`;
@@ -528,12 +529,7 @@
       }).join('')}</div>`;
       h += head(t.ctlT, '') + `${ctlRows(t, 'data-zctlall', (m) => zipIds().every((id) => ctlOf(id) === m), (m) => () => m)}`;
     }
-    if (used.has('glass')) {
-      h += `<div class="f-h3"><span>${t.glassTint}</span></div><div class="f-sw">${Object.entries(GLAZING).map(([k, g]) => {
-        const rate = cat.glazing.types.find((x) => x.id === k).surcharge[String(DBCore.thicknessFor(k, cat))];
-        return `<button type="button" data-gl="${k}" aria-pressed="${state.glass.type === k}"><span class="c" style="background:#${g.col.toString(16).padStart(6, '0')};opacity:${Math.max(0.35, g.op + 0.25)}"></span>${t.tints[k]}<span class="pr">${rate ? '+' + rate + ' ' + t.perM2 : t.incl}</span></button>`;
-      }).join('')}</div>`;
-    }
+    // glass tint (прозрачное / бронза / серое / зеркало) now lives in the Цвета step, alongside the other colours
     const legend = ['zip', 'glass', 'panels'].map((k) => `<li><b>${GL[k]} ${t.fills[k]}</b> – ${t.legend[k]}</li>`).join('');
     h += `<ul class="f-legend">${legend}</ul>`;
     return h;
@@ -577,6 +573,10 @@
     if (!o) return '';
     const e = colorsEff(), rates = cat.coating.rates[sysOf(o)];
     const std = PALETTE.filter((c) => c.group === 'standard');
+    // Decor (Win Verto) gets a third default swatch: golden oak, next to the two standard tones.
+    // ASSUMPTION: "золотой дуб" = 16D «Golden OAK 8DS» (28D «Golden OAK 7DS» has the same hex).
+    const GOLD_OAK = '16D';
+    const stdFor = (key) => key === 'verto' ? std.concat(colorOf(GOLD_OAK)) : std;
     const fills = Object.values(state.fills);
     const rows = [['construction', t.frame], ['roof', t.roof]];
     if (fills.some((f) => f === 'glass' || f === 'panels')) rows.push(['slide', t.slideCol]);
@@ -597,8 +597,8 @@
       const sw = (c, cur) => `<button type="button" data-cl="${key}" data-c="${c.id}" aria-pressed="${cur}"><span class="c" style="background:${swatchBg(c)}"></span>${esc(cname(c.id))}<span class="pr">${prTxt(key, c.group)}</span></button>`;
       let row = '';
       if (key !== 'construction') row += `<button type="button" data-cl="${key}" data-c="" aria-pressed="${linked}"><span class="c" style="background:${swatchBg(colorOf(e.construction))}"><span class="lnk">=</span></span>${t.asFrame}<span class="pr">&nbsp;</span></button>`;
-      row += std.map((c) => sw(c, !linked && eff === c.id)).join('');
-      if (!linked && effC.group !== 'standard' && !effC.custom) row += sw(effC, true);
+      row += stdFor(key).map((c) => sw(c, !linked && eff === c.id)).join('');
+      if (!linked && effC.group !== 'standard' && !effC.custom && !stdFor(key).some((c) => c.id === effC.id)) row += sw(effC, true);
       row += `<button type="button" data-more="${key}" aria-expanded="${!!moreOpen[key]}"><span class="c more"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="19" cy="12" r="2.1"/></svg></span>${t.moreColours}<span class="pr">&nbsp;</span></button>`;
       h += `<div class="f-h3"><span>${label}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${linked ? t.asFrame : esc(cname(eff))}</span></div><div class="f-sw">${row}</div>`;
       if (moreOpen[key]) {
@@ -607,6 +607,13 @@
           return `<div class="f-h3" style="margin-top:12px"><span>${t.groups[g]}</span><span>${prTxt(key, g)}</span></div><div class="f-sw f-sw-sm">${list.map((c) => `<button type="button" data-cl="${key}" data-c="${c.id}" aria-pressed="${!linked && eff === c.id}"><span class="c" style="background:${swatchBg(c)}"></span>${esc(cname(c.id))}</button>`).join('')}</div>`;
         }).join('') + `</div>`;
       }
+    }
+    // glass tint sits with the other colours (moved here from the Комплектация step)
+    if (fills.includes('glass')) {
+      h += `<div class="f-h3"><span>${t.glassTint}</span></div><div class="f-sw">${Object.entries(GLAZING).map(([k, g]) => {
+        const rate = cat.glazing.types.find((x) => x.id === k).surcharge[String(DBCore.thicknessFor(k, cat))];
+        return `<button type="button" data-gl="${k}" aria-pressed="${state.glass.type === k}"><span class="c" style="background:#${g.col.toString(16).padStart(6, '0')};opacity:${Math.max(0.35, g.op + 0.25)}"></span>${t.tints[k]}<span class="pr">${rate ? '+' + rate + ' ' + t.perM2 : t.incl}</span></button>`;
+      }).join('')}</div>`;
     }
     if (fills.includes('zip')) h += `<div class="f-h3"><span>${t.fabricTone}</span></div><div class="f-pal">${FABRIC_TONES.map(([hx, n]) => `<button type="button" data-tone="${hx}" aria-pressed="${state.colors.tone === hx}" title="${esc(n)}" aria-label="${esc(n)}" style="background:${hx}"></button>`).join('')}</div>`;
     h += `<p class="f-lead" style="margin-top:14px;font-size:12.5px">${t.colourNote}</p>`;
@@ -1060,7 +1067,7 @@
       return;
     }
     if (d.of) { state.colors.fabric = fabricForOpenness(Number(d.of)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); return; }
-    if (d.gl) { state.glass.type = d.gl; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); renderColors(); renderEstimate(); return; }
+    if (d.gl) { state.glass.type = d.gl; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); renderColors(); renderEstimate(); render(); return; }
     const po = state.po;
     if (d.light) { setLight(d.light); syncGlassControls(); return; } // same as the light button on the 3D: shown at once
     if (d.heat) { po.heaters = d.heat === 'none' ? null : { set: d.heat, qty: 1 }; rebuild(); return; }
@@ -1148,7 +1155,7 @@
     if (m === 'pro' && window.Backend && !window.Backend.allowPro()) { m = 'cust'; }
     document.body.classList.toggle('cust', m === 'cust');
     Store.set('db.mode', m);
-    translateToolbar(); render();
+    translateToolbar(); render(); try { document.documentElement.classList.remove('boot-cat'); } catch (e) {}
     A.mode(m === 'cust'); A.init(); A.banner();
     const r = $('mode-cust'); if (r) r.hidden = m === 'cust';
     for (const x of document.querySelectorAll('.pro-file')) x.hidden = m === 'cust';
