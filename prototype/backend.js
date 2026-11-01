@@ -25,6 +25,18 @@
     s.onerror = () => res(false);
     document.head.appendChild(s);
   });
+  // Pull the editable service rates (installation / delivery %) so they can change from the
+  // CRM without a redeploy. Falls back to the funnel's built-in defaults if unavailable.
+  async function loadPricing() {
+    try {
+      const { data } = await sb.from('pricing_config').select('install_pct, delivery_pct').eq('id', 1).single();
+      if (data) {
+        window.DBPricing = { install: Number(data.install_pct) / 100, deliv: Number(data.delivery_pct) / 100 };
+        if (window.DBApp && window.DBApp.rerenderQuote) window.DBApp.rerenderQuote();
+      }
+    } catch (e) { /* table missing / offline: keep code defaults */ }
+  }
+  ready.then((ok) => { if (ok) loadPricing(); });
   function humanError(e) {
     const m = String((e && (e.message || e.error_description)) || e || '');
     if (/Invalid login/i.test(m)) return 'Неверный e-mail или пароль';

@@ -179,4 +179,14 @@ insert into public.quotes (lead_id, owner, catalog, config, lines, total_net, re
 select pg_temp.check(:'qrev4' = :'qbase_no' || '.4', 'correcting a revision still extends the base family (.4)');
 select pg_temp.check((select count(*) from public.quotes where number = :'qbase_no' or number like :'qbase_no' || '.%') = 4, 'the family holds the base and its three revisions');
 
+-- ---------- 11. pricing config: everyone reads, only superadmin writes (0004) ----------
+select pg_temp.as_anon();
+select pg_temp.check((select install_pct from public.pricing_config where id = 1) is not null, 'anyone (anon) can read pricing_config');
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
+update public.pricing_config set install_pct = 99 where id = 1;   -- RLS hides the row: updates nothing, no error
+select pg_temp.check((select install_pct from public.pricing_config where id = 1) <> 99, 'a non-superadmin cannot change pricing_config');
+select pg_temp.as_user(:'admin');  -- superadmin
+update public.pricing_config set install_pct = 12 where id = 1;
+select pg_temp.check((select install_pct from public.pricing_config where id = 1) = 12, 'superadmin can change pricing_config');
+
 select 'access tests passed' as result;

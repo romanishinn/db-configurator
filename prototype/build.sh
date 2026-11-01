@@ -6,6 +6,7 @@ OUT=prototype/dist; mkdir -p "$OUT"
 npx -y esbuild@0.24.0 packages/core/src/index.ts --bundle --format=iife --global-name=DBCore --platform=browser --target=es2020 --minify --outfile="$OUT/dbcore.js"
 npx -y esbuild@0.24.0 packages/shared/src/index.ts --bundle --format=iife --global-name=DBShared --platform=browser --target=es2020 --outfile="$OUT/dbshared.js"
 npx -y esbuild@0.24.0 packages/products/src/index.ts --bundle --format=iife --global-name=DBProducts --platform=browser --target=es2020 --alias:@db/shared=packages/shared/src/index.ts --outfile="$OUT/dbproducts.js"
+npx -y esbuild@0.24.0 apps/configurator/i18n/index.js --bundle --format=iife --global-name=DBI18n --platform=browser --target=es2020 --outfile="$OUT/dbi18n.js"
 python3 - <<'PY'
 import json, glob
 d = 'data/catalog/2026-07'
@@ -13,6 +14,7 @@ cat = {'tables': [json.load(open(f)) for f in sorted(glob.glob(d + '/tables/*.js
 t = open('prototype/terrace-3d.tpl.html').read()
 t = t.replace('/*CORE*/', open('prototype/dist/dbcore.js').read()).replace('/*CATALOG*/', 'const CATALOG_JSON=' + json.dumps(cat, separators=(',', ':')) + ';')
 t = t.replace('/*SHARED*/', open('prototype/dist/dbshared.js').read()).replace('/*PRODUCTS*/', open('prototype/dist/dbproducts.js').read())
+t = t.replace('/*I18N*/', open('prototype/dist/dbi18n.js').read())
 t = t.replace('/*FUNNEL_CSS*/', open('prototype/funnel.css').read()).replace('/*FUNNEL_JS*/', open('prototype/funnel.js').read()).replace('/*BACKEND_JS*/', open('prototype/backend.js').read())
 open('prototype/dist/terrace-3d.html', 'w').write(t)
 PY
