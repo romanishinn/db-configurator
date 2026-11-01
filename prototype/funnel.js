@@ -484,8 +484,10 @@
 
   // Product catalog — entry screen. Extensible: add entries to offer more products as the range grows.
   const PRODUCTS = [
-    { id: 'louvered', roof: 'rotating', ic: '\u25a4', name: { de: 'Lamellendach', en: 'Louvred roof', ru: '\u041f\u0435\u0440\u0433\u043e\u043b\u0430 \u0441 \u043b\u0430\u043c\u0435\u043b\u044f\u043c\u0438' }, tag: { de: 'Drehbare Lamellen', en: 'Rotating louvres', ru: '\u041f\u043e\u0432\u043e\u0440\u043e\u0442\u043d\u044b\u0435 \u043b\u0430\u043c\u0435\u043b\u0438' } },
+    { id: 'louvered', roof: 'rotating', ic: '\u25a4', name: { de: 'Bioklimatische Pergola', en: 'Bioclimatic pergola', ru: '\u041f\u0435\u0440\u0433\u043e\u043b\u0430 \u0431\u0438\u043e\u043a\u043b\u0438\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f' }, tag: { de: 'Drehbare Lamellen', en: 'Rotating louvres', ru: '\u041f\u043e\u0432\u043e\u0440\u043e\u0442\u043d\u044b\u0435 \u043b\u0430\u043c\u0435\u043b\u0438' } },
     { id: 'slide', roof: 'sliding', ic: '\u229f', name: { de: 'Schiebedach', en: 'Sliding roof', ru: '\u0420\u0430\u0437\u0434\u0432\u0438\u0436\u043d\u0430\u044f \u043a\u0440\u044b\u0448\u0430' }, tag: { de: 'Lamellen falten sich zur Seite', en: 'Louvres fold to the side', ru: '\u041b\u0430\u043c\u0435\u043b\u0438 \u0441\u043a\u043b\u0430\u0434\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0432 \u0441\u0442\u043e\u0440\u043e\u043d\u0443' } },
+    // locked / coming soon \u2014 shown greyed with a padlock; add roof+pricing when it launches
+    { id: 'carport', locked: true, ic: '\u25ad', name: { de: 'Carport', en: 'Carport', ru: '\u041d\u0430\u0432\u0435\u0441 \u0434\u043b\u044f \u0430\u0432\u0442\u043e' }, tag: { de: 'Bald verf\u00fcgbar', en: 'Coming soon', ru: '\u0421\u043a\u043e\u0440\u043e' } },
   ];
   T.de.catT = 'Modell w\u00e4hlen'; T.de.catL = 'Welches Dach Ihre Pergola hat. Danach: Gr\u00f6\u00dfe, Seiten, Komfort und Farben.'; T.de.catChange = '\u00e4ndern';
   T.en.catT = 'Choose a model'; T.en.catL = 'Which roof your pergola has. Then: size, sides, comfort and colours.'; T.en.catChange = 'change';
@@ -495,13 +497,14 @@
   T.ru.kitT = '\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0430\u0446\u0438\u044f'; T.ru.kitL = '\u0421\u0442\u043e\u0440\u043e\u043d\u044b, \u043e\u0441\u0442\u0435\u043a\u043b\u0435\u043d\u0438\u0435 \u0438 \u043a\u043e\u043c\u0444\u043e\u0440\u0442 \u2014 \u0432\u0441\u0451, \u0447\u0442\u043e \u043c\u044b \u0434\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u043c.';
   const prodById = (id) => PRODUCTS.find((pp) => pp.id === id) || null;
   function pickProduct(id) {
-    const pr = prodById(id); if (!pr) return;
+    const pr = prodById(id); if (!pr || pr.locked) return;
     product = id;
     if (state.roof !== pr.roof) { state.roof = pr.roof; syncRoofButtons(); keepCamera(() => recompute(false)); }
     step = 0; render();
   }
   function catalogHTML(t) {
     const cards = PRODUCTS.map((pr) => {
+      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true">🔒</span><span class="f-prod-ic">${pr.ic}</span><b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span></div>`;
       const x = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[pr.roof] }, cat).options[0];
       const price = x ? (t.from + ' ' + fe(gross(x.total))) : '';
       return `<button type="button" class="f-prod" data-product="${pr.id}"><span class="f-prod-ic">${pr.ic}</span><b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span><span class="f-prod-pr">${price}</span></button>`;

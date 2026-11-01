@@ -455,3 +455,10 @@ body:has(#bk-modelbar) .app { margin-top: 46px; }
 .f-chip .pr, .f-seg .pr, .f-lay .pr, .f-vt button .pr, .f-fills .pr { color: var(--muted); font-weight: 400; }
 .f-chip[aria-pressed="true"] .pr, .f-seg[aria-pressed="true"] .pr,
 .f-lay button[aria-pressed="true"] .pr { color: var(--ink); }
+
+/* locked / coming-soon product card — greyed with a padlock, not selectable */
+.f-prod { position: relative; }
+.f-prod.locked { cursor: not-allowed; opacity: .6; filter: grayscale(1); }
+.f-prod.locked:hover { border-color: var(--line); transform: none; }
+.f-prod.locked .f-prod-ic { color: var(--muted); }
+.f-prod-lock { position: absolute; top: 10px; right: 10px; font-size: 15px; line-height: 1; filter: grayscale(1); opacity: .9; }
