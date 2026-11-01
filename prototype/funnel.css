@@ -395,3 +395,63 @@ body:has(#bk-modelbar) .app { margin-top: 46px; }
 .f-kit-h h3 { font-family: var(--f-display); font-size: 15px; margin: 0 0 2px; }
 .f-kit-h .f-lead { margin: 0 0 10px; }
 .f-kit-sep { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+
+/* ============================================================
+   Unified control system (consistency pass)
+   One radius, one idle border, one active state, one focus ring
+   for every selectable option in the funnel. Color swatches stay
+   round on purpose — a different kind of control.
+   ============================================================ */
+:root { --ctl-r: 10px; }
+
+/* one radius everywhere a choice is made */
+.f-chip, .f-seg, .f-card, .f-more-sel,
+.f-lay button, .f-fills button, .f-vt button { border-radius: var(--ctl-r); }
+.f-list .f-chip { border-radius: var(--ctl-r); }
+
+/* chips: rounded-rect, not pills; uniform height so rows don't jump */
+.f-chip { padding: 0 13px; min-height: 38px; line-height: 1.2; }
+.f-list .f-chip { min-height: 44px; padding: 8px 13px; }
+.f-vn .f-chip { min-width: 44px; padding: 0; }
+
+/* idle border is identical for all */
+.f-chip, .f-seg, .f-card, .f-lay button, .f-fills button, .f-vt button { border: 1px solid var(--line); transition: border-color .12s, background-color .12s, box-shadow .12s; }
+
+/* one active state — accent border + inset ring + soft fill + weight */
+.f-chip[aria-pressed="true"],
+.f-seg[aria-pressed="true"],
+.f-card[aria-pressed="true"],
+.f-lay button[aria-pressed="true"],
+.f-fills button[aria-pressed="true"],
+.f-vt button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  font-weight: 600;
+}
+
+/* one hover for pointer devices */
+@media (hover: hover) {
+  .f-chip:not(:disabled):hover,
+  .f-seg:not(:disabled):hover,
+  .f-card:not(:disabled):hover,
+  .f-lay button:not(:disabled):hover,
+  .f-fills button:not(:disabled):hover,
+  .f-vt button:not(:disabled):hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+}
+
+/* one visible focus ring */
+.f-chip:focus-visible, .f-seg:focus-visible, .f-card:focus-visible,
+.f-lay button:focus-visible, .f-fills button:focus-visible,
+.f-vt button:focus-visible, .f-more-sel:focus-visible,
+.f-prod:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* section header: let a description drop to its own tidy caption line
+   instead of fighting the title on one row */
+.f-h3 { flex-wrap: wrap; align-items: baseline; row-gap: 2px; }
+.f-h3 > span:nth-child(2) { flex: 1 0 100%; font-size: 12px; line-height: 1.35; }
+
+/* prices inside controls share one muted mono treatment */
+.f-chip .pr, .f-seg .pr, .f-lay .pr, .f-vt button .pr, .f-fills .pr { color: var(--muted); font-weight: 400; }
+.f-chip[aria-pressed="true"] .pr, .f-seg[aria-pressed="true"] .pr,
+.f-lay button[aria-pressed="true"] .pr { color: var(--ink); }
