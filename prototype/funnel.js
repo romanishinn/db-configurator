@@ -16,7 +16,7 @@
 
   const T = {
     de: {
-      steps: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'],
+      steps: ['Größe', 'Ausstattung', 'Farben', 'Angebot'],
       moreOpt: 'Mehr …', next: 'Weiter', back: 'Zurück', toOffer: 'Zum Angebot', send: 'Anfrage senden',
       pro: 'Pro', proTitle: 'Erweiterte Ansicht für Fachberater', toCust: 'Kundenansicht',
       intro: 'Lamellendach in 5 Schritten konfigurieren. Richtpreis sofort, unverbindlich, ohne Anmeldung.',
@@ -102,7 +102,7 @@
       mm: 'mm',
     },
     en: {
-      steps: ['Size', 'Sides', 'Comfort', 'Colours', 'Quote'],
+      steps: ['Size', 'Equipment', 'Colours', 'Quote'],
       moreOpt: 'More …', next: 'Next', back: 'Back', toOffer: 'See quote', send: 'Send request',
       pro: 'Pro', proTitle: 'Advanced view for sales staff', toCust: 'Customer view',
       intro: 'Configure your louvred roof in 5 steps. Indicative price right away, no obligation, no sign-up.',
@@ -182,7 +182,7 @@
       mm: 'mm',
     },
     ru: {
-      steps: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Итог'],
+      steps: ['Размер', 'Комплектация', 'Цвета', 'Итог'],
       moreOpt: 'Ещё …', next: 'Далее', back: 'Назад', toOffer: 'К предложению', send: 'Отправить запрос',
       pro: 'Pro', proTitle: 'Расширенный режим для менеджера', toCust: 'Режим клиента',
       intro: 'Пергола с ламелями за 5 шагов. Ориентировочная цена сразу, без обязательств и без регистрации.',
@@ -337,7 +337,7 @@
     return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : 'de';
   };
   let lang = pickLang();
-  let step = 0, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
+  let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
   const isCust = () => document.body.classList.contains('cust');
   const curOpt = () => state.options[state.optIndex];
   const sysOf = (o) => famKey(o);
@@ -482,18 +482,45 @@
   };
   const GL = { none: '○', zip: '▤', glass: '◇', verto: '▥', panels: '▦' };
 
+  // Product catalog — entry screen. Extensible: add entries to offer more products as the range grows.
+  const PRODUCTS = [
+    { id: 'louvered', roof: 'rotating', ic: '\u25a4', name: { de: 'Lamellendach', en: 'Louvred roof', ru: '\u041f\u0435\u0440\u0433\u043e\u043b\u0430 \u0441 \u043b\u0430\u043c\u0435\u043b\u044f\u043c\u0438' }, tag: { de: 'Drehbare Lamellen', en: 'Rotating louvres', ru: '\u041f\u043e\u0432\u043e\u0440\u043e\u0442\u043d\u044b\u0435 \u043b\u0430\u043c\u0435\u043b\u0438' } },
+    { id: 'slide', roof: 'sliding', ic: '\u229f', name: { de: 'Schiebedach', en: 'Sliding roof', ru: '\u0420\u0430\u0437\u0434\u0432\u0438\u0436\u043d\u0430\u044f \u043a\u0440\u044b\u0448\u0430' }, tag: { de: 'Lamellen falten sich zur Seite', en: 'Louvres fold to the side', ru: '\u041b\u0430\u043c\u0435\u043b\u0438 \u0441\u043a\u043b\u0430\u0434\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0432 \u0441\u0442\u043e\u0440\u043e\u043d\u0443' } },
+  ];
+  T.de.catT = 'Modell w\u00e4hlen'; T.de.catL = 'Welches Dach Ihre Pergola hat. Danach: Gr\u00f6\u00dfe, Seiten, Komfort und Farben.'; T.de.catChange = '\u00e4ndern';
+  T.en.catT = 'Choose a model'; T.en.catL = 'Which roof your pergola has. Then: size, sides, comfort and colours.'; T.en.catChange = 'change';
+  T.ru.catT = '\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043c\u043e\u0434\u0435\u043b\u044c'; T.ru.catL = '\u0421 \u043a\u0430\u043a\u043e\u0439 \u043a\u0440\u044b\u0448\u0435\u0439 \u0431\u0443\u0434\u0435\u0442 \u0432\u0430\u0448\u0430 \u043f\u0435\u0440\u0433\u043e\u043b\u0430. \u0414\u0430\u043b\u044c\u0448\u0435 \u2014 \u0440\u0430\u0437\u043c\u0435\u0440\u044b, \u0441\u0442\u043e\u0440\u043e\u043d\u044b, \u043a\u043e\u043c\u0444\u043e\u0440\u0442 \u0438 \u0446\u0432\u0435\u0442\u0430.'; T.ru.catChange = '\u0441\u043c\u0435\u043d\u0438\u0442\u044c';
+  T.de.kitT = 'Ausstattung'; T.de.kitL = 'Seiten, Verglasung und Komfort \u2014 alles, was wir liefern.';
+  T.en.kitT = 'Equipment'; T.en.kitL = 'Sides, glazing and comfort \u2014 everything we deliver.';
+  T.ru.kitT = '\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0430\u0446\u0438\u044f'; T.ru.kitL = '\u0421\u0442\u043e\u0440\u043e\u043d\u044b, \u043e\u0441\u0442\u0435\u043a\u043b\u0435\u043d\u0438\u0435 \u0438 \u043a\u043e\u043c\u0444\u043e\u0440\u0442 \u2014 \u0432\u0441\u0451, \u0447\u0442\u043e \u043c\u044b \u0434\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u043c.';
+  const prodById = (id) => PRODUCTS.find((pp) => pp.id === id) || null;
+  function pickProduct(id) {
+    const pr = prodById(id); if (!pr) return;
+    product = id;
+    if (state.roof !== pr.roof) { state.roof = pr.roof; syncRoofButtons(); keepCamera(() => recompute(false)); }
+    step = 0; render();
+  }
+  function catalogHTML(t) {
+    const cards = PRODUCTS.map((pr) => {
+      const x = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[pr.roof] }, cat).options[0];
+      const price = x ? (t.from + ' ' + fe(gross(x.total))) : '';
+      return `<button type="button" class="f-prod" data-product="${pr.id}"><span class="f-prod-ic">${pr.ic}</span><b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span><span class="f-prod-pr">${price}</span></button>`;
+    }).join('');
+    return `<h2 class="f-cat-h">${esc(t.catT)}</h2><p class="f-lead">${esc(t.catL)}</p><div class="f-prods">${cards}</div>`;
+  }
   function render() {
     if (!isCust()) return;
     const t = L(), o = curOpt();
     const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
       <span class="f-lang" role="group" aria-label="Language">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${k.toUpperCase()}</button>`).join('')}</span>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
-    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 4 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
-    const body = [stepSize, stepSides, stepComfort, stepColours, stepOffer][step](t, o);
+    if (product === null) { F.innerHTML = head + `<div class="f-body">${catalogHTML(t)}</div>`; return; }
+    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
+    const body = [stepSize, stepKit, stepColours, stepOffer][step](t, o);
     // keep the tapped control where the finger is: re-rendering the panel must not move the page
     const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
     F.innerHTML = head + steps + `<div class="f-body">${body}</div>` + bar(t, o);
-    if (step === 4 && o) { try { $('quote').innerHTML = buildQuote(); fitQuote(); } catch (e) { /* the picture may fail without WebGL */ } }
+    if (step === 3 && o) { try { $('quote').innerHTML = buildQuote(); fitQuote(); } catch (e) { /* the picture may fail without WebGL */ } }
     if (anchor) { const a2 = F.querySelector(lastTap); if (a2) { const dy = a2.getBoundingClientRect().top - y0; if (Math.abs(dy) > 1) window.scrollBy({ top: dy, behavior: 'instant' }); } }
     // scroll to a side only once, right after it was picked in 3D — never on later re-renders (they would yank the page up)
     if (scrollFocus && focusId && step === 1) { const el = F.querySelector(`[data-side="${focusId}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
@@ -505,9 +532,9 @@
     const total = q().total, ok = !!o && total > 0;
     const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
-    const to = step < 4 ? nextStep() : 4;
-    const nextLabel = step === 4 ? esc(t.send) : to === 4 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
-    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 4 ? ' →' : ''}</button></div>`;
+    const to = step < 3 ? nextStep() : 3;
+    const nextLabel = step === 3 ? esc(t.send) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
+    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 3 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
   }
 
   /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
@@ -588,10 +615,13 @@
     h += `<div class="f-cards">
       <button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${t.wall}</b><span class="d">${t.wallD}</span></button>
       <button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${t.free}</b><span class="d">${t.freeD}</span></button></div>`;
-    // roof type: rotating louvres (S400 / S500) or the sliding roof (Slide), each with its lowest price for this size
-    const firstOf = (r) => DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[r] }, cat).options[0];
-    h += head(t.roofT, '') + two('rooft', ['rotating', 'sliding'].map((r) => { const x = firstOf(r); return { v: r, label: r === 'rotating' ? t.roofRot : t.roofSlide, pr: x ? t.from + ' ' + fe(gross(x.total)) : t.louvNa, off: !x && state.roof !== r }; }), state.roof, t);
-    h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${state.roof === 'sliding' ? t.roofSlideD : t.roofRotD}</p>`;
+    // model is chosen on the entry catalog; show it with a link back to change it
+    if (product) { const pr = prodById(product); h += `<div class="f-h3"><span>${t.roofT}</span><button type="button" class="f-link" data-backcat="1">${esc(pr ? (pr.name[lang] || pr.name.en) : '')} \u00b7 ${esc(t.catChange)}</button></div>`; }
+    else {
+      const firstOf = (r) => DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[r] }, cat).options[0];
+      h += head(t.roofT, '') + two('rooft', ['rotating', 'sliding'].map((r) => { const x = firstOf(r); return { v: r, label: r === 'rotating' ? t.roofRot : t.roofSlide, pr: x ? t.from + ' ' + fe(gross(x.total)) : t.louvNa, off: !x && state.roof !== r }; }), state.roof, t);
+      h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${state.roof === 'sliding' ? t.roofSlideD : t.roofRotD}</p>`;
+    }
     const dim = (k, label, v) => `<div class="f-dim"><label for="f-${k}">${label}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="f-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
     h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
     const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6600, 3500], [8000, 4000]];
@@ -689,7 +719,7 @@
   function stepSides(t, o) {
     if (!o) return '';
     const ops = opsOf(o);
-    let h = `<h2>${t.s2}</h2><p class="f-lead">${t.s2l}</p>`;
+    let h = `<div class="f-kit-h"><h3>${t.s2}</h3><p class="f-lead">${t.s2l}</p></div>`;
     h += `<div class="f-h3"><span>${t.allSides}</span></div><div class="f-chips" style="margin-bottom:12px">${['none', 'zip', 'glass'].map((f) => `<button type="button" class="f-chip" data-all="${f}" aria-pressed="${ops.filter((x) => !window.isJoint(x.id)).every((x) => (state.fills[x.id] || 'none') === f)}">${GL[f]} ${t.fills[f]}</button>`).join('')}</div>`;
     h += `<div class="f-sides">`;
     for (const op of ops) {
@@ -730,7 +760,7 @@
     const card = (title, desc, chips, list = true) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div><div class="f-chips${list ? ' f-list' : ''}">${chips}</div>`;
     const chip = (attr, cur, label, delta) => `<button type="button" class="f-chip" ${attr} aria-pressed="${cur}">${esc(label)}${delta !== undefined ? `<span class="pr">${plusE(delta)}</span>` : ''}</button>`;
     // light: every kind the price list has for this type, in groups that combine (Slide: gutter and posts only)
-    let h = `<h2>${t.s3}</h2><p class="f-lead">${t.s3l}</p>`;
+    let h = `<div class="f-kit-h f-kit-sep"><h3>${t.s3}</h3><p class="f-lead">${t.s3l}</p></div>`;
     const recess = Object.values(state.fills).some((f) => f === 'glass' || f === 'zip');
     window.lightGroups().forEach((g, i) => {
       const chips = g.items.map((k) => chip(`data-light="${g.k}:${k}"`, window.lightCurOf(g.k) === k, t.lightI[k], k === 'none' ? undefined : g.k === 'zipled' ? window.zipLedDelta() : optDelta(window.lightPatch(g.k, k)))).join('');
@@ -752,6 +782,10 @@
   /* step 4: colours */
   // colour rows: [as frame] · standard colours · [chosen special colour] · "…" opens the full palette under the row
   const moreOpen = {};
+  function stepKit(t, o) {
+    if (!o) return '';
+    return `<h2>${t.kitT}</h2><p class="f-lead">${t.kitL}</p>` + stepSides(t, o) + stepComfort(t, o);
+  }
   function stepColours(t, o) {
     if (!o) return '';
     const e = colorsEff(), rates = cat.coating.rates[sysOf(o)];
@@ -875,7 +909,7 @@
       mode(cust) { if (!loaded()) return; try { if (cust) window.posthog.startSessionRecording(); else window.posthog.stopSessionRecording(); } catch (e) { /* older loader */ } },
     };
   })();
-  const J = { t0: Date.now(), active: 0, open: 0, stepSec: [0, 0, 0, 0, 0], last: Date.now(), sizes: new Set(), roofs: new Set(), mounts: new Set(),
+  const J = { t0: Date.now(), active: 0, open: 0, stepSec: [0, 0, 0, 0], last: Date.now(), sizes: new Set(), roofs: new Set(), mounts: new Set(),
     sides: 0, colours: 0, lights: 0, comfort: 0, layouts: 0, rot: 0, views: new Set(), night: 0, printed: 0, linkCopied: 0, photo: 0, formOpened: 0, minP: Infinity, maxP: 0, visit: null };
   (function initVisit() {
     const qs = new URLSearchParams(location.search), utm = ['utm_source', 'utm_medium', 'utm_campaign'].map((k) => qs.get(k)).filter(Boolean).join(' / ');
@@ -951,9 +985,9 @@
     return { p, lvl: p >= 9 ? 'high' : p >= 5 ? 'mid' : 'low' };
   }
   const JT = {
-    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', replay: 'Sitzungsaufzeichnung (intern)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
-    en: { head: 'How I used the configurator (for your advice)', replay: 'Session recording (internal)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Sides', 'Comfort', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
-    ru: { head: 'Как я пользовался конфигуратором (для консультации)', replay: 'Запись сессии (для офиса)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
+    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', replay: 'Sitzungsaufzeichnung (intern)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Ausstattung', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
+    en: { head: 'How I used the configurator (for your advice)', replay: 'Session recording (internal)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Equipment', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
+    ru: { head: 'Как я пользовался конфигуратором (для консультации)', replay: 'Запись сессии (для офиса)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Комплектация', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
   };
   function journeyText() {
     trackPrice();
@@ -1143,13 +1177,12 @@
     if (visited.has(i)) return true;
     const po = state.po;
     if (i === 0) return false; // the size is always looked at first
-    if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none') || Object.keys(state.verto.packs || {}).length > 0;
-    if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.zipLed || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
-    if (i === 3) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
+    if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none') || Object.keys(state.verto.packs || {}).length > 0 || !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.zipLed || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
+    if (i === 2) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
     return false;
   }
   /** the step "Next" leads to: the next one not answered yet, else the offer */
-  function nextStep() { for (let i = step + 1; i < 4; i++) if (!stepDone(i)) return i; return 4; }
+  function nextStep() { for (let i = step + 1; i < 3; i++) if (!stepDone(i)) return i; return 3; }
   function go(d) {
     if (d > 0) { visited.add(step); step = nextStep(); } else step = Math.max(0, step - 1);
     A.track('step_opened', { step: step + 1, via: d > 0 ? 'next' : 'back' });
@@ -1182,6 +1215,8 @@
     if (d.lang) { setLang(d.lang); return; }
     if (d.mode) { if (window.Backend && window.Backend.onMode && window.Backend.onMode(d.mode)) return; setMode(d.mode); return; }
     if (d.step !== undefined) { step = Number(d.step); focusId = null; render(); return; }
+    if (d.product) { pickProduct(d.product); return; }
+    if (d.backcat) { product = null; render(); return; }
     if (d.go) {
       if (d.go === 'form') { // "Send request" in the bar: send when the form is filled, otherwise go to the first missing field
         syncForm();
@@ -1433,6 +1468,7 @@
   const m = /[#&]c=([^&]+)/.exec(location.hash);
   let restored = false;
   if (m) { try { restore(dec(m[1])); restored = true; dirty = true; } catch (e) { /* broken link: start fresh */ } }
+  if (restored) product = (state.roof === 'sliding' ? 'slide' : 'louvered');
   if (!restored && mode === 'cust') {
     // customers start with an open pergola: nothing extra is pre-selected, every addition is their own choice
     state.fills = {}; build(); renderEstimate();
@@ -1440,6 +1476,6 @@
     if (saved && JSON.stringify(saved) !== JSON.stringify(snapshot())) resumeOffer = saved;
   }
   // what the partner login (backend.js) needs from the configurator
-  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 4) render(); } catch (e) { /* not ready */ } } };
+  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 3) render(); } catch (e) { /* not ready */ } } };
   setMode(mode);
 })();
