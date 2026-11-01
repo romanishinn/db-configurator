@@ -96,6 +96,7 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar .tb-pop { flex: 1 1 100%; color: #1c2226; background: #eef0f1; /* the toolbar stays light in dark mode too */ border: 1px solid #d6dadd; border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; justify-content: start; }
 .toolbar #tb-views { grid-auto-flow: column; gap: 6px; }
 .toolbar #tb-views button { padding: 6px 12px; }
+.toolbar #tb-views button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; color: #1c2226; font-weight: 600; }
 .toolbar #tb-lights { display: flex; flex-wrap: wrap; gap: 6px; }
 .toolbar #tb-lights[hidden] { display: none; }
 .toolbar #tb-lights button { padding: 7px 11px; }
@@ -164,7 +165,7 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 .toolbar label[hidden] { display: none; }
 .toolbar input[type=range] { width: 140px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 6px; padding: 4px 9px; cursor: pointer; }
-@media (max-width: 760px) { .toolbar .ib .cap { display: none; } .toolbar .ib { padding: 0 12px; } .toolbar label { grid-template-columns: 84px minmax(0, 1fr) 60px; } .toolbar input[type=range] { width: 100%; } .toolbar .tb-pop { justify-content: stretch; } }
+@media (max-width: 760px) { .toolbar .ib .cap { display: none; } .toolbar .tb-row { flex-wrap: wrap; } .toolbar .ib { padding: 0 8px; flex: 1 1 calc(25% - 5px); justify-content: center; min-width: 0; } .toolbar label { grid-template-columns: 84px minmax(0, 1fr) 60px; } .toolbar input[type=range] { width: 100%; } .toolbar .tb-pop { justify-content: stretch; } }
 .toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; }
 .toolbar .dots i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 1px; vertical-align: middle; }
 .toolbar .dots i:nth-child(1) { background: #8c9196; } .toolbar .dots i:nth-child(2) { background: #2c6a86; } .toolbar .dots i:nth-child(3) { background: #d9b26b; }
@@ -1293,6 +1294,7 @@ function refit() { if (!userMoved) setView(lastView); }
 function setView(kind) {
   if (PHOTO.pts) { applyPhotoCamera(); return; } // on the customer's photo the view is the photo's own camera
   lastView = kind; userMoved = false;
+  { const vp = $('tb-views'); if (vp) for (const x of vp.children) x.setAttribute('aria-pressed', String(x.id === 'v-' + kind)); }
   controls.maxPolarAngle = Math.PI * 0.495;
   if (kind === 'under') { underView(); return; }
   const { W, D } = bounds(), c = new THREE.Vector3(W / 2, 1.2, D / 2);
@@ -2293,7 +2295,7 @@ function togglePop(btn, pop, force) {
 }
 $('tb-view').onclick = () => togglePop($('tb-view'), $('tb-views'));
 $('tb-move').onclick = () => togglePop($('tb-move'), $('tb-sliders'));
-$('tb-views').addEventListener('click', (e) => { if (e.target.closest('button')) togglePop($('tb-view'), $('tb-views'), false); });
+/* keep the views panel open after a pick so the view can be switched without reopening; it closes on tap-outside */
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#tb-views, #tb-sliders, #tb-view, #tb-move')) { togglePop($('tb-view'), $('tb-views'), false); } });
 $('clr-btn').onclick = () => { const pop = $('clr-pop'); pop.hidden = !pop.hidden; $('clr-btn').setAttribute('aria-pressed', String(!pop.hidden)); renderColorPop(); };
 $('clr-pop').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; state.colorOpen = b.dataset.pick; renderColors(); $('clr').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
