@@ -468,3 +468,14 @@ body:has(#bk-modelbar) .app { margin-top: 46px; }
 body.cust.cat-only .stage { display: none; }
 body.cust.cat-only .app { grid-template-columns: minmax(0, 720px); justify-content: center; }
 @media (max-width: 760px) { body.cust.cat-only .app { grid-template-columns: 1fr; } }
+
+/* Installation / delivery services — toggle rows in the offer */
+.f-svc-list { display: grid; gap: 6px; }
+.f-svc { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: var(--ctl-r); padding: 11px 12px; cursor: pointer; transition: border-color .12s, background-color .12s; }
+.f-svc[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.f-svc-ck { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--muted); flex: none; position: relative; }
+.f-svc[aria-pressed="true"] .f-svc-ck { background: var(--accent); border-color: var(--accent); }
+.f-svc[aria-pressed="true"] .f-svc-ck::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.f-svc-nm { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.f-svc-nm small { color: var(--muted); font-size: 12px; }
+.f-svc .pr { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }

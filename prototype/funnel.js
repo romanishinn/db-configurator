@@ -470,9 +470,17 @@
       else if (l.k === 'extra') out.push({ g: 'extra', t: l.t || t.extraT, d: '', a: l.a });
       else if (l.k === 'tbd') out.push({ g: 'colours', t: t.tbdPanels, d: t.onRequest, a: null });
     }
+    for (const svc of svcList()) out.push({ g: 'extra', svc: true, t: svc.k === 'install' ? t.montT : t.delivery, d: svc.k === 'install' ? t.svcInstallD : t.svcDelivD, a: svc.a });
     return out;
   }
   const groupsOrder = ['pergola', 'sides', 'comfort', 'colours', 'extra'];
+  // default-on services derived from the goods subtotal; the customer can switch each off in the offer
+  const SVC = { install: 0.10, deliv: 0.04 };
+  const svcOn = (k) => state[k] !== false;
+  function svcList() { const base = q().total, out = []; if (!(base > 0)) return out; if (svcOn('install')) out.push({ k: 'install', a: Math.floor(base * SVC.install / 10) * 10 }); if (svcOn('deliv')) out.push({ k: 'deliv', a: Math.floor(base * SVC.deliv / 10) * 10 }); return out; }
+  function svcTotal() { return svcList().reduce((s, x) => s + x.a, 0); }
+  function grandNet() { return q().total + svcTotal(); }
+  function notInclNote(t) { const m = []; if (!svcOn('deliv')) m.push(t.deliveryLc); if (!svcOn('install')) m.push(t.montLc); return t.qExclPre + [...m, t.qExclBase].join(', ') + '.'; }
 
   /* ---------- rendering ---------- */
   const F = $('funnel');
@@ -495,6 +503,9 @@
   T.de.kitT = 'Ausstattung'; T.de.kitL = 'Seiten, Verglasung und Komfort \u2014 alles, was wir liefern.';
   T.en.kitT = 'Equipment'; T.en.kitL = 'Sides, glazing and comfort \u2014 everything we deliver.';
   T.ru.kitT = '\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0430\u0446\u0438\u044f'; T.ru.kitL = '\u0421\u0442\u043e\u0440\u043e\u043d\u044b, \u043e\u0441\u0442\u0435\u043a\u043b\u0435\u043d\u0438\u0435 \u0438 \u043a\u043e\u043c\u0444\u043e\u0440\u0442 \u2014 \u0432\u0441\u0451, \u0447\u0442\u043e \u043c\u044b \u0434\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u043c.';
+  T.de.svcT = 'Montage und Lieferung'; T.de.svcHint = 'Standardmäßig enthalten — abwählen, um aus dem Angebot zu nehmen.'; T.de.svcInstallD = '10 % des Preises'; T.de.svcDelivD = '4 % des Preises'; T.de.montLc = 'Montage'; T.de.deliveryLc = 'Lieferung'; T.de.andW = 'und'; T.de.qExclPre = 'Nicht enthalten: '; T.de.qExclBase = 'Fundamente, Elektroanschluss, Genehmigungen';
+  T.en.svcT = 'Installation and delivery'; T.en.svcHint = 'Included by default — uncheck to remove from the offer.'; T.en.svcInstallD = '10% of the price'; T.en.svcDelivD = '4% of the price'; T.en.montLc = 'installation'; T.en.deliveryLc = 'delivery'; T.en.andW = 'and'; T.en.qExclPre = 'Not included: '; T.en.qExclBase = 'foundations, electrical connection, permits';
+  T.ru.svcT = 'Монтаж и доставка'; T.ru.svcHint = 'Включены по умолчанию — снимите галочку, чтобы убрать из предложения.'; T.ru.svcInstallD = '10 % от стоимости'; T.ru.svcDelivD = '4 % от стоимости'; T.ru.montLc = 'монтаж'; T.ru.deliveryLc = 'доставка'; T.ru.andW = 'и'; T.ru.qExclPre = 'Не входит: '; T.ru.qExclBase = 'фундамент, подключение электричества, разрешения';
   const prodById = (id) => PRODUCTS.find((pp) => pp.id === id) || null;
   function pickProduct(id) {
     const pr = prodById(id); if (!pr || pr.locked) return;
@@ -534,7 +545,7 @@
     renderCard();
   }
   function bar(t, o) {
-    const total = q().total, ok = !!o && total > 0;
+    const total = grandNet(), ok = !!o && total > 0;
     const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
     const to = step < 3 ? nextStep() : 3;
@@ -834,17 +845,23 @@
   /* step 5: offer */
   function stepOffer(t, o) {
     if (!o) return '';
-    const lines = quoteLines(), total = q().total;
+    const lines = quoteLines(), total = grandNet();
     let h = `<h2>${t.s5}</h2><p class="f-lead">${t.s5l}</p>`;
     h += `<div class="f-total"><span class="muted">${t.qGross}</span><span class="big">${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</span><span class="muted">${t.qNet}</span><span class="r">${fe(total)}</span></div>`;
     if (q().incomplete) h += `<div class="f-note">${t.incomplete}</div>`;
     h += `<table class="f-sum"><tbody>`;
     for (const g of groupsOrder) {
-      const ls = lines.filter((l) => l.g === g); if (!ls.length) continue;
+      const ls = lines.filter((l) => l.g === g && !l.svc); if (!ls.length) continue;
       h += `<tr class="g"><td colspan="2">${t.grp[g]}</td></tr>` + ls.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s">${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(gross(l.a))}</td></tr>`).join('');
     }
     h += `</tbody></table><p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.gross}</p>`;
-    h += `<div class="f-h3"><span>${t.notIncl}</span></div><ul class="f-incl">${t.notInclList.map((x, i) => `<li>${i === 0 && q().lines.some((l) => l.k === 'mont') ? t.delivery : x}</li>`).join('')}</ul>`;
+    const _base = q().total;
+    const svcRow = (k, label, dsc, amt) => `<button type="button" class="f-svc" data-svc="${k}" aria-pressed="${svcOn(k)}"><span class="f-svc-ck" aria-hidden="true"></span><span class="f-svc-nm">${esc(label)}<small>${esc(dsc)}</small></span><span class="pr">${svcOn(k) ? '+' + fe(gross(amt)) : '\u2014'}</span></button>`;
+    h += `<div class="f-h3"><span>${t.svcT}</span></div><div class="f-svc-list">${svcRow('install', t.montT, t.svcInstallD, Math.floor(_base * SVC.install / 10) * 10)}${svcRow('deliv', t.delivery, t.svcDelivD, Math.floor(_base * SVC.deliv / 10) * 10)}</div><p class="f-lead" style="font-size:12px;margin:6px 0 0">${esc(t.svcHint)}</p>`;
+    const _miss = []; if (!svcOn('deliv')) _miss.push(t.deliveryLc); if (!svcOn('install')) _miss.push(t.montLc);
+    const _cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+    const _incl = [...(_miss.length ? [_cap(_miss.join(` ${t.andW} `))] : []), ...t.notInclList.slice(1)];
+    h += `<div class="f-h3"><span>${t.notIncl}</span></div><ul class="f-incl">${_incl.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
     h += formHtml(t);
     h += `<div class="f-h3" style="margin-top:22px"><span>${t.faqT}</span></div><div class="f-faq">${t.faq.map(([qq, a]) => `<details><summary>${qq}</summary><p>${a}</p></details>`).join('')}</div>`;
     return h;
@@ -859,7 +876,6 @@
       <label>${t.phone}<input type="tel" name="phone" autocomplete="tel" value="${esc(form.phone)}"></label>
       <label>${t.place}<input type="text" name="place" autocomplete="postal-code" value="${esc(form.place)}">${err('place')}</label>
       <label>${t.when}<select name="when">${t.whens.map((w, i) => `<option value="${i}" ${form.when === i ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
-      <label class="chk"><input type="checkbox" name="mount" ${form.mount ? 'checked' : ''}> ${t.wantMount}</label>
       <label class="chk"><input type="checkbox" name="visit" ${form.visit ? 'checked' : ''}> ${t.wantVisit}</label>
       <label>${t.msg}<textarea name="msg">${esc(form.msg)}</textarea></label>
       <p class="f-priv">${t.privacy}</p>
@@ -1020,7 +1036,7 @@
   /* ---------- request e-mail and quote ---------- */
   function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} ${L().m}` : ''; } // as built (louvre spacing may round the size)
   function mailText() {
-    const t = L(), lines = quoteLines(), total = q().total;
+    const t = L(), lines = quoteLines(), total = grandNet();
     const parts = [t.mailHi, '', `${t.qFacts.size}: ${sizeText()} (${state.mount === 'wall' ? t.wall : t.free})`];
     for (const l of lines) parts.push(`- ${l.t}${l.d ? ' (' + l.d + ')' : ''}: ${l.a == null ? '—' : fe(gross(l.a))}`);
     parts.push('', `${t.qGross}: ${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))} (${t.net} ${fe(total)})`, '');
@@ -1048,12 +1064,12 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
     // postcode / town: optional for now
     if (Object.keys(formErr).length) { render(); const f = F.querySelector('#f-form'); if (f) f.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
-    const subj = t.mailSubj(sizeText(), (q().incomplete ? t.from + ' ' : '') + fe(gross(q().total)));
+    const subj = t.mailSubj(sizeText(), (q().incomplete ? t.from + ' ' : '') + fe(gross(grandNet())));
     lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
     openMail();
     // with the database switched on the request is also stored as a lead (the office sees it on its board)
     if (window.Backend) window.Backend.submitRequest({ name: form.name, phone: form.phone, email: form.email, address: form.place, postcode: (String(form.place || '').match(/\b\d{4}\b/) || [''])[0], note: [form.msg, form.mount ? t.wantMount : '', form.visit ? t.wantVisit : ''].filter(Boolean).join(' · ') }, journeyText());
-    A.track('request_sent', { total_gross: Math.round(gross(q().total)), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
+    A.track('request_sent', { total_gross: Math.round(gross(grandNet())), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
     sentOk = true; render();
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
@@ -1096,7 +1112,7 @@
     }
   }
   function buildQuote() {
-    const t = L(), o = curOpt(), lines = quoteLines(), total = q().total, e = colorsEff();
+    const t = L(), o = curOpt(), lines = quoteLines(), total = grandNet(), e = colorsEff();
     const ops = opsOf(o).filter((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
     const comfort = lines.filter((l) => l.g === 'comfort').map((l) => l.t).join(', ') || t.none;
     const facts = [
@@ -1128,7 +1144,7 @@
         <tr class="sumrow"><td style="padding-top:8px">${t.qNet}</td><td class="a" style="padding-top:8px">${fe(total)}</td></tr>
         <tr class="sumrow"><td>${t.qVat}</td><td class="a">${fe(total * VAT)}</td></tr>
         <tr class="tot"><td>${t.qGross}${q().incomplete ? ' (' + t.from + ')' : ''}</td><td class="a">${fe(gross(total))}</td></tr></tbody></table></div>
-      <ul class="notes">${t.qNotes.map((n, i) => `<li>${i === 1 && q().lines.some((l) => l.k === 'mont') ? t.qExclM : n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
+      <ul class="notes">${t.qNotes.map((n, i) => `<li>${i === 1 ? notInclNote(t) : n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
       <div class="foot"><a href="${esc(shareUrl())}">${t.qLink}</a> · ${no}</div></div>`;
   }
   /** the offer always fits one A4 page: measured at print width, a long one is scaled down a little */
@@ -1222,6 +1238,7 @@
     if (d.step !== undefined) { step = Number(d.step); focusId = null; render(); return; }
     if (d.product) { pickProduct(d.product); return; }
     if (d.backcat) { product = null; render(); return; }
+    if (d.svc) { state[d.svc] = state[d.svc] === false ? true : false; render(); return; }
     if (d.go) {
       if (d.go === 'form') { // "Send request" in the bar: send when the form is filled, otherwise go to the first missing field
         syncForm();
