@@ -1156,7 +1156,7 @@
   function renderHotspots() {
     const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
     const anySet = ops.some((x) => state.fills[x.id]); // a side answered "nothing" also stops the pulse
-    CTA.hidden = anySet || Object.keys(state.verto.packs || {}).length > 0 || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span><span class="l">${esc(L().cta)}</span><span class="s">${esc(L().ctaS)}</span>`;
+    CTA.hidden = true; // the "+" hint is not shown; the blue "+" hotspots speak for themselves
     const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || '?')).join(',') + '|' + (focusId || '');
     if (sig === hsSig) return; hsSig = sig;
     HS.innerHTML = ops.map((x) => {
