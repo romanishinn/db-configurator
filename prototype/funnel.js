@@ -350,7 +350,7 @@
   }
   function bar(t, o) {
     const total = grandNet(), ok = !!o && total > 0;
-    const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(total)}</b><span>${t.net}<span class="nt"> · ${fe(gross(total))} ${t.gross}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
+    const price = ok ? `<b>${fe(total)}</b><span>${t.net}<span class="nt"> · ${fe(gross(total))} ${t.gross}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
     const to = step < 3 ? nextStep() : 3;
     const nextLabel = step === 3 ? esc(t.send) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
@@ -407,7 +407,8 @@
    *  "From the centre" is a two-way Win Glass system (the panels part in the middle); the others park on one side.
    *  A way that this size is not made in is greyed out. */
   // opening direction shown as a clean arrow: opens to the right →, to the left ←, from the centre ⇄ (two arrows)
-  const GLASS_TYP_ICON = { ltr: '→', rtl: '←', center: '⇄' };
+  // SVG arrows (opens right / left / from the centre) — centred crisply in the chip, unlike text glyphs
+  const GLASS_TYP_ICON = { ltr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>', rtl: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>', center: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l-4 5 4 5M3 12h18M17 7l4 5-4 5"/></svg>' };
   function glassTyp(op) { const g = glassFor(op), cfg = glassCfg(op); return g.best && g.best.opening === 'double' ? 'center' : (cfg.side || state.glassSide) === 'left' ? 'rtl' : 'ltr'; }
   function glassPos(op, t) {
     const g = glassFor(op), cfg = glassCfg(op), typ = glassTyp(op);
@@ -659,7 +660,7 @@
     const lines = quoteLines(), total = grandNet();
     let h = `<h2>${t.s5}</h2><p class="f-lead">${t.s5l}</p>`;
     // net is the headline figure; VAT and the gross total sit small beneath it
-    h += `<div class="f-total"><span class="muted">${t.qNet}</span><span class="big">${q().incomplete ? t.from + ' ' : ''}${fe(total)}</span><span class="muted">${t.qVat}</span><span class="r">${fe(total * VAT)}</span><span class="muted">${t.qGross}</span><span class="r">${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</span></div>`;
+    h += `<div class="f-total"><span class="muted">${t.qNet}</span><span class="big">${fe(total)}</span><span class="muted">${t.qVat}</span><span class="r">${fe(total * VAT)}</span><span class="muted">${t.qGross}</span><span class="r">${fe(gross(total))}</span></div>`;
     if (q().incomplete) h += `<div class="f-note">${t.incomplete}</div>`;
     h += `<table class="f-sum"><tbody>`;
     for (const g of groupsOrder) {
@@ -852,7 +853,7 @@
     const t = L(), lines = quoteLines(), total = grandNet();
     const parts = [t.mailHi, '', `${t.qFacts.size}: ${sizeText()} (${state.mount === 'wall' ? t.wall : t.free})`];
     for (const l of lines) parts.push(`- ${l.t}${l.d ? ' (' + l.d + ')' : ''}: ${l.a == null ? '—' : fe(gross(l.a))}`);
-    parts.push('', `${t.qGross}: ${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))} (${t.net} ${fe(total)})`, '');
+    parts.push('', `${t.qGross}: ${fe(gross(total))} (${t.net} ${fe(total)})`, '');
     parts.push(`${t.name}: ${form.name}`, `${t.email}: ${form.email}`);
     if (form.phone) parts.push(`${t.phone.replace(/ \(.*\)/, '')}: ${form.phone}`);
     if (form.place.trim()) parts.push(`${t.place.replace(/ \(.*\)/, '')}: ${form.place}`);
@@ -877,7 +878,7 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
     // postcode / town: optional for now
     if (Object.keys(formErr).length) { render(); const f = F.querySelector('#f-form'); if (f) f.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
-    const subj = t.mailSubj(sizeText(), (q().incomplete ? t.from + ' ' : '') + fe(gross(grandNet())));
+    const subj = t.mailSubj(sizeText(), fe(gross(grandNet())));
     lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
     openMail();
     // with the database switched on the request is also stored as a lead (the office sees it on its board)
@@ -956,7 +957,7 @@
       <div><h2>${t.qPrice}</h2><table><thead><tr><th>${t.qItem}</th><th class="a">${t.net}</th></tr></thead><tbody>${rows}
         <tr class="sumrow"><td style="padding-top:8px">${t.qNet}</td><td class="a" style="padding-top:8px">${fe(total)}</td></tr>
         <tr class="sumrow"><td>${t.qVat}</td><td class="a">${fe(total * VAT)}</td></tr>
-        <tr class="tot"><td>${t.qGross}${q().incomplete ? ' (' + t.from + ')' : ''}</td><td class="a">${fe(gross(total))}</td></tr></tbody></table></div>
+        <tr class="tot"><td>${t.qGross}</td><td class="a">${fe(gross(total))}</td></tr></tbody></table></div>
       <ul class="notes">${t.qNotes.map((n, i) => `<li>${i === 1 ? notInclNote(t) : n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
       <div class="foot"><a href="${esc(shareUrl())}">${t.qLink}</a> · ${no}</div></div>`;
   }

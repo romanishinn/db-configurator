@@ -505,7 +505,8 @@ body.cust.cat-only .app { grid-template-columns: minmax(0, 720px); justify-conte
 :root.boot-cat .stage { display: none !important; }
 
 /* opening-direction chips: a single clean arrow, centred */
-.f-chip.gtyp { min-width: 44px; justify-content: center; font-size: 18px; line-height: 1; padding: 7px 12px; }
+.f-chip.gtyp { min-width: 44px; justify-content: center; padding: 6px 12px; }
+.f-chip.gtyp svg { width: 20px; height: 20px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* 3D-toolbar popups built from the funnel (louvre/opening + comfort): light theme via local var overrides */
 #tb-louv, #tb-kit-pop { --ink: #1c2226; --muted: #5b666e; --line: #c7ced2; --panel: #fff; --bg: #fff; --accent: #2c6a86; --accent-soft: #e1edf2; color: #1c2226; }
