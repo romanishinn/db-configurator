@@ -136,7 +136,6 @@
     if (!cat.fabrics.collections.some((f) => f.id === state.colors.fabric)) state.colors.fabric = 'soltis-7635';
     $('w').value = state.width; $('d').value = state.depth;
     $('mt-wall').setAttribute('aria-pressed', state.mount === 'wall'); $('mt-free').setAttribute('aria-pressed', state.mount === 'free');
-    $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular');
     if (state.roof !== 'sliding') state.roof = 'rotating';
     syncRoofButtons();
     const idx = s.optIndex || 0;
@@ -1073,7 +1072,7 @@
     if (d.rooft) { if (d.rooft === state.roof) return; state.roof = d.rooft; syncRoofButtons(); keepCamera(() => recompute(false)); return; }
     if (d.opt !== undefined) { choose(Number(d.opt)); return; }
     if (d.spl) { keepCamera(() => window.splitAct(d.spl)); return; }
-    if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(false)); return; }
+    if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; keepCamera(() => recompute(false)); return; }
     if (d.zctlall || d.zctl) { // the motor brand follows the control if needed (see brandFor)
       const ids = zipIds(), cur = Object.fromEntries(ids.map((id) => [id, ctlOf(id)]));
       const modeFor = d.zctlall ? () => d.zctlall : (id) => (id === d.id ? d.zctl : cur[id]);
@@ -1170,7 +1169,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.SIDE_NAME = isCust() ? (id) => sideLabel(id, curOpt()) : null; window.VERTO_TEXT = isCust() ? { sideT: L().vSideT, pos: L().vPos, prof: L().vProf, none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop();
+    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.SIDE_NAME = isCust() ? (id) => sideLabel(id, curOpt()) : null; window.VERTO_TEXT = isCust() ? { sideT: L().vSideT, pos: L().vPos, prof: L().vProf, none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop(); cap('tb-kit', (L().steps && L().steps[1]) || 'Kit'); $('tb-kit').title = (L().steps && L().steps[1]) || ''; if (!$('tb-louv').hidden) renderLouvPop(); if (!$('tb-kit-pop').hidden) renderKitPop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
@@ -1256,6 +1255,40 @@
   })();
   HS.addEventListener('click', (ev) => { const b = ev.target.closest('[data-hs]'); if (!b) return; dirty = true; openCard(b.dataset.hs); });
   CTA.addEventListener('click', () => { step = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // 3D toolbar popups built from the funnel: louvre direction + per-side glass opening, and the comfort equipment
+  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.' };
+  function renderLouvPop() {
+    const pop = $('tb-louv'); if (!pop) return;
+    const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }
+    const glassOps = opsOf(o).filter((op) => state.fills[op.id] === 'glass');
+    let h = `<div class="tl-sec"><div class="tl-h">${esc(t.glTypT)} — ${esc(t.fills.glass)}</div>`;
+    h += glassOps.length ? glassOps.map((op) => `<div class="tl-side"><span class="tl-nm">${esc(sideLabel(op.id, o))}</span><div class="tl-ctl">${glassPos(op, t)}</div></div>`).join('') : `<div class="tl-empty">${esc(KIT_EMPTY[lang] || KIT_EMPTY.en)}</div>`;
+    h += `</div>`;
+    const wall = state.mount === 'wall';
+    const dirName = (k) => { const s = k === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF); return s.charAt(0).toUpperCase() + s.slice(1); };
+    const dirOk = (k) => { try { return !!DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: k, families: FAMILIES[state.roof] }, cat).options[0]; } catch (e) { return true; } };
+    h += `<div class="tl-sec"><div class="tl-h">${esc(t.louvDir)}</div><div class="sub2">${['parallel', 'perpendicular'].map((k) => `<button type="button" class="f-chip" data-louv="${k}" aria-pressed="${state.louvres === k}" ${dirOk(k) ? '' : 'disabled'}>${k === 'parallel' ? '⇆' : '⇅'} ${esc(dirName(k))}</button>`).join('')}</div></div>`;
+    pop.innerHTML = h;
+  }
+  function renderKitPop() {
+    const pop = $('tb-kit-pop'); if (!pop) return;
+    const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }
+    pop.innerHTML = stepComfort(t, o);
+  }
+  window.renderLouvPop = renderLouvPop; window.renderKitPop = renderKitPop;
+  for (const id of ['tb-louv', 'tb-kit-pop']) {
+    const pop = $(id); if (!pop) continue;
+    pop.addEventListener('click', (ev) => {
+      const b = ev.target.closest('button'); if (!b || !pop.contains(b) || !b.dataset || Object.keys(b.dataset).length === 0) return;
+      act(b.dataset);
+      if (!pop.hidden) { id === 'tb-louv' ? renderLouvPop() : renderKitPop(); }
+    });
+    pop.addEventListener('change', (ev) => { // the "More…" selects inside comfort use change, like the funnel
+      const s = ev.target.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
+      act({ [s.dataset.sel]: s.value }); if (!pop.hidden) { id === 'tb-louv' ? renderLouvPop() : renderKitPop(); }
+    });
+  }
 
   /* ---------- side card: tap a side in 3D and choose right there ---------- */
   const CARD = document.createElement('div'); CARD.id = 'f-card'; CARD.className = 'cust-only'; CARD.hidden = true;

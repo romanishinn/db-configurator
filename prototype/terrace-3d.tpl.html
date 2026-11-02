@@ -331,12 +331,13 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <!-- icon row: view · louvre direction · movement sliders · day/night (+ colours in pro) -->
       <div class="tb-row">
         <button type="button" class="ib" id="tb-view" aria-expanded="false" aria-controls="tb-views" title="Вид"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="14.5" r="3.6"/><circle cx="17.5" cy="14.5" r="3.6"/><path d="M10.1 14.2c1.2-.9 2.6-.9 3.8 0M2.9 13.6 5 7.5h2.2M21.1 13.6 19 7.5h-2.2"/></svg><span class="cap">Вид</span></button>
-        <button type="button" class="ib" id="louv-dir" aria-pressed="true" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h15l-3.5-3.5M20 15.5H5l3.5 3.5"/></svg><span class="cap">Ламели</span></button>
+        <button type="button" class="ib" id="louv-dir" aria-expanded="false" aria-controls="tb-louv" aria-label="Открывание" title="Открывание: направление ламелей и открывание стекла по сторонам"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h15l-3.5-3.5M20 15.5H5l3.5 3.5"/></svg><span class="cap">Ламели</span></button>
         <button type="button" class="ib" id="tb-move" aria-expanded="false" aria-controls="tb-sliders" title="Движение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3zM12 12l8-4.7M12 12v9.2M12 12 4 7.3"/></svg><span class="cap">Движение</span></button>
         <button type="button" class="ib" id="evening" aria-pressed="false" title="День / ночь"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="bulb" d="M12 2.8a6.2 6.2 0 0 0-3.7 11.2c.7.5 1.1 1.3 1.1 2.1v.6h5.2v-.6c0-.8.4-1.6 1.1-2.1A6.2 6.2 0 0 0 12 2.8z"/><path d="M9.6 19.2h4.8M10.4 21.6h3.2"/></svg><span class="cap">Ночь</span></button>
         <button type="button" class="ib" id="tb-light" aria-expanded="false" aria-controls="tb-lights" title="Освещение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h18M5 6.5v2.2M19 6.5v2.2"/><path d="M8 10.5l-1.2 2.4M12 10.5v2.7M16 10.5l1.2 2.4" stroke-dasharray="1.6 1.4"/><circle cx="12" cy="17.5" r="2.6"/><path d="M12 13.2v1.7"/></svg><span class="cap">Свет</span></button>
         <button type="button" class="ib" id="tb-verto" aria-expanded="false" aria-controls="tb-vertos" title="Decor – вертикальные профили"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5h18"/><path d="M6 7v13M9.5 7v13M13 7v13M16.5 7v13" stroke-width="2.2"/></svg><span class="cap">Decor</span></button>
         <button type="button" class="ib" id="tb-color" aria-expanded="false" aria-controls="tb-colors" title="Цвет стекла и рамы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.6 1.9-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.6" cy="11" r="1.3"/><circle cx="10.5" cy="7.2" r="1.3"/><circle cx="15" cy="7.4" r="1.3"/></svg><span class="cap">Цвет</span></button>
+        <button type="button" class="ib" id="tb-kit" aria-expanded="false" aria-controls="tb-kit-pop" title="Комплектация: обогрев, освещение, музыка, датчики и управление"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h7M15 7h5M4 12h11M19 12h1M4 17h3M11 17h9"/><circle cx="13" cy="7" r="2"/><circle cx="17" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></svg><span class="cap">Комплект</span></button>
         <button type="button" class="ib" id="tb-photo" hidden aria-pressed="false" title="Посмотреть перголу на фото своей террасы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8.2c0-1 .8-1.8 1.8-1.8h2.4l1.5-2.2h5.6l1.5 2.2h2.4c1 0 1.8.8 1.8 1.8v9.6c0 1-.8 1.8-1.8 1.8H5.3c-1 0-1.8-.8-1.8-1.8z"/><circle cx="12" cy="13" r="3.6"/></svg><span class="cap">Фото</span></button>
         <button type="button" class="ib pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span><span class="cap">Цвета</span></button>
       </div>
@@ -349,6 +350,8 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
       <div class="tb-pop" id="tb-lights" hidden></div>
       <div class="tb-pop" id="tb-vertos" hidden></div>
       <div class="tb-pop" id="tb-colors" hidden></div>
+      <div class="tb-pop" id="tb-louv" hidden></div>
+      <div class="tb-pop" id="tb-kit-pop" hidden></div>
       <div class="tb-pop" id="tb-sliders" hidden>
         <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
         <label id="sopen-l" hidden>Крыша <input type="range" id="sopen" min="0" max="100" value="0"><span id="sopenv">закрыта</span></label>
@@ -2080,7 +2083,6 @@ function renderLouvreInfo(cur, alt) {
   } else if (!alt && cur) t += ' · повернуть нельзя: размер не собирается';
   if (cur && cur.family === 'SLIDE') t += ` · Slide: ламели складываются к ${state.mount === 'wall' && cur.louvres === 'parallel' ? 'стене' : 'краю'}, пакет ≈ ${mm(slideStack(cur.modules[0]))} мм`;
   $('louv-info').innerHTML = t;
-  $('louv-dir').disabled = !alt && !!cur;
 }
 /** run a rebuild without moving the camera: the view the user chose (front, top, rotated) stays as it was */
 function keepCamera(fn) {
@@ -2088,7 +2090,8 @@ function keepCamera(fn) {
   fn();
   camera.position.copy(pos); controls.target.copy(tgt); lastView = lv; userMoved = um; controls.update();
 }
-$('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 'perpendicular' : 'parallel'; e.currentTarget.setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(true)); };
+$('louv-dir').onclick = () => { if (window.renderLouvPop) window.renderLouvPop(); togglePop($('louv-dir'), $('tb-louv')); };
+$('tb-kit').onclick = () => { if (window.renderKitPop) window.renderKitPop(); togglePop($('tb-kit'), $('tb-kit-pop')); };
 $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.setAttribute('aria-pressed', state.evening); applyAnim(); };
 /* icon row: "view" and "movement" open small panels above the toolbar; one at a time, a click elsewhere closes them */
 /* ---------- light: choose it right on the 3D and see it at once (evening, louvres closed, view from below) ---------- */
@@ -2293,7 +2296,7 @@ for (const pop of document.querySelectorAll('.toolbar .tb-pop')) {
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
   // one panel at a time (view, movement, light, colour); the louvre and day/night buttons do not close it
-  if (open) for (const [b, p] of [['tb-view', 'tb-views'], ['tb-move', 'tb-sliders'], ['tb-light', 'tb-lights'], ['tb-verto', 'tb-vertos'], ['tb-color', 'tb-colors']]) {
+  if (open) for (const [b, p] of [['tb-view', 'tb-views'], ['tb-move', 'tb-sliders'], ['tb-light', 'tb-lights'], ['tb-verto', 'tb-vertos'], ['tb-color', 'tb-colors'], ['louv-dir', 'tb-louv'], ['tb-kit', 'tb-kit-pop']]) {
     if (p !== pop.id) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); }
   }
   pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));

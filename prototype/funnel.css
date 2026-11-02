@@ -506,3 +506,17 @@ body.cust.cat-only .app { grid-template-columns: minmax(0, 720px); justify-conte
 
 /* opening-direction chips: a single clean arrow, centred */
 .f-chip.gtyp { min-width: 44px; justify-content: center; font-size: 18px; line-height: 1; padding: 7px 12px; }
+
+/* 3D-toolbar popups built from the funnel (louvre/opening + comfort): light theme via local var overrides */
+#tb-louv, #tb-kit-pop { --ink: #1c2226; --muted: #5b666e; --line: #c7ced2; --panel: #fff; --bg: #fff; --accent: #2c6a86; --accent-soft: #e1edf2; color: #1c2226; }
+#tb-louv h3, #tb-kit-pop h3 { font-size: 13px; margin: 0 0 2px; color: #1c2226; }
+#tb-louv .f-lead, #tb-kit-pop .f-lead { font-size: 12px; margin: 0 0 8px; }
+#tb-kit-pop .f-kit-h { margin-bottom: 8px; }
+#tb-kit-pop .f-h3 { margin: 12px 0 6px; }
+#tb-louv .tl-sec + .tl-sec { margin-top: 12px; border-top: 1px solid #d6dadd; padding-top: 10px; }
+#tb-louv .tl-h { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; margin-bottom: 7px; }
+#tb-louv .tl-side { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-bottom: 9px; }
+#tb-louv .tl-nm { font-size: 12.5px; min-width: 62px; padding-top: 5px; }
+#tb-louv .tl-ctl { display: grid; gap: 5px; }
+#tb-louv .tl-empty { font-size: 12.5px; color: #5b666e; }
+#tb-louv .sub2 { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: #5b666e; }
