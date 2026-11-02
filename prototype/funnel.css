@@ -173,7 +173,9 @@ body.cust #hint { max-width: 340px; }
 /* 3D call to action: "+" buttons on the sides and a hint pill */
 body.cust #hint { display: none !important; }
 #hotspots { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
-.hs { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #5b9bd5; background: rgba(255,255,255,.96); color: #5b9bd5; font: 600 22px/1 var(--f-body); box-shadow: 0 0 0 4px rgba(91,155,213,.26), 0 2px 10px rgba(0,0,0,.22); cursor: pointer; display: grid; place-items: center; padding: 0; }
+/* default "+" on an untouched model: faint and translucent, barely there — gone for good once any side is chosen */
+.hs { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid rgba(91,155,213,.5); background: rgba(91,155,213,.12); color: rgba(37,80,110,.7); font: 600 21px/1 var(--f-body); box-shadow: none; cursor: pointer; display: grid; place-items: center; padding: 0; opacity: .8; transition: opacity .15s, transform .15s; }
+.hs:hover { opacity: 1; }
 .hs.filled { background: #fff; color: #5b9bd5; border-color: #5b9bd5; font-size: 16px; width: 30px; height: 30px; }
 .hs.nofill { opacity: .45; background: rgba(91,155,213,.55); box-shadow: 0 1px 4px rgba(0,0,0,.15); }
 .hs.nofill:hover { opacity: 1; }

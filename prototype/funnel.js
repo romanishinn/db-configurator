@@ -1178,16 +1178,19 @@
   const CTA = document.createElement('button'); CTA.type = 'button'; CTA.id = 'f-cta'; CTA.className = 'cust-only';
   $('view').parentElement.append(HS, CTA);
   let hsSig = '';
+  let hsGone = false; // once the user answers any side (open / zip / glass / panels), the "+" buttons vanish for good — the picture stays clean
   function renderHotspots() {
-    const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
-    const anySet = ops.some((x) => state.fills[x.id]); // a side answered "nothing" also stops the pulse
-    CTA.hidden = true; // the "+" hint is not shown; the blue "+" hotspots speak for themselves
-    const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || '?')).join(',') + '|' + (focusId || '');
+    const o = curOpt(), ops = opsOf(o);
+    const anySet = ops.some((x) => state.fills[x.id]); // a side answered (incl. "open"/nothing) retires the "+" for the whole model
+    CTA.hidden = true; // the "+" hint is not shown
+    if (anySet) hsGone = true;
+    if (hsGone) { if (HS.innerHTML) HS.innerHTML = ''; hsSig = '__gone__'; return; }
+    const sig = lang + '|' + ops.map((x) => x.id).join(',') + '|' + (focusId || '');
     if (sig === hsSig) return; hsSig = sig;
+    // nothing chosen yet: faint, barely-there "+" on each side, still tappable
     HS.innerHTML = ops.map((x) => {
-      const f = state.fills[x.id] || 'none', lab = `${sideLabel(x.id, o)} · ${f === 'none' ? L().hsOpen : L().fills[f]}`;
-      const no = state.fills[x.id] === 'none'; // chosen "nothing": a see-through +, still tappable
-      return `<button type="button" class="hs${f === 'none' ? '' : ' filled'}${no ? ' nofill' : ''}${!anySet ? ' pulse' : ''}${focusId === x.id ? ' on' : ''}" data-hs="${x.id}" title="${esc(lab)}" aria-label="${esc(lab)}">${f === 'none' ? '+' : GL[f]}</button>`;
+      const lab = `${sideLabel(x.id, o)} · ${L().hsOpen}`;
+      return `<button type="button" class="hs${focusId === x.id ? ' on' : ''}" data-hs="${x.id}" title="${esc(lab)}" aria-label="${esc(lab)}">+</button>`;
     }).join('');
   }
   const hv = new THREE.Vector3();
