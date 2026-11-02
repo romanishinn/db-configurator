@@ -28,7 +28,7 @@
       heatsSlide: { 's5.single': '1 Strahler 1,5 kW (~10 m²)', 's5.double': 'Doppelstrahler 4 kW (~25 m²)' },
       windSun: 'Wind + Sonne', stackLbl: (v) => `gefaltet ${v} mm`, tbRoof: 'Dach', roofClosed: 'zu', roofOpen: 'offen',
       reqPostH: 'Höhere Zusatzstützen',
-      glTypT: 'Öffnung', glTyp: { ltr: 'nach rechts', rtl: 'nach links', center: 'aus der Mitte' }, glOpen: 'offen', ctaS: 'Tippen Sie auf ＋, um eine Seite zu schließen', tones: ['Anthrazit', 'Graphit', 'Grau', 'Hellgrau', 'Weiß', 'Beige', 'Taupe', 'Schwarz'], tbColor: 'Farbe', tbColorT: 'Glas- und Rahmenfarbe', noGlass: 'Erscheint, sobald eine Seite Glas hat', tbLight: 'Licht', tbUnder: 'Von unten', ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
+      glTypT: 'Öffnung', glTyp: { ltr: 'nach rechts', rtl: 'nach links', center: 'aus der Mitte' }, glOpen: 'offen', ctaS: 'Tippen Sie auf ＋, um eine Seite zu schließen', tones: ['Anthrazit', 'Graphit', 'Grau', 'Hellgrau', 'Weiß', 'Beige', 'Taupe', 'Schwarz'], tbColor: 'Farbe', tbColorT: 'Glas- und Rahmenfarbe', noGlass: 'Erscheint, sobald eine Seite Glas hat', tbLight: 'Licht', tbUnder: 'Von unten', tbInside: 'Von innen', tbExit: 'Ausgang', ctlNa: 'nicht in dieser Größe', ctlS: { pergola: 'Fernbedienung', switch: 'Wandtaster', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'ohne zweiten Sender – Empfangsmodul in der Stütze', remote: 'kleiner zusätzlicher Handsender nur für die Screens', smart: 'per App am Smartphone, auch unterwegs', switch: 'fester Taster an der Wand, nur mit YOODA- oder Somfy-Motoren', solar: 'Motor mit Solarpanel, kein Stromkabel, eigener Handsender' },
       photo: 'Foto', photoT: 'Pergola auf dem Foto Ihrer Terrasse ansehen', photoHelp: 'Ziehen Sie die 4 Punkte dorthin, wo die Stützen stehen sollen: 1 und 2 an der Hauswand (links, rechts), 3 und 4 vorne. Die Pergola stellt sich in die Perspektive des Fotos. Das Foto bleibt in Ihrem Browser.', photoBad: 'Punkte vertauscht: 1 und 2 an der Wand links und rechts, 3 und 4 vorne rechts und links.', photoPts: 'Punkte', photoHelpS: '4 Punkte auf die Ecken der Pergola ziehen', photoShot: 'Bild speichern', photoNew: 'Anderes Foto', photoOff: 'Foto entfernen', photoTip: 'Wie sieht es bei Ihnen aus? Laden Sie ein Foto Ihrer Terrasse hoch – die Pergola erscheint darauf, auch im Angebot.', photoBtn: '📷 Foto hochladen',
     },
@@ -42,7 +42,7 @@
       heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
       windSun: 'Wind + sun', stackLbl: (v) => `folded ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
       reqPostH: 'Taller additional posts',
-      glTypT: 'Opening', glTyp: { ltr: 'to the right', rtl: 'to the left', center: 'from the centre' }, glOpen: 'open', ctaS: 'Tap ＋ to close a side', tones: ['anthracite', 'graphite', 'grey', 'light grey', 'white', 'beige', 'taupe', 'black'], tbColor: 'Colour', tbColorT: 'Glass and frame colour', noGlass: 'Appears once a side has glass', tbLight: 'Light', tbUnder: 'From below', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
+      glTypT: 'Opening', glTyp: { ltr: 'to the right', rtl: 'to the left', center: 'from the centre' }, glOpen: 'open', ctaS: 'Tap ＋ to close a side', tones: ['anthracite', 'graphite', 'grey', 'light grey', 'white', 'beige', 'taupe', 'black'], tbColor: 'Colour', tbColorT: 'Glass and frame colour', noGlass: 'Appears once a side has glass', tbLight: 'Light', tbUnder: 'From below', tbInside: 'From inside', tbExit: 'Exit', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
       ctlH: { pergola: 'no second remote – receiver module in the post', remote: 'small extra remote just for the screens', smart: 'with the smartphone app, also when away', switch: 'fixed push button on the wall, only with YOODA or Somfy motors', solar: 'motor with solar panel, no power cable, own remote' },
       photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Drag the 4 points to where the posts will stand: 1 and 2 at the house wall (left, right), 3 and 4 at the front. The pergola takes the perspective of the photo. The photo stays in your browser.', photoBad: 'Points mixed up: 1 and 2 at the wall left and right, 3 and 4 at the front right and left.', photoPts: 'Points', photoHelpS: 'Drag the 4 points to the pergola corners', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
     },
@@ -56,7 +56,7 @@
       heatsSlide: { 's5.single': '1 обогреватель 1,5 кВт (~10 м²)', 's5.double': 'Двойной обогреватель 4 кВт (~25 м²)' },
       windSun: 'Ветер + солнце', stackLbl: (v) => `сложены ${v} мм`, tbRoof: 'Крыша', roofClosed: 'закрыта', roofOpen: 'открыта',
       reqPostH: 'Доп. стойки выше стандарта',
-      glTypT: 'Открывание', glTyp: { ltr: 'слева направо', rtl: 'справа налево', center: 'из центра' }, glOpen: 'открыто', ctaS: 'Нажмите ＋, чтобы закрыть сторону', tones: ['антрацит', 'графит', 'серый', 'светло-серый', 'белый', 'бежевый', 'тауп', 'чёрный'], tbColor: 'Цвет', tbColorT: 'Цвет стекла и рамы', noGlass: 'Появится, когда закроете сторону стеклом', tbLight: 'Свет', tbUnder: 'Снизу', ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
+      glTypT: 'Открывание', glTyp: { ltr: 'слева направо', rtl: 'справа налево', center: 'из центра' }, glOpen: 'открыто', ctaS: 'Нажмите ＋, чтобы закрыть сторону', tones: ['антрацит', 'графит', 'серый', 'светло-серый', 'белый', 'бежевый', 'тауп', 'чёрный'], tbColor: 'Цвет', tbColorT: 'Цвет стекла и рамы', noGlass: 'Появится, когда закроете сторону стеклом', tbLight: 'Свет', tbUnder: 'Снизу', tbInside: 'Изнутри', tbExit: 'Выход', ctlNa: 'не для этого размера', ctlS: { pergola: 'Пульт', switch: 'Кнопка', smart: 'Смартфон', solar: 'Солнечная батарея' },
       ctlH: { pergola: 'без второго пульта – приёмный блок в стойке', remote: 'небольшой отдельный пульт только для скринов', smart: 'через приложение в смартфоне, и вне дома', switch: 'кнопка на стене, только с моторами YOODA или Somfy', solar: 'мотор с солнечной панелью, без кабеля, свой пульт' },
       photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Перетащите 4 точки туда, где будут стоять стойки: 1 и 2 – у стены дома (слева и справа), 3 и 4 – впереди. Пергола сама встанет в перспективу фото. Фото остаётся в вашем браузере.', photoBad: 'Точки перепутаны: 1 и 2 – у стены слева и справа, 3 и 4 – впереди справа и слева.', photoPts: 'Точки', photoHelpS: 'Перетащите 4 точки на углы перголы', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
@@ -70,7 +70,7 @@
       heatsSlide: { 's5.single': '1 grijalica 1,5 kW (~10 m²)', 's5.double': 'Dvostruka grijalica 4 kW (~25 m²)' },
       windSun: 'Vjetar + sunce', stackLbl: (v) => `složeno ${v} mm`, tbRoof: 'Krov', roofClosed: 'zatvoreno', roofOpen: 'otvoreno',
       reqPostH: 'Viši dodatni stupovi',
-      glTypT: 'Otvaranje', glTyp: { ltr: 'udesno', rtl: 'ulijevo', center: 'iz sredine' }, glOpen: 'otvoreno', ctaS: 'Dodirnite ＋ da zatvorite stranu', tones: ['antracit', 'grafit', 'siva', 'svijetlosiva', 'bijela', 'bež', 'taupe', 'crna'], tbColor: 'Boja', tbColorT: 'Boja stakla i okvira', noGlass: 'Pojavljuje se kada strana ima staklo', tbLight: 'Svjetlo', tbUnder: 'Odozdo', ctlNa: 'nije za ovu veličinu', ctlS: { pergola: 'Daljinski', switch: 'Zidni taster', smart: 'Pametni telefon', solar: 'Solarno' },
+      glTypT: 'Otvaranje', glTyp: { ltr: 'udesno', rtl: 'ulijevo', center: 'iz sredine' }, glOpen: 'otvoreno', ctaS: 'Dodirnite ＋ da zatvorite stranu', tones: ['antracit', 'grafit', 'siva', 'svijetlosiva', 'bijela', 'bež', 'taupe', 'crna'], tbColor: 'Boja', tbColorT: 'Boja stakla i okvira', noGlass: 'Pojavljuje se kada strana ima staklo', tbLight: 'Svjetlo', tbUnder: 'Odozdo', tbInside: 'Iznutra', tbExit: 'Izlaz', ctlNa: 'nije za ovu veličinu', ctlS: { pergola: 'Daljinski', switch: 'Zidni taster', smart: 'Pametni telefon', solar: 'Solarno' },
       ctlH: { pergola: 'bez drugog odašiljača – prijemni modul u stupu', remote: 'mali dodatni ručni odašiljač samo za screenove', smart: 'putem aplikacije na pametnom telefonu, i izvan kuće', switch: 'fiksni taster na zidu, samo s YOODA ili Somfy motorima', solar: 'motor sa solarnim panelom, bez strujnog kabela, vlastiti ručni odašiljač' },
       photo: 'Fotografija', photoT: 'Pogledajte pergolu na fotografiji svoje terase', photoHelp: 'Povucite 4 točke tamo gdje će stajati stupovi: 1 i 2 uz zid kuće (lijevo, desno), 3 i 4 sprijeda. Pergola se postavlja u perspektivu fotografije. Fotografija ostaje u vašem pregledniku.', photoBad: 'Točke su zamijenjene: 1 i 2 uz zid lijevo i desno, 3 i 4 sprijeda desno i lijevo.', photoPts: 'Točke', photoHelpS: 'Povucite 4 točke na uglove pergole', photoShot: 'Spremi sliku', photoNew: 'Druga fotografija', photoOff: 'Ukloni fotografiju', photoTip: 'Kako će izgledati kod vas? Učitajte fotografiju svoje terase – pergola se pojavljuje na njoj, i u ponudi.', photoBtn: '📷 Učitaj fotografiju',
     },
@@ -82,7 +82,7 @@
     T[l].weathers.windSun = x.windSun;
     Object.assign(T[l].heats, x.heatsSlide);
     T[l].opt.OPT_REQUIRED_POST_HEIGHT = x.reqPostH;
-    Object.assign(T[l].tb, { color: x.tbColor, colorT: x.tbColorT, light: x.tbLight, under: x.tbUnder, sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen, photo: x.photo, photoT: x.photoT, photoHelp: x.photoHelp, photoHelpS: x.photoHelpS, photoBad: x.photoBad, photoPts: x.photoPts, photoShot: x.photoShot, photoNew: x.photoNew, photoOff: x.photoOff });
+    Object.assign(T[l].tb, { color: x.tbColor, colorT: x.tbColorT, light: x.tbLight, under: x.tbUnder, inside: x.tbInside, exit: x.tbExit, sopen: x.tbRoof, roofClosed: x.roofClosed, roofOpen: x.roofOpen, photo: x.photo, photoT: x.photoT, photoHelp: x.photoHelp, photoHelpS: x.photoHelpS, photoBad: x.photoBad, photoPts: x.photoPts, photoShot: x.photoShot, photoNew: x.photoNew, photoOff: x.photoOff });
   }
 
   /* ---------- small helpers ---------- */
@@ -286,6 +286,13 @@
     step = 0; render();
   }
   // plain-language copy for the model cards, so a customer understands the difference at a glance
+  // labels for the house-wall opening control, per language
+  const OPEN_T = {
+    ru: { title: 'Выход в стене', no: 'Нет', yes: 'Есть', slide: 'Слайдинг', door: 'Дверь', hole: 'Проём', width: 'Ширина', height: 'Высота', center: 'По центру', left: 'Левее', right: 'Правее', panels: 'Полотен', opening: 'Открывание', mLeft: 'Влево', mRight: 'Вправо', both: 'Обе', pocket: 'В стену', doorOpen: 'Открывание двери', dIn: 'Внутрь', dOut: 'Наружу', dAside: 'В сторону', leaves: 'Створки', one: 'Одна', two: 'Две' },
+    en: { title: 'Exit in the wall', no: 'No', yes: 'Yes', slide: 'Sliding', door: 'Door', hole: 'Opening', width: 'Width', height: 'Height', center: 'Centre', left: 'Left', right: 'Right', panels: 'Panels', opening: 'Opening', mLeft: 'Left', mRight: 'Right', both: 'Both', pocket: 'Into the wall', doorOpen: 'Door opening', dIn: 'Inward', dOut: 'Outward', dAside: 'To the side', leaves: 'Leaves', one: 'One', two: 'Two' },
+    de: { title: 'Ausgang in der Wand', no: 'Nein', yes: 'Ja', slide: 'Schiebe', door: 'Tür', hole: 'Öffnung', width: 'Breite', height: 'Höhe', center: 'Mittig', left: 'Links', right: 'Rechts', panels: 'Elemente', opening: 'Öffnung', mLeft: 'Links', mRight: 'Rechts', both: 'Beide', pocket: 'In die Wand', doorOpen: 'Türöffnung', dIn: 'Nach innen', dOut: 'Nach außen', dAside: 'Zur Seite', leaves: 'Flügel', one: 'Eins', two: 'Zwei' },
+    hr: { title: 'Izlaz u zidu', no: 'Ne', yes: 'Da', slide: 'Klizna', door: 'Vrata', hole: 'Otvor', width: 'Širina', height: 'Visina', center: 'U sredini', left: 'Lijevo', right: 'Desno', panels: 'Elementi', opening: 'Otvaranje', mLeft: 'Lijevo', mRight: 'Desno', both: 'Oba', pocket: 'U zid', doorOpen: 'Otvaranje vrata', dIn: 'Prema unutra', dOut: 'Prema van', dAside: 'U stranu', leaves: 'Krila', one: 'Jedno', two: 'Dva' }
+  };
   const PROD_COPY = {
     louvered: {
       desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.' },
@@ -1184,7 +1191,9 @@
     cap('tb-view', tb.view); cap('louv-dir', (L().glTypT) || tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-size', (L().steps && L().steps[0]) || 'Размер'); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-size').title = (L().steps && L().steps[0]) || 'Размер'; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.SIDE_NAME = isCust() ? (id) => sideLabel(id, curOpt()) : null; window.VERTO_TEXT = isCust() ? { sideT: L().vSideT, pos: L().vPos, prof: L().vProf, none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop(); cap('tb-kit', (L().steps && L().steps[1]) || 'Kit'); $('tb-kit').title = (L().steps && L().steps[1]) || ''; if (!$('tb-louv').hidden) renderLouvPop(); if (!$('tb-kit-pop').hidden) renderKitPop(); if (!$('tb-size-pop').hidden) renderSizePop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
-    $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
+    $('v-front').textContent = tb.front; $('v-top').textContent = tb.top; if (tb.inside) $('v-inside').textContent = tb.inside;
+    if (tb.exit) { const l = $('openanim') && $('openanim').closest('label'); if (l && l.firstChild && l.firstChild.nodeType === 3) l.firstChild.nodeValue = tb.exit + ' '; }
+    { const ov = $('openanimv'); if (ov) ov.textContent = state.openOpen === 0 ? (tb.closed || 'закрыт') : state.openOpen === 100 ? (tb.open || 'открыт') : state.openOpen + '%'; }
     $('louv-dir').title = isCust() ? tb.louv : LOUV_TITLE_RU; $('louv-dir').setAttribute('aria-label', tb.louv);
     gopenText();
     window.MM_UNIT = isCust() ? L().mm : 'мм';
@@ -1302,32 +1311,26 @@
     h += `<div class="f-chips"><button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${esc(t.parNone)}</button>${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${esc(t.sides[f])}</button>`).join('')}</div>`;
     if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="tb-ph">${esc(t.parH)}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="tb-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
     // house-wall opening (door / sliding exit) — wall-mount only; visual context, not in the price
-    // ASSUMPTION: RU labels for now; localise (de/en/hr) once the feature is confirmed
     if (wall) {
-      const op = state.opening;
-      const chip = (attr, val, label, cur) => `<button type="button" class="f-chip" data-${attr}="${val}" aria-pressed="${cur}">${label}</button>`;
-      const sub = (title) => `<div class="f-h3" style="margin-top:10px"><span>${title}</span></div>`;
-      h += `<div class="f-h3"><span>Выход в стене</span></div>`;
-      h += `<div class="f-chips"><button type="button" class="f-chip" data-openon="0" aria-pressed="${!op.on}">Нет</button><button type="button" class="f-chip" data-openon="1" aria-pressed="${op.on}">Есть</button></div>`;
+      const op = state.opening, ot = OPEN_T[lang] || OPEN_T.en;
+      const chip = (attr, val, label, cur) => `<button type="button" class="f-chip" data-${attr}="${val}" aria-pressed="${cur}">${esc(label)}</button>`;
+      const sub = (title) => `<div class="f-h3" style="margin-top:10px"><span>${esc(title)}</span></div>`;
+      h += `<div class="f-h3"><span>${esc(ot.title)}</span></div>`;
+      h += `<div class="f-chips"><button type="button" class="f-chip" data-openon="0" aria-pressed="${!op.on}">${esc(ot.no)}</button><button type="button" class="f-chip" data-openon="1" aria-pressed="${op.on}">${esc(ot.yes)}</button></div>`;
       if (op.on) {
-        // type of exit
-        h += `<div class="f-chips" style="margin-top:6px">${chip('openkind', 'slide', 'Слайдинг', op.kind === 'slide')}${chip('openkind', 'door', 'Дверь', op.kind === 'door')}${chip('openkind', 'hole', 'Проём', op.kind === 'hole')}</div>`;
-        // size
-        const odim = (k, label, v) => `<div class="f-dim"><label>${label}, ${t.m}</label><div class="f-step"><button type="button" data-onudge="${k}" data-d="-100" aria-label="−">−</button><input type="number" inputmode="decimal" step="0.1" min="0.6" value="${(v / 1000).toFixed(2)}" data-odim="${k}"><button type="button" data-onudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
-        h += `<div class="f-dims" style="margin-top:6px">${odim('w', 'Ширина', op.w)}${odim('h', 'Высота', op.h)}</div>`;
-        // position along the wall
-        h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip gtyp" data-opos="-" aria-label="Левее" title="Левее">${GLASS_TYP_ICON.rtl}</button><button type="button" class="f-chip" data-opos="center" aria-pressed="${op.cx == null}">По центру</button><button type="button" class="f-chip gtyp" data-opos="+" aria-label="Правее" title="Правее">${GLASS_TYP_ICON.ltr}</button></div>`;
-        // door sub-options
+        h += `<div class="f-chips" style="margin-top:6px">${chip('openkind', 'slide', ot.slide, op.kind === 'slide')}${chip('openkind', 'door', ot.door, op.kind === 'door')}${chip('openkind', 'hole', ot.hole, op.kind === 'hole')}</div>`;
+        const odim = (k, label, v) => `<div class="f-dim"><label>${esc(label)}, ${t.m}</label><div class="f-step"><button type="button" data-onudge="${k}" data-d="-100" aria-label="−">−</button><input type="number" inputmode="decimal" step="0.1" min="0.6" value="${(v / 1000).toFixed(2)}" data-odim="${k}"><button type="button" data-onudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
+        h += `<div class="f-dims" style="margin-top:6px">${odim('w', ot.width, op.w)}${odim('h', ot.height, op.h)}</div>`;
+        h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip gtyp" data-opos="-" aria-label="${esc(ot.left)}" title="${esc(ot.left)}">${GLASS_TYP_ICON.rtl}</button><button type="button" class="f-chip" data-opos="center" aria-pressed="${op.cx == null}">${esc(ot.center)}</button><button type="button" class="f-chip gtyp" data-opos="+" aria-label="${esc(ot.right)}" title="${esc(ot.right)}">${GLASS_TYP_ICON.ltr}</button></div>`;
         if (op.kind === 'door') {
-          h += sub('Открывание двери') + `<div class="f-chips">${chip('doordir', 'in', 'Внутрь', op.doorDir === 'in')}${chip('doordir', 'out', 'Наружу', op.doorDir === 'out')}${chip('doordir', 'aside', 'В сторону', op.doorDir === 'aside')}</div>`;
-          h += sub('Створки') + `<div class="f-chips">${chip('doorleaves', '1', 'Одна', op.doorLeaves === 1)}${chip('doorleaves', '2', 'Две', op.doorLeaves === 2)}</div>`;
+          h += sub(ot.doorOpen) + `<div class="f-chips">${chip('doordir', 'in', ot.dIn, op.doorDir === 'in')}${chip('doordir', 'out', ot.dOut, op.doorDir === 'out')}${chip('doordir', 'aside', ot.dAside, op.doorDir === 'aside')}</div>`;
+          h += sub(ot.leaves) + `<div class="f-chips">${chip('doorleaves', '1', ot.one, op.doorLeaves === 1)}${chip('doorleaves', '2', ot.two, op.doorLeaves === 2)}</div>`;
         }
-        // sliding sub-options
         if (op.kind === 'slide') {
           const n = op.slidePanels;
-          h += sub('Полотен') + `<div class="f-chips">${[2, 3, 4].map((p) => chip('slidepanels', String(p), String(p), op.slidePanels === p)).join('')}</div>`;
-          const acts = n === 3 ? [['left', 'Влево'], ['right', 'Вправо']] : n === 2 ? [['left', 'Влево'], ['right', 'Вправо'], ['both', 'Обе'], ['pocket', 'В стену']] : [['left', 'Влево'], ['right', 'Вправо'], ['center', 'По центру'], ['pocket', 'В стену']];
-          h += sub('Открывание') + `<div class="f-chips">${acts.map(([v, l]) => chip('slideactive', v, l, op.slideActive === v)).join('')}</div>`;
+          h += sub(ot.panels) + `<div class="f-chips">${[2, 3, 4].map((p) => chip('slidepanels', String(p), String(p), op.slidePanels === p)).join('')}</div>`;
+          const acts = n === 3 ? [['left', ot.mLeft], ['right', ot.mRight]] : n === 2 ? [['left', ot.mLeft], ['right', ot.mRight], ['both', ot.both], ['pocket', ot.pocket]] : [['left', ot.mLeft], ['right', ot.mRight], ['center', ot.center], ['pocket', ot.pocket]];
+          h += sub(ot.opening) + `<div class="f-chips">${acts.map(([v, l]) => chip('slideactive', v, l, op.slideActive === v)).join('')}</div>`;
         }
       }
     }

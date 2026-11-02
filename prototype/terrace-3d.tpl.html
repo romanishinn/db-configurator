@@ -2164,7 +2164,7 @@ $('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent
 $('sopen').oninput = (e) => { state.slideOpen = +e.target.value; sopenText(); applyAnim(); renderLabels(state.options[state.optIndex]); };
 $('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
 $('gopen').oninput = (e) => { for (const c of Object.values(state.glassCfg)) delete c.open; state.glassOpen = +e.target.value; $('gopenv').textContent = state.glassOpen === 0 ? 'закрыто' : state.glassOpen === 100 ? 'открыто' : state.glassOpen + '%'; applyAnim(); };
-$('openanim').oninput = (e) => { state.openOpen = +e.target.value; $('openanimv').textContent = state.openOpen === 0 ? 'закрыт' : state.openOpen === 100 ? 'открыт' : state.openOpen + '%'; applyAnim(); };
+$('openanim').oninput = (e) => { const tx = window.TB_TEXT || {}; state.openOpen = +e.target.value; $('openanimv').textContent = state.openOpen === 0 ? (tx.closed || 'закрыт') : state.openOpen === 100 ? (tx.open || 'открыт') : state.openOpen + '%'; applyAnim(); };
 function renderLouvreInfo(cur, alt) {
   const wall = state.mount === 'wall';
   const dir = state.louvres === 'parallel' ? (wall ? 'вдоль стены' : 'вдоль ширины') : (wall ? 'от стены вперёд' : 'вдоль глубины');
