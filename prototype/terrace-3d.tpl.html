@@ -348,6 +348,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <button type="button" id="v-front">Спереди</button>
         <button type="button" id="v-top">Сверху</button>
         <button type="button" id="v-under">Снизу</button>
+        <button type="button" id="v-inside" hidden>Изнутри</button>
       </div>
       <div class="tb-pop" id="tb-lights" hidden></div>
       <div class="tb-pop" id="tb-vertos" hidden></div>
@@ -793,7 +794,7 @@ function requiredPostPositions(opt) {
 function syncRoofControls(opt) {
   const slide = !!opt && opt.family === 'SLIDE';
   $('sopen-l').hidden = !slide;
-  $('open-l').hidden = !(state.mount === 'wall' && state.opening && state.opening.on);
+  { const op = state.mount === 'wall' && state.opening && state.opening.on; $('open-l').hidden = !op; $('v-inside').hidden = !op; }
   $('ang').max = slide ? 90 : 135;
   if (slide && state.angle > 90) { state.angle = 90; $('ang').value = 90; $('angv').textContent = '90°'; }
   sopenText();
@@ -1371,9 +1372,11 @@ let lastView = 'under', userMoved = false;
 function refit() { if (!userMoved) setView(lastView); }
 function setView(kind) {
   if (PHOTO.pts) { applyPhotoCamera(); return; } // on the customer's photo the view is the photo's own camera
+  if (kind === 'inside' && !(state.mount === 'wall' && state.opening && state.opening.on && OPENING_GEO)) kind = 'under'; // no opening → fall back
   lastView = kind; userMoved = false;
   { const vp = $('tb-views'); if (vp) for (const x of vp.children) x.setAttribute('aria-pressed', String(x.id === 'v-' + kind)); }
   controls.maxPolarAngle = Math.PI * 0.495;
+  if (kind === 'inside') { insideView(); return; }
   if (kind === 'under') { underView(); return; }
   const { W, D } = bounds(), c = new THREE.Vector3(W / 2, 1.2, D / 2);
   const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
@@ -1417,6 +1420,19 @@ function underView() {
   const off = camera.position.clone().sub(t), phi = Math.acos(Math.min(1, Math.max(-1, off.y / off.length())));
   controls.maxPolarAngle = Math.max(Math.PI * 0.495, phi + 0.02); // the camera is below the roof: let it look up
   controls.maxDistance = d * 3; controls.update();
+}
+/** standing in the house just behind the wall opening, looking out through the door / sliding into the pergola */
+function insideView() {
+  const g = OPENING_GEO, { W, D } = bounds();
+  const cx = g ? g.cx : W / 2, oh = g ? g.oh : 2.1, oz = g ? g.z : -0.125;
+  const eyeY = Math.min(1.6, Math.max(1.1, oh * 0.65));
+  const t = new THREE.Vector3(W / 2, 1.35, D * 0.62);
+  camera.position.set(cx, eyeY, oz - 1.1); // a step back into the room
+  controls.target.copy(t);
+  controls.maxPolarAngle = Math.PI * 0.9; // allow looking up to the louvres
+  camera.lookAt(t); camera.updateMatrixWorld();
+  controls.maxDistance = D + 4;
+  controls.update();
 }
 controls.addEventListener('start', () => { userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
 const labels = $('labels');
@@ -2381,7 +2397,7 @@ document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#tb-vie
 $('clr-btn').onclick = () => { const pop = $('clr-pop'); pop.hidden = !pop.hidden; $('clr-btn').setAttribute('aria-pressed', String(!pop.hidden)); renderColorPop(); };
 $('clr-pop').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; state.colorOpen = b.dataset.pick; renderColors(); $('clr').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 $('v-under').onclick = () => setView('under');
-$('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top');
+$('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top'); $('v-inside').onclick = () => setView('inside');
 /* ---------- colour picker ---------- */
 const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); const f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map((v) => f(v).toString(16).padStart(2, '0')).join(''); };
 const swatchBg = (c) => c.finish === 'wood' ? `repeating-linear-gradient(100deg, ${c.hex} 0 3px, ${shade(c.hex, 0.82)} 3px 4px, ${c.hex} 4px 7px, ${shade(c.hex, 1.1)} 7px 8px)` : c.custom ? `repeating-linear-gradient(45deg, #9aa0a5 0 4px, #c4c8cb 4px 8px)` : c.finish === 'metallic' ? `linear-gradient(135deg, ${shade(c.hex, 1.25)}, ${c.hex} 55%, ${shade(c.hex, 0.8)})` : c.hex;
