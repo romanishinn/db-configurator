@@ -351,7 +351,7 @@
   }
   function bar(t, o) {
     const total = grandNet(), ok = !!o && total > 0;
-    const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
+    const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(total)}</b><span>${t.net}<span class="nt"> · ${fe(gross(total))} ${t.gross}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
     const to = step < 3 ? nextStep() : 3;
     const nextLabel = step === 3 ? esc(t.send) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
@@ -659,7 +659,8 @@
     if (!o) return '';
     const lines = quoteLines(), total = grandNet();
     let h = `<h2>${t.s5}</h2><p class="f-lead">${t.s5l}</p>`;
-    h += `<div class="f-total"><span class="muted">${t.qGross}</span><span class="big">${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</span><span class="muted">${t.qNet}</span><span class="r">${fe(total)}</span></div>`;
+    // net is the headline figure; VAT and the gross total sit small beneath it
+    h += `<div class="f-total"><span class="muted">${t.qNet}</span><span class="big">${q().incomplete ? t.from + ' ' : ''}${fe(total)}</span><span class="muted">${t.qVat}</span><span class="r">${fe(total * VAT)}</span><span class="muted">${t.qGross}</span><span class="r">${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</span></div>`;
     if (q().incomplete) h += `<div class="f-note">${t.incomplete}</div>`;
     h += `<table class="f-sum"><tbody>`;
     for (const g of groupsOrder) {
