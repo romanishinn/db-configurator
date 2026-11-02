@@ -1416,3 +1416,35 @@
   window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 3) render(); } catch (e) { /* not ready */ } } };
   setMode(mode);
 })();
+
+/* Scroll affordance for toolbar popups: a down-chevron + "more below" state,
+   so a scrollable panel never hides its lower half silently. Survives panel
+   re-renders (innerHTML) via a MutationObserver. */
+(function () {
+  function wire(pop) {
+    if (pop._cueWired) return; pop._cueWired = true;
+    function ensureCue() {
+      if (pop.hidden) return;
+      if (!pop.querySelector(':scope > .tb-cue')) {
+        var c = document.createElement('div'); c.className = 'tb-cue';
+        c.innerHTML = '<button type="button" tabindex="-1" aria-label="Листать вниз"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>';
+        c.firstChild.addEventListener('click', function () { pop.scrollBy({ top: Math.round(pop.clientHeight * 0.8), behavior: 'smooth' }); });
+        pop.appendChild(c);
+      }
+    }
+    function upd() {
+      if (pop.hidden) { pop.classList.remove('more-below'); return; }
+      ensureCue();
+      var more = (pop.scrollHeight - pop.scrollTop - pop.clientHeight) > 12;
+      pop.classList.toggle('more-below', more);
+    }
+    pop.addEventListener('scroll', upd, { passive: true });
+    try { new MutationObserver(function () { if (!pop.hidden) { ensureCue(); requestAnimationFrame(upd); } }).observe(pop, { childList: true }); } catch (e) {}
+    try { new MutationObserver(function () { requestAnimationFrame(upd); setTimeout(upd, 90); }).observe(pop, { attributes: true, attributeFilter: ['hidden', 'style'] }); } catch (e) {}
+    try { if (window.ResizeObserver) new ResizeObserver(upd).observe(pop); } catch (e) {}
+    pop._cueUpd = upd;
+  }
+  function init() { var p = document.querySelectorAll('.toolbar .tb-pop'); for (var i = 0; i < p.length; i++) wire(p[i]); }
+  if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
+  window.addEventListener('resize', function () { var p = document.querySelectorAll('.toolbar .tb-pop'); for (var i = 0; i < p.length; i++) if (p[i]._cueUpd) p[i]._cueUpd(); });
+})();
