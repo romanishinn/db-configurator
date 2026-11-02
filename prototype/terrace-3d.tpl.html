@@ -133,7 +133,11 @@ body.fold-bottom .stage .toolbar .tb-pop:not([hidden]), body.fold-bottom .stage 
 body.fold-bottom .stage .toolbar .ib { box-shadow: 0 1px 6px rgba(0,0,0,.18); }
 body.fold-bottom #fold-bottom { bottom: 56px; }
 /* desktop: every panel under the 3D has the same height (longer ones scroll inside) — switching panels does not resize the 3D */
-@media (min-width: 761px) { .toolbar .tb-pop { height: clamp(150px, 27vh, 250px); overflow-y: auto; overscroll-behavior: contain; align-content: start; grid-auto-rows: max-content; box-sizing: border-box; } }
+/* desktop / tablet: panels float as a popover above the toolbar (no layout push, no jump) */
+@media (min-width: 761px) {
+  .toolbar .tb-pop:not([hidden]) { position: absolute; left: 12px; bottom: calc(100% + 10px); width: min(560px, calc(100% - 24px)); max-height: min(58vh, 440px); overflow-y: auto; overscroll-behavior: contain; align-content: start; grid-auto-rows: max-content; box-sizing: border-box; z-index: 30; background: rgba(240,242,243,.98); border: 1px solid #d6dadd; border-radius: 12px; box-shadow: 0 14px 36px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08); animation: pop-up .16s cubic-bezier(.2,.8,.2,1); }
+}
+@keyframes pop-up { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
 .toolbar #tb-vertos { display: grid; gap: 6px; }
 .toolbar #tb-vertos[hidden] { display: none; }
 .toolbar #tb-vertos .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
@@ -2160,7 +2164,7 @@ $('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent
 $('sopen').oninput = (e) => { state.slideOpen = +e.target.value; sopenText(); applyAnim(); renderLabels(state.options[state.optIndex]); };
 $('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
 $('gopen').oninput = (e) => { for (const c of Object.values(state.glassCfg)) delete c.open; state.glassOpen = +e.target.value; $('gopenv').textContent = state.glassOpen === 0 ? 'закрыто' : state.glassOpen === 100 ? 'открыто' : state.glassOpen + '%'; applyAnim(); };
-$('openanim').oninput = (e) => { state.openOpen = +e.target.value; $('openanimv').textContent = state.openOpen === 0 ? 'закрыт' : state.openOpen === 100 ? 'открыт' : state.openOpen + '%'; applyAnim(); };
+$('openanim').oninput = (e) => { const tx = window.TB_TEXT || {}; state.openOpen = +e.target.value; $('openanimv').textContent = state.openOpen === 0 ? (tx.closed || 'закрыт') : state.openOpen === 100 ? (tx.open || 'открыт') : state.openOpen + '%'; applyAnim(); };
 function renderLouvreInfo(cur, alt) {
   const wall = state.mount === 'wall';
   const dir = state.louvres === 'parallel' ? (wall ? 'вдоль стены' : 'вдоль ширины') : (wall ? 'от стены вперёд' : 'вдоль глубины');
