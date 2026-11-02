@@ -14,254 +14,7 @@
   // TODO(office): paste the Project API key (phc_…). While empty nothing is loaded and no consent banner is shown.
   const ANALYTICS = { posthogKey: 'phc_BMUEnuCKmhWZbpcLAPzGuUboWQdnUjE5BUknxKgkCc2b', host: 'https://eu.i.posthog.com' };
 
-  const T = {
-    de: {
-      steps: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'],
-      moreOpt: 'Mehr …', next: 'Weiter', back: 'Zurück', toOffer: 'Zum Angebot', send: 'Anfrage senden',
-      pro: 'Pro', proTitle: 'Erweiterte Ansicht für Fachberater', toCust: 'Kundenansicht',
-      intro: 'Lamellendach in 5 Schritten konfigurieren. Richtpreis sofort, unverbindlich, ohne Anmeldung.',
-      resume: 'Ihre letzte Konfiguration fortsetzen?', resumeYes: 'Fortsetzen', resumeNo: 'Neu beginnen',
-      gross: 'inkl. 20 % USt.', net: 'netto', from: 'ab', priceNa: 'Größe anpassen',
-      // step 1
-      s1: 'Wie groß soll Ihre Terrassenüberdachung werden?', s1l: 'Messen Sie die Fläche, die beschattet werden soll. Wir teilen große Flächen automatisch in Module auf.',
-      wall: 'An der Hauswand', wallD: 'Hinten an der Fassade befestigt', free: 'Freistehend', freeD: 'Mit Stützen an allen vier Ecken',
-      width: 'Breite', widthWall: 'Breite (entlang der Wand)', depth: 'Tiefe', depthWall: 'Tiefe (von der Wand weg)', m: 'm',
-      presets: 'Häufige Größen', height: 'Stützenhöhe', heightStd: 'Standard', incl: 'inklusive',
-      layout: 'Aufteilung', recommended: 'Empfehlung', cheapest: 'günstigste', modules: (n) => n === 1 ? '1 Modul' : n + ' Module', posts: (n) => n + ' Stützen',
-      otherLayouts: (n) => n === 1 ? '1 weitere Aufteilung' : n + ' weitere Aufteilungen',
-      louvTip: (s) => `Tipp: Lamellen quer drehen – gleiche Fläche, ${s} günstiger.`, louvDo: 'Übernehmen', louvDir: 'Lamellenrichtung', louvNa: 'nicht möglich',
-      louvNow: (d) => `Lamellen laufen ${d}.`, louvPar: 'parallel zur Hauswand', louvPerp: 'von der Hauswand weg', louvParF: 'entlang der Breite', louvPerpF: 'entlang der Tiefe',
-      sugg: { DEPTH_TOO_SMALL: 'Die Tiefe ist kleiner als möglich.', WIDTH_TOO_SMALL: 'Die Breite ist kleiner als möglich.', DEPTH_TOO_LARGE: 'Die Tiefe ist größer als möglich.', WIDTH_TOO_LARGE: 'Die Breite ist größer als möglich.', NO_COMBINATION: 'Diese Größe lässt sich nicht bauen.' },
-      suggFix: (v) => `Auf ${v} m ändern`,
-      snapped: (b, r) => `Wegen des Lamellenrasters wird ${b} m statt ${r} m gebaut.`, multiRow: 'Mehrere Reihen in der Tiefe – den Preis bestätigen wir mit Ihrer Anfrage.',
-      // step 2
-      s2: 'Welche Seiten möchten Sie schließen?', s2l: 'Jede Seite kann offen bleiben oder Sonnen-, Wind- oder Sichtschutz bekommen. Sie können auch im 3D-Bild auf eine Seite tippen.',
-      fillsS: { none: 'Offen', zip: 'ZIP', glass: 'Glas', verto: 'Lamellen', panels: 'Paneele' },
-      allSides: 'Alle Seiten', fills: { none: 'Offen', zip: 'ZIP-Screen', glass: 'Schiebeglas', verto: 'Lamellenwand', panels: 'Schiebepaneele' },
-      legend: { zip: 'Stoffbehang in seitlichen Führungen, motorisch – Sonnen- und Sichtschutz.', glass: 'Glas-Schiebeelemente (Win Glass) – Schutz vor Wind und Regen.', verto: 'Feste Aluminiumprofile (Decor) – Sichtschutz, Luft kommt durch.', panels: 'Aluminium-Lamellenpaneele auf Schienen (Win Panels) – verschiebbar.' },
-      sides: { front: 'Vorne', left: 'Links', right: 'Rechts', back: 'Hinten' }, field: 'Feld', row: 'Reihe',
-      park: 'Glas', parkL: '← links', parkR: 'rechts →', parkBoth: '↔ offen', shut: 'zu',
-      cta: 'Tippen Sie auf ein ＋, um eine Seite zu schließen – ZIP-Screen, Glas oder Paneele', hsOpen: 'Seite wählen',
-      notMade: 'In dieser Größe nicht lieferbar – andere Variante wählen.', zipFabricOnly: (s) => `In dieser Größe nur mit Stoff ${s} – oben bei „Stoff der ZIP-Screens“ wählen.`, zipMax: (m, ax) => `ZIP-Screens gibt es bis ${m} m ${ax === 'height' ? 'Höhe' : 'Breite'}.`, swapped: (a, b) => `Stoff ${a} statt ${b} – ${b} gibt es nicht so groß`, later: 'Preis auf Anfrage',
-      fabric: 'Stoff der ZIP-Screens', ofName: { 14: 'Luftig, viel Durchsicht', 5: 'Sonnen- und Sichtschutz', 4: 'Sicht- und Sonnenschutz, etwas dichter', 1: 'Fast blickdicht', 0: 'Verdunkelung' },
-      perM2: '€/m²', zipCtl: 'Bedienung über die Fernbedienung der Pergola.', ctlT: 'Bedienung der Screens', ctlD: 'alle Screens mit Motor', ctlM: { pergola: 'Mit der Pergola-Fernbedienung', remote: 'Separate Fernbedienung', smart: 'Smartphone-App', switch: 'Schalter an der Wand', solar: 'Solar, ohne Stromkabel' }, ctlStd: 'Standard', cardQ: 'Was kommt auf diese Seite?', done: 'Fertig', thisScreen: 'Bedienung dieses Screens',
-      glassTint: 'Glas', tints: { float: 'Klar', diamant: 'Extraklar', milk: 'Milchglas', brown: 'Bronze', graphite: 'Graphit', black: 'Schwarz', mirror: 'Spiegel' }, tintNa: 'nur 10 mm',
-      // step 3
-      s3: 'Was macht es gemütlich?', s3l: 'Alles optional. Wählen Sie nur, was Sie wirklich nutzen werden – nachrüsten ist bei vielem später schwieriger.',
-      light: 'Licht', lightD: 'Für Abende auf der Terrasse', lights: { none: 'Kein Licht', white: 'LED-Band warmweiß', rgbw: 'LED-Band farbig (RGBW)', spots: 'LED-Spots' },
-      heat: 'Wärme', heatD: 'Heizstrahler unter dem Dach', heats: { none: 'Keine', 'm1.single': '1 Strahler 1,5 kW (~10 m²)', 'm1.pair': '2 Strahler 1,5 kW', 'm1.double': 'Doppelstrahler 4 kW (~25 m²)', other: 'Heizstrahler-Set' },
-      weather: 'Wetter-Automatik', weatherD: 'Lamellen schließen von selbst', weathers: { none: 'Keine', wind: 'Windsensor', rain: 'Regensensor', set: 'Wind + Regen + Temperatur', multi: 'Multisensor inkl. Schnee' },
-      app: 'Steuerung', appD: 'Fernbedienung ist immer dabei', apps: { none: 'Nur Fernbedienung', bluetooth: 'App über Bluetooth', wifi: 'App über WLAN, auch unterwegs' },
-      audio: 'Musik', audioD: '2 Lautsprecher, Bluetooth', thermal: 'Leiser bei Regen', thermalD: 'Dämmeinlage in den Lamellen',
-      sockets: 'Steckdosen in der Stütze', socketsD: '230 V', on: 'Ja', off: 'Nein',
-      // step 4
-      s4: 'Welche Farbe passt zu Ihrem Haus?', s4l: 'Die zwei Standardfarben sind im Preis. Andere Farben kosten einen Aufpreis in Prozent.',
-      frame: 'Rahmen und Stützen', roof: 'Lamellen', slideCol: 'Profile von Glas und Paneelen', zipCol: 'ZIP-Kassette und Führungen', asFrame: 'wie Rahmen', moreColours: 'Weitere Farben', groups: { fine: 'Feinstruktur', smooth: 'Glatt matt', exclusive: 'Exklusiv', wood: 'Holzoptik' },
-      fabricTone: 'Farbton des Stoffes', colourNote: 'Farben am Bildschirm sind Annäherungen. Vor der Bestellung zeigen wir Ihnen Originalmuster.',
-      // step 5
-      s5: 'Ihr Richtpreis', s5l: 'Auf Basis der Katalogpreise ' + CATALOGUE + '. Unverbindlich – der endgültige Preis folgt nach dem Aufmaß vor Ort.',
-      grp: { pergola: 'Pergola', sides: 'Seiten', comfort: 'Komfort', colours: 'Farben und Zuschläge', extra: 'Montage und Zusatzleistungen' },
-      split: { title: 'Aufteilung der Module', alongW: 'Breite', alongD: 'Tiefe', left: 'Stoß nach links', right: 'Stoß nach rechts', even: 'Gleich teilen', auto: '↺ Automatisch', note: (a, b) => `Pfeile verschieben den Stoß · ein Modul ${a} bis ${b}` }, jointT: (a, b) => `Zwischen Modul ${a} und ${b}`, montT: 'Montage', delivery: 'Lieferung', extraT: 'Zusatzleistung', qExclM: 'Nicht enthalten: Lieferung, Fundamente, Elektroanschluss, Genehmigungen.',
-      notIncl: 'Nicht im Preis enthalten', notInclList: ['Lieferung und Montage', 'Fundamente und Elektroanschluss', 'Behördliche Genehmigungen, falls nötig'],
-      incomplete: 'Einige Positionen sind in dieser Größe nicht lieferbar und nicht im Preis.',
-      print: 'Angebot drucken oder als PDF speichern', printS: 'Angebot als PDF speichern', request: 'Unverbindliche Anfrage senden', requestS: 'Wir melden uns persönlich bei Ihnen', share: 'Link kopieren', shareS: 'zum Teilen oder später weitermachen', copied: 'Link kopiert',
-      saveFile: 'Als Datei speichern', openFile: 'Datei öffnen',
-      formT: 'Ihre Anfrage', name: 'Name', email: 'E-Mail', phone: 'Telefon (optional)', place: 'PLZ und Ort der Montage (optional)', when: 'Wann möchten Sie bauen?',
-      whens: ['So bald wie möglich', 'In 1–3 Monaten', 'Später in diesem Jahr', 'Ich informiere mich nur'],
-      wantMount: 'Montage gewünscht', wantVisit: 'Besichtigung und Aufmaß vor Ort gewünscht', msg: 'Nachricht (optional)',
-      required: 'Bitte ausfüllen', badEmail: 'Bitte eine gültige E-Mail-Adresse eingeben',
-      privacy: 'Ihre Angaben werden nur für diese Anfrage verwendet. Die Nachricht wird über Ihr E-Mail-Programm gesendet – auf dieser Seite wird nichts gespeichert.',
-      sendBtn: 'E-Mail mit Anfrage öffnen', sentT: 'Fast geschafft', reopen: 'E-Mail noch einmal öffnen', sent: 'Ihr E-Mail-Programm hat sich mit der fertigen Nachricht geöffnet. Bitte senden Sie sie ab.', noMail: 'Kein E-Mail-Programm? Text kopieren', textCopied: 'Text kopiert',
-      faqT: 'Häufige Fragen',
-      faq: [
-        ['Ist der Preis verbindlich?', 'Nein. Es ist ein Richtpreis auf Basis der Katalogpreise ' + CATALOGUE + '. Den verbindlichen Preis erhalten Sie nach dem Aufmaß vor Ort.'],
-        ['Brauche ich eine Baugenehmigung?', 'Das hängt vom Bundesland und der Gemeinde ab. Fragen Sie vor der Bestellung beim Bauamt nach – Maße und Ansicht aus diesem Angebot helfen dabei.'],
-        ['Was ist im Preis nicht enthalten?', 'Lieferung, Montage, Fundamente, Elektroanschluss und eventuelle Genehmigungen.'],
-        ['Wie geht es nach der Anfrage weiter?', 'Wir besprechen die Details mit Ihnen und vereinbaren bei Bedarf einen Termin für das Aufmaß. Danach erhalten Sie ein verbindliches Angebot.'],
-      ],
-      hint: 'Ziehen zum Drehen. Tippen Sie auf eine Seite, um sie zu schließen.',
-      tb: { ang: 'Lamellen', drop: 'Screens', gopen: 'Glas', evening: 'Abend', front: 'Vorne', top: 'Oben', closed: 'zu', open: 'offen', louv: 'Lamellenrichtung drehen', view: 'Ansicht', louvCap: 'Lamellen', move: 'Bewegen', night: 'Nacht', nightT: 'Tag / Nacht – Licht einschalten', moveT: 'Lamellen drehen, Glas und Screens bewegen' },
-      // quote
-      qClient: 'Kunde', qTitle: 'Richtpreisangebot', qNo: 'Nr.', qDate: 'Datum', qConfig: 'Ihre Konfiguration', qPrice: 'Preis', qItem: 'Position', qNet: 'Summe netto', qVat: 'USt. 20 %', qGross: 'Gesamt inkl. USt.',
-      qFacts: { size: 'Größe', mount: 'Montage', model: 'Modell', height: 'Stützenhöhe', sides: 'Seiten', colours: 'Farben', comfort: 'Komfort' },
-      qNotes: ['Richtpreis auf Basis der Katalogpreise ' + CATALOGUE + ', unverbindlich.', 'Nicht enthalten: Lieferung, Montage, Fundamente, Elektroanschluss, Genehmigungen.', 'Der endgültige Preis folgt nach dem Aufmaß vor Ort.', 'Farben am Bildschirm sind Annäherungen.'],
-      qLink: 'Konfiguration online öffnen', none: 'keine', open: 'offen',
-      fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 Doppel' }, pergola: 'Lamellendach', panelsW: 'Flügel', profilesW: 'Profile', slatsFixed: 'feste Lamellen', slatsRot: 'drehbare Lamellen',
-      opt: { OPT_POST_HEIGHT: 'Höhere Stützen', OPT_LED_LOUVRES: 'LED-Lichtband in den Lamellen', OPT_LED_GUTTER: 'LED-Licht in der Rinne', OPT_THERMAL: 'Dämmeinlage in den Lamellen', OPT_SENSOR: 'Wettersensoren', OPT_SMART: 'App-Steuerung', OPT_HEATERS: 'Heizstrahler', OPT_HEATER_PREP: 'Vorbereitung für Heizstrahler', OPT_INTERNAL_BOX: 'Innenliegende Elektrobox', OPT_AUDIO: 'Audiosystem', OPT_SOCKET: 'Steckdosen in der Stütze', OPT_SPOTS: 'LED-Spots in den Lamellen', OPT_LAMPS: 'LED-Leuchten in den Lamellen', OPT_CROWN_SPOTS: 'LED-Spots im Rahmen', OPT_VERTICAL_LAMPS: 'LED-Leuchten an den Stützen', OPT_INTERMEDIATE_POST: 'Zusätzliche Stützen' },
-      ctl: { CONTROL_PERGOLA_UNIT: 'Steuermodul für die Screens', CONTROL_REMOTE: 'Fernbedienung für die Screens', CONTROL_SMART: 'Smart-Home-Modul', CONTROL_WIND_SENSOR: 'Windsensor für die Screens', CONTROL_SWITCH: 'Wandschalter', CONTROL_PERGOLA_REMOTE_EXTRA: 'Zusätzliche Fernbedienung', CONTROL_CUSTOM: 'Steuerung' },
-      parT: 'Brüstung', parD: 'Stützen direkt an der Mauer, Glas / ZIP stehen darauf', parNone: 'Keine', parH: 'Höhe der Brüstung',
-      vertoT: 'Decor – Lamellen an der Pergola', vertoD: 'Feste Aluminiumprofile als Sicht- und Sonnenschutz, auch zusammen mit ZIP und Glas', vNone: 'Ohne',
-      vTypes: { 1: 'An jeder Ecke', 2: 'Vorne und hinten', 3: 'Ein Paket vorne', 4: 'An beiden Seiten', 5: 'Beide Seiten ganz', 6: 'Mitte vorne' }, vTypesWall: { 2: 'Vorne und seitlich', 6: 'Mitte vorne und seitlich' },
-      vTypesT: 'Beispiele', vSideT: 'Seite', vMountT: 'Montage der Profile', vMounts: { A: 'Über das Dach hinaus', B: 'Bis Oberkante Rahmen', C: 'In der Öffnung', D: 'Mit Eckverbindung' },
-      vMountsD: { A: 'Profile enden über den Lamellen', B: 'Außen am Rahmen, bündig oben', C: 'Unter dem Rahmen zwischen den Stützen, außen bündig – ZIP oder Glas bleibt möglich', D: 'Pakete laufen um die Ecke, je Ecke +53 €' },
-      vEdit: 'Tippen Sie im 3D auf eine Seite, um Pakete zu ändern.', vSide: 'Decor an dieser Seite', vPos: { none: 'Ohne', L: 'Links', center: 'Mitte', R: 'Rechts', full: 'Ganze Seite' },
-      vProf: 'Profile', vPack: 'Paket', vClosed: 'In der Öffnung nicht möglich – die Seite ist schon geschlossen. Montage am Rahmen wählen.', vHigh: 'Profile zu lang für die Preisliste', vMountW: 'Montage',
-      coat: 'Farbaufpreis', coatMin: 'Mindermengenzuschlag Beschichtung', fabricS: 'Stoffaufpreis', corner: 'Eckverbindung Lamellenwand', tbdPanels: 'Farbaufpreis Paneele', onRequest: 'auf Anfrage', extra: 'Zuschlag',
-      sysName: { S400: 'Pergola', S500: 'Pergola', GLASS: 'Schiebeglas', SCREEN_ZIP: 'ZIP-Screens', VERTO: 'Lamellenwand' },
-      mailSubj: (s, p) => `Anfrage Lamellendach ${s} – Richtpreis ${p}`, mailHi: 'Guten Tag,\n\nich interessiere mich für folgende Konfiguration:', mailBye: 'Mit freundlichen Grüßen',
-      mm: 'mm',
-    },
-    en: {
-      steps: ['Size', 'Sides', 'Comfort', 'Colours', 'Quote'],
-      moreOpt: 'More …', next: 'Next', back: 'Back', toOffer: 'See quote', send: 'Send request',
-      pro: 'Pro', proTitle: 'Advanced view for sales staff', toCust: 'Customer view',
-      intro: 'Configure your louvred roof in 5 steps. Indicative price right away, no obligation, no sign-up.',
-      resume: 'Continue your last configuration?', resumeYes: 'Continue', resumeNo: 'Start over',
-      gross: 'incl. 20 % VAT', net: 'net', from: 'from', priceNa: 'adjust the size',
-      s1: 'How large should your terrace roof be?', s1l: 'Measure the area you want to shade. Large areas are split into modules automatically.',
-      wall: 'Against the house', wallD: 'Fixed to the facade at the back', free: 'Freestanding', freeD: 'Posts at all four corners',
-      width: 'Width', widthWall: 'Width (along the wall)', depth: 'Depth', depthWall: 'Depth (away from the wall)', m: 'm',
-      presets: 'Common sizes', height: 'Post height', heightStd: 'standard', incl: 'included',
-      layout: 'Layout', recommended: 'Recommended', cheapest: 'lowest price', modules: (n) => n === 1 ? '1 module' : n + ' modules', posts: (n) => n + ' posts',
-      otherLayouts: (n) => n === 1 ? '1 other layout' : n + ' other layouts',
-      louvTip: (s) => `Tip: turn the louvres – same area, ${s} less.`, louvDo: 'Apply', louvDir: 'Louvre direction', louvNa: 'not possible',
-      louvNow: (d) => `Louvres run ${d}.`, louvPar: 'parallel to the wall', louvPerp: 'away from the wall', louvParF: 'along the width', louvPerpF: 'along the depth',
-      sugg: { DEPTH_TOO_SMALL: 'The depth is below the minimum.', WIDTH_TOO_SMALL: 'The width is below the minimum.', DEPTH_TOO_LARGE: 'The depth is above the maximum.', WIDTH_TOO_LARGE: 'The width is above the maximum.', NO_COMBINATION: 'This size cannot be built.' },
-      suggFix: (v) => `Change to ${v} m`,
-      snapped: (b, r) => `Because of the louvre spacing, ${b} m is built instead of ${r} m.`, multiRow: 'Several rows in depth – we confirm the price with your request.',
-      s2: 'Which sides would you like to close?', s2l: 'Each side can stay open or get sun, wind or privacy protection. You can also tap a side in the 3D view.',
-      fillsS: { none: 'Open', zip: 'ZIP', glass: 'Glass', verto: 'Louvres', panels: 'Panels' },
-      allSides: 'All sides', fills: { none: 'Open', zip: 'ZIP screen', glass: 'Sliding glass', verto: 'Louvre wall', panels: 'Sliding panels' },
-      legend: { zip: 'Fabric blind in side guides, motorised – sun and privacy protection.', glass: 'Sliding glass panels (Win Glass) – shelter from wind and rain.', verto: 'Fixed aluminium profiles (Decor) – privacy, air still flows.', panels: 'Aluminium louvre panels on rails (Win Panels) – slide aside.' },
-      sides: { front: 'Front', left: 'Left', right: 'Right', back: 'Back' }, field: 'bay', row: 'row',
-      park: 'Glass', parkL: '← left', parkR: 'right →', parkBoth: '↔ open', shut: 'closed',
-      cta: 'Tap a ＋ to close a side – ZIP screen, glass or panels', hsOpen: 'Choose side',
-      notMade: 'Not available in this size – please choose another option.', zipFabricOnly: (s) => `In this size only with fabric ${s} – choose it under “ZIP screen fabric” above.`, zipMax: (m, ax) => `ZIP screens are made up to ${m} m ${ax === 'height' ? 'high' : 'wide'}.`, swapped: (a, b) => `fabric ${a} instead of ${b} – ${b} is not made this large`, later: 'price on request',
-      fabric: 'ZIP screen fabric', ofName: { 14: 'Airy, lots of view', 5: 'Sun and privacy', 4: 'Sun and privacy, a little denser', 1: 'Almost opaque', 0: 'Blackout' },
-      perM2: '€/m²', zipCtl: 'Operated with the pergola remote control.', ctlT: 'Screen control', ctlD: 'all screens are motorised', ctlM: { pergola: 'With the pergola remote', remote: 'Separate remote', smart: 'Smartphone app', switch: 'Wall switch', solar: 'Solar, no power cable' }, ctlStd: 'standard', cardQ: 'What goes on this side?', done: 'Done', thisScreen: 'Control of this screen',
-      glassTint: 'Glass', tints: { float: 'Clear', diamant: 'Extra clear', milk: 'Frosted', brown: 'Bronze', graphite: 'Graphite', black: 'Black', mirror: 'Mirror' }, tintNa: '10 mm only',
-      s3: 'What makes it cosy?', s3l: 'All optional. Pick only what you will really use – many things are harder to add later.',
-      light: 'Light', lightD: 'For evenings outside', lights: { none: 'No light', white: 'LED strip, warm white', rgbw: 'LED strip, colour (RGBW)', spots: 'LED spots' },
-      heat: 'Warmth', heatD: 'Heaters under the roof', heats: { none: 'None', 'm1.single': '1 heater 1.5 kW (~10 m²)', 'm1.pair': '2 heaters 1.5 kW', 'm1.double': 'Double heater 4 kW (~25 m²)', other: 'Heater set' },
-      weather: 'Weather automation', weatherD: 'Louvres close by themselves', weathers: { none: 'None', wind: 'Wind sensor', rain: 'Rain sensor', set: 'Wind + rain + temperature', multi: 'Multi-sensor incl. snow' },
-      app: 'Control', appD: 'A remote control is always included', apps: { none: 'Remote only', bluetooth: 'App via Bluetooth', wifi: 'App via Wi-Fi, also away' },
-      audio: 'Music', audioD: '2 speakers, Bluetooth', thermal: 'Quieter in rain', thermalD: 'Insulating insert in the louvres',
-      sockets: 'Sockets in the post', socketsD: '230 V', on: 'Yes', off: 'No',
-      s4: 'Which colour suits your house?', s4l: 'The two standard colours are included. Other colours add a percentage.',
-      frame: 'Frame and posts', roof: 'Louvres', slideCol: 'Glass and panel profiles', zipCol: 'ZIP box and guides', asFrame: 'same as frame', moreColours: 'More colours', groups: { fine: 'Fine texture', smooth: 'Smooth matt', exclusive: 'Exclusive', wood: 'Wood look' },
-      fabricTone: 'Fabric shade', colourNote: 'Screen colours are approximate. We show you original samples before you order.',
-      s5: 'Your indicative price', s5l: 'Based on catalogue prices ' + CATALOGUE + '. Not binding – the final price follows a site survey.',
-      grp: { pergola: 'Pergola', sides: 'Sides', comfort: 'Comfort', colours: 'Colours and surcharges', extra: 'Installation and extras' },
-      split: { title: 'Module division', alongW: 'Width', alongD: 'Depth', left: 'Joint to the left', right: 'Joint to the right', even: 'Split evenly', auto: '↺ Automatic', note: (a, b) => `Arrows move the joint · one module ${a} to ${b}` }, jointT: (a, b) => `Between module ${a} and ${b}`, montT: 'Installation', delivery: 'Delivery', extraT: 'Additional item', qExclM: 'Not included: delivery, foundations, electrical connection, permits.',
-      notIncl: 'Not included', notInclList: ['Delivery and installation', 'Foundations and electrical connection', 'Building permits, if required'],
-      incomplete: 'Some items are not available in this size and are not in the price.',
-      print: 'Print the quote or save it as PDF', printS: 'Save the offer as PDF', request: 'Send a free request', requestS: 'We will get back to you personally', share: 'Copy link', shareS: 'to share or continue later', copied: 'Link copied',
-      saveFile: 'Save as file', openFile: 'Open file',
-      formT: 'Your request', name: 'Name', email: 'E-mail', phone: 'Phone (optional)', place: 'Postcode and town of installation (optional)', when: 'When would you like to build?',
-      whens: ['As soon as possible', 'In 1–3 months', 'Later this year', 'Just looking'],
-      wantMount: 'Installation wanted', wantVisit: 'Site visit and measurement wanted', msg: 'Message (optional)',
-      required: 'Please fill in', badEmail: 'Please enter a valid e-mail address',
-      privacy: 'Your details are only used for this request. The message is sent from your own e-mail program – nothing is stored on this page.',
-      sendBtn: 'Open e-mail with request', sentT: 'Almost done', reopen: 'Open the e-mail again', sent: 'Your e-mail program opened with the message ready. Please send it.', noMail: 'No e-mail program? Copy the text', textCopied: 'Text copied',
-      faqT: 'Questions',
-      faq: [
-        ['Is the price binding?', 'No. It is an indicative price based on catalogue prices ' + CATALOGUE + '. You get a binding price after the site survey.'],
-        ['Do I need a building permit?', 'That depends on your region and municipality. Ask your building authority before ordering – the sizes and view in this quote help.'],
-        ['What is not included?', 'Delivery, installation, foundations, electrical connection and any permits.'],
-        ['What happens after my request?', 'We discuss the details with you and, if needed, arrange a site survey. After that you receive a binding quote.'],
-      ],
-      hint: 'Drag to rotate. Tap a side to close it.',
-      tb: { ang: 'Louvres', drop: 'Screens', gopen: 'Glass', evening: 'Evening', front: 'Front', top: 'Top', closed: 'closed', open: 'open', louv: 'Turn the louvre direction', view: 'View', louvCap: 'Louvres', move: 'Move', night: 'Night', nightT: 'Day / night – switch the lights on', moveT: 'Tilt the louvres, move glass and screens' },
-      qClient: 'Customer', qTitle: 'Indicative quote', qNo: 'No.', qDate: 'Date', qConfig: 'Your configuration', qPrice: 'Price', qItem: 'Item', qNet: 'Total net', qVat: 'VAT 20 %', qGross: 'Total incl. VAT',
-      qFacts: { size: 'Size', mount: 'Mounting', model: 'Model', height: 'Post height', sides: 'Sides', colours: 'Colours', comfort: 'Comfort' },
-      qNotes: ['Indicative price based on catalogue prices ' + CATALOGUE + ', not binding.', 'Not included: delivery, installation, foundations, electrical connection, permits.', 'The final price follows a site survey.', 'Screen colours are approximate.'],
-      qLink: 'Open the configuration online', none: 'none', open: 'open',
-      fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 double' }, pergola: 'Louvred roof', panelsW: 'panels', profilesW: 'profiles', slatsFixed: 'fixed slats', slatsRot: 'rotating slats',
-      opt: { OPT_POST_HEIGHT: 'Taller posts', OPT_LED_LOUVRES: 'LED strip in the louvres', OPT_LED_GUTTER: 'LED light in the gutter', OPT_THERMAL: 'Insulating insert in the louvres', OPT_SENSOR: 'Weather sensors', OPT_SMART: 'App control', OPT_HEATERS: 'Heaters', OPT_HEATER_PREP: 'Heater preparation', OPT_INTERNAL_BOX: 'Internal electrical box', OPT_AUDIO: 'Audio system', OPT_SOCKET: 'Sockets in the post', OPT_SPOTS: 'LED spots in the louvres', OPT_LAMPS: 'LED lamps in the louvres', OPT_CROWN_SPOTS: 'LED spots in the frame', OPT_VERTICAL_LAMPS: 'LED lights on the posts', OPT_INTERMEDIATE_POST: 'Additional posts' },
-      ctl: { CONTROL_PERGOLA_UNIT: 'Control unit for the screens', CONTROL_REMOTE: 'Remote control for the screens', CONTROL_SMART: 'Smart home unit', CONTROL_WIND_SENSOR: 'Wind sensor for the screens', CONTROL_SWITCH: 'Wall switch', CONTROL_PERGOLA_REMOTE_EXTRA: 'Additional remote control', CONTROL_CUSTOM: 'Controls' },
-      parT: 'Parapet wall', parD: 'Posts right next to the wall, glass / ZIP stand on it', parNone: 'None', parH: 'Parapet height',
-      vertoT: 'Decor – louvres on the pergola', vertoD: 'Fixed aluminium profiles for privacy and shade, also together with ZIP and glass', vNone: 'None',
-      vTypes: { 1: 'At every corner', 2: 'Front and back', 3: 'One package at the front', 4: 'On both sides', 5: 'Both sides full', 6: 'Front centre' }, vTypesWall: { 2: 'Front and side', 6: 'Front centre and side' },
-      vTypesT: 'Examples', vSideT: 'Side', vMountT: 'Mounting of the profiles', vMounts: { A: 'Above the roof', B: 'Up to the frame top', C: 'In the opening', D: 'With corner joint' },
-      vMountsD: { A: 'Profiles end above the louvres', B: 'Outside on the frame, flush at the top', C: 'Under the frame between the posts, flush outside – ZIP or glass still possible', D: 'Packages wrap around the corner, +53 € per corner' },
-      vEdit: 'Tap a side in the 3D view to change its packages.', vSide: 'Decor on this side', vPos: { none: 'None', L: 'Left', center: 'Centre', R: 'Right', full: 'Whole side' },
-      vProf: 'profiles', vPack: 'package', vClosed: 'Not possible in the opening – the side is already closed. Choose mounting on the frame.', vHigh: 'Profiles too long for the price list', vMountW: 'mounting',
-      coat: 'Colour surcharge', coatMin: 'Small-batch coating surcharge', fabricS: 'Fabric surcharge', corner: 'Louvre wall corner joint', tbdPanels: 'Panel colour surcharge', onRequest: 'on request', extra: 'surcharge',
-      sysName: { S400: 'pergola', S500: 'pergola', GLASS: 'sliding glass', SCREEN_ZIP: 'ZIP screens', VERTO: 'louvre wall' },
-      mailSubj: (s, p) => `Request: louvred roof ${s} – indicative price ${p}`, mailHi: 'Hello,\n\nI am interested in the following configuration:', mailBye: 'Kind regards',
-      mm: 'mm',
-    },
-    ru: {
-      steps: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Итог'],
-      moreOpt: 'Ещё …', next: 'Далее', back: 'Назад', toOffer: 'К предложению', send: 'Отправить запрос',
-      pro: 'Pro', proTitle: 'Расширенный режим для менеджера', toCust: 'Режим клиента',
-      intro: 'Пергола с ламелями за 5 шагов. Ориентировочная цена сразу, без обязательств и без регистрации.',
-      resume: 'Продолжить прошлую конфигурацию?', resumeYes: 'Продолжить', resumeNo: 'Начать заново',
-      gross: 'с НДС 20 %', net: 'без НДС', from: 'от', priceNa: 'измените размер',
-      s1: 'Какого размера нужна пергола?', s1l: 'Измерьте площадь, которую хотите затенить. Большую площадь система сама разделит на модули.',
-      wall: 'У стены дома', wallD: 'Сзади крепится к фасаду', free: 'Отдельностоящая', freeD: 'Стойки на всех четырёх углах',
-      width: 'Ширина', widthWall: 'Ширина (вдоль стены)', depth: 'Глубина', depthWall: 'Глубина (от стены)', m: 'м',
-      presets: 'Популярные размеры', height: 'Высота стоек', heightStd: 'стандарт', incl: 'в цене',
-      layout: 'Компоновка', recommended: 'Рекомендуем', cheapest: 'дешевле всего', modules: (n) => n + ' ' + (n === 1 ? 'модуль' : n < 5 ? 'модуля' : 'модулей'), posts: (n) => n + ' ' + (n < 5 ? 'стойки' : 'стоек'),
-      otherLayouts: (n) => 'Ещё ' + n + ' ' + (n === 1 ? 'вариант' : n < 5 ? 'варианта' : 'вариантов'),
-      louvTip: (s) => `Совет: поверните ламели – та же площадь, дешевле на ${s}.`, louvDo: 'Применить', louvDir: 'Направление ламелей', louvNa: 'нельзя',
-      louvNow: (d) => `Ламели идут ${d}.`, louvPar: 'вдоль стены', louvPerp: 'от стены вперёд', louvParF: 'вдоль ширины', louvPerpF: 'вдоль глубины',
-      sugg: { DEPTH_TOO_SMALL: 'Глубина меньше минимальной.', WIDTH_TOO_SMALL: 'Ширина меньше минимальной.', DEPTH_TOO_LARGE: 'Глубина больше возможной.', WIDTH_TOO_LARGE: 'Ширина больше возможной.', NO_COMBINATION: 'Такой размер не собирается.' },
-      suggFix: (v) => `Изменить на ${v} м`,
-      snapped: (b, r) => `Из-за шага ламелей строится ${b} м вместо ${r} м.`, multiRow: 'Несколько рядов в глубину – цену подтвердим по запросу.',
-      s2: 'Какие стороны закрыть?', s2l: 'Каждая сторона может остаться открытой или получить защиту от солнца, ветра или взглядов. Можно нажать на сторону прямо на 3D.',
-      fillsS: { none: 'Открыто', zip: 'ZIP', glass: 'Стекло', verto: 'Ламели', panels: 'Панели' },
-      allSides: 'Все стороны', fills: { none: 'Открыто', zip: 'ZIP-скрин', glass: 'Раздвижное стекло', verto: 'Ламельная стена', panels: 'Раздвижные панели' },
-      legend: { zip: 'Ткань в боковых направляющих, с мотором – от солнца и взглядов.', glass: 'Раздвижные стеклянные полотна (Win Glass) – от ветра и дождя.', verto: 'Неподвижные алюминиевые профили (Decor) – от взглядов, воздух проходит.', panels: 'Алюминиевые ламельные панели на направляющих (Win Panels) – сдвигаются.' },
-      sides: { front: 'Спереди', left: 'Слева', right: 'Справа', back: 'Сзади' }, field: 'проём', row: 'ряд',
-      park: 'Стекло', parkL: '← влево', parkR: 'вправо →', parkBoth: '↔ открыто', shut: 'закрыто',
-      cta: 'Нажмите ＋ на стороне, чтобы закрыть её – ZIP-скрин, стекло или панели', hsOpen: 'Выбрать сторону',
-      notMade: 'В таком размере не производится – выберите другой вариант.', zipFabricOnly: (s) => `В таком размере только с тканью ${s} – выберите её выше в «Ткань ZIP-скринов».`, zipMax: (m, ax) => `ZIP-скрины делают до ${m} м по ${ax === 'height' ? 'высоте' : 'ширине'}.`, swapped: (a, b) => `ткань ${a} вместо ${b} – ${b} не делают такого размера`, later: 'цена по запросу',
-      fabric: 'Ткань ZIP-скринов', ofName: { 14: 'Лёгкая, хорошо видно наружу', 5: 'От солнца и взглядов', 4: 'От солнца и взглядов, чуть плотнее', 1: 'Почти непрозрачная', 0: 'Блэкаут' },
-      perM2: '€/м²', zipCtl: 'Управление с пульта перголы.', ctlT: 'Управление скринами', ctlD: 'все скрины с мотором', ctlM: { pergola: 'С пульта перголы', remote: 'Отдельный пульт', smart: 'Приложение на телефоне', switch: 'Выключатель на стене', solar: 'Солнечная батарея, без кабеля' }, ctlStd: 'стандарт', cardQ: 'Что поставить на эту сторону?', done: 'Готово', thisScreen: 'Управление этим скрином',
-      glassTint: 'Стекло', tints: { float: 'Прозрачное', diamant: 'Особо прозрачное', milk: 'Матовое', brown: 'Бронза', graphite: 'Графит', black: 'Чёрное', mirror: 'Зеркальное' }, tintNa: 'только 10 мм',
-      s3: 'Что сделает уютнее?', s3l: 'Всё по желанию. Выбирайте только то, чем будете пользоваться, – многое потом добавить сложнее.',
-      light: 'Свет', lightD: 'Для вечеров на террасе', lights: { none: 'Без света', white: 'LED-лента, тёплый белый', rgbw: 'LED-лента, цветная (RGBW)', spots: 'LED-споты' },
-      heat: 'Тепло', heatD: 'Обогреватели под крышей', heats: { none: 'Нет', 'm1.single': '1 обогреватель 1,5 кВт (~10 м²)', 'm1.pair': '2 обогревателя 1,5 кВт', 'm1.double': 'Двойной 4 кВт (~25 м²)', other: 'Комплект обогревателей' },
-      weather: 'Автоматика погоды', weatherD: 'Ламели закрываются сами', weathers: { none: 'Нет', wind: 'Датчик ветра', rain: 'Датчик дождя', set: 'Ветер + дождь + температура', multi: 'Мультидатчик со снегом' },
-      app: 'Управление', appD: 'Пульт всегда в комплекте', apps: { none: 'Только пульт', bluetooth: 'Приложение по Bluetooth', wifi: 'Приложение по Wi-Fi, и вне дома' },
-      audio: 'Музыка', audioD: '2 колонки, Bluetooth', thermal: 'Тише в дождь', thermalD: 'Термовставка в ламелях',
-      sockets: 'Розетки в стойке', socketsD: '230 В', on: 'Да', off: 'Нет',
-      s4: 'Какой цвет подойдёт к дому?', s4l: 'Два стандартных цвета входят в цену. Другие цвета – доплата в процентах.',
-      frame: 'Рама и стойки', roof: 'Ламели', slideCol: 'Профили стекла и панелей', zipCol: 'Короб и направляющие ZIP', asFrame: 'как рама', moreColours: 'Другие цвета', groups: { fine: 'Мелкая структура', smooth: 'Гладкий мат', exclusive: 'Эксклюзив', wood: 'Под дерево' },
-      fabricTone: 'Оттенок ткани', colourNote: 'Цвета на экране приблизительные. Перед заказом покажем оригинальные образцы.',
-      s5: 'Ваша ориентировочная цена', s5l: 'По каталожным ценам ' + CATALOGUE + '. Без обязательств – окончательная цена после замера на месте.',
-      grp: { pergola: 'Пергола', sides: 'Стороны', comfort: 'Комфорт', colours: 'Цвета и доплаты', extra: 'Монтаж и доп. позиции' },
-      split: { title: 'Деление на модули', alongW: 'Ширина', alongD: 'Глубина', left: 'Стык влево', right: 'Стык вправо', even: 'Поровну', auto: '↺ Автоматически', note: (a, b) => `Стрелки двигают стык · модуль от ${a} до ${b}` }, jointT: (a, b) => `Между модулями ${a} и ${b}`, montT: 'Монтаж', delivery: 'Доставка', extraT: 'Доп. позиция', qExclM: 'Не входит: доставка, фундамент, подключение электричества, разрешения.',
-      notIncl: 'Не входит в цену', notInclList: ['Доставка и монтаж', 'Фундамент и подключение электричества', 'Разрешения, если нужны'],
-      incomplete: 'Некоторые позиции в таком размере не производятся и не вошли в цену.',
-      print: 'Распечатать или сохранить PDF', printS: 'Сохранить предложение в PDF', request: 'Отправить запрос без обязательств', requestS: 'Мы свяжемся с вами лично', share: 'Копировать ссылку', shareS: 'чтобы поделиться или продолжить позже', copied: 'Ссылка скопирована',
-      saveFile: 'Сохранить в файл', openFile: 'Открыть файл',
-      formT: 'Ваш запрос', name: 'Имя', email: 'E-mail', phone: 'Телефон (необязательно)', place: 'Индекс и город монтажа (необязательно)', when: 'Когда планируете?',
-      whens: ['Как можно скорее', 'Через 1–3 месяца', 'Позже в этом году', 'Пока просто смотрю'],
-      wantMount: 'Нужен монтаж', wantVisit: 'Нужен выезд и замер', msg: 'Сообщение (необязательно)',
-      required: 'Заполните, пожалуйста', badEmail: 'Введите правильный e-mail',
-      privacy: 'Ваши данные используются только для этого запроса. Письмо отправляется из вашей почтовой программы – на сайте ничего не сохраняется.',
-      sendBtn: 'Открыть письмо с запросом', sentT: 'Почти готово', reopen: 'Открыть письмо ещё раз', sent: 'Открылась ваша почтовая программа с готовым письмом. Отправьте его, пожалуйста.', noMail: 'Нет почтовой программы? Скопировать текст', textCopied: 'Текст скопирован',
-      faqT: 'Частые вопросы',
-      faq: [
-        ['Цена окончательная?', 'Нет. Это ориентировочная цена по каталогу ' + CATALOGUE + '. Окончательную цену вы получите после замера на месте.'],
-        ['Нужно ли разрешение на строительство?', 'Зависит от земли и общины. Уточните в строительном ведомстве до заказа – размеры и вид из этого предложения помогут.'],
-        ['Что не входит в цену?', 'Доставка, монтаж, фундамент, подключение электричества и разрешения.'],
-        ['Что будет после запроса?', 'Мы обсудим с вами детали и при необходимости договоримся о замере. После этого вы получите окончательное предложение.'],
-      ],
-      hint: 'Тяните, чтобы вращать. Нажмите на сторону, чтобы закрыть её.',
-      tb: { ang: 'Ламели', drop: 'Скрины', gopen: 'Остекление', evening: 'Вечер', front: 'Спереди', top: 'Сверху', closed: 'закрыто', open: 'открыто', louv: 'Повернуть ламели', view: 'Вид', louvCap: 'Ламели', move: 'Движение', night: 'Ночь', nightT: 'День / ночь – включить свет', moveT: 'Повернуть ламели, открыть стекло и скрины' },
-      qClient: 'Клиент', qTitle: 'Предварительное предложение', qNo: '№', qDate: 'Дата', qConfig: 'Ваша конфигурация', qPrice: 'Цена', qItem: 'Позиция', qNet: 'Итого без НДС', qVat: 'НДС 20 %', qGross: 'Итого с НДС',
-      qFacts: { size: 'Размер', mount: 'Установка', model: 'Модель', height: 'Высота стоек', sides: 'Стороны', colours: 'Цвета', comfort: 'Комфорт' },
-      qNotes: ['Ориентировочная цена по каталогу ' + CATALOGUE + ', без обязательств.', 'Не входит: доставка, монтаж, фундамент, подключение электричества, разрешения.', 'Окончательная цена – после замера на месте.', 'Цвета на экране приблизительные.'],
-      qLink: 'Открыть конфигурацию онлайн', none: 'нет', open: 'открыто',
-      fam: { S400: 'S400', S500: 'S500', S500_DOUBLE: 'S500 двойная' }, pergola: 'Пергола с ламелями', panelsW: 'полотен', profilesW: 'профилей', slatsFixed: 'неподвижные ламели', slatsRot: 'поворотные ламели',
-      opt: { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'LED-лента в ламелях', OPT_LED_GUTTER: 'LED-подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме', OPT_VERTICAL_LAMPS: 'Светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные стойки' },
-      ctl: { CONTROL_PERGOLA_UNIT: 'Блок управления скринами', CONTROL_REMOTE: 'Пульт для скринов', CONTROL_SMART: 'Блок умного дома', CONTROL_WIND_SENSOR: 'Датчик ветра для скринов', CONTROL_SWITCH: 'Настенный выключатель', CONTROL_PERGOLA_REMOTE_EXTRA: 'Дополнительный пульт', CONTROL_CUSTOM: 'Управление' },
-      parT: 'Парапет', parD: 'Стойки рядом с парапетом, стекло / ZIP стоят на нём', parNone: 'Нет', parH: 'Высота парапета',
-      vertoT: 'Decor – ламели на перголе', vertoD: 'Неподвижные алюминиевые профили от взглядов и солнца, можно вместе с ZIP и стеклом', vNone: 'Без',
-      vTypes: { 1: 'На каждом углу', 2: 'Спереди и сзади', 3: 'Один пакет спереди', 4: 'По обеим сторонам', 5: 'Обе стороны целиком', 6: 'По центру спереди' }, vTypesWall: { 2: 'Спереди и сбоку', 6: 'По центру спереди и сбоку' },
-      vTypesT: 'Готовые типы', vSideT: 'Сторона', vMountT: 'Монтаж профилей', vMounts: { A: 'Выше крыши', B: 'До верха рамы', C: 'В проёме', D: 'С угловым соединением' },
-      vMountsD: { A: 'Профили заканчиваются над ламелями', B: 'Снаружи на раме, вровень сверху', C: 'Под коробом между стойками, вровень снаружи – ZIP или стекло остаются возможны', D: 'Пакеты огибают угол, +53 € за угол' },
-      vEdit: 'Нажмите на сторону в 3D, чтобы изменить пакеты.', vSide: 'Decor на этой стороне', vPos: { none: 'Без', L: 'Слева', center: 'По центру', R: 'Справа', full: 'Вся сторона' },
-      vProf: 'профилей', vPack: 'пакет', vClosed: 'В проёме невозможно – сторона уже закрыта. Выберите монтаж на раме.', vHigh: 'Профили длиннее, чем в прайсе', vMountW: 'монтаж',
-      coat: 'Доплата за цвет', coatMin: 'Минимальная партия покраски', fabricS: 'Доплата за ткань', corner: 'Угловое соединение ламельной стены', tbdPanels: 'Доплата за цвет панелей', onRequest: 'по запросу', extra: 'доплата',
-      sysName: { S400: 'перголы', S500: 'перголы', GLASS: 'стекла', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'ламельной стены' },
-      mailSubj: (s, p) => `Запрос: пергола ${s} – ориентировочно ${p}`, mailHi: 'Здравствуйте!\n\nМеня интересует такая конфигурация:', mailBye: 'С уважением',
-      mm: 'мм',
-    },
-  };
+  const T = window.DBI18n.buildT(CATALOGUE);
 
   // Sliding roof (Slide) and the roof-type choice: texts added to every language
   const EXTRA = {
@@ -307,6 +60,20 @@
       ctlH: { pergola: 'без второго пульта – приёмный блок в стойке', remote: 'небольшой отдельный пульт только для скринов', smart: 'через приложение в смартфоне, и вне дома', switch: 'кнопка на стене, только с моторами YOODA или Somfy', solar: 'мотор с солнечной панелью, без кабеля, свой пульт' },
       photo: 'Фото', photoT: 'Посмотреть перголу на фото своей террасы', photoHelp: 'Перетащите 4 точки туда, где будут стоять стойки: 1 и 2 – у стены дома (слева и справа), 3 и 4 – впереди. Пергола сама встанет в перспективу фото. Фото остаётся в вашем браузере.', photoBad: 'Точки перепутаны: 1 и 2 – у стены слева и справа, 3 и 4 – впереди справа и слева.', photoPts: 'Точки', photoHelpS: 'Перетащите 4 точки на углы перголы', photoShot: 'Сохранить снимок', photoNew: 'Другое фото', photoOff: 'Убрать фото', photoTip: 'Как это будет выглядеть у вас? Загрузите фото своей террасы – пергола появится на нём, и в КП тоже.', photoBtn: '📷 Загрузить фото',
     },
+    hr: {
+      roofT: 'Krov', roofRot: 'Zakretne lamele', roofSlide: 'Klizni krov',
+      roofRotD: 'Lamele se zakreću (do približno 135°) – svjetlo i zrak po želji, krov ostaje iznad vas.',
+      roofSlideD: 'Lamele se naginju i slažu na jednu stranu – nebo se otvara.',
+      slideStack: (st, rest, side) => `Potpuno otvorene, složene lamele leže ${side}: oko ${st} m, ${rest} m je otvoreno.`, sideWall: 'uz zid kuće', sideEdge: 'na jednoj strani',
+      reqPosts: 'Dodatni stupovi (dubina veća od 6 m)', pergolaSlide: 'Klizni krov s lamelama', part: 'dio',
+      lightG: { louvre: 'U lamelama', gutter: 'U žlijebu, uokolo', crown: 'Reflektori u okviru', posts: 'Na stupovima', zipled: 'U ZIP vodilicama' }, lightI: { none: 'Bez', white: 'LED traka toplo bijela', rgb: 'LED traka RGB', rgbw: 'LED traka RGBW', spots: 'LED reflektori, 3 po lameli', lamps: 'LED svjetiljke, 2 po lameli', bwhite: 'toplo bijela', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'bijela + RGB', crown8: '8 LED reflektora', postsAll: 'svjetiljka na svakom stupu', zipLedOn: 'LED svjetlo u vodilicama' }, zipLedT: 'LED svjetlo u ZIP vodilicama', zipLedD: 'vodilice s LED trakom, napajanjem i prekidačem', crownNote: 'Samo na stranama bez stakla ili ZIP-screena', perLouvre: 'po lameli', lightsSlide: { none: 'Bez svjetla', bwhite: 'LED u žlijebu, toplo bijela', brgb: 'LED u žlijebu, RGB', brgbw: 'LED u žlijebu, RGBW', cwhitergb: 'LED u žlijebu, bijela + RGB' },
+      heatsSlide: { 's5.single': '1 grijalica 1,5 kW (~10 m²)', 's5.double': 'Dvostruka grijalica 4 kW (~25 m²)' },
+      windSun: 'Vjetar + sunce', stackLbl: (v) => `složeno ${v} mm`, tbRoof: 'Krov', roofClosed: 'zatvoreno', roofOpen: 'otvoreno',
+      reqPostH: 'Viši dodatni stupovi',
+      glTypT: 'Otvaranje', glTyp: { ltr: 'udesno', rtl: 'ulijevo', center: 'iz sredine' }, glOpen: 'otvoreno', ctaS: 'Dodirnite ＋ da zatvorite stranu', tones: ['antracit', 'grafit', 'siva', 'svijetlosiva', 'bijela', 'bež', 'taupe', 'crna'], tbColor: 'Boja', tbColorT: 'Boja stakla i okvira', noGlass: 'Pojavljuje se kada strana ima staklo', tbLight: 'Svjetlo', tbUnder: 'Odozdo', ctlNa: 'nije za ovu veličinu', ctlS: { pergola: 'Daljinski', switch: 'Zidni taster', smart: 'Pametni telefon', solar: 'Solarno' },
+      ctlH: { pergola: 'bez drugog odašiljača – prijemni modul u stupu', remote: 'mali dodatni ručni odašiljač samo za screenove', smart: 'putem aplikacije na pametnom telefonu, i izvan kuće', switch: 'fiksni taster na zidu, samo s YOODA ili Somfy motorima', solar: 'motor sa solarnim panelom, bez strujnog kabela, vlastiti ručni odašiljač' },
+      photo: 'Fotografija', photoT: 'Pogledajte pergolu na fotografiji svoje terase', photoHelp: 'Povucite 4 točke tamo gdje će stajati stupovi: 1 i 2 uz zid kuće (lijevo, desno), 3 i 4 sprijeda. Pergola se postavlja u perspektivu fotografije. Fotografija ostaje u vašem pregledniku.', photoBad: 'Točke su zamijenjene: 1 i 2 uz zid lijevo i desno, 3 i 4 sprijeda desno i lijevo.', photoPts: 'Točke', photoHelpS: 'Povucite 4 točke na uglove pergole', photoShot: 'Spremi sliku', photoNew: 'Druga fotografija', photoOff: 'Ukloni fotografiju', photoTip: 'Kako će izgledati kod vas? Učitajte fotografiju svoje terase – pergola se pojavljuje na njoj, i u ponudi.', photoBtn: '📷 Učitaj fotografiju',
+    },
   };
   for (const [l, x] of Object.entries(EXTRA)) {
     Object.assign(T[l], x);
@@ -337,7 +104,7 @@
     return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : 'de';
   };
   let lang = pickLang();
-  let step = 0, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
+  let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
   const isCust = () => document.body.classList.contains('cust');
   const curOpt = () => state.options[state.optIndex];
   const sysOf = (o) => famKey(o);
@@ -345,7 +112,7 @@
   const toast = (msg) => { const d = document.createElement('div'); d.className = 'f-toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
 
   /* ---------- configuration <-> link / storage ---------- */
-  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet', 'extra', 'split'];
+  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet', 'opening', 'extra', 'split'];
   const prune = (v) => { // drop empty values so the link stays short
     if (Array.isArray(v)) return v.map(prune);
     if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) { const p = prune(x); if (p === null || p === undefined || p === '' || (typeof p === 'object' && !Array.isArray(p) && !Object.keys(p).length)) continue; o[k] = p; } return o; }
@@ -363,13 +130,14 @@
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
     if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
     if (!s.parapet) state.parapet = { sides: [], h: 900 };
+    if (!s.opening) state.opening = { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' };
+    else state.opening = { kind: 'slide', doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left', ...s.opening };
     if (!s.split) state.split = null;
     state.extra = { mont: 0, items: [], ...(s.extra || {}) }; state.extra.items = (state.extra.items || []).map((x) => ({ t: x.t || '', a: Number(x.a) || 0 }));
     state.colors = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
     if (!cat.fabrics.collections.some((f) => f.id === state.colors.fabric)) state.colors.fabric = 'soltis-7635';
     $('w').value = state.width; $('d').value = state.depth;
     $('mt-wall').setAttribute('aria-pressed', state.mount === 'wall'); $('mt-free').setAttribute('aria-pressed', state.mount === 'free');
-    $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular');
     if (state.roof !== 'sliding') state.roof = 'rotating';
     syncRoofButtons();
     const idx = s.optIndex || 0;
@@ -470,9 +238,21 @@
       else if (l.k === 'extra') out.push({ g: 'extra', t: l.t || t.extraT, d: '', a: l.a });
       else if (l.k === 'tbd') out.push({ g: 'colours', t: t.tbdPanels, d: t.onRequest, a: null });
     }
+    for (const svc of svcList()) out.push({ g: 'extra', svc: true, t: svc.k === 'install' ? t.montT : t.delivery, d: '', a: svc.a }); // no "% of price" note in the offer
     return out;
   }
   const groupsOrder = ['pergola', 'sides', 'comfort', 'colours', 'extra'];
+  // default-on services derived from the goods subtotal; the customer can switch each off in the offer.
+  // RULE (D&B 01.11): installation and delivery are computed on the FULL, pre-discount goods subtotal
+  // and are NOT subject to any dealer discount — they stay exactly as calculated. A discount applies
+  // only to pergola/sides; these service lines are never part of the discount base.
+  const SVC_DEFAULT = { install: 0.10, deliv: 0.04 };
+  const svcRate = (k) => { const v = window.DBPricing && window.DBPricing[k]; return (typeof v === 'number' && v >= 0) ? v : SVC_DEFAULT[k]; };
+  const svcOn = (k) => state[k] !== false;
+  function svcList() { const base = q().total, out = []; if (!(base > 0)) return out; if (svcOn('install')) out.push({ k: 'install', a: Math.floor(base * svcRate('install') / 10) * 10 }); if (svcOn('deliv')) out.push({ k: 'deliv', a: Math.floor(base * svcRate('deliv') / 10) * 10 }); return out; }
+  function svcTotal() { return svcList().reduce((s, x) => s + x.a, 0); }
+  function grandNet() { return q().total + svcTotal(); }
+  function notInclNote(t) { const m = []; if (!svcOn('deliv')) m.push(t.deliveryLc); if (!svcOn('install')) m.push(t.montLc); return t.qExclPre + [...m, t.qExclBase].join(', ') + '.'; }
 
   /* ---------- rendering ---------- */
   const F = $('funnel');
@@ -482,18 +262,87 @@
   };
   const GL = { none: '○', zip: '▤', glass: '◇', verto: '▥', panels: '▦' };
 
+  // Product catalog — entry screen. Products are modules in @db/products (bundled to
+  // window.DBProducts); add a product there, not here. Empty fallback keeps the funnel
+  // working if the bundle is ever missing.
+  const PRODUCTS = (window.DBProducts && window.DBProducts.PRODUCTS) || [];
+  T.de.catT = 'Modell w\u00e4hlen'; T.de.catL = 'Welches Dach Ihre Pergola hat. Danach: Gr\u00f6\u00dfe, Seiten, Komfort und Farben.'; T.de.catChange = '\u00e4ndern';
+  T.en.catT = 'Choose a model'; T.en.catL = 'Which roof your pergola has. Then: size, sides, comfort and colours.'; T.en.catChange = 'change';
+  T.ru.catT = '\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043c\u043e\u0434\u0435\u043b\u044c'; T.ru.catL = '\u0421 \u043a\u0430\u043a\u043e\u0439 \u043a\u0440\u044b\u0448\u0435\u0439 \u0431\u0443\u0434\u0435\u0442 \u0432\u0430\u0448\u0430 \u043f\u0435\u0440\u0433\u043e\u043b\u0430. \u0414\u0430\u043b\u044c\u0448\u0435 \u2014 \u0440\u0430\u0437\u043c\u0435\u0440\u044b, \u0441\u0442\u043e\u0440\u043e\u043d\u044b, \u043a\u043e\u043c\u0444\u043e\u0440\u0442 \u0438 \u0446\u0432\u0435\u0442\u0430.'; T.ru.catChange = '\u0441\u043c\u0435\u043d\u0438\u0442\u044c';
+  T.de.kitT = 'Ausstattung'; T.de.kitL = 'Seiten, Verglasung und Komfort \u2014 alles, was wir liefern.';
+  T.en.kitT = 'Equipment'; T.en.kitL = 'Sides, glazing and comfort \u2014 everything we deliver.';
+  T.ru.kitT = '\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0430\u0446\u0438\u044f'; T.ru.kitL = '\u0421\u0442\u043e\u0440\u043e\u043d\u044b, \u043e\u0441\u0442\u0435\u043a\u043b\u0435\u043d\u0438\u0435 \u0438 \u043a\u043e\u043c\u0444\u043e\u0440\u0442 \u2014 \u0432\u0441\u0451, \u0447\u0442\u043e \u043c\u044b \u0434\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u043c.';
+  T.de.svcT = 'Montage und Lieferung'; T.de.svcHint = 'Standardmäßig enthalten — abwählen, um aus dem Angebot zu nehmen.'; T.de.svcInstallD = '10 % des Preises'; T.de.svcDelivD = '4 % des Preises'; T.de.montLc = 'Montage'; T.de.deliveryLc = 'Lieferung'; T.de.andW = 'und'; T.de.qExclPre = 'Nicht enthalten: '; T.de.qExclBase = 'Fundamente, Elektroanschluss, Genehmigungen';
+  T.en.svcT = 'Installation and delivery'; T.en.svcHint = 'Included by default — uncheck to remove from the offer.'; T.en.svcInstallD = '10% of the price'; T.en.svcDelivD = '4% of the price'; T.en.montLc = 'installation'; T.en.deliveryLc = 'delivery'; T.en.andW = 'and'; T.en.qExclPre = 'Not included: '; T.en.qExclBase = 'foundations, electrical connection, permits';
+  T.ru.svcT = 'Монтаж и доставка'; T.ru.svcHint = 'Включены по умолчанию — снимите галочку, чтобы убрать из предложения.'; T.ru.svcInstallD = '10 % от стоимости'; T.ru.svcDelivD = '4 % от стоимости'; T.ru.montLc = 'монтаж'; T.ru.deliveryLc = 'доставка'; T.ru.andW = 'и'; T.ru.qExclPre = 'Не входит: '; T.ru.qExclBase = 'фундамент, подключение электричества, разрешения';
+  T.hr.catT = 'Odaberite model'; T.hr.catL = 'Kakav krov ima vaša pergola. Zatim: veličina, strane, udobnost i boje.'; T.hr.catChange = 'promijeni';
+  T.hr.kitT = 'Oprema'; T.hr.kitL = 'Strane, ostakljenje i udobnost — sve što isporučujemo.';
+  T.hr.svcT = 'Montaža i dostava'; T.hr.svcHint = 'Uključeno po zadanom — odznačite da uklonite iz ponude.'; T.hr.svcInstallD = '10 % cijene'; T.hr.svcDelivD = '4 % cijene'; T.hr.montLc = 'montaža'; T.hr.deliveryLc = 'dostava'; T.hr.andW = 'i'; T.hr.qExclPre = 'Nije uključeno: '; T.hr.qExclBase = 'temelji, električni priključak, dozvole';
+  const prodById = (id) => PRODUCTS.find((pp) => pp.id === id) || null;
+  function pickProduct(id) {
+    const pr = prodById(id); if (!pr || pr.locked) return;
+    product = id;
+    if (state.roof !== pr.roof) { state.roof = pr.roof; syncRoofButtons(); keepCamera(() => recompute(false)); }
+    step = 0; render();
+  }
+  // plain-language copy for the model cards, so a customer understands the difference at a glance
+  const PROD_COPY = {
+    louvered: {
+      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.' },
+      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'] }
+    },
+    slide: {
+      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.' },
+      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'] }
+    }
+  };
+  const pick = (d) => (d && (d[lang] || d.en)) || '';
+  function artSlat(x, y, w, h, rot) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.6" transform="rotate(${rot} ${(x + w / 2).toFixed(1)} ${(y + h / 2).toFixed(1)})" class="art-slat"/>`; }
+  function prodArt(id) {
+    const sun = `<circle cx="135" cy="24" r="11" class="art-sun"/>`;
+    const frame = `<path class="art-frame" d="M24 37v45M136 37v45"/><rect x="15" y="30" width="130" height="7" rx="2" class="art-beam"/><line x1="9" y1="83" x2="151" y2="83" class="art-ground"/>`;
+    if (id === 'louvered') {
+      let s = ''; for (let i = 0; i < 9; i++) s += artSlat(22 + i * 13.4, 14, 6, 17, 26);
+      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g>${frame}</svg>`;
+    }
+    if (id === 'slide') {
+      let s = ''; for (let i = 0; i < 6; i++) s += artSlat(21 + i * 5.4, 14, 4.4, 17, 0);
+      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g><line class="art-open" x1="56" y1="22" x2="128" y2="22" stroke-dasharray="3 6"/>${frame}</svg>`;
+    }
+    // carport: a flat canopy over a simple car
+    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true"><rect x="13" y="26" width="134" height="9" rx="2" class="art-beam"/><path class="art-frame" d="M26 35v47M134 35v47"/><path class="art-car" d="M46 74c0-7 6-12 13-12h18l12 10h13c6 0 10 4 10 10v2H46z"/><circle cx="64" cy="80" r="6" class="art-wheel"/><circle cx="104" cy="80" r="6" class="art-wheel"/><line class="art-ground" x1="9" y1="86" x2="151" y2="86"/></svg>`;
+  }
+  function catalogHTML(t) {
+    const cards = PRODUCTS.map((pr) => {
+      const art = `<span class="f-prod-art">${prodArt(pr.id)}</span>`;
+      const title = `<b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span>`;
+      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true">🔒</span>${art}${title}</div>`;
+      const x = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[pr.roof] }, cat).options[0];
+      const price = x ? `<span class="f-prod-pr"><span class="from">${esc(t.from)}</span> ${fe(gross(x.total))}</span>` : '';
+      const c = PROD_COPY[pr.id] || {};
+      const desc = pick(c.desc) ? `<span class="f-prod-desc">${esc(pick(c.desc))}</span>` : '';
+      const feats = (c.feats && c.feats[lang] || (c.feats && c.feats.en) || []);
+      const chips = feats.length ? `<span class="f-prod-feats">${feats.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : '';
+      return `<button type="button" class="f-prod" data-product="${pr.id}">${art}${title}${desc}${chips}${price}</button>`;
+    }).join('');
+    return `<h2 class="f-cat-h">${esc(t.catT)}</h2><p class="f-lead">${esc(t.catL)}</p><div class="f-prods">${cards}</div>`;
+  }
   function render() {
     if (!isCust()) return;
+    // catalog screen shows products only — hide the 3D stage/toolbar until a model is picked
+    document.body.classList.toggle('cat-only', product === null);
     const t = L(), o = curOpt();
+    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski' };
     const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
-      <span class="f-lang" role="group" aria-label="Language">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${k.toUpperCase()}</button>`).join('')}</span>
+      <details class="f-lang" aria-label="Language"><summary>${lang.toUpperCase()}<span class="f-lang-car" aria-hidden="true">▾</span></summary><div class="f-lang-menu">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${esc(LANGNAME[k] || k.toUpperCase())}</button>`).join('')}</div></details>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
-    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 4 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
-    const body = [stepSize, stepSides, stepComfort, stepColours, stepOffer][step](t, o);
+    if (product === null) { F.innerHTML = head + `<div class="f-body">${catalogHTML(t)}</div>`; return; }
+    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
+    const body = [stepSize, stepKit, stepColours, stepOffer][step](t, o);
     // keep the tapped control where the finger is: re-rendering the panel must not move the page
     const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
     F.innerHTML = head + steps + `<div class="f-body">${body}</div>` + bar(t, o);
-    if (step === 4 && o) { try { $('quote').innerHTML = buildQuote(); fitQuote(); } catch (e) { /* the picture may fail without WebGL */ } }
+    if (step === 3 && o) { try { $('quote').innerHTML = buildQuote(); fitQuote(); } catch (e) { /* the picture may fail without WebGL */ } }
     if (anchor) { const a2 = F.querySelector(lastTap); if (a2) { const dy = a2.getBoundingClientRect().top - y0; if (Math.abs(dy) > 1) window.scrollBy({ top: dy, behavior: 'instant' }); } }
     // scroll to a side only once, right after it was picked in 3D — never on later re-renders (they would yank the page up)
     if (scrollFocus && focusId && step === 1) { const el = F.querySelector(`[data-side="${focusId}"]`); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
@@ -502,12 +351,12 @@
     renderCard();
   }
   function bar(t, o) {
-    const total = q().total, ok = !!o && total > 0;
-    const price = ok ? `<b>${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</b><span>${t.gross}<span class="nt"> · ${t.net} ${fe(total)}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
+    const total = grandNet(), ok = !!o && total > 0;
+    const price = ok ? `<b>${fe(total)}</b><span>${t.net}<span class="nt"> · ${fe(gross(total))} ${t.gross}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
-    const to = step < 4 ? nextStep() : 4;
-    const nextLabel = step === 4 ? esc(t.send) : to === 4 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
-    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 4 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 4 ? ' →' : ''}</button></div>`;
+    const to = step < 3 ? nextStep() : 3;
+    const nextLabel = step === 3 ? esc(t.send) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
+    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 3 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
   }
 
   /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
@@ -559,15 +408,17 @@
   /** glass on one side: how it opens (left → right, right → left, from the centre) and closed / open.
    *  "From the centre" is a two-way Win Glass system (the panels part in the middle); the others park on one side.
    *  A way that this size is not made in is greyed out. */
-  const GLASS_TYP_ICON = { ltr: '⇥', rtl: '⇤', center: '⇹' };
-  function glassTyp(op) { const g = glassFor(op), cfg = glassCfg(op); return g.best && g.best.opening === 'double' ? 'center' : (cfg.side || state.glassSide) === 'left' ? 'rtl' : 'ltr'; }
+  // opening direction shown as a clean arrow: opens to the right →, to the left ←, from the centre ⇄ (two arrows)
+  // SVG arrows (opens right / left / from the centre) — centred crisply in the chip, unlike text glyphs
+  const GLASS_TYP_ICON = { ltr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>', rtl: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>', center: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l-4 5 4 5M3 12h18M17 7l4 5-4 5"/></svg>' };
+  function glassTyp(op) { const g = glassFor(op), cfg = glassCfg(op); return g.best && g.best.opening === 'double' ? 'center' : (cfg.side || state.glassSide) === 'left' ? 'ltr' : 'rtl'; }
   function glassPos(op, t) {
     const g = glassFor(op), cfg = glassCfg(op), typ = glassTyp(op);
     const has = (o) => g.options.some((x) => x.opening === o);
     const isOpen = (cfg.open ?? state.glassOpen) > 0;
-    const tb = (v, cur, ok) => `<button type="button" class="f-chip" data-gtyp="${v}" data-id="${op.id}" aria-pressed="${cur}" ${ok ? '' : 'disabled'}>${GLASS_TYP_ICON[v]} ${esc(t.glTyp[v])}</button>`;
+    const tb = (v, cur, ok) => `<button type="button" class="f-chip gtyp" data-gtyp="${v}" data-id="${op.id}" aria-pressed="${cur}" aria-label="${esc(t.glTyp[v])}" title="${esc(t.glTyp[v])}" ${ok ? '' : 'disabled'}>${GLASS_TYP_ICON[v]}</button>`;
     const sb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
-    return `<div class="sub2">${t.glTypT}: ${tb('ltr', typ === 'ltr', has('single'))}${tb('rtl', typ === 'rtl', has('single'))}${tb('center', typ === 'center', has('double'))}</div>`
+    return `<div class="sub2">${t.glTypT}: ${tb('rtl', typ === 'rtl', has('single'))}${tb('center', typ === 'center', has('double'))}${tb('ltr', typ === 'ltr', has('single'))}</div>`
       + `<div class="sub2" style="margin-top:6px">${t.park}: ${sb('close', '○ ' + t.shut, !isOpen)}${sb('open', '◫ ' + t.glOpen, isOpen)}</div>`;
   }
 
@@ -588,10 +439,13 @@
     h += `<div class="f-cards">
       <button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${t.wall}</b><span class="d">${t.wallD}</span></button>
       <button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${t.free}</b><span class="d">${t.freeD}</span></button></div>`;
-    // roof type: rotating louvres (S400 / S500) or the sliding roof (Slide), each with its lowest price for this size
-    const firstOf = (r) => DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[r] }, cat).options[0];
-    h += head(t.roofT, '') + two('rooft', ['rotating', 'sliding'].map((r) => { const x = firstOf(r); return { v: r, label: r === 'rotating' ? t.roofRot : t.roofSlide, pr: x ? t.from + ' ' + fe(gross(x.total)) : t.louvNa, off: !x && state.roof !== r }; }), state.roof, t);
-    h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${state.roof === 'sliding' ? t.roofSlideD : t.roofRotD}</p>`;
+    // model is chosen on the entry catalog; show it with a link back to change it
+    if (product) { const pr = prodById(product); h += `<div class="f-h3"><span>${t.roofT}</span><button type="button" class="f-link" data-backcat="1">${esc(pr ? (pr.name[lang] || pr.name.en) : '')} \u00b7 ${esc(t.catChange)}</button></div>`; }
+    else {
+      const firstOf = (r) => DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[r] }, cat).options[0];
+      h += head(t.roofT, '') + two('rooft', ['rotating', 'sliding'].map((r) => { const x = firstOf(r); return { v: r, label: r === 'rotating' ? t.roofRot : t.roofSlide, pr: x ? t.from + ' ' + fe(gross(x.total)) : t.louvNa, off: !x && state.roof !== r }; }), state.roof, t);
+      h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${state.roof === 'sliding' ? t.roofSlideD : t.roofRotD}</p>`;
+    }
     const dim = (k, label, v) => `<div class="f-dim"><label for="f-${k}">${label}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="f-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
     h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
     const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6600, 3500], [8000, 4000]];
@@ -689,7 +543,7 @@
   function stepSides(t, o) {
     if (!o) return '';
     const ops = opsOf(o);
-    let h = `<h2>${t.s2}</h2><p class="f-lead">${t.s2l}</p>`;
+    let h = `<div class="f-kit-h"><h3>${t.s2}</h3><p class="f-lead">${t.s2l}</p></div>`;
     h += `<div class="f-h3"><span>${t.allSides}</span></div><div class="f-chips" style="margin-bottom:12px">${['none', 'zip', 'glass'].map((f) => `<button type="button" class="f-chip" data-all="${f}" aria-pressed="${ops.filter((x) => !window.isJoint(x.id)).every((x) => (state.fills[x.id] || 'none') === f)}">${GL[f]} ${t.fills[f]}</button>`).join('')}</div>`;
     h += `<div class="f-sides">`;
     for (const op of ops) {
@@ -711,12 +565,7 @@
       }).join('')}</div>`;
       h += head(t.ctlT, '') + `${ctlRows(t, 'data-zctlall', (m) => zipIds().every((id) => ctlOf(id) === m), (m) => () => m)}`;
     }
-    if (used.has('glass')) {
-      h += `<div class="f-h3"><span>${t.glassTint}</span></div><div class="f-sw">${Object.entries(GLAZING).map(([k, g]) => {
-        const rate = cat.glazing.types.find((x) => x.id === k).surcharge[String(DBCore.thicknessFor(k, cat))];
-        return `<button type="button" data-gl="${k}" aria-pressed="${state.glass.type === k}"><span class="c" style="background:#${g.col.toString(16).padStart(6, '0')};opacity:${Math.max(0.35, g.op + 0.25)}"></span>${t.tints[k]}<span class="pr">${rate ? '+' + rate + ' ' + t.perM2 : t.incl}</span></button>`;
-      }).join('')}</div>`;
-    }
+    // glass tint (прозрачное / бронза / серое / зеркало) now lives in the Цвета step, alongside the other colours
     const legend = ['zip', 'glass', 'panels'].map((k) => `<li><b>${GL[k]} ${t.fills[k]}</b> – ${t.legend[k]}</li>`).join('');
     h += `<ul class="f-legend">${legend}</ul>`;
     return h;
@@ -730,7 +579,7 @@
     const card = (title, desc, chips, list = true) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div><div class="f-chips${list ? ' f-list' : ''}">${chips}</div>`;
     const chip = (attr, cur, label, delta) => `<button type="button" class="f-chip" ${attr} aria-pressed="${cur}">${esc(label)}${delta !== undefined ? `<span class="pr">${plusE(delta)}</span>` : ''}</button>`;
     // light: every kind the price list has for this type, in groups that combine (Slide: gutter and posts only)
-    let h = `<h2>${t.s3}</h2><p class="f-lead">${t.s3l}</p>`;
+    let h = `<div class="f-kit-h f-kit-sep"><h3>${t.s3}</h3><p class="f-lead">${t.s3l}</p></div>`;
     const recess = Object.values(state.fills).some((f) => f === 'glass' || f === 'zip');
     window.lightGroups().forEach((g, i) => {
       const chips = g.items.map((k) => chip(`data-light="${g.k}:${k}"`, window.lightCurOf(g.k) === k, t.lightI[k], k === 'none' ? undefined : g.k === 'zipled' ? window.zipLedDelta() : optDelta(window.lightPatch(g.k, k)))).join('');
@@ -752,10 +601,18 @@
   /* step 4: colours */
   // colour rows: [as frame] · standard colours · [chosen special colour] · "…" opens the full palette under the row
   const moreOpen = {};
+  function stepKit(t, o) {
+    if (!o) return '';
+    return `<h2>${t.kitT}</h2><p class="f-lead">${t.kitL}</p>` + stepSides(t, o) + stepComfort(t, o);
+  }
   function stepColours(t, o) {
     if (!o) return '';
     const e = colorsEff(), rates = cat.coating.rates[sysOf(o)];
     const std = PALETTE.filter((c) => c.group === 'standard');
+    // Decor (Win Verto) gets a third default swatch: golden oak, next to the two standard tones.
+    // ASSUMPTION: "золотой дуб" = 16D «Golden OAK 8DS» (28D «Golden OAK 7DS» has the same hex).
+    const GOLD_OAK = '16D';
+    const stdFor = (key) => key === 'verto' ? std.concat(colorOf(GOLD_OAK)) : std;
     const fills = Object.values(state.fills);
     const rows = [['construction', t.frame], ['roof', t.roof]];
     if (fills.some((f) => f === 'glass' || f === 'panels')) rows.push(['slide', t.slideCol]);
@@ -776,8 +633,8 @@
       const sw = (c, cur) => `<button type="button" data-cl="${key}" data-c="${c.id}" aria-pressed="${cur}"><span class="c" style="background:${swatchBg(c)}"></span>${esc(cname(c.id))}<span class="pr">${prTxt(key, c.group)}</span></button>`;
       let row = '';
       if (key !== 'construction') row += `<button type="button" data-cl="${key}" data-c="" aria-pressed="${linked}"><span class="c" style="background:${swatchBg(colorOf(e.construction))}"><span class="lnk">=</span></span>${t.asFrame}<span class="pr">&nbsp;</span></button>`;
-      row += std.map((c) => sw(c, !linked && eff === c.id)).join('');
-      if (!linked && effC.group !== 'standard' && !effC.custom) row += sw(effC, true);
+      row += stdFor(key).map((c) => sw(c, !linked && eff === c.id)).join('');
+      if (!linked && effC.group !== 'standard' && !effC.custom && !stdFor(key).some((c) => c.id === effC.id)) row += sw(effC, true);
       row += `<button type="button" data-more="${key}" aria-expanded="${!!moreOpen[key]}"><span class="c more"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="19" cy="12" r="2.1"/></svg></span>${t.moreColours}<span class="pr">&nbsp;</span></button>`;
       h += `<div class="f-h3"><span>${label}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${linked ? t.asFrame : esc(cname(eff))}</span></div><div class="f-sw">${row}</div>`;
       if (moreOpen[key]) {
@@ -787,6 +644,13 @@
         }).join('') + `</div>`;
       }
     }
+    // glass tint sits with the other colours (moved here from the Комплектация step)
+    if (fills.includes('glass')) {
+      h += `<div class="f-h3"><span>${t.glassTint}</span></div><div class="f-sw">${Object.entries(GLAZING).map(([k, g]) => {
+        const rate = cat.glazing.types.find((x) => x.id === k).surcharge[String(DBCore.thicknessFor(k, cat))];
+        return `<button type="button" data-gl="${k}" aria-pressed="${state.glass.type === k}"><span class="c" style="background:#${g.col.toString(16).padStart(6, '0')};opacity:${Math.max(0.35, g.op + 0.25)}"></span>${t.tints[k]}<span class="pr">${rate ? '+' + rate + ' ' + t.perM2 : t.incl}</span></button>`;
+      }).join('')}</div>`;
+    }
     if (fills.includes('zip')) h += `<div class="f-h3"><span>${t.fabricTone}</span></div><div class="f-pal">${FABRIC_TONES.map(([hx, n]) => `<button type="button" data-tone="${hx}" aria-pressed="${state.colors.tone === hx}" title="${esc(n)}" aria-label="${esc(n)}" style="background:${hx}"></button>`).join('')}</div>`;
     h += `<p class="f-lead" style="margin-top:14px;font-size:12.5px">${t.colourNote}</p>`;
     return h;
@@ -795,17 +659,24 @@
   /* step 5: offer */
   function stepOffer(t, o) {
     if (!o) return '';
-    const lines = quoteLines(), total = q().total;
+    const lines = quoteLines(), total = grandNet();
     let h = `<h2>${t.s5}</h2><p class="f-lead">${t.s5l}</p>`;
-    h += `<div class="f-total"><span class="muted">${t.qGross}</span><span class="big">${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))}</span><span class="muted">${t.qNet}</span><span class="r">${fe(total)}</span></div>`;
+    // net is the headline figure; VAT and the gross total sit small beneath it
+    h += `<div class="f-total"><span class="muted">${t.qNet}</span><span class="big">${fe(total)}</span><span class="muted">${t.qVat}</span><span class="r">${fe(total * VAT)}</span><span class="muted">${t.qGross}</span><span class="r">${fe(gross(total))}</span></div>`;
     if (q().incomplete) h += `<div class="f-note">${t.incomplete}</div>`;
     h += `<table class="f-sum"><tbody>`;
     for (const g of groupsOrder) {
-      const ls = lines.filter((l) => l.g === g); if (!ls.length) continue;
+      const ls = lines.filter((l) => l.g === g && !l.svc); if (!ls.length) continue;
       h += `<tr class="g"><td colspan="2">${t.grp[g]}</td></tr>` + ls.map((l) => `<tr><td>${esc(l.t)}${l.d ? `<span class="s">${esc(l.d)}</span>` : ''}</td><td class="a">${l.a == null ? '—' : fe(gross(l.a))}</td></tr>`).join('');
     }
     h += `</tbody></table><p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.gross}</p>`;
-    h += `<div class="f-h3"><span>${t.notIncl}</span></div><ul class="f-incl">${t.notInclList.map((x, i) => `<li>${i === 0 && q().lines.some((l) => l.k === 'mont') ? t.delivery : x}</li>`).join('')}</ul>`;
+    const _base = q().total;
+    const svcRow = (k, label, dsc, amt) => `<button type="button" class="f-svc" data-svc="${k}" aria-pressed="${svcOn(k)}"><span class="f-svc-ck" aria-hidden="true"></span><span class="f-svc-nm">${esc(label)}</span><span class="pr">${svcOn(k) ? '+' + fe(gross(amt)) : '\u2014'}</span></button>`;
+    h += `<div class="f-h3"><span>${t.svcT}</span></div><div class="f-svc-list">${svcRow('install', t.montT, t.svcInstallD, Math.floor(_base * svcRate('install') / 10) * 10)}${svcRow('deliv', t.delivery, t.svcDelivD, Math.floor(_base * svcRate('deliv') / 10) * 10)}</div><p class="f-lead" style="font-size:12px;margin:6px 0 0">${esc(t.svcHint)}</p>`;
+    const _miss = []; if (!svcOn('deliv')) _miss.push(t.deliveryLc); if (!svcOn('install')) _miss.push(t.montLc);
+    const _cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+    const _incl = [...(_miss.length ? [_cap(_miss.join(` ${t.andW} `))] : []), ...t.notInclList.slice(1)];
+    h += `<div class="f-h3"><span>${t.notIncl}</span></div><ul class="f-incl">${_incl.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
     h += formHtml(t);
     h += `<div class="f-h3" style="margin-top:22px"><span>${t.faqT}</span></div><div class="f-faq">${t.faq.map(([qq, a]) => `<details><summary>${qq}</summary><p>${a}</p></details>`).join('')}</div>`;
     return h;
@@ -820,7 +691,6 @@
       <label>${t.phone}<input type="tel" name="phone" autocomplete="tel" value="${esc(form.phone)}"></label>
       <label>${t.place}<input type="text" name="place" autocomplete="postal-code" value="${esc(form.place)}">${err('place')}</label>
       <label>${t.when}<select name="when">${t.whens.map((w, i) => `<option value="${i}" ${form.when === i ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
-      <label class="chk"><input type="checkbox" name="mount" ${form.mount ? 'checked' : ''}> ${t.wantMount}</label>
       <label class="chk"><input type="checkbox" name="visit" ${form.visit ? 'checked' : ''}> ${t.wantVisit}</label>
       <label>${t.msg}<textarea name="msg">${esc(form.msg)}</textarea></label>
       <p class="f-priv">${t.privacy}</p>
@@ -875,7 +745,7 @@
       mode(cust) { if (!loaded()) return; try { if (cust) window.posthog.startSessionRecording(); else window.posthog.stopSessionRecording(); } catch (e) { /* older loader */ } },
     };
   })();
-  const J = { t0: Date.now(), active: 0, open: 0, stepSec: [0, 0, 0, 0, 0], last: Date.now(), sizes: new Set(), roofs: new Set(), mounts: new Set(),
+  const J = { t0: Date.now(), active: 0, open: 0, stepSec: [0, 0, 0, 0], last: Date.now(), sizes: new Set(), roofs: new Set(), mounts: new Set(),
     sides: 0, colours: 0, lights: 0, comfort: 0, layouts: 0, rot: 0, views: new Set(), night: 0, printed: 0, linkCopied: 0, photo: 0, formOpened: 0, minP: Infinity, maxP: 0, visit: null };
   (function initVisit() {
     const qs = new URLSearchParams(location.search), utm = ['utm_source', 'utm_medium', 'utm_campaign'].map((k) => qs.get(k)).filter(Boolean).join(' / ');
@@ -951,9 +821,10 @@
     return { p, lvl: p >= 9 ? 'high' : p >= 5 ? 'mid' : 'low' };
   }
   const JT = {
-    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', replay: 'Sitzungsaufzeichnung (intern)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Seiten', 'Komfort', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
-    en: { head: 'How I used the configurator (for your advice)', replay: 'Session recording (internal)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Sides', 'Comfort', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
-    ru: { head: 'Как я пользовался конфигуратором (для консультации)', replay: 'Запись сессии (для офиса)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Стороны', 'Комфорт', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
+    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', replay: 'Sitzungsaufzeichnung (intern)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Ausstattung', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
+    en: { head: 'How I used the configurator (for your advice)', replay: 'Session recording (internal)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Equipment', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
+    ru: { head: 'Как я пользовался конфигуратором (для консультации)', replay: 'Запись сессии (для офиса)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Комплектация', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
+    hr: { head: 'Kako sam koristio konfigurator (za vaše savjetovanje)', replay: 'Snimka sesije (interno)', visit: (n, d) => n > 1 ? `${n}. posjet, prvi ${d}` : 'Prvi posjet', src: 'Pronađeno putem', direct: 'izravno', active: 'Aktivno vrijeme', open: 'stranica otvorena', steps: 'Vrijeme po koraku', stepN: ['Veličina', 'Oprema', 'Boje', 'Ponuda'], tried: 'Isprobano', sizes: 'veličina', roofs: { rotating: 'zakretne lamele', sliding: 'klizni krov' }, sides: 'promjena strana', colours: 'promjena boja', lights: 'odabira svjetla', comfort: 'promjena udobnosti', layouts: 'rasporeda/smjerova', range: 'Viđene cijene', looked: '3D', rot: 'okretano', views: 'prikaza', night: 'večernji prikaz', printed: 'Ponuda ispisana/PDF', link: 'poveznica kopirana', photo: 'učitana fotografija terase', yes: 'da', no: 'ne', interest: 'Interes', lvl: { high: 'visok', mid: 'srednji', low: 'nizak' }, pts: 'bodova', min: 'min', s: 's' },
   };
   function journeyText() {
     trackPrice();
@@ -981,10 +852,10 @@
   /* ---------- request e-mail and quote ---------- */
   function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} ${L().m}` : ''; } // as built (louvre spacing may round the size)
   function mailText() {
-    const t = L(), lines = quoteLines(), total = q().total;
+    const t = L(), lines = quoteLines(), total = grandNet();
     const parts = [t.mailHi, '', `${t.qFacts.size}: ${sizeText()} (${state.mount === 'wall' ? t.wall : t.free})`];
     for (const l of lines) parts.push(`- ${l.t}${l.d ? ' (' + l.d + ')' : ''}: ${l.a == null ? '—' : fe(gross(l.a))}`);
-    parts.push('', `${t.qGross}: ${q().incomplete ? t.from + ' ' : ''}${fe(gross(total))} (${t.net} ${fe(total)})`, '');
+    parts.push('', `${t.qGross}: ${fe(gross(total))} (${t.net} ${fe(total)})`, '');
     parts.push(`${t.name}: ${form.name}`, `${t.email}: ${form.email}`);
     if (form.phone) parts.push(`${t.phone.replace(/ \(.*\)/, '')}: ${form.phone}`);
     if (form.place.trim()) parts.push(`${t.place.replace(/ \(.*\)/, '')}: ${form.place}`);
@@ -1009,12 +880,12 @@
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
     // postcode / town: optional for now
     if (Object.keys(formErr).length) { render(); const f = F.querySelector('#f-form'); if (f) f.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
-    const subj = t.mailSubj(sizeText(), (q().incomplete ? t.from + ' ' : '') + fe(gross(q().total)));
+    const subj = t.mailSubj(sizeText(), fe(gross(grandNet())));
     lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
     openMail();
     // with the database switched on the request is also stored as a lead (the office sees it on its board)
     if (window.Backend) window.Backend.submitRequest({ name: form.name, phone: form.phone, email: form.email, address: form.place, postcode: (String(form.place || '').match(/\b\d{4}\b/) || [''])[0], note: [form.msg, form.mount ? t.wantMount : '', form.visit ? t.wantVisit : ''].filter(Boolean).join(' · ') }, journeyText());
-    A.track('request_sent', { total_gross: Math.round(gross(q().total)), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
+    A.track('request_sent', { total_gross: Math.round(gross(grandNet())), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
     sentOk = true; render();
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
@@ -1057,7 +928,7 @@
     }
   }
   function buildQuote() {
-    const t = L(), o = curOpt(), lines = quoteLines(), total = q().total, e = colorsEff();
+    const t = L(), o = curOpt(), lines = quoteLines(), total = grandNet(), e = colorsEff();
     const ops = opsOf(o).filter((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
     const comfort = lines.filter((l) => l.g === 'comfort').map((l) => l.t).join(', ') || t.none;
     const facts = [
@@ -1088,8 +959,8 @@
       <div><h2>${t.qPrice}</h2><table><thead><tr><th>${t.qItem}</th><th class="a">${t.net}</th></tr></thead><tbody>${rows}
         <tr class="sumrow"><td style="padding-top:8px">${t.qNet}</td><td class="a" style="padding-top:8px">${fe(total)}</td></tr>
         <tr class="sumrow"><td>${t.qVat}</td><td class="a">${fe(total * VAT)}</td></tr>
-        <tr class="tot"><td>${t.qGross}${q().incomplete ? ' (' + t.from + ')' : ''}</td><td class="a">${fe(gross(total))}</td></tr></tbody></table></div>
-      <ul class="notes">${t.qNotes.map((n, i) => `<li>${i === 1 && q().lines.some((l) => l.k === 'mont') ? t.qExclM : n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
+        <tr class="tot"><td>${t.qGross}</td><td class="a">${fe(gross(total))}</td></tr></tbody></table></div>
+      <ul class="notes">${t.qNotes.map((n, i) => `<li>${i === 1 ? notInclNote(t) : n}</li>`).join('')}${q().incomplete ? `<li>${t.incomplete}</li>` : ''}</ul>
       <div class="foot"><a href="${esc(shareUrl())}">${t.qLink}</a> · ${no}</div></div>`;
   }
   /** the offer always fits one A4 page: measured at print width, a long one is scaled down a little */
@@ -1143,13 +1014,12 @@
     if (visited.has(i)) return true;
     const po = state.po;
     if (i === 0) return false; // the size is always looked at first
-    if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none') || Object.keys(state.verto.packs || {}).length > 0;
-    if (i === 2) return !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.zipLed || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
-    if (i === 3) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
+    if (i === 1) return Object.values(state.fills).some((f) => f && f !== 'none') || Object.keys(state.verto.packs || {}).length > 0 || !!(po.ledLouvres || po.ledGutter || po.spots || po.lamps || po.crownSpots || po.verticalLamps || po.zipLed || po.heaters || po.sensors || po.smart || po.thermal || po.audio || (po.sockets && (po.sockets.power || po.sockets.usb)));
+    if (i === 2) return Object.keys(DEF_COLORS).some((k) => state.colors[k] !== DEF_COLORS[k]) || state.glass.type !== 'float';
     return false;
   }
   /** the step "Next" leads to: the next one not answered yet, else the offer */
-  function nextStep() { for (let i = step + 1; i < 4; i++) if (!stepDone(i)) return i; return 4; }
+  function nextStep() { for (let i = step + 1; i < 3; i++) if (!stepDone(i)) return i; return 3; }
   function go(d) {
     if (d > 0) { visited.add(step); step = nextStep(); } else step = Math.max(0, step - 1);
     A.track('step_opened', { step: step + 1, via: d > 0 ? 'next' : 'back' });
@@ -1182,6 +1052,9 @@
     if (d.lang) { setLang(d.lang); return; }
     if (d.mode) { if (window.Backend && window.Backend.onMode && window.Backend.onMode(d.mode)) return; setMode(d.mode); return; }
     if (d.step !== undefined) { step = Number(d.step); focusId = null; render(); return; }
+    if (d.product) { pickProduct(d.product); return; }
+    if (d.backcat) { product = null; render(); return; }
+    if (d.svc) { state[d.svc] = state[d.svc] === false ? true : false; render(); return; }
     if (d.go) {
       if (d.go === 'form') { // "Send request" in the bar: send when the form is filled, otherwise go to the first missing field
         syncForm();
@@ -1195,6 +1068,15 @@
     if (d.mount) { setMount(d.mount); return; }
     if (d.par) { const pp = state.parapet; if (d.par === 'none') pp.sides = []; else { const st = new Set(pp.sides); if (st.has(d.par)) st.delete(d.par); else st.add(d.par); pp.sides = [...st]; } rebuild(); applyAnim(); return; }
     if (d.parh) { state.parapet.h = Math.max(100, Math.min(1500, state.parapet.h + Number(d.parh))); rebuild(); applyAnim(); return; }
+    // house-wall opening (door / sliding exit): visual context only
+    if (d.openon) { state.opening.on = d.openon === '1'; rebuild(); applyAnim(); return; }
+    if (d.openkind) { state.opening.kind = d.openkind; rebuild(); applyAnim(); return; }
+    if (d.doordir) { state.opening.doorDir = d.doordir; rebuild(); applyAnim(); return; }
+    if (d.doorleaves) { state.opening.doorLeaves = Number(d.doorleaves); rebuild(); applyAnim(); return; }
+    if (d.slidepanels) { const n = Number(d.slidepanels); state.opening.slidePanels = n; const ok = n === 3 ? ['left', 'right'] : n === 2 ? ['left', 'right', 'both', 'pocket'] : ['left', 'right', 'center', 'pocket']; if (!ok.includes(state.opening.slideActive)) state.opening.slideActive = 'left'; rebuild(); applyAnim(); return; }
+    if (d.slideactive) { state.opening.slideActive = d.slideactive; rebuild(); applyAnim(); return; }
+    if (d.onudge) { const k = d.onudge, cur = k === 'w' ? state.opening.w : state.opening.h, lim = k === 'w' ? [600, 6000] : [600, 3200]; state.opening[k] = Math.max(lim[0], Math.min(lim[1], cur + Number(d.d))); rebuild(); applyAnim(); return; }
+    if (d.opos) { const o = state.opening; if (d.opos === 'center') o.cx = null; else { let c = o.cx == null ? state.width / 2 : o.cx; c += d.opos === '+' ? 100 : -100; o.cx = Math.max(300, Math.min(state.width - 300, c)); } rebuild(); applyAnim(); return; }
     if (d.nudge) { const k = d.nudge, v = (k === 'w' ? state.width : state.depth) + Number(d.d); if (k === 'w') setDims(v, state.depth); else setDims(state.width, v); return; }
     if (d.preset) { const [w, dd] = d.preset.split('x').map(Number); setDims(w, dd); return; }
     if (d.fix) { if (d.fix.startsWith('DEPTH')) setDims(state.width, Number(d.v)); else setDims(Number(d.v), state.depth); return; }
@@ -1202,7 +1084,7 @@
     if (d.rooft) { if (d.rooft === state.roof) return; state.roof = d.rooft; syncRoofButtons(); keepCamera(() => recompute(false)); return; }
     if (d.opt !== undefined) { choose(Number(d.opt)); return; }
     if (d.spl) { keepCamera(() => window.splitAct(d.spl)); return; }
-    if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; $('louv-dir').setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(false)); return; }
+    if (d.louv) { if (d.louv === state.louvres) return; state.louvres = d.louv; keepCamera(() => recompute(false)); return; }
     if (d.zctlall || d.zctl) { // the motor brand follows the control if needed (see brandFor)
       const ids = zipIds(), cur = Object.fromEntries(ids.map((id) => [id, ctlOf(id)]));
       const modeFor = d.zctlall ? () => d.zctlall : (id) => (id === d.id ? d.zctl : cur[id]);
@@ -1222,7 +1104,7 @@
       const op = openingById(d.id); if (!op) return;
       const g = glassFor(op), want = d.gtyp === 'center' ? 'double' : 'single';
       const pick = g.options.filter((x) => x.opening === want).sort((a, b) => a.price - b.price)[0]; if (!pick) return;
-      setCfg(op, { variant: pick.table, ...(d.gtyp === 'center' ? {} : { side: d.gtyp === 'rtl' ? 'left' : 'right' }) });
+      setCfg(op, { variant: pick.table, ...(d.gtyp === 'center' ? {} : { side: d.gtyp === 'rtl' ? 'right' : 'left' }) });
       build(); applyAnim(); renderEstimate(); render(); return;
     }
     if (d.gpos) { // the glass slides to the chosen side, or closes the opening
@@ -1231,7 +1113,7 @@
       return;
     }
     if (d.of) { state.colors.fabric = fabricForOpenness(Number(d.of)); for (const k of Object.keys(state.zipFab)) delete state.zipFab[k]; applyColors(); renderColors(); renderEstimate(); return; }
-    if (d.gl) { state.glass.type = d.gl; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); renderColors(); renderEstimate(); return; }
+    if (d.gl) { state.glass.type = d.gl; for (const k of Object.keys(state.glassOf)) delete state.glassOf[k]; build(); renderColors(); renderEstimate(); render(); return; }
     const po = state.po;
     if (d.light) { setLight(d.light); syncGlassControls(); return; } // same as the light button on the 3D: shown at once
     if (d.heat) { po.heaters = d.heat === 'none' ? null : { set: d.heat, qty: 1 }; rebuild(); return; }
@@ -1299,7 +1181,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.SIDE_NAME = isCust() ? (id) => sideLabel(id, curOpt()) : null; window.VERTO_TEXT = isCust() ? { sideT: L().vSideT, pos: L().vPos, prof: L().vProf, none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop();
+    cap('tb-view', tb.view); cap('louv-dir', (L().glTypT) || tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-size', (L().steps && L().steps[0]) || 'Размер'); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-size').title = (L().steps && L().steps[0]) || 'Размер'; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.SIDE_NAME = isCust() ? (id) => sideLabel(id, curOpt()) : null; window.VERTO_TEXT = isCust() ? { sideT: L().vSideT, pos: L().vPos, prof: L().vProf, none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop(); cap('tb-kit', (L().steps && L().steps[1]) || 'Kit'); $('tb-kit').title = (L().steps && L().steps[1]) || ''; if (!$('tb-louv').hidden) renderLouvPop(); if (!$('tb-kit-pop').hidden) renderKitPop(); if (!$('tb-size-pop').hidden) renderSizePop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
@@ -1319,7 +1201,7 @@
     if (m === 'pro' && window.Backend && !window.Backend.allowPro()) { m = 'cust'; }
     document.body.classList.toggle('cust', m === 'cust');
     Store.set('db.mode', m);
-    translateToolbar(); render();
+    translateToolbar(); render(); try { document.documentElement.classList.remove('boot-cat'); } catch (e) {}
     A.mode(m === 'cust'); A.init(); A.banner();
     const r = $('mode-cust'); if (r) r.hidden = m === 'cust';
     for (const x of document.querySelectorAll('.pro-file')) x.hidden = m === 'cust';
@@ -1335,23 +1217,26 @@
     const panel = document.querySelector('.app > aside.panel');
     panel.prepend(b, mk(T.ru.openFile, () => fi.click()), mk(T.ru.saveFile, saveFile), fi);
   }
-  function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(false); }
+  function setMount(m) { state.mount = m; const a = $('mt-wall'), b = $('mt-free'); if (a) a.setAttribute('aria-pressed', m === 'wall'); if (b) b.setAttribute('aria-pressed', m === 'free'); recompute(false); }
 
   /* ---------- 3D call to action: a "+" on every side; tap it to choose what closes that side ---------- */
   const HS = document.createElement('div'); HS.id = 'hotspots'; HS.className = 'cust-only';
   const CTA = document.createElement('button'); CTA.type = 'button'; CTA.id = 'f-cta'; CTA.className = 'cust-only';
   $('view').parentElement.append(HS, CTA);
   let hsSig = '';
+  let hsGone = false; // once the user answers any side (open / zip / glass / panels), the "+" buttons vanish for good — the picture stays clean
   function renderHotspots() {
-    const o = curOpt(), ops = opsOf(o), anyFill = ops.some((x) => state.fills[x.id] && state.fills[x.id] !== 'none');
-    const anySet = ops.some((x) => state.fills[x.id]); // a side answered "nothing" also stops the pulse
-    CTA.hidden = anySet || Object.keys(state.verto.packs || {}).length > 0 || !o || !!PHOTO.url; CTA.innerHTML = `<span class="hand">☝</span><span class="l">${esc(L().cta)}</span><span class="s">${esc(L().ctaS)}</span>`;
-    const sig = lang + '|' + ops.map((x) => x.id + ':' + (state.fills[x.id] || '?')).join(',') + '|' + (focusId || '');
+    const o = curOpt(), ops = opsOf(o);
+    const anySet = ops.some((x) => state.fills[x.id]); // a side answered (incl. "open"/nothing) retires the "+" for the whole model
+    CTA.hidden = true; // the "+" hint is not shown
+    if (anySet) hsGone = true;
+    if (hsGone) { if (HS.innerHTML) HS.innerHTML = ''; hsSig = '__gone__'; return; }
+    const sig = lang + '|' + ops.map((x) => x.id).join(',') + '|' + (focusId || '');
     if (sig === hsSig) return; hsSig = sig;
+    // nothing chosen yet: faint, barely-there "+" on each side, still tappable
     HS.innerHTML = ops.map((x) => {
-      const f = state.fills[x.id] || 'none', lab = `${sideLabel(x.id, o)} · ${f === 'none' ? L().hsOpen : L().fills[f]}`;
-      const no = state.fills[x.id] === 'none'; // chosen "nothing": a see-through +, still tappable
-      return `<button type="button" class="hs${f === 'none' ? '' : ' filled'}${no ? ' nofill' : ''}${!anySet ? ' pulse' : ''}${focusId === x.id ? ' on' : ''}" data-hs="${x.id}" title="${esc(lab)}" aria-label="${esc(lab)}">${f === 'none' ? '+' : GL[f]}</button>`;
+      const lab = `${sideLabel(x.id, o)} · ${L().hsOpen}`;
+      return `<button type="button" class="hs${focusId === x.id ? ' on' : ''}" data-hs="${x.id}" title="${esc(lab)}" aria-label="${esc(lab)}">+</button>`;
     }).join('');
   }
   const hv = new THREE.Vector3();
@@ -1382,6 +1267,90 @@
   })();
   HS.addEventListener('click', (ev) => { const b = ev.target.closest('[data-hs]'); if (!b) return; dirty = true; openCard(b.dataset.hs); });
   CTA.addEventListener('click', () => { step = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // 3D toolbar popups built from the funnel: louvre direction + per-side glass opening, and the comfort equipment
+  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.' };
+  function renderLouvPop() {
+    const pop = $('tb-louv'); if (!pop) return;
+    const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }
+    const glassOps = opsOf(o).filter((op) => state.fills[op.id] === 'glass');
+    let h = `<div class="tl-sec"><div class="tl-h">${esc(t.glTypT)} — ${esc(t.fills.glass)}</div>`;
+    h += glassOps.length ? glassOps.map((op) => `<div class="tl-side"><span class="tl-nm">${esc(sideLabel(op.id, o))}</span><div class="tl-ctl">${glassPos(op, t)}</div></div>`).join('') : `<div class="tl-empty">${esc(KIT_EMPTY[lang] || KIT_EMPTY.en)}</div>`;
+    h += `</div>`;
+    const wall = state.mount === 'wall';
+    const dirName = (k) => { const s = k === 'parallel' ? (wall ? t.louvPar : t.louvParF) : (wall ? t.louvPerp : t.louvPerpF); return s.charAt(0).toUpperCase() + s.slice(1); };
+    const dirOk = (k) => { try { return !!DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: k, families: FAMILIES[state.roof] }, cat).options[0]; } catch (e) { return true; } };
+    h += `<div class="tl-sec"><div class="tl-h">${esc(t.louvDir)}</div><div class="sub2">${['parallel', 'perpendicular'].map((k) => `<button type="button" class="f-chip" data-louv="${k}" aria-pressed="${state.louvres === k}" ${dirOk(k) ? '' : 'disabled'}>${k === 'parallel' ? '⇆' : '⇅'} ${esc(dirName(k))}</button>`).join('')}</div></div>`;
+    pop.innerHTML = h;
+  }
+  function renderKitPop() {
+    const pop = $('tb-kit-pop'); if (!pop) return;
+    const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }
+    pop.innerHTML = stepComfort(t, o);
+  }
+  function renderSizePop() {
+    const pop = $('tb-size-pop'); if (!pop) return;
+    const t = L(), wall = state.mount === 'wall';
+    const dim = (k, label, v) => `<div class="f-dim"><label for="tb-${k}">${esc(label)}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="tb-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
+    let h = `<div class="f-cards">`
+      + `<button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${esc(t.wall)}</b><span class="d">${esc(t.wallD)}</span></button>`
+      + `<button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${esc(t.free)}</b><span class="d">${esc(t.freeD)}</span></button></div>`;
+    h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', t.width, state.width)}${dim('d', t.depth, state.depth)}</div>`;
+    // parapet (low wall / railing) on one or more sides — the same control as on the size step
+    const pp = state.parapet, faces = wall ? ['front', 'left', 'right'] : ['front', 'left', 'right', 'back'];
+    h += `<div class="f-h3"><span>${t.parT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.parD)}</span></div>`;
+    h += `<div class="f-chips"><button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${esc(t.parNone)}</button>${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${esc(t.sides[f])}</button>`).join('')}</div>`;
+    if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="tb-ph">${esc(t.parH)}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="tb-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
+    // house-wall opening (door / sliding exit) — wall-mount only; visual context, not in the price
+    // ASSUMPTION: RU labels for now; localise (de/en/hr) once the feature is confirmed
+    if (wall) {
+      const op = state.opening;
+      const chip = (attr, val, label, cur) => `<button type="button" class="f-chip" data-${attr}="${val}" aria-pressed="${cur}">${label}</button>`;
+      const sub = (title) => `<div class="f-h3" style="margin-top:10px"><span>${title}</span></div>`;
+      h += `<div class="f-h3"><span>Выход в стене</span></div>`;
+      h += `<div class="f-chips"><button type="button" class="f-chip" data-openon="0" aria-pressed="${!op.on}">Нет</button><button type="button" class="f-chip" data-openon="1" aria-pressed="${op.on}">Есть</button></div>`;
+      if (op.on) {
+        // type of exit
+        h += `<div class="f-chips" style="margin-top:6px">${chip('openkind', 'slide', 'Слайдинг', op.kind === 'slide')}${chip('openkind', 'door', 'Дверь', op.kind === 'door')}${chip('openkind', 'hole', 'Проём', op.kind === 'hole')}</div>`;
+        // size
+        const odim = (k, label, v) => `<div class="f-dim"><label>${label}, ${t.m}</label><div class="f-step"><button type="button" data-onudge="${k}" data-d="-100" aria-label="−">−</button><input type="number" inputmode="decimal" step="0.1" min="0.6" value="${(v / 1000).toFixed(2)}" data-odim="${k}"><button type="button" data-onudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
+        h += `<div class="f-dims" style="margin-top:6px">${odim('w', 'Ширина', op.w)}${odim('h', 'Высота', op.h)}</div>`;
+        // position along the wall
+        h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip gtyp" data-opos="-" aria-label="Левее" title="Левее">${GLASS_TYP_ICON.rtl}</button><button type="button" class="f-chip" data-opos="center" aria-pressed="${op.cx == null}">По центру</button><button type="button" class="f-chip gtyp" data-opos="+" aria-label="Правее" title="Правее">${GLASS_TYP_ICON.ltr}</button></div>`;
+        // door sub-options
+        if (op.kind === 'door') {
+          h += sub('Открывание двери') + `<div class="f-chips">${chip('doordir', 'in', 'Внутрь', op.doorDir === 'in')}${chip('doordir', 'out', 'Наружу', op.doorDir === 'out')}${chip('doordir', 'aside', 'В сторону', op.doorDir === 'aside')}</div>`;
+          h += sub('Створки') + `<div class="f-chips">${chip('doorleaves', '1', 'Одна', op.doorLeaves === 1)}${chip('doorleaves', '2', 'Две', op.doorLeaves === 2)}</div>`;
+        }
+        // sliding sub-options
+        if (op.kind === 'slide') {
+          const n = op.slidePanels;
+          h += sub('Полотен') + `<div class="f-chips">${[2, 3, 4].map((p) => chip('slidepanels', String(p), String(p), op.slidePanels === p)).join('')}</div>`;
+          const acts = n === 3 ? [['left', 'Влево'], ['right', 'Вправо']] : n === 2 ? [['left', 'Влево'], ['right', 'Вправо'], ['both', 'Обе'], ['pocket', 'В стену']] : [['left', 'Влево'], ['right', 'Вправо'], ['center', 'По центру'], ['pocket', 'В стену']];
+          h += sub('Открывание') + `<div class="f-chips">${acts.map(([v, l]) => chip('slideactive', v, l, op.slideActive === v)).join('')}</div>`;
+        }
+      }
+    }
+    pop.innerHTML = h;
+  }
+  window.renderLouvPop = renderLouvPop; window.renderKitPop = renderKitPop; window.renderSizePop = renderSizePop;
+  const POP_RENDER = { 'tb-louv': renderLouvPop, 'tb-kit-pop': renderKitPop, 'tb-size-pop': renderSizePop };
+  for (const id of Object.keys(POP_RENDER)) {
+    const pop = $(id); if (!pop) continue;
+    pop.addEventListener('click', (ev) => {
+      const b = ev.target.closest('button'); if (!b || !pop.contains(b) || !b.dataset || Object.keys(b.dataset).length === 0) return;
+      act(b.dataset);
+      if (!pop.hidden) POP_RENDER[id]();
+    });
+    pop.addEventListener('change', (ev) => {
+      const el = ev.target;
+      if (el.dataset && el.dataset.dim) { applyDim(el); return; } // size field: update model/3D, keep the field focused (no re-render)
+      if (el.dataset && el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
+      if (el.dataset && el.dataset.odim) { const k = el.dataset.odim, v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000), lim = k === 'w' ? [600, 6000] : [600, 3200]; if (v > 0) { state.opening[k] = Math.max(lim[0], Math.min(lim[1], Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
+      const s = el.closest && el.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
+      act({ [s.dataset.sel]: s.value }); if (!pop.hidden) POP_RENDER[id]();
+    });
+  }
 
   /* ---------- side card: tap a side in 3D and choose right there ---------- */
   const CARD = document.createElement('div'); CARD.id = 'f-card'; CARD.className = 'cust-only'; CARD.hidden = true;
@@ -1433,6 +1402,7 @@
   const m = /[#&]c=([^&]+)/.exec(location.hash);
   let restored = false;
   if (m) { try { restore(dec(m[1])); restored = true; dirty = true; } catch (e) { /* broken link: start fresh */ } }
+  if (restored) product = (state.roof === 'sliding' ? 'slide' : 'louvered');
   if (!restored && mode === 'cust') {
     // customers start with an open pergola: nothing extra is pre-selected, every addition is their own choice
     state.fills = {}; build(); renderEstimate();
@@ -1440,6 +1410,6 @@
     if (saved && JSON.stringify(saved) !== JSON.stringify(snapshot())) resumeOffer = saved;
   }
   // what the partner login (backend.js) needs from the configurator
-  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 4) render(); } catch (e) { /* not ready */ } } };
+  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 3) render(); } catch (e) { /* not ready */ } } };
   setMode(mode);
 })();

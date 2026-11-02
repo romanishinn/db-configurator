@@ -7,10 +7,17 @@ body.cust .app { grid-template-columns: minmax(0, 1fr) 440px; }
 .f-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px 0; }
 .f-brand { font-family: var(--f-display); font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
 .f-head .sp { flex: 1; }
-.f-lang { display: flex; gap: 2px; }
-.f-lang button, .f-pro { font: inherit; font-size: 12px; border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 4px; padding: 3px 7px; cursor: pointer; }
-.f-lang button[aria-pressed="true"] { color: var(--ink); border-color: var(--line); font-weight: 600; }
-.f-pro { border-color: var(--line); }
+/* language switcher: a neat dropdown in the top-right */
+.f-lang { position: relative; }
+.f-lang > summary { list-style: none; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); border: 1px solid var(--line); background: transparent; border-radius: 6px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px; user-select: none; }
+.f-lang > summary::-webkit-details-marker { display: none; }
+.f-lang > summary::marker { content: ''; }
+.f-lang-car { font-size: 9px; color: var(--muted); }
+.f-lang-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 4px; display: grid; gap: 2px; min-width: 128px; }
+.f-lang-menu button { font: inherit; font-size: 13px; text-align: left; background: transparent; border: 0; border-radius: 6px; padding: 7px 10px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+.f-lang-menu button:hover { background: rgba(0,0,0,.05); }
+.f-lang-menu button[aria-pressed="true"] { background: #e8f0f5; font-weight: 600; }
+.f-pro { font: inherit; font-size: 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 4px; padding: 3px 7px; cursor: pointer; }
 .f-steps { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 12px 16px 0; padding: 0; counter-reset: st; }
 .f-steps button { width: 100%; font: inherit; font-size: 11.5px; color: var(--muted); background: none; border: 0; border-top: 3px solid var(--line); padding: 6px 0 0; text-align: left; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .f-steps button .n { font-family: var(--f-mono); margin-right: 3px; }
@@ -40,7 +47,7 @@ body.cust .app { grid-template-columns: minmax(0, 1fr) 440px; }
 .f-step input { border: 0 !important; border-radius: 0 !important; text-align: center; background: transparent !important; font-size: 17px !important; padding: 8px 2px !important; -moz-appearance: textfield; }
 .f-step input::-webkit-outer-spin-button, .f-step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .f-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.f-chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.f-chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 6px; padding: 6px 12px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
 .f-chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
 .f-chip .pr { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); font-weight: 400; }
 .f-chip { text-align: left; }
@@ -173,13 +180,15 @@ body.cust #hint { max-width: 340px; }
 /* 3D call to action: "+" buttons on the sides and a hint pill */
 body.cust #hint { display: none !important; }
 #hotspots { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
-.hs { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; background: var(--accent); color: #fff; font: 600 22px/1 var(--f-body); box-shadow: 0 2px 10px rgba(0,0,0,.28); cursor: pointer; display: grid; place-items: center; padding: 0; }
-.hs.filled { background: #fff; color: var(--accent); border-color: var(--accent); font-size: 16px; width: 30px; height: 30px; }
-.hs.nofill { opacity: .45; background: rgba(44,106,134,.55); box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+/* default "+" on an untouched model: faint and translucent, barely there — gone for good once any side is chosen */
+.hs { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid rgba(91,155,213,.5); background: rgba(91,155,213,.12); color: rgba(37,80,110,.7); font: 600 21px/1 var(--f-body); box-shadow: none; cursor: pointer; display: grid; place-items: center; padding: 0; opacity: .8; transition: opacity .15s, transform .15s; }
+.hs:hover { opacity: 1; }
+.hs.filled { background: #fff; color: #5b9bd5; border-color: #5b9bd5; font-size: 16px; width: 30px; height: 30px; }
+.hs.nofill { opacity: .45; background: rgba(91,155,213,.55); box-shadow: 0 1px 4px rgba(0,0,0,.15); }
 .hs.nofill:hover { opacity: 1; }
-.hs.on { box-shadow: 0 0 0 4px rgba(44,106,134,.35), 0 2px 10px rgba(0,0,0,.28); }
+.hs.on { box-shadow: 0 0 0 5px rgba(91,155,213,.45), 0 2px 10px rgba(0,0,0,.28); }
 .hs:hover { transform: translate(-50%, -50%) scale(1.1); }
-.hs.pulse::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; border: 2px solid var(--accent); animation: hsPulse 1.6s ease-out infinite; pointer-events: none; }
+.hs.pulse::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; border: 2px solid #5b9bd5; animation: hsPulse 1.6s ease-out infinite; pointer-events: none; }
 @keyframes hsPulse { from { transform: scale(.75); opacity: .9; } to { transform: scale(1.55); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .hs.pulse::after { animation: none; } }
 #f-cta { position: absolute; top: 12px; left: 12px; right: 12px; margin: 0 auto; width: fit-content; max-width: calc(100% - 24px); z-index: 3; font: 600 13.5px/1.35 var(--f-body); color: #fff; background: var(--accent); border: 0; border-radius: 999px; padding: 9px 16px 9px 12px; box-shadow: 0 4px 14px rgba(0,0,0,.2); cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: left; }
@@ -376,3 +385,147 @@ body.cust #hint { display: none !important; }
 #bk-modelbar .b { border: 1px solid rgba(255,255,255,.5); background: transparent; color: #fff; font: 600 13px/1 var(--f-body); padding: 8px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
 #bk-modelbar .b.primary { background: #fff; color: var(--accent); border-color: #fff; }
 body:has(#bk-modelbar) .app { margin-top: 46px; }
+
+/* Product catalog — entry screen */
+.f-cat-h { font-family: var(--f-display); font-size: 19px; margin: 4px 0 2px; letter-spacing: -0.01em; }
+.f-prods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+@media (max-width: 560px) { .f-prods { grid-template-columns: 1fr; } }
+.f-prod { display: grid; gap: 5px; align-content: start; text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 16px; cursor: pointer; transition: border-color .12s, transform .12s, box-shadow .12s; }
+.f-prod:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.14); }
+/* illustration banner: a clear picture of the model instead of an abstract glyph */
+.f-prod-art { display: block; margin-bottom: 8px; padding: 8px 12px; border-radius: 10px; background: linear-gradient(155deg, rgba(91,155,213,.14), rgba(91,155,213,.03)); }
+.f-prod-svg { display: block; width: 100%; height: auto; }
+.art-frame, .art-beam, .art-ground, .art-car, .art-wheel { stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.art-ground { opacity: .5; }
+.art-slat { fill: var(--accent); opacity: .92; }
+.art-sun { stroke: var(--accent); stroke-width: 2; fill: none; opacity: .85; }
+.art-open { stroke: var(--accent); stroke-width: 2; opacity: .55; }
+.f-prod-ic { font-size: 28px; line-height: 1; color: var(--accent); }
+.f-prod b { font-size: 16px; letter-spacing: -0.01em; }
+.f-prod-tag { color: var(--accent); font-size: 12px; font-weight: 600; }
+.f-prod-desc { color: var(--muted); font-size: 12.5px; line-height: 1.45; margin-top: 2px; }
+.f-prod-feats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.f-prod-feats i { font-style: normal; font-size: 11px; color: var(--ink); background: rgba(91,155,213,.10); border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; }
+.f-prod-pr { font-family: var(--f-mono); font-size: 15px; color: var(--ink); margin-top: 8px; font-weight: 600; }
+.f-prod-pr .from { color: var(--muted); font-size: 12px; font-weight: 400; }
+.f-h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 8px; font-family: var(--f-display); font-size: 15px; }
+.f-link { font: inherit; font-size: 12.5px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+.f-link:hover { text-decoration: underline; }
+
+/* Combined "Komplettierung" step — section headers */
+.f-kit-h h3 { font-family: var(--f-display); font-size: 15px; margin: 0 0 2px; }
+.f-kit-h .f-lead { margin: 0 0 10px; }
+.f-kit-sep { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+
+/* ============================================================
+   Unified control system (consistency pass)
+   One radius, one idle border, one active state, one focus ring
+   for every selectable option in the funnel. Color swatches stay
+   round on purpose — a different kind of control.
+   ============================================================ */
+:root { --ctl-r: 10px; }
+
+/* one radius everywhere a choice is made */
+.f-chip, .f-seg, .f-card, .f-more-sel,
+.f-lay button, .f-fills button, .f-vt button { border-radius: var(--ctl-r); }
+.f-list .f-chip { border-radius: var(--ctl-r); }
+
+/* chips: rounded-rect, not pills; uniform height so rows don't jump */
+.f-chip { padding: 0 13px; min-height: 38px; line-height: 1.2; }
+.f-list .f-chip { min-height: 44px; padding: 8px 13px; }
+.f-vn .f-chip { min-width: 44px; padding: 0; }
+
+/* idle border is identical for all */
+.f-chip, .f-seg, .f-card, .f-lay button, .f-fills button, .f-vt button { border: 1px solid var(--line); transition: border-color .12s, background-color .12s, box-shadow .12s; }
+
+/* one active state — accent border + inset ring + soft fill + weight */
+.f-chip[aria-pressed="true"],
+.f-seg[aria-pressed="true"],
+.f-card[aria-pressed="true"],
+.f-lay button[aria-pressed="true"],
+.f-fills button[aria-pressed="true"],
+.f-vt button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  font-weight: 600;
+}
+
+/* one hover for pointer devices */
+@media (hover: hover) {
+  .f-chip:not(:disabled):hover,
+  .f-seg:not(:disabled):hover,
+  .f-card:not(:disabled):hover,
+  .f-lay button:not(:disabled):hover,
+  .f-fills button:not(:disabled):hover,
+  .f-vt button:not(:disabled):hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+}
+
+/* one visible focus ring */
+.f-chip:focus-visible, .f-seg:focus-visible, .f-card:focus-visible,
+.f-lay button:focus-visible, .f-fills button:focus-visible,
+.f-vt button:focus-visible, .f-more-sel:focus-visible,
+.f-prod:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* section header: let a description drop to its own tidy caption line
+   instead of fighting the title on one row */
+.f-h3 { flex-wrap: wrap; align-items: baseline; row-gap: 2px; }
+.f-h3 > span:nth-child(2) { flex: 1 0 100%; font-size: 12px; line-height: 1.35; }
+
+/* prices inside controls share one muted mono treatment */
+.f-chip .pr, .f-seg .pr, .f-lay .pr, .f-vt button .pr, .f-fills .pr { color: var(--muted); font-weight: 400; }
+.f-chip[aria-pressed="true"] .pr, .f-seg[aria-pressed="true"] .pr,
+.f-lay button[aria-pressed="true"] .pr { color: var(--ink); }
+
+/* locked / coming-soon product card — greyed with a padlock, not selectable */
+.f-prod { position: relative; }
+.f-prod.locked { cursor: not-allowed; opacity: .6; filter: grayscale(1); }
+.f-prod.locked:hover { border-color: var(--line); transform: none; }
+.f-prod.locked .f-prod-ic { color: var(--muted); }
+.f-prod-lock { position: absolute; top: 10px; right: 10px; font-size: 15px; line-height: 1; filter: grayscale(1); opacity: .9; }
+
+/* Catalog screen: products only — the 3D stage and toolbar stay hidden
+   until a model is chosen, then the full configurator appears. */
+body.cust.cat-only .stage { display: none; }
+body.cust.cat-only .app { grid-template-columns: minmax(0, 720px); justify-content: center; }
+@media (max-width: 760px) { body.cust.cat-only .app { grid-template-columns: 1fr; } }
+
+/* Installation / delivery services — toggle rows in the offer */
+.f-svc-list { display: grid; gap: 6px; }
+.f-svc { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: var(--ctl-r); padding: 11px 12px; cursor: pointer; transition: border-color .12s, background-color .12s; }
+.f-svc[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.f-svc-ck { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--muted); flex: none; position: relative; }
+.f-svc[aria-pressed="true"] .f-svc-ck { background: var(--accent); border-color: var(--accent); }
+.f-svc[aria-pressed="true"] .f-svc-ck::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.f-svc-nm { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.f-svc-nm small { color: var(--muted); font-size: 12px; }
+.f-svc .pr { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
+
+/* No 3D flash before the product catalog: hidden from the first paint, released after first render */
+:root.boot-cat .stage { display: none !important; }
+
+/* opening-direction chips: a single clean arrow, centred */
+.f-chip.gtyp { min-width: 44px; justify-content: center; padding: 6px 12px; }
+.f-chip.gtyp svg { width: 20px; height: 20px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 3D-toolbar popups built from the funnel (louvre/opening + comfort): light theme via local var overrides */
+#tb-louv, #tb-kit-pop, #tb-size-pop { --ink: #1c2226; --muted: #5b666e; --line: #c7ced2; --panel: #fff; --bg: #fff; --accent: #2c6a86; --accent-soft: #e1edf2; color: #1c2226; }
+#tb-size-pop h3, #tb-size-pop .f-h3 { color: #5b666e; }
+#tb-size-pop .f-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#tb-size-pop .f-dims { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+/* keep the stepper tidy: label on one line above, field boxed by the −/+ buttons, nothing floating */
+#tb-size-pop .f-dim label { flex: none; min-height: 0; margin-bottom: 4px; white-space: nowrap; }
+#tb-size-pop .f-step { align-items: stretch; }
+#tb-size-pop .f-step input { padding: 9px 2px !important; min-width: 0; }
+#tb-size-pop .f-step button { min-height: 40px; }
+#tb-louv h3, #tb-kit-pop h3 { font-size: 13px; margin: 0 0 2px; color: #1c2226; }
+#tb-louv .f-lead, #tb-kit-pop .f-lead { font-size: 12px; margin: 0 0 8px; }
+#tb-kit-pop .f-kit-h { margin-bottom: 8px; }
+#tb-kit-pop .f-h3 { margin: 12px 0 6px; }
+#tb-louv .tl-sec + .tl-sec { margin-top: 12px; border-top: 1px solid #d6dadd; padding-top: 10px; }
+#tb-louv .tl-h { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; margin-bottom: 7px; }
+#tb-louv .tl-side { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-bottom: 9px; }
+#tb-louv .tl-nm { font-size: 12.5px; min-width: 62px; padding-top: 5px; }
+#tb-louv .tl-ctl { display: grid; gap: 5px; }
+#tb-louv .tl-empty { font-size: 12.5px; color: #5b666e; }
+#tb-louv .sub2 { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: #5b666e; }

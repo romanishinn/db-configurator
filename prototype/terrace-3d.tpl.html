@@ -1,3 +1,4 @@
+<script>try{if(!/[?&]pro\b/.test(location.search))document.documentElement.classList.add("boot-cat");}catch(e){}</script>
 <title>3D-конфигуратор</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,6 +97,7 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar .tb-pop { flex: 1 1 100%; color: #1c2226; background: #eef0f1; /* the toolbar stays light in dark mode too */ border: 1px solid #d6dadd; border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; justify-content: start; }
 .toolbar #tb-views { grid-auto-flow: column; gap: 6px; }
 .toolbar #tb-views button { padding: 6px 12px; }
+.toolbar #tb-views button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; color: #1c2226; font-weight: 600; }
 .toolbar #tb-lights { display: flex; flex-wrap: wrap; gap: 6px; }
 .toolbar #tb-lights[hidden] { display: none; }
 .toolbar #tb-lights button { padding: 7px 11px; }
@@ -104,7 +106,7 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar #tb-colors[hidden] { display: none; }
 .toolbar #tb-colors .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
 .toolbar #tb-colors .row { display: flex; flex-wrap: wrap; gap: 6px; }
-.toolbar :is(#tb-colors, #tb-vertos) .row button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px 5px 5px; border-radius: 999px; }
+.toolbar :is(#tb-colors, #tb-vertos) .row button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px 5px 5px; border-radius: 6px; }
 .toolbar :is(#tb-colors, #tb-vertos) .row button .sw { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #9aa4ab; flex: none; }
 .toolbar :is(#tb-colors, #tb-vertos) .row button[aria-pressed="true"] { border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; background: #e1edf2; color: #1c2226; font-weight: 600; }
 .toolbar #tb-lights { display: grid; gap: 6px; }
@@ -164,7 +166,7 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 .toolbar label[hidden] { display: none; }
 .toolbar input[type=range] { width: 140px; accent-color: #2c6a86; }
 .toolbar button { font: inherit; font-size: 12.5px; border: 1px solid #c5ccd1; background: #fff; color: #1c2226; border-radius: 6px; padding: 4px 9px; cursor: pointer; }
-@media (max-width: 760px) { .toolbar .ib .cap { display: none; } .toolbar .ib { padding: 0 12px; } .toolbar label { grid-template-columns: 84px minmax(0, 1fr) 60px; } .toolbar input[type=range] { width: 100%; } .toolbar .tb-pop { justify-content: stretch; } }
+@media (max-width: 760px) { .toolbar .ib .cap { display: none; } .toolbar .tb-row { flex-wrap: wrap; } .toolbar .ib { padding: 0 8px; flex: 1 1 calc(25% - 5px); justify-content: center; min-width: 0; } .toolbar label { grid-template-columns: 84px minmax(0, 1fr) 60px; } .toolbar input[type=range] { width: 100%; } .toolbar .tb-pop { justify-content: stretch; } }
 .toolbar #louv-info { color: #5b666e; flex: 0 0 100%; min-height: 1.2em; order: 5; }
 .toolbar .dots i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 1px; vertical-align: middle; }
 .toolbar .dots i:nth-child(1) { background: #8c9196; } .toolbar .dots i:nth-child(2) { background: #2c6a86; } .toolbar .dots i:nth-child(3) { background: #d9b26b; }
@@ -176,6 +178,9 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 /* phone: all five buttons on one row (no spacer), sliders stay in their own rows */
 .toolbar #louv-info b { color: #1d6b3a; font-weight: 600; }
 .toolbar button[aria-pressed="true"] { background: #1c2226; color: #fff; border-color: #1c2226; }
+/* icon bar active matches the accent used by the toolbar popovers, not a black fill */
+.toolbar .ib[aria-pressed="true"] { background: #e1edf2; color: #2c6a86; border-color: #2c6a86; box-shadow: inset 0 0 0 1px #2c6a86; }
+.toolbar .ib[aria-pressed="true"] svg { stroke: #2c6a86; }
 .hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
 @media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: auto; min-height: 0; } .vp { flex: none; height: 400px; }  }
 .menu { position: absolute; background: #fff; color: #1c2226; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); padding: 8px; display: grid; gap: 4px; min-width: 170px; z-index: 5; }
@@ -325,13 +330,16 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
     <div class="toolbar">
       <!-- icon row: view · louvre direction · movement sliders · day/night (+ colours in pro) -->
       <div class="tb-row">
+        <!-- row 1 — look & manipulate: view · movement · day-night · Decor -->
         <button type="button" class="ib" id="tb-view" aria-expanded="false" aria-controls="tb-views" title="Вид"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="14.5" r="3.6"/><circle cx="17.5" cy="14.5" r="3.6"/><path d="M10.1 14.2c1.2-.9 2.6-.9 3.8 0M2.9 13.6 5 7.5h2.2M21.1 13.6 19 7.5h-2.2"/></svg><span class="cap">Вид</span></button>
-        <button type="button" class="ib" id="louv-dir" aria-pressed="true" aria-label="Повернуть ламели" title="Повернуть ламели: вдоль стены или от стены вперёд — та же таблица цен"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h15l-3.5-3.5M20 15.5H5l3.5 3.5"/></svg><span class="cap">Ламели</span></button>
         <button type="button" class="ib" id="tb-move" aria-expanded="false" aria-controls="tb-sliders" title="Движение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3zM12 12l8-4.7M12 12v9.2M12 12 4 7.3"/></svg><span class="cap">Движение</span></button>
         <button type="button" class="ib" id="evening" aria-pressed="false" title="День / ночь"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="bulb" d="M12 2.8a6.2 6.2 0 0 0-3.7 11.2c.7.5 1.1 1.3 1.1 2.1v.6h5.2v-.6c0-.8.4-1.6 1.1-2.1A6.2 6.2 0 0 0 12 2.8z"/><path d="M9.6 19.2h4.8M10.4 21.6h3.2"/></svg><span class="cap">Ночь</span></button>
-        <button type="button" class="ib" id="tb-light" aria-expanded="false" aria-controls="tb-lights" title="Освещение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h18M5 6.5v2.2M19 6.5v2.2"/><path d="M8 10.5l-1.2 2.4M12 10.5v2.7M16 10.5l1.2 2.4" stroke-dasharray="1.6 1.4"/><circle cx="12" cy="17.5" r="2.6"/><path d="M12 13.2v1.7"/></svg><span class="cap">Свет</span></button>
         <button type="button" class="ib" id="tb-verto" aria-expanded="false" aria-controls="tb-vertos" title="Decor – вертикальные профили"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5h18"/><path d="M6 7v13M9.5 7v13M13 7v13M16.5 7v13" stroke-width="2.2"/></svg><span class="cap">Decor</span></button>
+        <!-- row 2 — design step by step: size · opening · colour · equipment -->
+        <button type="button" class="ib" id="tb-size" aria-expanded="false" aria-controls="tb-size-pop" title="Размер: у стены или отдельно стоящая, ширина и глубина"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18v8H3z"/><path d="M7.5 8v3M12 8v4M16.5 8v3"/></svg><span class="cap">Размер</span></button>
+        <button type="button" class="ib" id="louv-dir" aria-expanded="false" aria-controls="tb-louv" aria-label="Открывание" title="Открывание: направление ламелей и открывание стекла по сторонам"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h15l-3.5-3.5M20 15.5H5l3.5 3.5"/></svg><span class="cap">Открывание</span></button>
         <button type="button" class="ib" id="tb-color" aria-expanded="false" aria-controls="tb-colors" title="Цвет стекла и рамы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.6 1.9-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.6" cy="11" r="1.3"/><circle cx="10.5" cy="7.2" r="1.3"/><circle cx="15" cy="7.4" r="1.3"/></svg><span class="cap">Цвет</span></button>
+        <button type="button" class="ib" id="tb-kit" aria-expanded="false" aria-controls="tb-kit-pop" title="Комплектация: обогрев, освещение, музыка, датчики и управление"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h7M15 7h5M4 12h11M19 12h1M4 17h3M11 17h9"/><circle cx="13" cy="7" r="2"/><circle cx="17" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></svg><span class="cap">Комплект</span></button>
         <button type="button" class="ib" id="tb-photo" hidden aria-pressed="false" title="Посмотреть перголу на фото своей террасы"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8.2c0-1 .8-1.8 1.8-1.8h2.4l1.5-2.2h5.6l1.5 2.2h2.4c1 0 1.8.8 1.8 1.8v9.6c0 1-.8 1.8-1.8 1.8H5.3c-1 0-1.8-.8-1.8-1.8z"/><circle cx="12" cy="13" r="3.6"/></svg><span class="cap">Фото</span></button>
         <button type="button" class="ib pro-only" id="clr-btn" aria-pressed="false" aria-label="Цвета конструкций" title="Цвета конструкций"><span class="dots"><i></i><i></i><i></i></span><span class="cap">Цвета</span></button>
       </div>
@@ -340,15 +348,20 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <button type="button" id="v-front">Спереди</button>
         <button type="button" id="v-top">Сверху</button>
         <button type="button" id="v-under">Снизу</button>
+        <button type="button" id="v-inside" hidden>Изнутри</button>
       </div>
       <div class="tb-pop" id="tb-lights" hidden></div>
       <div class="tb-pop" id="tb-vertos" hidden></div>
       <div class="tb-pop" id="tb-colors" hidden></div>
+      <div class="tb-pop" id="tb-louv" hidden></div>
+      <div class="tb-pop" id="tb-kit-pop" hidden></div>
+      <div class="tb-pop" id="tb-size-pop" hidden></div>
       <div class="tb-pop" id="tb-sliders" hidden>
         <label>Ламели <input type="range" id="ang" min="0" max="135" value="90"><span id="angv">90°</span></label>
         <label id="sopen-l" hidden>Крыша <input type="range" id="sopen" min="0" max="100" value="0"><span id="sopenv">закрыта</span></label>
         <label id="drop-l">Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
         <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
+        <label id="open-l" hidden>Выход <input type="range" id="openanim" min="0" max="100" value="0"><span id="openanimv">закрыт</span></label>
       </div>
       <span id="louv-info" class="muted pro-only"></span>
       <div id="clr-pop" class="clr-pop pro-only" hidden></div>
@@ -381,6 +394,9 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>/*CORE*/</script>
 <script>/*CATALOG*/</script>
+<script>/*SHARED*/</script>
+<script>/*PRODUCTS*/</script>
+<script>/*I18N*/</script>
 <script>
 const cat = DBCore.buildCatalog('catalog-2026-07', CATALOG_JSON.tables, CATALOG_JSON.coating, { colors: CATALOG_JSON.colors, fabrics: CATALOG_JSON.fabrics, screenMotors: CATALOG_JSON.screenMotors, screenControls: CATALOG_JSON.screenControls, optionScalars: CATALOG_JSON.optionScalars, glazing: CATALOG_JSON.glazing });
 const $ = (id) => document.getElementById(id);
@@ -411,7 +427,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, split: null, extra: { mont: 0, items: [] } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, opening: { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' }, openOpen: 0, split: null, extra: { mont: 0, items: [] } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -464,7 +480,7 @@ const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshS
 ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 let root = new THREE.Group(); scene.add(root);
 let pickables = [];
-let animated = { louvers: [], screens: [], leds: [], glass: [] };
+let animated = { louvers: [], screens: [], leds: [], glass: [], opening: [] };
 
 const M = {
   frame: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.7, metalness: 0.15 }),
@@ -504,6 +520,67 @@ function glassMat(type) {
   return glassMats[type];
 }
 
+// glass for the house-wall opening (door / sliding exit)
+const M_DOOR_GLASS = new THREE.MeshPhysicalMaterial({ color: 0x9fb8c4, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.34, side: THREE.DoubleSide });
+/** The house wall. With an opening it is built as panels around a real through-gap (so the camera can look through),
+ *  then filled per kind: door (1/2 leaves), sliding (2–4 panels + active), pocket (hidden, full opening), or just a hole.
+ *  Purely visual context — the customer's own house, not in the price. Returns the opening geometry for the inside camera. */
+let OPENING_GEO = null;
+function buildWall(W) {
+  const wallW = W + 3, wallH = 3.6, wz = -0.125, wd = 0.25, wx0 = W / 2 - wallW / 2, wx1 = W / 2 + wallW / 2;
+  const op = state.opening; OPENING_GEO = null;
+  if (!op || !op.on) { box(wallW, wallH, wd, M.wall, W / 2, wallH / 2, wz); return; }
+  const ow = Math.max(0.6, Math.min(op.w / 1000, W - 0.2)), oh = Math.max(0.6, Math.min(op.h / 1000, 3.4)), half = ow / 2;
+  let cx = op.cx == null ? W / 2 : op.cx / 1000;
+  cx = Math.max(wx0 + half + 0.2, Math.min(wx1 - half - 0.2, cx));
+  const gx0 = cx - half, gx1 = cx + half;
+  box(gx0 - wx0, wallH, wd, M.wall, (wx0 + gx0) / 2, wallH / 2, wz);        // wall left of the opening
+  box(wx1 - gx1, wallH, wd, M.wall, (gx1 + wx1) / 2, wallH / 2, wz);        // wall right of the opening
+  if (wallH - oh > 0.02) box(ow, wallH - oh, wd, M.wall, cx, oh + (wallH - oh) / 2, wz); // lintel above
+  OPENING_GEO = { cx, ow, oh, z: wz };
+  buildOpeningFill(cx, ow, oh, wz);
+}
+function buildOpeningFill(cx, ow, oh, wz) {
+  const op = state.opening, fr = 0.06, zf = wz + 0.14; // the exit frame just in front of the wall's front face
+  box(fr, oh, 0.1, M.frame, cx - ow / 2, oh / 2, zf);
+  box(fr, oh, 0.1, M.frame, cx + ow / 2, oh / 2, zf);
+  box(ow, fr, 0.1, M.frame, cx, oh - fr / 2, zf);
+  box(ow, fr, 0.1, M.frame, cx, fr / 2, zf);
+  const iw = ow - 2 * fr, ih = oh - 2 * fr, cy = oh / 2, Lx = cx - iw / 2;
+  if (op.kind === 'hole') return;                                           // just an opening, nothing in it
+  if (op.kind === 'door') {
+    const leaves = op.doorLeaves === 2 ? 2 : 1, lw = iw / leaves, inSign = op.doorDir === 'out' ? -1 : 1; // in → swings into the house (−z); out → into the pergola (+z)
+    for (let i = 0; i < leaves; i++) {
+      const dirX = leaves === 2 ? (i === 0 ? 1 : -1) : 1;                    // leaf extends from its hinge toward the centre
+      const hingeX = leaves === 2 ? (i === 0 ? Lx : Lx + iw) : Lx;          // single: hinge on the left; double: hinge on the two outer edges
+      const g = new THREE.Group(); g.position.set(hingeX, cy, zf); root.add(g);
+      const leaf = new THREE.Mesh(new THREE.BoxGeometry(lw - 0.03, ih, 0.03), M_DOOR_GLASS); leaf.position.set(dirX * (lw - 0.03) / 2, 0, 0); leaf.castShadow = true; g.add(leaf);
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.2, 0.05), M.frame); handle.position.set(dirX * (lw - 0.12), 0, 0.04); g.add(handle);
+      if (op.doorDir === 'aside') animated.opening.push({ node: g, closedX: hingeX, openX: hingeX - dirX * (lw - 0.05) }); // slides to the side
+      else animated.opening.push({ pivot: g, openAngle: inSign * dirX * Math.PI / 2 * 0.92 });                           // swings on the hinge
+    }
+    return;
+  }
+  // sliding (incl. the into-the-wall / pocket mode): n glass panels fill the opening, the active one(s) slide open
+  const n = Math.max(2, Math.min(4, op.slidePanels || 3)), pw = iw / n, am = op.slideActive || 'left';
+  const active = am === 'both' ? [0, 1] : am === 'right' ? [n - 1] : am === 'center' ? (n === 4 ? [1, 2] : [Math.floor(n / 2)]) : am === 'pocket' ? Array.from({ length: n }, (_, i) => i) : [0];
+  const aset = new Set(active);
+  for (let i = 0; i < n; i++) {
+    const closedX = Lx + pw * (i + 0.5), on = aset.has(i);
+    const g = new THREE.Group(); g.position.set(closedX, cy, zf + (on ? 0.03 : 0)); root.add(g);
+    const pane = new THREE.Mesh(new THREE.BoxGeometry(pw - 0.02, ih, 0.025), M_DOOR_GLASS); pane.castShadow = true; g.add(pane);
+    const mull = new THREE.Mesh(new THREE.BoxGeometry(0.025, ih, 0.035), M.frame); mull.position.set(-pw / 2, 0, 0); g.add(mull);
+    if (i === n - 1) { const mr = new THREE.Mesh(new THREE.BoxGeometry(0.025, ih, 0.035), M.frame); mr.position.set(pw / 2, 0, 0); g.add(mr); }
+    if (on) {
+      let openX;
+      if (am === 'pocket') openX = closedX < cx ? Lx - pw * 0.6 : Lx + iw + pw * 0.6;        // slide fully into the wall
+      else if (am === 'both' || am === 'center') openX = closedX < cx ? closedX - pw * 0.92 : closedX + pw * 0.92;
+      else if (am === 'right') openX = closedX + pw * 0.92;
+      else openX = closedX - pw * 0.92;
+      animated.opening.push({ node: g, closedX, openX });
+    }
+  }
+}
 function box(w, h, d, mat, x, y, z, parent = root) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
   m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
@@ -545,7 +622,7 @@ let H = 2.8; // post height to the top of the crown, m (standard 2800, option 30
 
 function build() {
   scene.remove(root); root = new THREE.Group(); scene.add(root);
-  pickables = []; animated = { louvers: [], screens: [], leds: [], glass: [] };
+  pickables = []; animated = { louvers: [], screens: [], leds: [], glass: [], opening: [] };
   const opt = state.options[state.optIndex];
   fitOptions(opt);
   H = state.po.postHeight / 1000;
@@ -558,7 +635,7 @@ function build() {
   // deck + wall
   // on the customer's photo their own terrace and wall are in the picture: no drawn deck and wall
   if (!PHOTO.url) box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
-  if (state.mount === 'wall' && !PHOTO.url) box(W + 3, 3.6, 0.25, M.wall, W / 2, 1.8, -0.125);
+  if (state.mount === 'wall' && !PHOTO.url) buildWall(W);
   const yTop = H, yC = H - sp.crown / 2;
   for (const m of opt.modules) {
     const x0 = m.x / 1000, z0 = m.y / 1000, w = m.width / 1000, d = m.depth / 1000;
@@ -717,6 +794,7 @@ function requiredPostPositions(opt) {
 function syncRoofControls(opt) {
   const slide = !!opt && opt.family === 'SLIDE';
   $('sopen-l').hidden = !slide;
+  { const op = state.mount === 'wall' && state.opening && state.opening.on; $('open-l').hidden = !op; $('v-inside').hidden = !op; }
   $('ang').max = slide ? 90 : 135;
   if (slide && state.angle > 90) { state.angle = 90; $('ang').value = 90; $('angv').textContent = '90°'; }
   sopenText();
@@ -1089,6 +1167,11 @@ function applyAnim() {
     g.node.position.x = g.closedX + (g.parkX - g.closedX) * t;
     g.node.position.z = g.closedZ + (g.parkZ - g.closedZ) * t;
   }
+  const ko = (state.openOpen || 0) / 100; // the house-wall exit opening (door swings, sliding panels slide)
+  for (const o of animated.opening || []) {
+    if (o.pivot) o.pivot.rotation.y = (o.openAngle || 0) * ko;
+    else o.node.position.x = o.closedX + (o.openX - o.closedX) * ko;
+  }
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
   for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.2 : 0.4;
   for (const pl of animated.lights || []) pl.intensity = state.evening ? 1.6 : 0;
@@ -1254,7 +1337,7 @@ function clearPhoto() {
   ground.material = groundMat; controls.enabled = true; root.visible = true; photoBad = false;
   camera.fov = 40; camera.updateProjectionMatrix(); drawMarks();
   $('photo-bar').hidden = true; $('tb-photo').setAttribute('aria-pressed', 'false');
-  build(); applyAnim(); setView('iso');
+  build(); applyAnim(); setView('under');
   if (typeof window.onPhoto === 'function') window.onPhoto(false);
 }
 /** what the viewer sees: the photo (cropped like CSS "cover") with the 3D on top, as a JPEG data URL */
@@ -1283,14 +1366,17 @@ $('photo-pts').onclick = (e) => { PHOTO.marks = !PHOTO.marks; e.currentTarget.se
 
 /* ---------- camera + labels ---------- */
 function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.width / 1000, D: o.depth / 1000 }; }
-let lastView = 'iso', userMoved = false;
+let lastView = 'under', userMoved = false;
 /** after a rebuild: a view the customer turned by hand stays exactly as it is; otherwise the chosen view
  *  (3D / front / top) is fitted to the new pergola — never a forced jump back to the 3D view */
 function refit() { if (!userMoved) setView(lastView); }
 function setView(kind) {
   if (PHOTO.pts) { applyPhotoCamera(); return; } // on the customer's photo the view is the photo's own camera
+  if (kind === 'inside' && !(state.mount === 'wall' && state.opening && state.opening.on && OPENING_GEO)) kind = 'under'; // no opening → fall back
   lastView = kind; userMoved = false;
+  { const vp = $('tb-views'); if (vp) for (const x of vp.children) x.setAttribute('aria-pressed', String(x.id === 'v-' + kind)); }
   controls.maxPolarAngle = Math.PI * 0.495;
+  if (kind === 'inside') { insideView(); return; }
   if (kind === 'under') { underView(); return; }
   const { W, D } = bounds(), c = new THREE.Vector3(W / 2, 1.2, D / 2);
   const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
@@ -1334,6 +1420,19 @@ function underView() {
   const off = camera.position.clone().sub(t), phi = Math.acos(Math.min(1, Math.max(-1, off.y / off.length())));
   controls.maxPolarAngle = Math.max(Math.PI * 0.495, phi + 0.02); // the camera is below the roof: let it look up
   controls.maxDistance = d * 3; controls.update();
+}
+/** standing in the house just behind the wall opening, looking out through the door / sliding into the pergola */
+function insideView() {
+  const g = OPENING_GEO, { W, D } = bounds();
+  const cx = g ? g.cx : W / 2, oh = g ? g.oh : 2.1, oz = g ? g.z : -0.125;
+  const eyeY = Math.min(1.6, Math.max(1.1, oh * 0.65));
+  const t = new THREE.Vector3(W / 2, 1.35, D * 0.62);
+  camera.position.set(cx, eyeY, oz - 1.1); // a step back into the room
+  controls.target.copy(t);
+  controls.maxPolarAngle = Math.PI * 0.9; // allow looking up to the louvres
+  camera.lookAt(t); camera.updateMatrixWorld();
+  controls.maxDistance = D + 4;
+  controls.update();
 }
 controls.addEventListener('start', () => { userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
 const labels = $('labels');
@@ -2061,6 +2160,7 @@ $('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent
 $('sopen').oninput = (e) => { state.slideOpen = +e.target.value; sopenText(); applyAnim(); renderLabels(state.options[state.optIndex]); };
 $('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
 $('gopen').oninput = (e) => { for (const c of Object.values(state.glassCfg)) delete c.open; state.glassOpen = +e.target.value; $('gopenv').textContent = state.glassOpen === 0 ? 'закрыто' : state.glassOpen === 100 ? 'открыто' : state.glassOpen + '%'; applyAnim(); };
+$('openanim').oninput = (e) => { state.openOpen = +e.target.value; $('openanimv').textContent = state.openOpen === 0 ? 'закрыт' : state.openOpen === 100 ? 'открыт' : state.openOpen + '%'; applyAnim(); };
 function renderLouvreInfo(cur, alt) {
   const wall = state.mount === 'wall';
   const dir = state.louvres === 'parallel' ? (wall ? 'вдоль стены' : 'вдоль ширины') : (wall ? 'от стены вперёд' : 'вдоль глубины');
@@ -2071,7 +2171,6 @@ function renderLouvreInfo(cur, alt) {
   } else if (!alt && cur) t += ' · повернуть нельзя: размер не собирается';
   if (cur && cur.family === 'SLIDE') t += ` · Slide: ламели складываются к ${state.mount === 'wall' && cur.louvres === 'parallel' ? 'стене' : 'краю'}, пакет ≈ ${mm(slideStack(cur.modules[0]))} мм`;
   $('louv-info').innerHTML = t;
-  $('louv-dir').disabled = !alt && !!cur;
 }
 /** run a rebuild without moving the camera: the view the user chose (front, top, rotated) stays as it was */
 function keepCamera(fn) {
@@ -2079,7 +2178,8 @@ function keepCamera(fn) {
   fn();
   camera.position.copy(pos); controls.target.copy(tgt); lastView = lv; userMoved = um; controls.update();
 }
-$('louv-dir').onclick = (e) => { state.louvres = state.louvres === 'parallel' ? 'perpendicular' : 'parallel'; e.currentTarget.setAttribute('aria-pressed', state.louvres === 'perpendicular'); keepCamera(() => recompute(true)); };
+$('louv-dir').onclick = () => { if (window.renderLouvPop) window.renderLouvPop(); togglePop($('louv-dir'), $('tb-louv')); };
+$('tb-kit').onclick = () => { if (window.renderKitPop) window.renderKitPop(); togglePop($('tb-kit'), $('tb-kit-pop')); };
 $('evening').onclick = (e) => { state.evening = !state.evening; e.currentTarget.setAttribute('aria-pressed', state.evening); applyAnim(); };
 /* icon row: "view" and "movement" open small panels above the toolbar; one at a time, a click elsewhere closes them */
 /* ---------- light: choose it right on the 3D and see it at once (evening, louvres closed, view from below) ---------- */
@@ -2093,7 +2193,9 @@ function colourKit() {
   const head = (title, cur) => `<div class="t">${title}${cur ? `<span class="cur"> · ${cur}</span>` : ''}</div>`;
   const colourBlock = (key, title) => {
     const linked = key !== 'construction' && !state.colors[key], cur = colorOf(e[key]), open = quickMore === key;
-    const list = std.some((c) => c.id === cur.id) || cur.custom || linked ? std : [...std, cur];
+    // Decor (Win Verto) shows a third default swatch — golden oak 16D — next to the two standard tones
+    const baseStd = key === 'verto' ? [...std, colorOf('16D')] : std;
+    const list = baseStd.some((c) => c.id === cur.id) || cur.custom || linked ? baseStd : [...baseStd, cur];
     let r = key !== 'construction' ? sw('data-qcol', '', swatchBg(colorOf(e.construction)), tx.asFrame, linked, `data-part="${key}"`) : '';
     r += list.map((c) => sw('data-qcol', c.id, swatchBg(c), name(c), !linked && e[key] === c.id, `data-part="${key}"`)).join('');
     r += `<button type="button" class="more" data-qmore="${key}" aria-expanded="${open}">${tx.more} <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
@@ -2244,7 +2346,7 @@ function setLight(v) {
   renderEstimate(); renderPergolaOptions(); renderLightPop();
 }
 window.lightGroups = lightGroups; window.lightPatch = lightPatch; window.lightCurOf = lightCurOf;
-$('tb-light').onclick = () => { renderLightPop(); togglePop($('tb-light'), $('tb-lights')); };
+$('tb-size').onclick = () => { if (window.renderSizePop) window.renderSizePop(); togglePop($('tb-size'), $('tb-size-pop')); };
 $('tb-lights').addEventListener('click', (e) => { const b = e.target.closest('[data-light]'); if (b) setLight(b.dataset.light); });
 /* A choice in the panels under the 3D (light, Win Verto, colour, movement) re-renders the side columns (options, estimate);
  * their height changes and the browser would move the page. The page stays exactly where the user had it. */
@@ -2282,7 +2384,7 @@ for (const pop of document.querySelectorAll('.toolbar .tb-pop')) {
 function togglePop(btn, pop, force) {
   const open = force !== undefined ? force : pop.hidden;
   // one panel at a time (view, movement, light, colour); the louvre and day/night buttons do not close it
-  if (open) for (const [b, p] of [['tb-view', 'tb-views'], ['tb-move', 'tb-sliders'], ['tb-light', 'tb-lights'], ['tb-verto', 'tb-vertos'], ['tb-color', 'tb-colors']]) {
+  if (open) for (const [b, p] of [['tb-view', 'tb-views'], ['tb-move', 'tb-sliders'], ['tb-verto', 'tb-vertos'], ['tb-color', 'tb-colors'], ['louv-dir', 'tb-louv'], ['tb-kit', 'tb-kit-pop'], ['tb-size', 'tb-size-pop']]) {
     if (p !== pop.id) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); }
   }
   pop.hidden = !open; btn.setAttribute('aria-expanded', String(open));
@@ -2290,12 +2392,12 @@ function togglePop(btn, pop, force) {
 }
 $('tb-view').onclick = () => togglePop($('tb-view'), $('tb-views'));
 $('tb-move').onclick = () => togglePop($('tb-move'), $('tb-sliders'));
-$('tb-views').addEventListener('click', (e) => { if (e.target.closest('button')) togglePop($('tb-view'), $('tb-views'), false); });
+/* keep the views panel open after a pick so the view can be switched without reopening; it closes on tap-outside */
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#tb-views, #tb-sliders, #tb-view, #tb-move')) { togglePop($('tb-view'), $('tb-views'), false); } });
 $('clr-btn').onclick = () => { const pop = $('clr-pop'); pop.hidden = !pop.hidden; $('clr-btn').setAttribute('aria-pressed', String(!pop.hidden)); renderColorPop(); };
 $('clr-pop').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; state.colorOpen = b.dataset.pick; renderColors(); $('clr').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 $('v-under').onclick = () => setView('under');
-$('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top');
+$('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top'); $('v-inside').onclick = () => setView('inside');
 /* ---------- colour picker ---------- */
 const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); const f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map((v) => f(v).toString(16).padStart(2, '0')).join(''); };
 const swatchBg = (c) => c.finish === 'wood' ? `repeating-linear-gradient(100deg, ${c.hex} 0 3px, ${shade(c.hex, 0.82)} 3px 4px, ${c.hex} 4px 7px, ${shade(c.hex, 1.1)} 7px 8px)` : c.custom ? `repeating-linear-gradient(45deg, #9aa0a5 0 4px, #c4c8cb 4px 8px)` : c.finish === 'metallic' ? `linear-gradient(135deg, ${shade(c.hex, 1.25)}, ${c.hex} 55%, ${shade(c.hex, 0.8)})` : c.hex;
