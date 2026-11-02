@@ -409,14 +409,14 @@
   // opening direction shown as a clean arrow: opens to the right →, to the left ←, from the centre ⇄ (two arrows)
   // SVG arrows (opens right / left / from the centre) — centred crisply in the chip, unlike text glyphs
   const GLASS_TYP_ICON = { ltr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>', rtl: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>', center: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l-4 5 4 5M3 12h18M17 7l4 5-4 5"/></svg>' };
-  function glassTyp(op) { const g = glassFor(op), cfg = glassCfg(op); return g.best && g.best.opening === 'double' ? 'center' : (cfg.side || state.glassSide) === 'left' ? 'rtl' : 'ltr'; }
+  function glassTyp(op) { const g = glassFor(op), cfg = glassCfg(op); return g.best && g.best.opening === 'double' ? 'center' : (cfg.side || state.glassSide) === 'left' ? 'ltr' : 'rtl'; }
   function glassPos(op, t) {
     const g = glassFor(op), cfg = glassCfg(op), typ = glassTyp(op);
     const has = (o) => g.options.some((x) => x.opening === o);
     const isOpen = (cfg.open ?? state.glassOpen) > 0;
     const tb = (v, cur, ok) => `<button type="button" class="f-chip gtyp" data-gtyp="${v}" data-id="${op.id}" aria-pressed="${cur}" aria-label="${esc(t.glTyp[v])}" title="${esc(t.glTyp[v])}" ${ok ? '' : 'disabled'}>${GLASS_TYP_ICON[v]}</button>`;
     const sb = (v, label, cur) => `<button type="button" class="f-chip" data-gpos="${v}" data-id="${op.id}" aria-pressed="${cur}">${label}</button>`;
-    return `<div class="sub2">${t.glTypT}: ${tb('ltr', typ === 'ltr', has('single'))}${tb('rtl', typ === 'rtl', has('single'))}${tb('center', typ === 'center', has('double'))}</div>`
+    return `<div class="sub2">${t.glTypT}: ${tb('rtl', typ === 'rtl', has('single'))}${tb('center', typ === 'center', has('double'))}${tb('ltr', typ === 'ltr', has('single'))}</div>`
       + `<div class="sub2" style="margin-top:6px">${t.park}: ${sb('close', '○ ' + t.shut, !isOpen)}${sb('open', '◫ ' + t.glOpen, isOpen)}</div>`;
   }
 
@@ -1093,7 +1093,7 @@
       const op = openingById(d.id); if (!op) return;
       const g = glassFor(op), want = d.gtyp === 'center' ? 'double' : 'single';
       const pick = g.options.filter((x) => x.opening === want).sort((a, b) => a.price - b.price)[0]; if (!pick) return;
-      setCfg(op, { variant: pick.table, ...(d.gtyp === 'center' ? {} : { side: d.gtyp === 'rtl' ? 'left' : 'right' }) });
+      setCfg(op, { variant: pick.table, ...(d.gtyp === 'center' ? {} : { side: d.gtyp === 'rtl' ? 'right' : 'left' }) });
       build(); applyAnim(); renderEstimate(); render(); return;
     }
     if (d.gpos) { // the glass slides to the chosen side, or closes the opening

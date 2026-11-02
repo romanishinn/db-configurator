@@ -1268,7 +1268,7 @@ function clearPhoto() {
   ground.material = groundMat; controls.enabled = true; root.visible = true; photoBad = false;
   camera.fov = 40; camera.updateProjectionMatrix(); drawMarks();
   $('photo-bar').hidden = true; $('tb-photo').setAttribute('aria-pressed', 'false');
-  build(); applyAnim(); setView('iso');
+  build(); applyAnim(); setView('under');
   if (typeof window.onPhoto === 'function') window.onPhoto(false);
 }
 /** what the viewer sees: the photo (cropped like CSS "cover") with the 3D on top, as a JPEG data URL */
@@ -1297,7 +1297,7 @@ $('photo-pts').onclick = (e) => { PHOTO.marks = !PHOTO.marks; e.currentTarget.se
 
 /* ---------- camera + labels ---------- */
 function bounds() { const o = state.options[state.optIndex]; if (!o) return { W: 4, D: 3 }; return { W: o.width / 1000, D: o.depth / 1000 }; }
-let lastView = 'iso', userMoved = false;
+let lastView = 'under', userMoved = false;
 /** after a rebuild: a view the customer turned by hand stays exactly as it is; otherwise the chosen view
  *  (3D / front / top) is fitted to the new pergola — never a forced jump back to the 3D view */
 function refit() { if (!userMoved) setView(lastView); }
@@ -1309,8 +1309,7 @@ function setView(kind) {
   if (kind === 'under') { underView(); return; }
   const { W, D } = bounds(), c = new THREE.Vector3(W / 2, 1.2, D / 2);
   const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
-  // default / "3D" view: a near-front three-quarter at a low, almost eye-level height — shows the louvres and the open front
-  const dir = kind === 'front' ? new THREE.Vector3(0, 0.18, 1) : kind === 'top' ? new THREE.Vector3(0, 1, 0.002) : new THREE.Vector3(0.2, 0.34, 1);
+  const dir = kind === 'front' ? new THREE.Vector3(0, 0.18, 1) : kind === 'top' ? new THREE.Vector3(0, 1, 0.002) : new THREE.Vector3(0.42, 0.5, 0.78);
   dir.normalize();
   // fit the whole terrace (plus a margin) into both the horizontal and the vertical field of view
   const spanX = (W + 1.6) * (kind === 'iso' ? 0.95 : 1), spanY = kind === 'top' ? D + 1.6 : Math.max(H + 1.2, D * 0.9);
