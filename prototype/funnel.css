@@ -569,3 +569,48 @@ body.cust.cat-only .f-lead { font-size: 14px; color: var(--muted); }
 /* section labels: quiet sentence-case signposts, not tracked all-caps */
 .f-h3 { text-transform: none; letter-spacing: -0.005em; }
 .fc-q, label.l, .f-sum tr.g td, .f-kit-h .f-h3 { text-transform: none; letter-spacing: 0; }
+
+/* ============================================================
+   Scroll affordance for toolbar popups (Размер/Открывание/…)
+   A fade+shadow that appears only when there is more below, plus
+   a gentle down-chevron cue. Makes the hidden scroll obvious.
+   ============================================================ */
+@media (min-width: 761px) {
+  .toolbar .tb-pop:not([hidden]) {
+    background:
+      linear-gradient(#f0f2f3 28%, rgba(240,242,243,0)) top / 100% 24px no-repeat local,
+      linear-gradient(rgba(240,242,243,0), #f0f2f3 72%) bottom / 100% 30px no-repeat local,
+      radial-gradient(farthest-side at 50% 0, rgba(20,24,30,.13), transparent) top / 100% 11px no-repeat scroll,
+      radial-gradient(farthest-side at 50% 100%, rgba(20,24,30,.17), transparent) bottom / 100% 13px no-repeat scroll,
+      #f0f2f3;
+  }
+}
+body.fold-bottom .stage .toolbar .tb-pop:not([hidden]),
+body.fold-bottom .stage .toolbar .clr-pop:not([hidden]) {
+  background:
+    linear-gradient(#eef0f1 28%, rgba(238,240,241,0)) top / 100% 22px no-repeat local,
+    linear-gradient(rgba(238,240,241,0), #eef0f1 72%) bottom / 100% 28px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(20,24,30,.13), transparent) top / 100% 11px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(20,24,30,.17), transparent) bottom / 100% 13px no-repeat scroll,
+    #eef0f1;
+}
+/* down-chevron cue, pinned to the visible bottom of the scroll area */
+.tb-pop > .tb-cue { position: sticky; bottom: 0; z-index: 3; margin: 0 -12px -10px; height: 34px;
+  display: flex; align-items: flex-end; justify-content: center; pointer-events: none;
+  opacity: 0; transition: opacity .16s; }
+.tb-pop.more-below > .tb-cue { opacity: 1; }
+.tb-pop > .tb-cue button { pointer-events: auto; width: 30px; height: 30px; margin-bottom: 5px;
+  border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--accent);
+  box-shadow: 0 4px 12px rgba(20,24,30,.22); cursor: pointer; display: grid; place-items: center;
+  animation: tbCueNod 1.6s ease-in-out infinite; }
+.tb-pop > .tb-cue svg { width: 16px; height: 16px; display: block; }
+@keyframes tbCueNod { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .tb-pop > .tb-cue button { animation: none; } }
+
+/* popup funnel controls: keep the unified pale-gold active state, not the
+   dark toolbar-pill (.toolbar button[aria-pressed] was bleeding into them) */
+#tb-size-pop [aria-pressed="true"], #tb-louv [aria-pressed="true"], #tb-kit-pop [aria-pressed="true"] {
+  background: var(--accent-soft); color: var(--ink); border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent); font-weight: 600;
+}
+#tb-size-pop [aria-pressed="true"] .d, #tb-size-pop [aria-pressed="true"] small { color: var(--muted); }
