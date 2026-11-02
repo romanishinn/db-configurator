@@ -1281,12 +1281,15 @@
     const pop = $('tb-size-pop'); if (!pop) return;
     const t = L(), wall = state.mount === 'wall';
     const dim = (k, label, v) => `<div class="f-dim"><label for="tb-${k}">${esc(label)}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="tb-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
-    const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6600, 3500], [8000, 4000]];
     let h = `<div class="f-cards">`
       + `<button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${esc(t.wall)}</b><span class="d">${esc(t.wallD)}</span></button>`
       + `<button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${esc(t.free)}</b><span class="d">${esc(t.freeD)}</span></button></div>`;
     h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
-    h += `<div class="f-h3"><span>${t.presets}</span></div><div class="f-chips">${presets.map(([w, d]) => `<button type="button" class="f-chip" data-preset="${w}x${d}" aria-pressed="${state.width === w && state.depth === d}">${metres(w).replace(/,00|\.00/, '')} × ${metres(d).replace(/,00|\.00/, '')} ${t.m}</button>`).join('')}</div>`;
+    // parapet (low wall / railing) on one or more sides — the same control as on the size step
+    const pp = state.parapet, faces = wall ? ['front', 'left', 'right'] : ['front', 'left', 'right', 'back'];
+    h += `<div class="f-h3"><span>${t.parT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.parD)}</span></div>`;
+    h += `<div class="f-chips"><button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${esc(t.parNone)}</button>${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${esc(t.sides[f])}</button>`).join('')}</div>`;
+    if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="tb-ph">${esc(t.parH)}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="tb-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
     pop.innerHTML = h;
   }
   window.renderLouvPop = renderLouvPop; window.renderKitPop = renderKitPop; window.renderSizePop = renderSizePop;
@@ -1301,6 +1304,7 @@
     pop.addEventListener('change', (ev) => {
       const el = ev.target;
       if (el.dataset && el.dataset.dim) { applyDim(el); return; } // size field: update model/3D, keep the field focused (no re-render)
+      if (el.dataset && el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
       const s = el.closest && el.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
       act({ [s.dataset.sel]: s.value }); if (!pop.hidden) POP_RENDER[id]();
     });
