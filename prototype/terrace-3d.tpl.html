@@ -557,10 +557,11 @@ function buildOpeningFill(cx, ow, oh, wz) {
     }
     return;
   }
-  // sliding: N glass panels across the width, active one forward; mullions between
-  const n = Math.max(2, Math.min(4, op.slidePanels || 3)), pw = iw / n;
-  const act = op.slideActive === 'right' ? n - 1 : op.slideActive === 'center' ? Math.floor(n / 2) : 0;
-  for (let i = 0; i < n; i++) { const px = cx - iw / 2 + pw * (i + 0.5), fwd = i === act ? 0.04 : 0; box(pw - 0.02, ih, 0.025, M_DOOR_GLASS, px, cy, zf + fwd); box(0.025, ih, 0.035, M.frame, cx - iw / 2 + pw * i, cy, zf + fwd); }
+  // sliding: N glass panels across the width; active one(s) sit forward (they move), fixed ones flush
+  const n = Math.max(2, Math.min(4, op.slidePanels || 3)), pw = iw / n, am = op.slideActive || 'left';
+  if (am === 'pocket') { box(fr * 0.8, ih, 0.04, M.frame, cx - iw / 2 + 0.02, cy, zf); box(fr * 0.8, ih, 0.04, M.frame, cx + iw / 2 - 0.02, cy, zf); return; } // panels hide in the wall: full opening
+  const active = new Set(am === 'both' ? [0, 1] : am === 'right' ? [n - 1] : am === 'center' ? (n === 4 ? [1, 2] : [Math.floor(n / 2)]) : [0]);
+  for (let i = 0; i < n; i++) { const px = cx - iw / 2 + pw * (i + 0.5), fwd = active.has(i) ? 0.045 : 0; box(pw - 0.02, ih, 0.025, M_DOOR_GLASS, px, cy, zf + fwd); box(0.025, ih, 0.035, M.frame, cx - iw / 2 + pw * i, cy, zf + fwd); }
   box(0.025, ih, 0.035, M.frame, cx + iw / 2, cy, zf);
 }
 function box(w, h, d, mat, x, y, z, parent = root) {

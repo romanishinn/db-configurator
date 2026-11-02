@@ -1073,7 +1073,7 @@
     if (d.openkind) { state.opening.kind = d.openkind; rebuild(); applyAnim(); return; }
     if (d.doordir) { state.opening.doorDir = d.doordir; rebuild(); applyAnim(); return; }
     if (d.doorleaves) { state.opening.doorLeaves = Number(d.doorleaves); rebuild(); applyAnim(); return; }
-    if (d.slidepanels) { state.opening.slidePanels = Number(d.slidepanels); rebuild(); applyAnim(); return; }
+    if (d.slidepanels) { const n = Number(d.slidepanels); state.opening.slidePanels = n; const ok = n === 3 ? ['left', 'right'] : n === 2 ? ['left', 'right', 'both', 'pocket'] : ['left', 'right', 'center', 'pocket']; if (!ok.includes(state.opening.slideActive)) state.opening.slideActive = 'left'; rebuild(); applyAnim(); return; }
     if (d.slideactive) { state.opening.slideActive = d.slideactive; rebuild(); applyAnim(); return; }
     if (d.onudge) { const k = d.onudge, cur = k === 'w' ? state.opening.w : state.opening.h, lim = k === 'w' ? [600, 6000] : [600, 3200]; state.opening[k] = Math.max(lim[0], Math.min(lim[1], cur + Number(d.d))); rebuild(); applyAnim(); return; }
     if (d.opos) { const o = state.opening; if (d.opos === 'center') o.cx = null; else { let c = o.cx == null ? state.width / 2 : o.cx; c += d.opos === '+' ? 100 : -100; o.cx = Math.max(300, Math.min(state.width - 300, c)); } rebuild(); applyAnim(); return; }
@@ -1311,7 +1311,7 @@
       h += `<div class="f-chips"><button type="button" class="f-chip" data-openon="0" aria-pressed="${!op.on}">Нет</button><button type="button" class="f-chip" data-openon="1" aria-pressed="${op.on}">Есть</button></div>`;
       if (op.on) {
         // type of exit
-        h += `<div class="f-chips" style="margin-top:6px">${chip('openkind', 'slide', 'Слайдинг', op.kind === 'slide')}${chip('openkind', 'door', 'Дверь', op.kind === 'door')}${chip('openkind', 'pocket', 'Pocket', op.kind === 'pocket')}${chip('openkind', 'hole', 'Проём', op.kind === 'hole')}</div>`;
+        h += `<div class="f-chips" style="margin-top:6px">${chip('openkind', 'slide', 'Слайдинг', op.kind === 'slide')}${chip('openkind', 'door', 'Дверь', op.kind === 'door')}${chip('openkind', 'hole', 'Проём', op.kind === 'hole')}</div>`;
         // size
         const odim = (k, label, v) => `<div class="f-dim"><label>${label}, ${t.m}</label><div class="f-step"><button type="button" data-onudge="${k}" data-d="-100" aria-label="−">−</button><input type="number" inputmode="decimal" step="0.1" min="0.6" value="${(v / 1000).toFixed(2)}" data-odim="${k}"><button type="button" data-onudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
         h += `<div class="f-dims" style="margin-top:6px">${odim('w', 'Ширина', op.w)}${odim('h', 'Высота', op.h)}</div>`;
@@ -1324,8 +1324,10 @@
         }
         // sliding sub-options
         if (op.kind === 'slide') {
-          h += sub('Полотен') + `<div class="f-chips">${[2, 3, 4].map((n) => chip('slidepanels', String(n), String(n), op.slidePanels === n)).join('')}</div>`;
-          h += sub('Активное открывается') + `<div class="f-chips"><button type="button" class="f-chip gtyp" data-slideactive="left" aria-pressed="${op.slideActive === 'left'}" aria-label="Влево">${GLASS_TYP_ICON.rtl}</button><button type="button" class="f-chip" data-slideactive="center" aria-pressed="${op.slideActive === 'center'}">По центру</button><button type="button" class="f-chip gtyp" data-slideactive="right" aria-pressed="${op.slideActive === 'right'}" aria-label="Вправо">${GLASS_TYP_ICON.ltr}</button></div>`;
+          const n = op.slidePanels;
+          h += sub('Полотен') + `<div class="f-chips">${[2, 3, 4].map((p) => chip('slidepanels', String(p), String(p), op.slidePanels === p)).join('')}</div>`;
+          const acts = n === 3 ? [['left', 'Влево'], ['right', 'Вправо']] : n === 2 ? [['left', 'Влево'], ['right', 'Вправо'], ['both', 'Обе'], ['pocket', 'В стену']] : [['left', 'Влево'], ['right', 'Вправо'], ['center', 'По центру'], ['pocket', 'В стену']];
+          h += sub('Открывание') + `<div class="f-chips">${acts.map(([v, l]) => chip('slideactive', v, l, op.slideActive === v)).join('')}</div>`;
         }
       }
     }
