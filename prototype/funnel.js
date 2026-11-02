@@ -112,7 +112,7 @@
   const toast = (msg) => { const d = document.createElement('div'); d.className = 'f-toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
 
   /* ---------- configuration <-> link / storage ---------- */
-  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet', 'extra', 'split'];
+  const KEYS = ['mount', 'width', 'depth', 'louvres', 'roof', 'optIndex', 'fills', 'glass', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'po', 'colors', 'brand', 'panelOpt', 'wind', 'remote', 'verto', 'parapet', 'opening', 'extra', 'split'];
   const prune = (v) => { // drop empty values so the link stays short
     if (Array.isArray(v)) return v.map(prune);
     if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) { const p = prune(x); if (p === null || p === undefined || p === '' || (typeof p === 'object' && !Array.isArray(p) && !Object.keys(p).length)) continue; o[k] = p; } return o; }
@@ -130,6 +130,7 @@
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
     if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
     if (!s.parapet) state.parapet = { sides: [], h: 900 };
+    if (!s.opening) state.opening = { on: false, type: 'slide', w: 2200, h: 2100, cx: null };
     if (!s.split) state.split = null;
     state.extra = { mont: 0, items: [], ...(s.extra || {}) }; state.extra.items = (state.extra.items || []).map((x) => ({ t: x.t || '', a: Number(x.a) || 0 }));
     state.colors = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
@@ -1066,6 +1067,11 @@
     if (d.mount) { setMount(d.mount); return; }
     if (d.par) { const pp = state.parapet; if (d.par === 'none') pp.sides = []; else { const st = new Set(pp.sides); if (st.has(d.par)) st.delete(d.par); else st.add(d.par); pp.sides = [...st]; } rebuild(); applyAnim(); return; }
     if (d.parh) { state.parapet.h = Math.max(100, Math.min(1500, state.parapet.h + Number(d.parh))); rebuild(); applyAnim(); return; }
+    // house-wall opening (door / sliding exit): visual context only
+    if (d.openon) { state.opening.on = d.openon === '1'; rebuild(); applyAnim(); return; }
+    if (d.opentype) { state.opening.type = d.opentype; rebuild(); applyAnim(); return; }
+    if (d.onudge) { const k = d.onudge, cur = k === 'w' ? state.opening.w : state.opening.h, lim = k === 'w' ? [600, 6000] : [600, 3200]; state.opening[k] = Math.max(lim[0], Math.min(lim[1], cur + Number(d.d))); rebuild(); applyAnim(); return; }
+    if (d.opos) { const o = state.opening; if (d.opos === 'center') o.cx = null; else { let c = o.cx == null ? state.width / 2 : o.cx; c += d.opos === '+' ? 100 : -100; o.cx = Math.max(300, Math.min(state.width - 300, c)); } rebuild(); applyAnim(); return; }
     if (d.nudge) { const k = d.nudge, v = (k === 'w' ? state.width : state.depth) + Number(d.d); if (k === 'w') setDims(v, state.depth); else setDims(state.width, v); return; }
     if (d.preset) { const [w, dd] = d.preset.split('x').map(Number); setDims(w, dd); return; }
     if (d.fix) { if (d.fix.startsWith('DEPTH')) setDims(state.width, Number(d.v)); else setDims(Number(d.v), state.depth); return; }
@@ -1290,6 +1296,19 @@
     h += `<div class="f-h3"><span>${t.parT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.parD)}</span></div>`;
     h += `<div class="f-chips"><button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${esc(t.parNone)}</button>${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${esc(t.sides[f])}</button>`).join('')}</div>`;
     if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="tb-ph">${esc(t.parH)}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="tb-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
+    // house-wall opening (door / sliding exit) — wall-mount only; visual context, not in the price
+    // ASSUMPTION: RU labels for now; localise (de/en/hr) once the feature is confirmed
+    if (wall) {
+      const op = state.opening;
+      h += `<div class="f-h3"><span>Выход в стене</span><span style="text-transform:none;letter-spacing:0;font-weight:400">дверь или слайдинг из дома</span></div>`;
+      h += `<div class="f-chips"><button type="button" class="f-chip" data-openon="0" aria-pressed="${!op.on}">Нет</button><button type="button" class="f-chip" data-openon="1" aria-pressed="${op.on}">Есть</button></div>`;
+      if (op.on) {
+        h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip" data-opentype="slide" aria-pressed="${op.type === 'slide'}">Раздвижная</button><button type="button" class="f-chip" data-opentype="door" aria-pressed="${op.type === 'door'}">Дверь</button></div>`;
+        const odim = (k, label, v) => `<div class="f-dim"><label>${label}, ${t.m}</label><div class="f-step"><button type="button" data-onudge="${k}" data-d="-100" aria-label="−">−</button><input type="number" inputmode="decimal" step="0.1" min="0.6" value="${(v / 1000).toFixed(2)}" data-odim="${k}"><button type="button" data-onudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
+        h += `<div class="f-dims" style="margin-top:6px">${odim('w', 'Ширина', op.w)}${odim('h', 'Высота', op.h)}</div>`;
+        h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip gtyp" data-opos="-" aria-label="Левее" title="Левее">${GLASS_TYP_ICON.rtl}</button><button type="button" class="f-chip" data-opos="center" aria-pressed="${op.cx == null}">По центру</button><button type="button" class="f-chip gtyp" data-opos="+" aria-label="Правее" title="Правее">${GLASS_TYP_ICON.ltr}</button></div>`;
+      }
+    }
     pop.innerHTML = h;
   }
   window.renderLouvPop = renderLouvPop; window.renderKitPop = renderKitPop; window.renderSizePop = renderSizePop;
@@ -1305,6 +1324,7 @@
       const el = ev.target;
       if (el.dataset && el.dataset.dim) { applyDim(el); return; } // size field: update model/3D, keep the field focused (no re-render)
       if (el.dataset && el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
+      if (el.dataset && el.dataset.odim) { const k = el.dataset.odim, v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000), lim = k === 'w' ? [600, 6000] : [600, 3200]; if (v > 0) { state.opening[k] = Math.max(lim[0], Math.min(lim[1], Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
       const s = el.closest && el.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
       act({ [s.dataset.sel]: s.value }); if (!pop.hidden) POP_RENDER[id]();
     });
