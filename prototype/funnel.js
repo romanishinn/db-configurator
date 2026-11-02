@@ -1290,7 +1290,7 @@
     let h = `<div class="f-cards">`
       + `<button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${esc(t.wall)}</b><span class="d">${esc(t.wallD)}</span></button>`
       + `<button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${esc(t.free)}</b><span class="d">${esc(t.freeD)}</span></button></div>`;
-    h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
+    h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', t.width, state.width)}${dim('d', t.depth, state.depth)}</div>`;
     // parapet (low wall / railing) on one or more sides — the same control as on the size step
     const pp = state.parapet, faces = wall ? ['front', 'left', 'right'] : ['front', 'left', 'right', 'back'];
     h += `<div class="f-h3"><span>${t.parT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.parD)}</span></div>`;
@@ -1300,7 +1300,7 @@
     // ASSUMPTION: RU labels for now; localise (de/en/hr) once the feature is confirmed
     if (wall) {
       const op = state.opening;
-      h += `<div class="f-h3"><span>Выход в стене</span><span style="text-transform:none;letter-spacing:0;font-weight:400">дверь или слайдинг из дома</span></div>`;
+      h += `<div class="f-h3"><span>Выход в стене</span></div>`;
       h += `<div class="f-chips"><button type="button" class="f-chip" data-openon="0" aria-pressed="${!op.on}">Нет</button><button type="button" class="f-chip" data-openon="1" aria-pressed="${op.on}">Есть</button></div>`;
       if (op.on) {
         h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip" data-opentype="slide" aria-pressed="${op.type === 'slide'}">Раздвижная</button><button type="button" class="f-chip" data-opentype="door" aria-pressed="${op.type === 'door'}">Дверь</button></div>`;
