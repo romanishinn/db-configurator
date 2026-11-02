@@ -7,10 +7,17 @@ body.cust .app { grid-template-columns: minmax(0, 1fr) 440px; }
 .f-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px 0; }
 .f-brand { font-family: var(--f-display); font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
 .f-head .sp { flex: 1; }
-.f-lang { display: flex; gap: 2px; }
-.f-lang button, .f-pro { font: inherit; font-size: 12px; border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 4px; padding: 3px 7px; cursor: pointer; }
-.f-lang button[aria-pressed="true"] { color: var(--ink); border-color: var(--line); font-weight: 600; }
-.f-pro { border-color: var(--line); }
+/* language switcher: a neat dropdown in the top-right */
+.f-lang { position: relative; }
+.f-lang > summary { list-style: none; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); border: 1px solid var(--line); background: transparent; border-radius: 6px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px; user-select: none; }
+.f-lang > summary::-webkit-details-marker { display: none; }
+.f-lang > summary::marker { content: ''; }
+.f-lang-car { font-size: 9px; color: var(--muted); }
+.f-lang-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 4px; display: grid; gap: 2px; min-width: 128px; }
+.f-lang-menu button { font: inherit; font-size: 13px; text-align: left; background: transparent; border: 0; border-radius: 6px; padding: 7px 10px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+.f-lang-menu button:hover { background: rgba(0,0,0,.05); }
+.f-lang-menu button[aria-pressed="true"] { background: #e8f0f5; font-weight: 600; }
+.f-pro { font: inherit; font-size: 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 4px; padding: 3px 7px; cursor: pointer; }
 .f-steps { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 12px 16px 0; padding: 0; counter-reset: st; }
 .f-steps button { width: 100%; font: inherit; font-size: 11.5px; color: var(--muted); background: none; border: 0; border-top: 3px solid var(--line); padding: 6px 0 0; text-align: left; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .f-steps button .n { font-family: var(--f-mono); margin-right: 3px; }

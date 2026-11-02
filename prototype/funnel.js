@@ -298,8 +298,9 @@
     // catalog screen shows products only — hide the 3D stage/toolbar until a model is picked
     document.body.classList.toggle('cat-only', product === null);
     const t = L(), o = curOpt();
+    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski' };
     const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
-      <span class="f-lang" role="group" aria-label="Language">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${k.toUpperCase()}</button>`).join('')}</span>
+      <details class="f-lang" aria-label="Language"><summary>${lang.toUpperCase()}<span class="f-lang-car" aria-hidden="true">▾</span></summary><div class="f-lang-menu">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${esc(LANGNAME[k] || k.toUpperCase())}</button>`).join('')}</div></details>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
     if (product === null) { F.innerHTML = head + `<div class="f-body">${catalogHTML(t)}</div>`; return; }
     const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
