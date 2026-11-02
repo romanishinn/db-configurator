@@ -1,0 +1,1082 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>D&B Pergola CRM</title>
+<style>
+  :root{
+    --bg:#0a0d14; --panel:#111726; --panel2:#151c2e; --panel3:#1a2238;
+    --fg:#e9edf6; --fg2:#c3cbda; --muted:#808b9f; --faint:#5c6577;
+    --line:rgba(176,192,222,.12); --line2:rgba(176,192,222,.07);
+    --accent:#f0b667; --accent-ink:#1a1206;
+    --ok:#5ec98a; --warn:#e8b65f; --bad:#e8745f; --hot:#ff8356; --info:#6f9bff;
+    --okbg:rgba(94,201,138,.14); --warnbg:rgba(232,182,95,.14); --badbg:rgba(232,116,95,.14); --hotbg:rgba(255,131,86,.16);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:"Inter",system-ui,-apple-system,Arial,sans-serif;font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .tab-num{font-variant-numeric:tabular-nums}
+  button{font:inherit}
+
+  .app{display:flex;min-height:100%}
+  .rail{width:218px;flex:none;background:var(--panel);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+    padding:14px 10px calc(12px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+  .brand{display:flex;align-items:center;gap:9px;padding:6px 8px 16px;font-weight:700;letter-spacing:.13em;font-size:12px;text-transform:uppercase}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe3ad,var(--accent) 60%,#b9772a);box-shadow:0 0 12px 1px rgba(240,182,103,.5)}
+  .brand span{color:var(--muted);font-weight:500}
+  .rail nav{display:flex;flex-direction:column;gap:1px;overflow-y:auto}
+  .rail a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--fg2);
+    text-decoration:none;font-size:13px;cursor:pointer;position:relative}
+  .rail a .ic{width:16px;height:16px;flex:none;opacity:.7;display:flex;align-items:center;justify-content:center}
+  .rail a:hover{background:var(--panel2)}
+  .rail a.on{background:var(--panel3);color:#fff;font-weight:600}
+  .rail a.on .ic{opacity:1}
+  .rail a .badge{margin-left:auto;background:var(--hotbg);color:var(--hot);border-radius:999px;font-size:10.5px;font-weight:700;padding:1px 7px}
+  .rail .grp{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px}
+  .rail .me{margin-top:auto;display:flex;align-items:center;gap:9px;padding:9px 8px;border-top:1px solid var(--line2);color:var(--fg2)}
+  .rail .me .av{width:26px;height:26px;border-radius:50%;background:var(--panel3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--fg)}
+  .rail .me small{color:var(--muted);font-size:11px}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{height:52px;flex:none;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;
+    padding:0 max(14px,env(safe-area-inset-right,0px)) 0 16px;background:rgba(10,13,20,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:20}
+  .srch{flex:1;max-width:560px;height:36px;border:1px solid var(--line);border-radius:9px;background:var(--panel);
+    display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--muted);font-size:12.5px;overflow:hidden}
+  .srch .q{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .srch .k{margin-left:auto;display:flex;gap:3px;flex:none}
+  .srch .k kbd{background:var(--panel3);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:10px;color:var(--fg2);font-family:inherit}
+  .topbar .sp{flex:1}
+  .iconbtn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--fg2);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative}
+  .iconbtn .d{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--hot)}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--fg);cursor:pointer;font-size:12.5px;font-weight:500}
+  .btn:hover{border-color:var(--faint)}
+  .btn.primary{background:linear-gradient(180deg,#f6c57e,var(--accent));border:0;color:var(--accent-ink);font-weight:600;box-shadow:0 6px 16px -8px rgba(240,182,103,.6)}
+  .btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+  .btn.ghost{background:transparent}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;font-size:11.5px;border:1px solid var(--line);color:var(--muted);background:var(--panel)}
+
+  .langwrap{position:relative;flex:none}
+  .langbtn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--fg2);cursor:pointer;font-size:12.5px;font-weight:600}
+  .langbtn .gl{opacity:.8}
+  .langmenu{position:absolute;right:0;top:40px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:5px;display:none;flex-direction:column;gap:2px;z-index:30;min-width:150px;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+  .langmenu.open{display:flex}
+  .langmenu button{display:flex;align-items:center;gap:9px;background:transparent;border:0;color:var(--fg2);padding:8px 10px;border-radius:7px;cursor:pointer;font-size:12.5px;text-align:left}
+  .langmenu button:hover{background:var(--panel3)}
+  .langmenu button[aria-current="true"]{color:var(--accent);font-weight:600}
+  .langmenu button b{font-weight:700;width:22px}
+
+  .content{flex:1;min-width:0;overflow:auto}
+  .screen{display:none}
+  .screen.on{display:block}
+  .pad{padding:18px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+  .h1{font-size:17px;font-weight:700;margin:0}
+  .muted{color:var(--muted)}
+
+  .score{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;padding:0 7px;border-radius:7px;font-size:12px;font-weight:700;background:var(--panel3);color:var(--fg2)}
+  .score.hi{background:var(--hotbg);color:var(--hot)}
+  .score.mid{background:var(--warnbg);color:var(--warn)}
+  .hotchip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--hot);background:var(--hotbg);border-radius:5px;padding:2px 6px}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot.red{background:var(--bad)} .dot.green{background:var(--ok)} .dot.amber{background:var(--warn)} .dot.grey{background:var(--faint)}
+  .tag{font-size:10.5px;letter-spacing:.04em;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:2px 7px;white-space:nowrap}
+  .tag.ok{color:var(--ok);border-color:rgba(94,201,138,.4);background:var(--okbg)}
+  .tag.warn{color:var(--warn);border-color:rgba(232,182,95,.4);background:var(--warnbg)}
+  .tag.bad{color:var(--bad);border-color:rgba(232,116,95,.4);background:var(--badbg)}
+
+  .split{display:grid;grid-template-columns:378px 1fr;height:calc(100vh - 52px)}
+  @media(max-width:1000px){.split{grid-template-columns:1fr}.split .record{display:none}.split.show-rec .list{display:none}.split.show-rec .record{display:flex}}
+  .list{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+  .list .lh{padding:14px 14px 10px;border-bottom:1px solid var(--line2)}
+  .list .lh .r{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .cchip{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
+  .cchip b{color:var(--fg);font-weight:700}
+  .cchip.on{border-color:var(--accent);color:var(--fg);background:rgba(240,182,103,.08)}
+  .cchip .n{background:var(--panel3);border-radius:5px;padding:0 6px;font-weight:700;color:var(--fg2);font-size:11px}
+  .rows{overflow-y:auto;flex:1}
+  .row{display:flex;gap:11px;padding:12px 14px;border-bottom:1px solid var(--line2);cursor:pointer}
+  .row:hover{background:var(--panel)}
+  .row.sel{background:var(--panel2);box-shadow:inset 3px 0 0 var(--accent)}
+  .row .av{width:38px;height:38px;border-radius:9px;flex:none;background:var(--panel3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--fg2);font-size:13px}
+  .row .mid{flex:1;min-width:0}
+  .row .r1{display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .row .nm{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .sum{font-size:12.5px;color:var(--fg2);font-weight:600}
+  .row .r2{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11.5px;margin-top:4px;min-width:0}
+  .row .r2 .p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .r3{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px}
+  .row .st{color:var(--fg2)} .row .time{margin-left:auto;color:var(--faint)}
+
+  .record{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+  .rhead{padding:14px 18px;border-bottom:1px solid var(--line2);position:sticky;top:0;background:var(--bg);z-index:5}
+  .rhead .back{display:none}
+  @media(max-width:1000px){.rhead .back{display:inline-flex;margin-bottom:10px}}
+  .rhead .top{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .rhead .idn{min-width:0;flex:1 1 220px}
+  .rhead h2{margin:0;font-size:17px;font-weight:700;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .rhead .meta{color:var(--muted);font-size:12px;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+  .rhead .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  @media(max-width:760px){
+    .rhead .top{flex-direction:column;align-items:stretch;gap:10px}
+    .rhead .idn{flex:0 0 auto}
+    .rhead h2{font-size:16px}
+    .rhead .acts{width:100%}
+    .rhead .acts .score{order:-1;margin-right:auto}
+    .rhead .acts .btn{flex:1 1 auto}
+    .rhead .acts .primary{flex:1 1 100%;justify-content:center}
+    .cv{min-width:44%}
+  }
+  .stages{display:flex;gap:4px;margin-top:14px;flex-wrap:wrap}
+  .cv{position:relative;flex:1;min-width:92px;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    padding:8px 10px 8px 14px;font-size:11.5px;clip-path:polygon(0 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,0 100%,9px 50%);text-align:center}
+  .cv:first-child{clip-path:polygon(0 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,0 100%)}
+  .cv small{display:block;font-size:10px;color:var(--faint);margin-top:1px}
+  .cv.done{color:var(--fg2);background:var(--panel3)}
+  .cv.now{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+  .cv.now small{color:rgba(26,18,6,.7)}
+
+  .rbody{flex:1;overflow:auto;display:grid;grid-template-columns:1fr 336px;gap:0}
+  @media(max-width:1180px){.rbody{grid-template-columns:1fr}.rbody .qpanel{border-left:0;border-top:1px solid var(--line2)}}
+  .rmain{padding:16px 18px;min-width:0}
+  .upnext{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;margin-bottom:16px}
+  .upnext .uh{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .upnext .uh .n{color:var(--accent)}
+  .task{display:flex;align-items:center;gap:11px;padding:11px 10px;border-radius:9px}
+  .task:hover{background:var(--panel2)}
+  .task .i{width:30px;height:30px;border-radius:8px;background:var(--panel3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none;font-size:14px}
+  .task .t{flex:1;min-width:0} .task .t b{font-weight:600} .task .t div{color:var(--muted);font-size:12px;margin-top:1px}
+  .task .go{color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .addtask{display:flex;align-items:center;gap:10px;padding:10px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line2);margin-top:2px}
+
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--line2);margin-bottom:16px;overflow-x:auto}
+  .tabs .t{padding:9px 13px;font-size:12.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+  .tabs .t.on{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:13px}
+  .kv .k{color:var(--muted)} .kv .v{color:var(--fg);text-align:right}
+  .feed{position:relative;padding-left:20px}
+  .feed::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .fe{position:relative;padding:9px 0}
+  .fe::before{content:"";position:absolute;left:-18px;top:13px;width:9px;height:9px;border-radius:50%;background:var(--panel3);border:1.5px solid var(--faint)}
+  .fe.hot::before{background:var(--hot);border-color:var(--hot)}
+  .fe .who{font-size:11.5px;color:var(--muted)} .fe b{font-weight:600}
+  .ovhead{margin:18px 0 8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+  .qpanel{border-left:1px solid var(--line2);padding:16px;background:var(--panel);min-width:0}
+  .qcard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .qcard .img{height:120px;background:radial-gradient(120% 120% at 50% 20%,#1d2740,#0e1526);
+     display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:12px;border-bottom:1px solid var(--line2);position:relative}
+  .qcard .img .v{position:absolute;top:8px;right:8px}
+  .qcard .b{padding:13px}
+  .qcard .tot{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .qcard .tot .big{font-size:22px;font-weight:700}
+  .qcard .tot small{color:var(--muted);font-size:11px}
+  .cfg{display:flex;flex-direction:column;gap:0;margin:10px 0}
+  .cfg .l{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line2);font-size:12px}
+  .cfg .l .k{color:var(--muted)}
+  .qmeta{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:5px;margin:10px 0}
+  .qmeta .l{display:flex;justify-content:space-between;gap:8px}
+  .qmeta .l b{color:var(--fg2);font-weight:600}
+  .qbtns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}
+  .qbtns .btn{justify-content:center}
+  .qbtns .wide{grid-column:1/3}
+  .vlist{margin-top:14px}
+  .vlist h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .vrow{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:12px}
+  .vrow.cur{border-color:var(--accent);background:rgba(240,182,103,.06)}
+  .vrow .d{color:var(--muted)} .vrow .s{margin-left:auto;font-weight:600}
+
+  .board-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{border:0;background:transparent;padding:8px 15px;color:var(--muted);cursor:pointer;font-size:12.5px}
+  .seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+  .kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px}
+  .col{flex:0 0 236px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;max-height:calc(100vh - 170px);display:flex;flex-direction:column}
+  .col .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+  .col .ch .nm{font-size:12.5px;font-weight:600}
+  .col .ch .mt{font-size:11px;color:var(--muted)}
+  .col .sum{font-size:11.5px;color:var(--fg2);font-variant-numeric:tabular-nums;margin-bottom:10px}
+  .col .cards{overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+  .kc{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px}
+  .kc.click{cursor:pointer} .kc.click:hover{border-color:var(--faint)}
+  .kc.cold{border-color:rgba(232,182,95,.4)} .kc.rot{border-color:rgba(232,116,95,.5);background:rgba(232,116,95,.05)}
+  .kc .r1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+  .kc .nm{font-weight:600;font-size:12.5px}
+  .kc .r2{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font-size:11.5px;margin-bottom:8px}
+  .kc .r2 .sum{color:var(--fg2);font-weight:600}
+  .kc .r3{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+  .kc .r3 .av{width:20px;height:20px;border-radius:50%;background:var(--panel3);border:1px solid var(--line);font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;margin-left:auto}
+  .kc .lock{display:inline-flex;align-items:center;gap:4px;color:var(--warn);font-size:10.5px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .kpi .l{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .kpi .v{font-size:23px;font-weight:700;margin-top:7px;font-variant-numeric:tabular-nums}
+  .kpi .delta{font-size:11.5px;margin-top:3px}
+  .kpi .delta.up{color:var(--ok)} .kpi .delta.down{color:var(--bad)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:18px}
+  .panel .ph{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--line2)}
+  .panel .ph h3{margin:0;font-size:13.5px;font-weight:600}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line2);font-size:12.5px;white-space:nowrap}
+  th{color:var(--muted);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--panel2)}
+  .appr{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line2)}
+  .appr:last-child{border-bottom:0}
+  .appr .t{flex:1;min-width:0} .appr .t b{font-weight:600}
+  .appr .reasons{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+  .appr .acts{display:flex;gap:6px}
+
+  .subnav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px}
+  .subnav .t{padding:7px 12px;border-radius:8px;font-size:12.5px;color:var(--muted);cursor:pointer;border:1px solid transparent}
+  .subnav .t.on{background:var(--panel3);color:var(--fg);border-color:var(--line)}
+  .inp{height:34px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--fg);padding:0 11px;font:inherit;font-size:12.5px;width:100%}
+  .fr{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;padding:7px 0}
+  @media(max-width:560px){.fr{grid-template-columns:1fr}}
+  .do-see{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:700px){.do-see{grid-template-columns:1fr}}
+  .ds{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:13px}
+  .ds h4{margin:0 0 9px;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .ds label{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:12.5px}
+  .ds .sw{width:34px;height:20px;border-radius:999px;background:var(--panel3);position:relative;flex:none}
+  .ds .sw.on{background:var(--accent)} .ds .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#dfe6f2;transition:.15s}
+  .ds .sw.on::after{left:16px;background:var(--accent-ink)}
+
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;color:var(--muted);text-align:center;gap:12px}
+  .empty .ic{width:46px;height:46px;border-radius:12px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:20px}
+
+  @media(max-width:680px){
+    .rail{position:fixed;z-index:50;transform:translateX(-100%);transition:.2s;box-shadow:0 0 60px rgba(0,0,0,.6);width:84vw;max-width:300px}
+    .rail.open{transform:none}
+    .menubtn{display:flex!important}
+    .topbar{gap:8px;padding-left:12px}
+    .topbar .sp{display:none}
+    .srch{max-width:none}
+    .srch{height:38px}
+    .srch .q{font-size:13px}
+    .srch .k{display:none}
+    .newbtn .lbl{display:none}
+    .newbtn{width:38px;height:38px;padding:0;justify-content:center;font-size:17px;border-radius:10px}
+    .iconbtn{width:38px;height:38px}
+    .langbtn{height:38px}
+    .chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+    .cchip{flex:none}
+    .pad{padding-top:14px}
+    .appr{flex-wrap:wrap}
+    .appr .score{order:1}
+    .appr .t{order:2;flex:1 1 calc(100% - 46px)}
+    .appr .acts{order:3;flex:1 1 100%;margin-top:6px}
+    .appr .acts .btn{flex:1;justify-content:center}
+    .panel .ph{flex-wrap:wrap;gap:3px 10px}
+    .panel .ph .muted{flex:1 1 100%}
+    .kpis{grid-template-columns:1fr 1fr}
+  }
+  .menubtn{display:none}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40}
+  .scrim.on{display:block}
+  /* ===== login gate ===== */
+  #gate{position:fixed;inset:0;z-index:100;display:flex;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:linear-gradient(180deg,#05070d,#090d16);padding:84px max(16px,env(safe-area-inset-left,0px)) 40px max(16px,env(safe-area-inset-right,0px))}
+  body.authed #gate{display:none}
+  #gscene{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #gvig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(160% 140% at 50% 40%,rgba(5,7,13,0) 60%,rgba(5,7,13,.5) 100%)}
+  .gbrand{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));left:max(18px,env(safe-area-inset-left,0px));z-index:3;display:flex;gap:9px;align-items:center;justify-content:flex-start;font-weight:700;letter-spacing:.16em;font-size:13px;text-transform:uppercase;color:#eaf0fb}
+  .gbrand .dot{width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe3ad,#f0b667 60%,#b9772a);box-shadow:0 0 14px 2px rgba(240,182,103,.55)}
+  .gbrand span{color:#8b97ad;font-weight:500}
+  .gwrap{position:relative;z-index:2;width:100%;max-width:372px;margin:auto}
+  .gcard{background:rgba(12,16,26,.42);border:1px solid rgba(190,205,230,.14);border-radius:20px;padding:26px 24px 22px;backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);box-shadow:0 30px 70px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05)}
+  .gcard form{display:flex;flex-direction:column;gap:11px}
+  .gfield{position:relative;display:flex;align-items:center}
+  .gfield input{width:100%;font:inherit;font-size:15px;color:#eaf0fb;background:rgba(255,255,255,.04);border:1px solid rgba(190,205,230,.14);border-radius:12px;padding:14px;min-width:0}
+  .gfield input::placeholder{color:#8b97ad}
+  .gfield input:focus{outline:none;border-color:rgba(240,182,103,.55);background:rgba(255,255,255,.07);box-shadow:0 0 0 3px rgba(240,182,103,.14)}
+  .greveal{position:absolute;right:6px;border:0;background:transparent;color:#8b97ad;cursor:pointer;padding:8px;display:flex}
+  .greveal svg{width:18px;height:18px}
+  .gbtn{margin-top:5px;font:inherit;font-size:15px;font-weight:600;color:#1a1206;border:0;border-radius:12px;padding:14px;cursor:pointer;background:linear-gradient(180deg,#f6c57e,#f0b667);box-shadow:0 10px 24px -10px rgba(240,182,103,.6)}
+  .gbtn:active{transform:translateY(1px)}
+  .greq{display:flex;justify-content:center;margin-top:16px}
+  .glink{border:0;background:transparent;color:#8b97ad;font:inherit;font-size:13.5px;cursor:pointer;padding:6px 4px;border-bottom:1px solid transparent}
+  .glink:hover{color:#eaf0fb}
+  .glink.ghost{color:#f0b667}
+  .gstatus{min-height:16px;margin-top:4px;font-size:13px;text-align:center;color:#8b97ad}
+  .gstatus.warn{color:#f0a36a}.gstatus.ok{color:#8fd3a6}
+  .glang{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));z-index:5}
+  .gmodal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,7,13,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  .gmodal[hidden]{display:none}
+  .gmodal-card{background:#121722;border:1px solid rgba(190,205,230,.16);border-radius:18px;padding:26px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 30px 70px -20px rgba(0,0,0,.85);animation:gmPop .22s ease-out}
+  @keyframes gmPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+  .gmodal-ic{width:52px;height:52px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;font-size:26px;color:#fff;background:radial-gradient(circle at 35% 35%,#6cc592,#2f7d4f);box-shadow:0 0 18px rgba(44,125,79,.5)}
+  .gmodal-card h3{margin:0 0 6px;font-size:18px;color:#eaf0fb}
+  .gmodal-card p{margin:0 0 16px;font-size:13.5px;color:#9aa5ad;line-height:1.45}
+  .gmodal-card .gbtn{width:100%}
+  .glangbtn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px;border:1px solid rgba(190,205,230,.14);border-radius:9px;background:rgba(10,14,22,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#c3cbda;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600}
+  .glangmenu{position:absolute;right:0;top:40px;display:none;flex-direction:column;gap:2px;min-width:154px;padding:5px;border:1px solid rgba(190,205,230,.14);border-radius:10px;background:#151c2e;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+  .glangmenu.open{display:flex}
+  .glangmenu button{display:flex;align-items:center;gap:9px;border:0;background:transparent;color:#c3cbda;font:inherit;font-size:12.5px;text-align:left;padding:8px 10px;border-radius:7px;cursor:pointer}
+  .glangmenu button:hover{background:#1a2238}
+  .glangmenu button[aria-current="true"]{color:#f0b667;font-weight:600}
+  .glangmenu button b{font-weight:700;width:22px}
+  @media(max-width:680px){ #gate{padding-top:72px;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))} }
+</style>
+
+<div id="gate">
+  <canvas id="gscene"></canvas>
+  <div id="gvig"></div>
+  <div class="glang" id="gLang"><button class="glangbtn" id="gLangBtn"><span>🌐</span><span id="gLangLbl">RU</span><span style="opacity:.6">▾</span></button><div class="glangmenu" id="gLangMenu"><button data-l="ru"><b>RU</b> Русский</button><button data-l="en"><b>EN</b> English</button><button data-l="de"><b>DE</b> Deutsch</button><button data-l="hr"><b>HR</b> Hrvatski</button></div></div>
+  <div class="gbrand"><span class="dot"></span><b>D&amp;B</b>&nbsp;<span>PERGOLA</span></div>
+  <div class="gwrap"><div class="gcard">
+    <section id="gLogin">
+      <form id="gForm" novalidate>
+        <label class="gfield"><input id="gEmail" type="email" autocomplete="username" placeholder="E-Mail" data-i18n-ph="gate.email"></label>
+        <label class="gfield"><input id="gPass" type="password" autocomplete="current-password" placeholder="Пароль" data-i18n-ph="gate.pass"><button type="button" class="greveal" id="gReveal" aria-label="show"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button></label>
+        <button type="submit" class="gbtn" data-i18n="gate.signin">Войти</button>
+        <div class="gstatus" id="gStatus" role="status" aria-live="polite"></div>
+      </form>
+      <div class="greq"><button type="button" class="glink" id="gToReq" data-i18n="gate.request">Запросить доступ</button></div>
+    </section>
+    <section id="gReqView" hidden>
+      <form id="gReqForm" novalidate>
+        <label class="gfield"><input id="gReqCompany" placeholder="Компания" data-i18n-ph="req.company"></label>
+        <label class="gfield"><input id="gReqFirst" placeholder="Имя" data-i18n-ph="req.first"></label>
+        <label class="gfield"><input id="gReqLast" placeholder="Фамилия" data-i18n-ph="req.last"></label>
+        <label class="gfield"><input id="gReqLocation" placeholder="Локация (город, страна)" data-i18n-ph="req.location"></label>
+        <label class="gfield"><input id="gReqEmail" type="email" placeholder="E-Mail" data-i18n-ph="gate.email"></label>
+        <button type="submit" class="gbtn" data-i18n="gate.send">Отправить</button>
+        <div class="gstatus" id="gReqStatus" role="status" aria-live="polite"></div>
+      </form>
+      <div class="greq"><button type="button" class="glink ghost" id="gToLogin" data-i18n="gate.back">← Назад</button></div>
+    </section>
+  </div></div>
+  <div class="gmodal" id="gModal" hidden>
+    <div class="gmodal-card">
+      <div class="gmodal-ic">✓</div>
+      <h3 data-i18n="gate.sentTitle">Отправлено</h3>
+      <p data-i18n="gate.sentPopup">Письмо улетело нашему менеджеру — мы свяжемся с вами.</p>
+      <button type="button" class="gbtn" id="gModalOk" data-i18n="gate.ok">Готово</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="rail" id="rail">
+    <div class="brand"><span class="dot"></span>D&amp;B<span>&nbsp;PERGOLA</span></div>
+    <nav>
+      <a data-s="today" class="on"><span class="ic">◎</span><span data-i18n="nav.today">Сегодня</span></a>
+      <a data-s="leads"><span class="ic">▦</span><span data-i18n="nav.leads">Лиды · доска</span></a>
+      <a data-s="orders"><span class="ic">▣</span><span data-i18n="nav.orders">Заказы · доска</span></a>
+      <a data-s="quotes"><span class="ic">❏</span><span data-i18n="nav.quotes">КП</span></a>
+      <a data-s="customers"><span class="ic">◍</span><span data-i18n="nav.customers">Клиенты</span></a>
+      <a data-s="configurator"><span class="ic">✎</span><span data-i18n="nav.config">Конфигуратор</span></a>
+      <div class="grp" data-i18n="nav.grpAdmin">Суперадмин</div>
+      <a data-s="admin"><span class="ic">▤</span><span data-i18n="nav.console">Пульт</span></a>
+      <a data-s="approvals"><span class="ic">⌁</span><span data-i18n="nav.approvals">Утверждения</span><span class="badge">2</span></a>
+      <a data-s="settings"><span class="ic">⚙</span><span data-i18n="nav.settings">Настройки</span></a>
+    </nav>
+    <div class="me"><span class="av">NR</span><div><div style="font-size:12.5px">Nick R.</div><small data-i18n="me.role">Суперадмин · EUR</small></div></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="iconbtn menubtn" id="menubtn">☰</button>
+      <div class="srch"><span class="q" data-i18n="top.search">⌕ Поиск сделок, клиентов, №КП…</span><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></div>
+      <div class="sp"></div>
+      <button class="btn primary sm newbtn" id="newCalcBtn">＋<span class="lbl" data-i18n="top.newCalc"> Новый расчёт</span></button>
+      <button class="iconbtn">🔔<span class="d"></span></button>
+    </div>
+
+    <div class="content">
+      <section class="screen on" data-screen="today">
+        <div class="split" id="split">
+          <div class="list">
+            <div class="lh">
+              <div class="r"><div class="h1" data-i18n="nav.today">Сегодня</div><button class="btn sm ghost" data-i18n="today.allDeals">Все сделки ▾</button></div>
+              <div class="chips">
+                <div class="cchip on"><span class="n">4</span> <span data-i18n="chip.needYou">Нужны вам</span></div>
+                <div class="cchip"><span class="n">2</span> <span data-i18n="chip.waiting">Ждут клиента</span></div>
+                <div class="cchip"><span class="n">1</span> <span data-i18n="chip.appr">На утв.</span></div>
+                <div class="cchip"><span class="n">1</span> <span data-i18n="chip.overdue">Просрочено</span></div>
+              </div>
+            </div>
+            <div class="rows" id="rows"></div>
+          </div>
+          <div class="record" id="recordWrap"></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="leads">
+        <div class="pad">
+          <div class="board-top">
+            <div class="h1" style="margin-right:6px" data-i18n="board.title">Доска</div>
+            <div class="seg"><button class="on" onclick="toggleBoard(this,'req')" data-i18n="board.requests">Запросы</button><button onclick="toggleBoard(this,'ord')" data-i18n="board.orders">Заказы</button></div>
+            <div class="sp" style="flex:1"></div>
+            <span class="pill" data-i18n="board.scope">Я / Команда / Все ▾</span>
+            <span class="pill">🔥 HOT</span>
+            <span class="pill" data-i18n="board.rotting">⚑ Протухают</span>
+          </div>
+          <div id="boardReq"></div>
+          <div id="boardOrd" hidden></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="orders">
+        <div class="pad">
+          <div class="board-top"><div class="h1" data-i18n="board.orders">Заказы</div><div class="sp" style="flex:1"></div><span class="pill" data-i18n="board.byStage">Все · по стадиям</span></div>
+          <div id="boardOrd2"></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="admin">
+        <div class="pad">
+          <div class="h1" style="margin-bottom:4px" data-i18n="admin.title">Пульт суперадмина</div>
+          <p class="muted" style="margin:0 0 16px" data-i18n="admin.sub">Все пользователи и обе воронки. Переключатель «Все / пользователь» применяется ко всем экранам.</p>
+          <div class="kpis">
+            <div class="kpi"><div class="l" data-i18n="kpi.pipeline">Открытый пайплайн</div><div class="v tab-num">€184k</div><div class="delta up" data-i18n="kpi.d1">▲ 12% к мес.</div></div>
+            <div class="kpi"><div class="l" data-i18n="kpi.winrate">Win rate</div><div class="v tab-num">31%</div><div class="delta up" data-i18n="kpi.d2">▲ 4 пп</div></div>
+            <div class="kpi"><div class="l" data-i18n="kpi.avg">Средний чек</div><div class="v tab-num">€9 850</div><div class="delta down">▼ 2%</div></div>
+            <div class="kpi"><div class="l" data-i18n="kpi.eng">Engagement (откр÷отпр)</div><div class="v tab-num">58%</div><div class="delta up" data-i18n="kpi.d4">▲ 6 пп</div></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3 data-i18n="admin.queue">Очередь на утверждение</h3><span class="tag warn" data-i18n="admin.waiting">2 ждут</span></div>
+            <div class="appr">
+              <span class="score hi">41</span>
+              <div class="t"><b>Клиент Г. · €21 000</b><div class="reasons"><span class="tag bad" data-i18n="admin.r1">Скидка 22% > лимит 15%</span><span class="tag" data-i18n="admin.sellerMarko">продавец: Marko</span></div></div>
+              <div class="acts"><button class="btn sm" data-i18n="admin.reject">Отклонить</button><button class="btn primary sm" data-i18n="admin.approve">Утвердить</button></div>
+            </div>
+            <div class="appr">
+              <span class="score mid">12</span>
+              <div class="t"><b>Клиент Б. · €10 565</b><div class="reasons"><span class="tag warn" data-i18n="admin.r2">Сумма > €10k</span><span class="tag" data-i18n="admin.archEva">архитектор: Eva</span></div></div>
+              <div class="acts"><button class="btn sm" data-i18n="admin.reject">Отклонить</button><button class="btn primary sm" data-i18n="admin.approve">Утвердить</button></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3 data-i18n="admin.users">Пользователи</h3><span class="muted" style="font-size:12px" data-i18n="admin.usersHint">клик по строке — фильтр досок по пользователю</span></div>
+            <table>
+              <thead><tr><th data-i18n="th.user">Пользователь</th><th data-i18n="th.role">Роль</th><th data-i18n="th.group">Группа</th><th class="num" data-i18n="th.deals">Сделок</th><th class="num" data-i18n="th.pipeline">Пайплайн</th><th class="num">Win</th><th class="num" data-i18n="th.rotting">Протух.</th><th data-i18n="th.seen">Был</th></tr></thead>
+              <tbody>
+                <tr><td>Leon P.</td><td data-i18n="role.seller">продавец</td><td data-i18n="grp.agent">агент</td><td class="num">14</td><td class="num">€62k</td><td class="num">34%</td><td class="num">1</td><td class="muted" data-i18n="t.2h">2ч</td></tr>
+                <tr><td>Marko D.</td><td data-i18n="role.dealer">дилер</td><td data-i18n="grp.dealer">дилер</td><td class="num">21</td><td class="num">€88k</td><td class="num">29%</td><td class="num" style="color:var(--bad)">3</td><td class="muted" data-i18n="t.1d">1д</td></tr>
+                <tr><td>Eva S.</td><td data-i18n="role.architect">архитектор</td><td data-i18n="grp.architect">архитектор</td><td class="num">9</td><td class="num">€34k</td><td class="num">41%</td><td class="num">0</td><td class="muted" data-i18n="t.10m">10м</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="settings">
+        <div class="pad">
+          <div class="h1" style="margin-bottom:12px" data-i18n="nav.settings">Настройки</div>
+          <div class="subnav">
+            <div class="t on" data-set="users" data-i18n="set.users">Пользователи</div>
+            <div class="t" data-set="roles" data-i18n="set.roles">Роли и доступ</div>
+            <div class="t" data-set="disc" data-i18n="set.disc">Группы скидок</div>
+            <div class="t" data-set="pipe" data-i18n="set.pipe">Воронки и стадии</div>
+            <div class="t" data-set="lang" data-i18n="set.lang">Язык</div>
+          </div>
+          <div class="setpane on" data-set="users">
+            <div class="panel">
+              <div class="ph"><h3 data-i18n="inv.title">Пригласить партнёра</h3></div>
+              <div style="padding:14px 15px">
+                <div class="fr"><span class="muted" data-i18n="set.role">Роль</span><select class="inp" id="invRole" style="max-width:260px"><option value="dealer" data-i18n="role.dealer">дилер</option><option value="architect" data-i18n="role.architect">архитектор</option></select></div>
+                <div class="fr"><span class="muted" data-i18n="set.group">Группа скидок</span><select class="inp" id="invGroup" style="max-width:260px"><option value="dealer" data-i18n="grp.dealer">дилер</option><option value="architect" data-i18n="grp.architect">архитектор</option><option value="agent" data-i18n="grp.agent">агент</option></select></div>
+                <button class="btn primary" style="margin-top:10px" id="invGen" data-i18n="inv.gen">Создать ссылку-приглашение</button>
+                <p class="muted" style="font-size:12px;margin:10px 0 0" data-i18n="inv.pwnote">Партнёр откроет ссылку, заполнит данные и задаст свой пароль: буквы, цифры и спецсимвол, минимум 8 символов.</p>
+                <div id="invOut" hidden style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input class="inp" id="invLink" readonly style="flex:1;min-width:200px"><button class="btn sm" id="invCopy" data-i18n="inv.copy">Скопировать</button></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="ph"><h3 data-i18n="set.users">Пользователи</h3></div>
+              <table>
+                <thead><tr><th data-i18n="th.name">Имя</th><th>E-mail</th><th data-i18n="th.role">Роль</th><th data-i18n="th.group">Группа</th><th class="num" data-i18n="th.personal">Личный %</th><th data-i18n="th.status">Статус</th></tr></thead>
+                <tbody>
+                  <tr><td>Leon P.</td><td class="muted">leon@…</td><td data-i18n="role.seller">продавец</td><td data-i18n="grp.agent">агент</td><td class="num">10%</td><td><span class="tag ok" data-i18n="st.active">активен</span></td></tr>
+                  <tr><td>Eva S.</td><td class="muted">eva@…</td><td data-i18n="role.architect">архитектор</td><td data-i18n="grp.architect">архитектор</td><td class="num">—</td><td><span class="tag ok" data-i18n="st.active">активен</span></td></tr>
+                  <tr><td>Marko D.</td><td class="muted">marko@…</td><td data-i18n="role.dealer">дилер</td><td data-i18n="grp.dealer">дилер</td><td class="num">15%</td><td><span class="tag ok" data-i18n="st.active">активен</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="setpane" data-set="roles" hidden>
+            <div class="panel"><div class="ph"><h3 data-i18n="set.roleSeller">Роль: Продавец</h3></div>
+              <div style="padding:14px 15px">
+                <div class="do-see">
+                  <div class="ds"><h4 data-i18n="ds.cando">Может делать</h4>
+                    <label><span class="sw on"></span> <span data-i18n="ds.d1">Создавать расчёты и КП</span></label>
+                    <label><span class="sw on"></span> <span data-i18n="ds.d2">Скидка в пределах группы</span></label>
+                    <label><span class="sw"></span> <span data-i18n="ds.d3">Скидка выше лимита (→ утверждение)</span></label>
+                    <label><span class="sw on"></span> <span data-i18n="ds.d4">Двигать стадии (правка → утверждение)</span></label>
+                    <label><span class="sw"></span> <span data-i18n="ds.d5">Видеть маржу</span></label>
+                  </div>
+                  <div class="ds"><h4 data-i18n="ds.cansee">Может видеть</h4>
+                    <label><span class="sw on"></span> <span data-i18n="ds.s1">Только свои и переданные</span></label>
+                    <label><span class="sw"></span> <span data-i18n="ds.s2">Свою компанию / дилер-группу</span></label>
+                    <label><span class="sw"></span> <span data-i18n="ds.s3">Все записи</span></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="setpane" data-set="disc" hidden>
+            <div class="panel"><div class="ph"><h3 data-i18n="set.discTitle">Группы скидок (%)</h3></div>
+              <table>
+                <thead><tr><th data-i18n="th.groupName">Группа</th><th class="num" data-i18n="th.base">База %</th><th class="num" data-i18n="th.maxman">Макс. ручная %</th><th data-i18n="th.price">Прайс</th><th class="num" data-i18n="th.members">Участников</th></tr></thead>
+                <tbody>
+                  <tr><td data-i18n="grp.architectsPl">Архитекторы</td><td class="num">0%</td><td class="num">10%</td><td data-i18n="grp.shared">общий</td><td class="num">1</td></tr>
+                  <tr><td data-i18n="grp.agentsPl">Агенты</td><td class="num">0%</td><td class="num">10%</td><td data-i18n="grp.shared">общий</td><td class="num">1</td></tr>
+                  <tr><td data-i18n="grp.dealersPl">Дилеры</td><td class="num">0%</td><td class="num">15%</td><td data-i18n="grp.shared">общий</td><td class="num">1</td></tr>
+                </tbody>
+              </table>
+              <div style="padding:12px 15px;color:var(--muted);font-size:12px" data-i18n="set.discNote">Правка % показывает живой пример: «Пергола 4×3 м €6 900 → €5 865». Выше лимита — уходит на утверждение.</div>
+            </div>
+          </div>
+          <div class="setpane" data-set="pipe" hidden>
+            <div class="setpane" data-set="lang" hidden>
+            <div class="panel"><div class="ph"><h3 data-i18n="set.langTitle">Язык интерфейса</h3></div>
+              <div style="padding:14px 15px">
+                <p class="muted" style="margin:0 0 12px;font-size:12.5px" data-i18n="set.langHint">Выберите язык интерфейса. Можно сменить в любой момент — выбор сохранится.</p>
+                <div class="langmenu open" id="langMenu" style="position:static;box-shadow:none;min-width:0;max-width:280px">
+                  <button data-l="ru"><b>RU</b> Русский</button>
+                  <button data-l="en"><b>EN</b> English</button>
+                  <button data-l="de"><b>DE</b> Deutsch</button>
+                  <button data-l="hr"><b>HR</b> Hrvatski</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel"><div class="ph"><h3 data-i18n="set.pipeTitle">Воронка «Запросы» — стадии</h3></div>
+              <table>
+                <thead><tr><th data-i18n="th.stage">Стадия</th><th class="num" data-i18n="th.cold">Остывает, дн</th><th class="num" data-i18n="th.rot">Протухает, дн</th><th data-i18n="th.appr">Утверждение</th></tr></thead>
+                <tbody>
+                  <tr><td data-i18n="st.new">Новый</td><td class="num">3</td><td class="num">7</td><td>—</td></tr>
+                  <tr><td data-i18n="st.processing">В обработке</td><td class="num">3</td><td class="num">5</td><td>—</td></tr>
+                  <tr><td data-i18n="st.proposal">Предложение</td><td class="num">4</td><td class="num">7</td><td>—</td></tr>
+                  <tr><td data-i18n="st.negotiation">Переговоры</td><td class="num">3</td><td class="num">5</td><td><span class="tag warn" data-i18n="set.discLimit">скидка > лимит</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="quotes"><div class="empty"><div class="ic">❏</div><div><span data-i18n="empty.quotes">Список КП (Активные / Черновики / Архив)</span><br><span class="muted" data-i18n="empty.quotesSub">поиск, фильтры, массовые действия, экспорт</span></div></div></section>
+      <section class="screen" data-screen="customers"><div class="empty"><div class="ic">◍</div><div><span data-i18n="nav.customers">Клиенты</span><br><span class="muted" data-i18n="empty.custSub">карточки контактов и компаний, GDPR-поля</span></div></div></section>
+      <section class="screen" data-screen="configurator" style="height:calc(100vh - 52px)">
+        <iframe id="cfgFrame" title="Pro-конфигуратор" style="width:100%;height:100%;border:0;display:block;background:#14181b"></iframe>
+      </section>
+      <section class="screen" data-screen="approvals"><div class="empty"><div class="ic">⌁</div><div><span data-i18n="admin.queue">Очередь на утверждение</span><br><span class="muted" data-i18n="empty.apprSub">см. Пульт суперадмина → блок «На утверждение»</span></div></div></section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s);};
+  var $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s));};
+  var esc=function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");};
+
+  var T={
+    "nav.today":{ru:"Сегодня",en:"Today",de:"Heute",hr:"Danas"},
+    "nav.leads":{ru:"Лиды · доска",en:"Leads · board",de:"Leads · Board",hr:"Upiti · ploča"},
+    "nav.orders":{ru:"Заказы · доска",en:"Orders · board",de:"Aufträge · Board",hr:"Narudžbe · ploča"},
+    "nav.quotes":{ru:"КП",en:"Quotes",de:"Angebote",hr:"Ponude"},
+    "nav.customers":{ru:"Клиенты",en:"Customers",de:"Kunden",hr:"Klijenti"},
+    "nav.config":{ru:"Конфигуратор",en:"Configurator",de:"Konfigurator",hr:"Konfigurator"},
+    "nav.grpAdmin":{ru:"Суперадмин",en:"Superadmin",de:"Superadmin",hr:"Superadmin"},
+    "nav.console":{ru:"Пульт",en:"Console",de:"Konsole",hr:"Konzola"},
+    "nav.approvals":{ru:"Утверждения",en:"Approvals",de:"Freigaben",hr:"Odobrenja"},
+    "nav.settings":{ru:"Настройки",en:"Settings",de:"Einstellungen",hr:"Postavke"},
+    "me.role":{ru:"Суперадмин · EUR",en:"Superadmin · EUR",de:"Superadmin · EUR",hr:"Superadmin · EUR"},
+    "gate.email":{ru:"E-Mail",en:"E-Mail",de:"E-Mail",hr:"E-Mail"},
+    "gate.pass":{ru:"Пароль",en:"Password",de:"Passwort",hr:"Lozinka"},
+    "gate.signin":{ru:"Войти",en:"Sign in",de:"Anmelden",hr:"Prijava"},
+    "gate.request":{ru:"Запросить доступ",en:"Request access",de:"Zugang anfragen",hr:"Zatraži pristup"},
+    "gate.needAll":{ru:"Заполните все поля",en:"Fill in all fields",de:"Alle Felder ausfüllen",hr:"Ispunite sva polja"},
+    "gate.badMail":{ru:"Введите e-mail в формате name@domain",en:"Enter a valid e-mail (name@domain)",de:"Gültige E-Mail eingeben (name@domain)",hr:"Unesite ispravan e-mail (ime@domena)"},
+    "gate.sentTitle":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano"},
+    "gate.sentPopup":{ru:"Письмо улетело нашему менеджеру — мы свяжемся с вами.",en:"Your message reached our manager — we'll get back to you.",de:"Ihre Nachricht ist bei unserem Manager — wir melden uns.",hr:"Vaša poruka je stigla našem voditelju — javit ćemo vam se."},
+    "gate.ok":{ru:"Готово",en:"Done",de:"Fertig",hr:"Gotovo"},
+    "req.company":{ru:"Компания",en:"Company",de:"Firma",hr:"Tvrtka"},
+    "req.first":{ru:"Имя",en:"First name",de:"Vorname",hr:"Ime"},
+    "req.last":{ru:"Фамилия",en:"Last name",de:"Nachname",hr:"Prezime"},
+    "req.location":{ru:"Локация (город, страна)",en:"Location (city, country)",de:"Standort (Stadt, Land)",hr:"Lokacija (grad, država)"},
+    "inv.title":{ru:"Пригласить партнёра",en:"Invite a partner",de:"Partner einladen",hr:"Pozovite partnera"},
+    "inv.gen":{ru:"Создать ссылку-приглашение",en:"Create invite link",de:"Einladungslink erstellen",hr:"Stvori poveznicu za poziv"},
+    "inv.pwnote":{ru:"Партнёр откроет ссылку, заполнит данные и задаст свой пароль: буквы, цифры и спецсимвол, минимум 8 символов.",en:"The partner opens the link, fills in their details and sets their own password: letters, digits and a special character, at least 8 characters.",de:"Der Partner öffnet den Link, trägt seine Daten ein und legt sein eigenes Passwort fest: Buchstaben, Ziffern und ein Sonderzeichen, mindestens 8 Zeichen.",hr:"Partner otvara poveznicu, ispunjava podatke i postavlja vlastitu lozinku: slova, brojke i poseban znak, najmanje 8 znakova."},
+    "inv.copy":{ru:"Скопировать",en:"Copy",de:"Kopieren",hr:"Kopiraj"},
+    "inv.copied":{ru:"Скопировано",en:"Copied",de:"Kopiert",hr:"Kopirano"},
+    "gate.send":{ru:"Отправить",en:"Send",de:"Senden",hr:"Pošalji"},
+    "gate.back":{ru:"← Назад",en:"← Back",de:"← Zurück",hr:"← Natrag"},
+    "gate.needBoth":{ru:"Введите e-mail и пароль",en:"Enter email and password",de:"E-Mail und Passwort eingeben",hr:"Unesite e-mail i lozinku"},
+    "gate.needMail":{ru:"Введите e-mail",en:"Enter email",de:"E-Mail eingeben",hr:"Unesite e-mail"},
+    "gate.reqOk":{ru:"Готово — мы свяжемся с вами",en:"Thanks — we'll be in touch",de:"Danke — wir melden uns",hr:"Hvala — javit ćemo vam se"},
+    "top.search":{ru:"⌕ Поиск сделок, клиентов, №КП…",en:"⌕ Search deals, customers, quote #…",de:"⌕ Suche: Deals, Kunden, Angebot-Nr…",hr:"⌕ Pretraži poslove, klijente, br. ponude…"},
+    "top.newCalc":{ru:" Новый расчёт",en:" New quote",de:" Neue Kalkulation",hr:" Nova ponuda"},
+    "today.allDeals":{ru:"Все сделки ▾",en:"All deals ▾",de:"Alle Deals ▾",hr:"Svi poslovi ▾"},
+    "chip.needYou":{ru:"Нужны вам",en:"Needs you",de:"Zu erledigen",hr:"Trebaju vas"},
+    "chip.waiting":{ru:"Ждут клиента",en:"Waiting",de:"Warten",hr:"Čekaju klijenta"},
+    "chip.appr":{ru:"На утв.",en:"Approvals",de:"Freigaben",hr:"Za odobr."},
+    "chip.overdue":{ru:"Просрочено",en:"Overdue",de:"Überfällig",hr:"Kasni"},
+    "rec.back":{ru:"← Список",en:"← List",de:"← Liste",hr:"← Popis"},
+    "rec.deal":{ru:"Сделка",en:"Deal",de:"Deal",hr:"Posao"},
+    "rec.owner":{ru:"Ответств.",en:"Owner",de:"Verantw.",hr:"Vlasnik"},
+    "rec.transfer":{ru:"Передать",en:"Transfer",de:"Übergeben",hr:"Prenesi"},
+    "rec.move":{ru:"Перевести",en:"Move",de:"Weiter",hr:"Pomakni"},
+    "rec.nowWord":{ru:"сейчас",en:"now",de:"jetzt",hr:"sada"},
+    "rec.empty":{ru:"Выберите сделку слева",en:"Select a deal on the left",de:"Deal links auswählen",hr:"Odaberite posao slijeva"},
+    "st.new":{ru:"Новый",en:"New",de:"Neu",hr:"Novo"},
+    "st.processing":{ru:"В обработке",en:"In progress",de:"In Bearbeitung",hr:"U obradi"},
+    "st.proposal":{ru:"Предложение",en:"Proposal",de:"Angebot",hr:"Prijedlog"},
+    "st.negotiation":{ru:"Переговоры",en:"Negotiation",de:"Verhandlung",hr:"Pregovori"},
+    "st.winlose":{ru:"Win / Lose",en:"Win / Lose",de:"Win / Lose",hr:"Win / Lose"},
+    "st.active":{ru:"активен",en:"active",de:"aktiv",hr:"aktivan"},
+    "u.days":{ru:"дн",en:"d",de:"T",hr:"d"},
+    "upnext.open":{ru:"открыто",en:"open",de:"offen",hr:"otvoreno"},
+    "task.call":{ru:"Позвонить клиенту",en:"Call customer",de:"Kunde anrufen",hr:"Nazovi klijenta"},
+    "task.callDesc":{ru:"Открыл КП дважды сегодня — тёплый контакт",en:"Opened the quote twice today — warm lead",de:"Angebot heute 2× geöffnet — warmer Kontakt",hr:"Otvorio ponudu dvaput danas — topao kontakt"},
+    "task.callGo":{ru:"Звонок",en:"Call",de:"Anruf",hr:"Poziv"},
+    "task.meas":{ru:"Договориться о замере",en:"Arrange measurement",de:"Aufmaß vereinbaren",hr:"Dogovori izmjeru"},
+    "task.measDesc":{ru:"Клиент спрашивал про сроки",en:"Customer asked about timing",de:"Kunde fragte nach Terminen",hr:"Klijent je pitao za rokove"},
+    "task.measGo":{ru:"В календарь",en:"To calendar",de:"Zum Kalender",hr:"U kalendar"},
+    "task.waitAppr":{ru:"Ждёт вашего утверждения скидки",en:"Awaiting your discount approval",de:"Wartet auf Ihre Rabatt-Freigabe",hr:"Čeka vaše odobrenje popusta"},
+    "task.waitApprD":{ru:"Скидка 22% выше лимита 15%",en:"Discount 22% above the 15% limit",de:"Rabatt 22% über Limit 15%",hr:"Popust 22% iznad limita 15%"},
+    "task.openGo":{ru:"Открыть",en:"Open",de:"Öffnen",hr:"Otvori"},
+    "task.followup":{ru:"Напомнить о КП",en:"Follow up on the quote",de:"Ans Angebot erinnern",hr:"Podsjeti na ponudu"},
+    "task.followupD":{ru:"Отправлено 1 день назад, без ответа",en:"Sent 1 day ago, no reply",de:"Vor 1 Tag gesendet, keine Antwort",hr:"Poslano prije 1 dan, bez odgovora"},
+    "task.msgGo":{ru:"Написать",en:"Message",de:"Schreiben",hr:"Poruka"},
+    "task.firstCall":{ru:"Первый звонок по заявке",en:"First call on the inquiry",de:"Erstanruf zur Anfrage",hr:"Prvi poziv po upitu"},
+    "task.firstCallD":{ru:"Новая заявка с сайта",en:"New inquiry from the site",de:"Neue Anfrage über die Website",hr:"Novi upit sa stranice"},
+    "task.add":{ru:"Добавить задачу…",en:"Add task…",de:"Aufgabe hinzufügen…",hr:"Dodaj zadatak…"},
+    "tab.overview":{ru:"Обзор",en:"Overview",de:"Übersicht",hr:"Pregled"},
+    "tab.quote":{ru:"КП",en:"Quote",de:"Angebot",hr:"Ponuda"},
+    "tab.messages":{ru:"Сообщения",en:"Messages",de:"Nachrichten",hr:"Poruke"},
+    "tab.activity":{ru:"Активность",en:"Activity",de:"Aktivität",hr:"Aktivnost"},
+    "tab.notes":{ru:"Заметки",en:"Notes",de:"Notizen",hr:"Bilješke"},
+    "tab.files":{ru:"Файлы",en:"Files",de:"Dateien",hr:"Datoteke"},
+    "ov.contact":{ru:"Контакт",en:"Contact",de:"Kontakt",hr:"Kontakt"},
+    "ov.address":{ru:"Адрес объекта",en:"Site address",de:"Objektadresse",hr:"Adresa objekta"},
+    "ov.source":{ru:"Источник",en:"Source",de:"Quelle",hr:"Izvor"},
+    "ov.discGroup":{ru:"Группа скидок",en:"Discount group",de:"Rabattgruppe",hr:"Grupa popusta"},
+    "ov.next":{ru:"Следующий шаг",en:"Next step",de:"Nächster Schritt",hr:"Sljedeći korak"},
+    "ov.recent":{ru:"Недавняя активность",en:"Recent activity",de:"Letzte Aktivität",hr:"Nedavna aktivnost"},
+    "q.upto":{ru:"до",en:"up to",de:"bis",hr:"do"},
+    "next.callToday":{ru:"Позвонить сегодня",en:"Call today",de:"Heute anrufen",hr:"Nazovi danas"},
+    "next.appr":{ru:"Утвердить/отклонить скидку",en:"Approve or reject discount",de:"Rabatt freigeben/ablehnen",hr:"Odobri ili odbij popust"},
+    "next.remind":{ru:"Напоминание завтра",en:"Reminder tomorrow",de:"Erinnerung morgen",hr:"Podsjetnik sutra"},
+    "feed.hot":{ru:"КП стало HOT",en:"Quote went HOT",de:"Angebot ist HOT",hr:"Ponuda postala HOT"},
+    "feed.system":{ru:"система · 14:22",en:"system · 14:22",de:"System · 14:22",hr:"sustav · 14:22"},
+    "feed.opened":{ru:"Клиент открыл",en:"Customer opened",de:"Kunde öffnete",hr:"Klijent otvorio"},
+    "feed.today":{ru:"сегодня · 14:19",en:"today · 14:19",de:"heute · 14:19",hr:"danas · 14:19"},
+    "feed.stage":{ru:"Стадия",en:"Stage",de:"Stufe",hr:"Faza"},
+    "feed.yesterday":{ru:"вчера",en:"yesterday",de:"gestern",hr:"jučer"},
+    "feed.created":{ru:"Создан расчёт",en:"Quote created",de:"Angebot erstellt",hr:"Ponuda stvorena"},
+    "q.render":{ru:"3D / рендер перголы",en:"3D / pergola render",de:"3D / Pergola-Render",hr:"3D / prikaz pergole"},
+    "q.net":{ru:"нетто",en:"net",de:"netto",hr:"neto"},
+    "q.vat":{ru:"с НДС",en:"incl. VAT",de:"inkl. MwSt",hr:"s PDV-om"},
+    "q.model":{ru:"Модель",en:"Model",de:"Modell",hr:"Model"},
+    "q.mount":{ru:"Крепление",en:"Mounting",de:"Montage",hr:"Montaža"},
+    "q.freestanding":{ru:"Отдельностоящая",en:"Freestanding",de:"Freistehend",hr:"Samostojeća"},
+    "q.attached":{ru:"Пристенная",en:"Wall-mounted",de:"Wandmontage",hr:"Zidna montaža"},
+    "q.ral":{ru:"Цвет RAL",en:"RAL colour",de:"RAL-Farbe",hr:"RAL boja"},
+    "q.options":{ru:"Опции",en:"Options",de:"Optionen",hr:"Opcije"},
+    "q.version":{ru:"Версия",en:"Version",de:"Version",hr:"Verzija"},
+    "q.sent":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano"},
+    "q.viewed":{ru:"Просмотрено",en:"Viewed",de:"Angesehen",hr:"Pregledano"},
+    "q.notViewed":{ru:"не открыт",en:"not opened",de:"nicht geöffnet",hr:"nije otvoreno"},
+    "q.valid":{ru:"Действует",en:"Valid",de:"Gültig",hr:"Vrijedi"},
+    "q.until":{ru:"до",en:"until",de:"bis",hr:"do"},
+    "q.discount":{ru:"Скидка",en:"Discount",de:"Rabatt",hr:"Popust"},
+    "q.open":{ru:"Открыть в конфигураторе",en:"Open in configurator",de:"Im Konfigurator öffnen",hr:"Otvori u konfiguratoru"},
+    "q.share":{ru:"Поделиться",en:"Share",de:"Teilen",hr:"Podijeli"},
+    "q.versions":{ru:"Версии",en:"Versions",de:"Versionen",hr:"Verzije"},
+    "q.noDisc":{ru:"без скидки",en:"no discount",de:"ohne Rabatt",hr:"bez popusta"},
+    "src.metaAt":{ru:"Meta · «pergola-at»",en:"Meta · «pergola-at»",de:"Meta · «pergola-at»",hr:"Meta · «pergola-at»"},
+    "src.metaReels":{ru:"Meta · «reels»",en:"Meta · «reels»",de:"Meta · «reels»",hr:"Meta · «reels»"},
+    "src.referral":{ru:"Рекомендация",en:"Referral",de:"Empfehlung",hr:"Preporuka"},
+    "src.site":{ru:"Сайт",en:"Website",de:"Website",hr:"Stranica"},
+    "board.title":{ru:"Доска",en:"Board",de:"Board",hr:"Ploča"},
+    "board.requests":{ru:"Запросы",en:"Requests",de:"Anfragen",hr:"Upiti"},
+    "board.orders":{ru:"Заказы",en:"Orders",de:"Aufträge",hr:"Narudžbe"},
+    "board.scope":{ru:"Я / Команда / Все ▾",en:"Me / Team / All ▾",de:"Ich / Team / Alle ▾",hr:"Ja / Tim / Svi ▾"},
+    "board.rotting":{ru:"⚑ Протухают",en:"⚑ Rotting",de:"⚑ Überfällig",hr:"⚑ Zastarijevaju"},
+    "board.byStage":{ru:"Все · по стадиям",en:"All · by stage",de:"Alle · nach Stufe",hr:"Svi · po fazama"},
+    "admin.title":{ru:"Пульт суперадмина",en:"Superadmin console",de:"Superadmin-Konsole",hr:"Superadmin konzola"},
+    "admin.sub":{ru:"Все пользователи и обе воронки. Переключатель «Все / пользователь» применяется ко всем экранам.",en:"All users and both pipelines. The «All / user» switch applies across all screens.",de:"Alle Benutzer und beide Pipelines. Der «Alle / Benutzer»-Schalter gilt überall.",hr:"Svi korisnici i obje faze toka. Prekidač «Svi / korisnik» primjenjuje se na sve zaslone."},
+    "kpi.pipeline":{ru:"Открытый пайплайн",en:"Open pipeline",de:"Offene Pipeline",hr:"Otvoreni tok"},
+    "kpi.winrate":{ru:"Win rate",en:"Win rate",de:"Win-Rate",hr:"Win rate"},
+    "kpi.avg":{ru:"Средний чек",en:"Avg deal",de:"Ø Auftrag",hr:"Prosječan posao"},
+    "kpi.eng":{ru:"Engagement (откр÷отпр)",en:"Engagement (open÷sent)",de:"Engagement (geöffnet÷gesendet)",hr:"Angažman (otvoreno÷poslano)"},
+    "kpi.d1":{ru:"▲ 12% к мес.",en:"▲ 12% MoM",de:"▲ 12% z. Vmt.",hr:"▲ 12% m/m"},
+    "kpi.d2":{ru:"▲ 4 пп",en:"▲ 4 pp",de:"▲ 4 PP",hr:"▲ 4 pb"},
+    "kpi.d4":{ru:"▲ 6 пп",en:"▲ 6 pp",de:"▲ 6 PP",hr:"▲ 6 pb"},
+    "admin.queue":{ru:"Очередь на утверждение",en:"Approval queue",de:"Freigabe-Warteschlange",hr:"Red za odobrenje"},
+    "admin.waiting":{ru:"2 ждут",en:"2 waiting",de:"2 offen",hr:"2 čekaju"},
+    "admin.r1":{ru:"Скидка 22% > лимит 15%",en:"Discount 22% > limit 15%",de:"Rabatt 22% > Limit 15%",hr:"Popust 22% > limit 15%"},
+    "admin.sellerMarko":{ru:"продавец: Marko",en:"seller: Marko",de:"Verkäufer: Marko",hr:"prodavač: Marko"},
+    "admin.r2":{ru:"Сумма > €10k",en:"Amount > €10k",de:"Betrag > €10k",hr:"Iznos > €10k"},
+    "admin.archEva":{ru:"архитектор: Eva",en:"architect: Eva",de:"Architekt: Eva",hr:"arhitekt: Eva"},
+    "admin.reject":{ru:"Отклонить",en:"Reject",de:"Ablehnen",hr:"Odbij"},
+    "admin.approve":{ru:"Утвердить",en:"Approve",de:"Freigeben",hr:"Odobri"},
+    "admin.users":{ru:"Пользователи",en:"Users",de:"Benutzer",hr:"Korisnici"},
+    "admin.usersHint":{ru:"клик по строке — фильтр досок по пользователю",en:"click a row to filter boards by user",de:"Zeile klicken — Boards nach Benutzer filtern",hr:"kliknite redak za filtriranje ploča po korisniku"},
+    "th.user":{ru:"Пользователь",en:"User",de:"Benutzer",hr:"Korisnik"},
+    "th.role":{ru:"Роль",en:"Role",de:"Rolle",hr:"Uloga"},
+    "th.group":{ru:"Группа",en:"Group",de:"Gruppe",hr:"Grupa"},
+    "th.deals":{ru:"Сделок",en:"Deals",de:"Deals",hr:"Poslovi"},
+    "th.pipeline":{ru:"Пайплайн",en:"Pipeline",de:"Pipeline",hr:"Tok"},
+    "th.rotting":{ru:"Протух.",en:"Rotting",de:"Überf.",hr:"Zastar."},
+    "th.seen":{ru:"Был",en:"Seen",de:"Zuletzt",hr:"Zadnje"},
+    "t.2h":{ru:"2ч",en:"2h",de:"2 Std",hr:"2 h"},
+    "t.1d":{ru:"1д",en:"1d",de:"1 T",hr:"1 d"},
+    "t.10m":{ru:"10м",en:"10m",de:"10 Min",hr:"10 min"},
+    "t.overdue":{ru:"просроч.",en:"overdue",de:"überf.",hr:"kasni"},
+    "t.3d":{ru:"3д",en:"3d",de:"3 T",hr:"3 d"},
+    "role.seller":{ru:"продавец",en:"seller",de:"Verkäufer",hr:"prodavač"},
+    "role.dealer":{ru:"дилер",en:"dealer",de:"Händler",hr:"diler"},
+    "role.architect":{ru:"архитектор",en:"architect",de:"Architekt",hr:"arhitekt"},
+    "grp.agent":{ru:"агент",en:"agent",de:"Agent",hr:"agent"},
+    "grp.dealer":{ru:"дилер",en:"dealer",de:"Händler",hr:"diler"},
+    "grp.architect":{ru:"архитектор",en:"architect",de:"Architekt",hr:"arhitekt"},
+    "set.users":{ru:"Пользователи",en:"Users",de:"Benutzer",hr:"Korisnici"},
+    "set.roles":{ru:"Роли и доступ",en:"Roles & access",de:"Rollen & Zugriff",hr:"Uloge i pristup"},
+    "set.disc":{ru:"Группы скидок",en:"Discount groups",de:"Rabattgruppen",hr:"Grupe popusta"},
+    "set.pipe":{ru:"Воронки и стадии",en:"Pipelines & stages",de:"Pipelines & Stufen",hr:"Tokovi i faze"},
+    "set.lang":{ru:"Язык",en:"Language",de:"Sprache",hr:"Jezik"},
+    "set.langTitle":{ru:"Язык интерфейса",en:"Interface language",de:"Oberflächensprache",hr:"Jezik sučelja"},
+    "set.langHint":{ru:"Выберите язык интерфейса. Можно сменить в любой момент — выбор сохранится.",en:"Choose the interface language. You can change it anytime — your choice is saved.",de:"Wählen Sie die Oberflächensprache. Jederzeit änderbar — Ihre Wahl wird gespeichert.",hr:"Odaberite jezik sučelja. Možete ga promijeniti u bilo kojem trenutku — izbor se sprema."},
+    "set.create":{ru:"Создать аккаунт",en:"Create account",de:"Konto erstellen",hr:"Stvori račun"},
+    "set.pass":{ru:"Пароль",en:"Password",de:"Passwort",hr:"Lozinka"},
+    "set.role":{ru:"Роль",en:"Role",de:"Rolle",hr:"Uloga"},
+    "set.group":{ru:"Группа скидок",en:"Discount group",de:"Rabattgruppe",hr:"Grupa popusta"},
+    "set.genPh":{ru:"сгенерировать",en:"generate",de:"generieren",hr:"generiraj"},
+    "set.rolePh":{ru:"продавец / архитектор / дилер",en:"seller / architect / dealer",de:"Verkäufer / Architekt / Händler",hr:"prodavač / arhitekt / diler"},
+    "set.groupPh":{ru:"агент",en:"agent",de:"Agent",hr:"agent"},
+    "set.createBtn":{ru:"Создать и выдать логин",en:"Create and issue login",de:"Erstellen & Login vergeben",hr:"Stvori i dodijeli prijavu"},
+    "th.name":{ru:"Имя",en:"Name",de:"Name",hr:"Ime"},
+    "th.personal":{ru:"Личный %",en:"Personal %",de:"Persönl. %",hr:"Osobni %"},
+    "th.status":{ru:"Статус",en:"Status",de:"Status",hr:"Status"},
+    "set.roleSeller":{ru:"Роль: Продавец",en:"Role: Seller",de:"Rolle: Verkäufer",hr:"Uloga: Prodavač"},
+    "ds.cando":{ru:"Может делать",en:"Can do",de:"Kann tun",hr:"Može raditi"},
+    "ds.cansee":{ru:"Может видеть",en:"Can see",de:"Kann sehen",hr:"Može vidjeti"},
+    "ds.d1":{ru:"Создавать расчёты и КП",en:"Create quotes",de:"Kalkulationen erstellen",hr:"Stvarati ponude"},
+    "ds.d2":{ru:"Скидка в пределах группы",en:"Discount within group",de:"Rabatt in Gruppe",hr:"Popust unutar grupe"},
+    "ds.d3":{ru:"Скидка выше лимита (→ утверждение)",en:"Discount above limit (→ approval)",de:"Rabatt über Limit (→ Freigabe)",hr:"Popust iznad limita (→ odobrenje)"},
+    "ds.d4":{ru:"Двигать стадии (правка → утверждение)",en:"Move stages (edit → approval)",de:"Stufen bewegen (→ Freigabe)",hr:"Pomicati faze (uređivanje → odobrenje)"},
+    "ds.d5":{ru:"Видеть маржу",en:"See margin",de:"Marge sehen",hr:"Vidjeti maržu"},
+    "ds.s1":{ru:"Только свои и переданные",en:"Own and assigned only",de:"Nur eigene & zugewiesene",hr:"Samo svoje i dodijeljene"},
+    "ds.s2":{ru:"Свою компанию / дилер-группу",en:"Own company / dealer group",de:"Eigene Firma / Händlergruppe",hr:"Vlastitu tvrtku / diler-grupu"},
+    "ds.s3":{ru:"Все записи",en:"All records",de:"Alle Datensätze",hr:"Sve zapise"},
+    "set.discTitle":{ru:"Группы скидок (%)",en:"Discount groups (%)",de:"Rabattgruppen (%)",hr:"Grupe popusta (%)"},
+    "th.groupName":{ru:"Группа",en:"Group",de:"Gruppe",hr:"Grupa"},
+    "th.base":{ru:"База %",en:"Base %",de:"Basis %",hr:"Osnovni %"},
+    "th.maxman":{ru:"Макс. ручная %",en:"Max manual %",de:"Max. manuell %",hr:"Maks. ručni %"},
+    "th.price":{ru:"Прайс",en:"Price list",de:"Preisliste",hr:"Cjenik"},
+    "th.members":{ru:"Участников",en:"Members",de:"Mitglieder",hr:"Članovi"},
+    "grp.architectsPl":{ru:"Архитекторы",en:"Architects",de:"Architekten",hr:"Arhitekti"},
+    "grp.agentsPl":{ru:"Агенты",en:"Agents",de:"Agenten",hr:"Agenti"},
+    "grp.dealersPl":{ru:"Дилеры",en:"Dealers",de:"Händler",hr:"Dileri"},
+    "grp.shared":{ru:"общий",en:"shared",de:"gemeinsam",hr:"zajednički"},
+    "set.discNote":{ru:"Правка % показывает живой пример: «Пергола 4×3 м €6 900 → €5 865». Выше лимита — уходит на утверждение.",en:"Editing % shows a live example: «Pergola 4×3 m €6,900 → €5,865». Above the limit goes to approval.",de:"Beim Ändern des % erscheint ein Beispiel: «Pergola 4×3 m €6.900 → €5.865». Über dem Limit → Freigabe.",hr:"Uređivanje % prikazuje živi primjer: «Pergola 4×3 m €6.900 → €5.865». Iznad limita ide na odobrenje."},
+    "set.pipeTitle":{ru:"Воронка «Запросы» — стадии",en:"Pipeline «Requests» — stages",de:"Pipeline «Anfragen» — Stufen",hr:"Tok «Upiti» — faze"},
+    "th.stage":{ru:"Стадия",en:"Stage",de:"Stufe",hr:"Faza"},
+    "th.cold":{ru:"Остывает, дн",en:"Cold, d",de:"Kalt, T",hr:"Hladi se, d"},
+    "th.rot":{ru:"Протухает, дн",en:"Rotting, d",de:"Überf., T",hr:"Zastarijeva, d"},
+    "th.appr":{ru:"Утверждение",en:"Approval",de:"Freigabe",hr:"Odobrenje"},
+    "set.discLimit":{ru:"скидка > лимит",en:"discount > limit",de:"Rabatt > Limit",hr:"popust > limit"},
+    "empty.quotes":{ru:"Список КП (Активные / Черновики / Архив)",en:"Quotes list (Active / Drafts / Archived)",de:"Angebote (Aktiv / Entwürfe / Archiv)",hr:"Popis ponuda (Aktivne / Nacrti / Arhiva)"},
+    "empty.quotesSub":{ru:"поиск, фильтры, массовые действия, экспорт",en:"search, filters, bulk actions, export",de:"Suche, Filter, Massenaktionen, Export",hr:"pretraga, filtri, skupne radnje, izvoz"},
+    "empty.custSub":{ru:"карточки контактов и компаний, GDPR-поля",en:"contact and company records, GDPR fields",de:"Kontakt- und Firmenkarten, DSGVO-Felder",hr:"zapisi kontakata i tvrtki, GDPR polja"},
+    "empty.apprSub":{ru:"см. Пульт суперадмина → блок «На утверждение»",en:"see Superadmin console → approvals block",de:"siehe Superadmin-Konsole → Freigaben",hr:"vidi Superadmin konzolu → blok odobrenja"},
+    "status.opened3":{ru:"Открыл КП 3×",en:"Opened quote 3×",de:"Angebot 3× geöffnet",hr:"Otvorio ponudu 3×"},
+    "status.awaitDisc":{ru:"Ждёт утв. скидки",en:"Awaiting discount approval",de:"Rabatt-Freigabe offen",hr:"Čeka odobrenje popusta"},
+    "status.sent":{ru:"Отправлено КП",en:"Quote sent",de:"Angebot gesendet",hr:"Ponuda poslana"},
+    "status.newInq":{ru:"Новая заявка",en:"New inquiry",de:"Neue Anfrage",hr:"Novi upit"},
+    "cardst.call":{ru:"Звонок",en:"Call",de:"Anruf",hr:"Poziv"},
+    "cardst.sent":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano"},
+    "cardst.disc":{ru:"Утв. скидки",en:"Disc. approval",de:"Rabatt-Freig.",hr:"Odobr. popusta"},
+    "card.winOrder":{ru:"Win → заказ",en:"Win → order",de:"Win → Auftrag",hr:"Win → narudžba"},
+    "card.loseReason":{ru:"Lose + причина",en:"Lose + reason",de:"Lose + Grund",hr:"Lose + razlog"},
+    "card.daysIn":{ru:"дн в стадии",en:"d in stage",de:"T in Stufe",hr:"d u fazi"},
+    "card.lock":{ru:"🔒 на утв.",en:"🔒 approval",de:"🔒 Freigabe",hr:"🔒 odobrenje"},
+    "ord.order":{ru:"Заказ",en:"Order",de:"Auftrag",hr:"Narudžba"},
+    "ords.new":{ru:"новый заказ",en:"new order",de:"neuer Auftrag",hr:"nova narudžba"},
+    "ords.meas":{ru:"замер 04.11",en:"measure 04.11",de:"Aufmaß 04.11",hr:"izmjera 04.11"},
+    "ords.invoiced":{ru:"счёт выставлен",en:"invoiced",de:"Rechnung gestellt",hr:"račun izdan"},
+    "ords.install":{ru:"монтаж 06.11",en:"install 06.11",de:"Montage 06.11",hr:"montaža 06.11"},
+    "ords.done":{ru:"сдан",en:"handed over",de:"übergeben",hr:"predano"},
+    "os.inbox":{ru:"Входящие",en:"Inbox",de:"Eingang",hr:"Ulazni"},
+    "os.measurement":{ru:"Замер",en:"Measurement",de:"Aufmaß",hr:"Izmjera"},
+    "os.payment":{ru:"Ожидание оплаты",en:"Awaiting payment",de:"Zahlung offen",hr:"Čeka se plaćanje"},
+    "os.delivery":{ru:"Поставка",en:"Delivery",de:"Lieferung",hr:"Dostava"},
+    "os.instock":{ru:"Готово на складе",en:"In stock",de:"Im Lager",hr:"Na skladištu"},
+    "os.installation":{ru:"Монтаж",en:"Installation",de:"Montage",hr:"Montaža"},
+    "os.done":{ru:"Выполнено",en:"Done",de:"Erledigt",hr:"Završeno"}
+  };
+  var lang="ru";
+  function tr(k){var m=T[k];return m&&m[lang]!=null?m[lang]:(k||"");}
+  window.__t=tr;
+
+  var STAGE_KEYS=["st.new","st.processing","st.proposal","st.negotiation","st.winlose"];
+
+  /* ===== deals (demo data, fully distinct) ===== */
+  var DEALS=[
+    {name:"Клиент А.",comp:"D&B · 🇦🇹 Wien",owner:"Leon P.",id:"#011125-1",score:34,band:"hi",hot:true,
+     product:"Louvered 4×3 м",dot:"green",timeK:"t.2h",statusK:"status.opened3",stage:1,curDays:1,
+     contact:"+43 660 112 020",address:"1030 Wien · 24 м²",sourceK:"src.metaAt",group:"grp.agent",maxpct:"10%",nextK:"next.callToday",
+     tasks:[{em:"📞",tK:"task.call",dK:"task.callDesc",gK:"task.callGo"},{em:"📅",tK:"task.meas",dK:"task.measDesc",gK:"task.measGo"}],
+     q:{net:"€6 300",gross:"€7 560",model:"Louvered 4×3 м",mountK:"q.freestanding",ral:"7016 / 7016",opts:"LED, ZIP ×2",ver:"v2",sent:"12.10",viewedN:3,validUntil:"26.10",disc:"−8%",
+        vlist:[{v:"v2",cur:1,d:"Primary · −8%",s:"€6 300"},{v:"v1",dK:"q.noDisc",s:"€6 850"}]}},
+    {name:"Клиент Г.",comp:"Privat · 🇦🇹",owner:"Marko D.",id:"#011125-4",score:41,band:"hi",hot:true,
+     product:"Slide 6×4 м",dot:"red",timeK:"t.overdue",statusK:"status.awaitDisc",stage:3,curDays:8,
+     contact:"+43 677 234 110",address:"2340 Mödling · 32 м²",sourceK:"src.referral",group:"grp.dealer",maxpct:"15%",nextK:"next.appr",
+     tasks:[{em:"⏳",tK:"task.waitAppr",dK:"task.waitApprD",gK:"task.openGo"}],
+     q:{net:"€21 000",gross:"€25 200",model:"Slide 6×4 м",mountK:"q.freestanding",ral:"DB703 / DB703",opts:"LED, стекло ×3, обогрев",ver:"v3",sent:"28.10",viewedN:5,validUntil:"11.11",disc:"−22%",
+        vlist:[{v:"v3",cur:1,d:"Primary · −22%",s:"€21 000"},{v:"v2",d:"−15%",s:"€22 300"},{v:"v1",dK:"q.noDisc",s:"€27 000"}]}},
+    {name:"Клиент Б.",comp:"ArchStudio · 🇦🇹",owner:"Eva S.",id:"#011125-2",score:12,band:"",hot:false,
+     product:"Glass roof 5×3 м",dot:"amber",timeK:"t.1d",statusK:"status.sent",stage:2,curDays:6,
+     contact:"+43 1 544 220",address:"1190 Wien · 18 м²",sourceK:"src.metaReels",group:"grp.architect",maxpct:"10%",nextK:"next.remind",
+     tasks:[{em:"✉️",tK:"task.followup",dK:"task.followupD",gK:"task.msgGo"}],
+     q:{net:"€10 565",gross:"€12 678",model:"Glass roof 5×3 м",mountK:"q.attached",ral:"7016 / 9016",opts:"Стекло ×2, датчик дождя",ver:"v1",sent:"31.10",viewedN:1,validUntil:"14.11",disc:"0%",
+        vlist:[{v:"v1",cur:1,dK:"q.noDisc",s:"€10 565"}]}},
+    {name:"Клиент В.",comp:"Privat · 🇦🇹",owner:"Leon P.",id:"#011125-3",score:3,band:"",hot:false,
+     product:"Comfort 3×3 м",dot:"grey",timeK:"t.3d",statusK:"status.newInq",stage:0,curDays:3,
+     contact:"+43 699 870 540",address:"3400 Klosterneuburg · 9 м²",sourceK:"src.site",group:"grp.agent",maxpct:"10%",nextK:"next.callToday",
+     tasks:[{em:"📞",tK:"task.firstCall",dK:"task.firstCallD",gK:"task.callGo"}],
+     q:{net:"€4 378",gross:"€5 254",model:"Comfort 3×3 м",mountK:"q.freestanding",ral:"7016 / 7016",opts:"—",ver:"v1",sent:"29.10",viewedN:0,validUntil:"12.11",disc:"0%",
+        vlist:[{v:"v1",cur:1,dK:"q.noDisc",s:"€4 378"}]}}
+  ];
+  var selIdx=0;
+
+  /* ===== today list ===== */
+  function renderRows(){
+    var rows=$("#rows"); rows.innerHTML="";
+    DEALS.forEach(function(d,i){
+      var el=document.createElement("div");
+      el.className="row"+(i===selIdx?" sel":"");
+      el.innerHTML='<span class="av">'+d.name.replace("Клиент ","")+'</span><div class="mid">'
+        +'<div class="r1"><span class="nm">'+esc(d.name)+'</span><span class="sum tab-num">'+d.q.net+'</span></div>'
+        +'<div class="r2"><span class="score '+d.band+'">'+d.score+'</span>'+(d.hot?'<span class="hotchip">🔥</span>':'')+'<span class="p">'+esc(d.product)+' · '+d.id+'</span></div>'
+        +'<div class="r3"><span class="dot '+d.dot+'"></span><span class="st">'+tr(d.statusK)+'</span><span class="time">'+tr(d.timeK)+'</span></div>'
+        +'</div>';
+      el.addEventListener("click",function(){ selectDeal(i); });
+      rows.appendChild(el);
+    });
+  }
+
+  /* ===== record ===== */
+  function renderRecord(d){
+    var wrap=$("#recordWrap"); if(!wrap) return;
+    var sIdx=d.stage;
+    var stages=STAGE_KEYS.map(function(k,i){
+      var cls=i<sIdx?"cv done":(i===sIdx?"cv now":"cv");
+      var small="";
+      if(i===sIdx) small='<small>'+tr("rec.nowWord")+' · '+d.curDays+' '+tr("u.days")+'</small>';
+      return '<div class="'+cls+'"><span>'+tr(k)+'</span>'+small+'</div>';
+    }).join('');
+    var nextBtn = sIdx<4 ? '<button class="btn primary sm" id="recNext">'+tr("rec.move")+' → '+tr(STAGE_KEYS[sIdx+1])+'</button>' : '';
+    var tasks=d.tasks.map(function(t){
+      return '<div class="task"><span class="i">'+t.em+'</span><div class="t"><b>'+tr(t.tK)+'</b><div>'+tr(t.dK)+'</div></div><span class="go">'+tr(t.gK)+'</span></div>';
+    }).join('');
+    var feed='';
+    if(d.hot) feed+='<div class="fe hot"><div><b>'+tr("feed.hot")+'</b> · Score '+d.score+'</div><div class="who">'+tr("feed.system")+'</div></div>';
+    feed+='<div class="fe"><div>'+tr("feed.opened")+' <b>КП '+d.q.ver+'</b></div><div class="who">'+tr("feed.today")+'</div></div>';
+    feed+='<div class="fe"><div>'+tr("feed.stage")+': <b>'+tr(STAGE_KEYS[sIdx])+'</b></div><div class="who">'+esc(d.owner)+' · '+tr("feed.yesterday")+'</div></div>';
+    feed+='<div class="fe"><div>'+tr("feed.created")+' <b>'+d.id+'</b></div><div class="who">'+esc(d.owner)+' · '+tr("feed.yesterday")+'</div></div>';
+    var viewed = d.q.viewedN>0 ? (d.q.viewedN+'× · '+tr("feed.today").split(' · ')[0]) : tr("q.notViewed");
+    var vlist=d.q.vlist.map(function(v){
+      return '<div class="vrow'+(v.cur?' cur':'')+'"><span>'+v.v+'</span><span class="d">'+(v.dK?tr(v.dK):esc(v.d))+'</span><span class="s tab-num">'+v.s+'</span></div>';
+    }).join('');
+
+    wrap.innerHTML=''
+      +'<div class="rhead">'
+        +'<button class="btn sm ghost back" id="recBack">'+tr("rec.back")+'</button>'
+        +'<div class="top"><div class="idn">'
+          +'<h2>'+esc(d.name)+(d.hot?' <span class="hotchip">🔥 HOT</span>':'')+'</h2>'
+          +'<div class="meta"><span>'+esc(d.comp)+'</span><span>'+tr("rec.deal")+' '+d.id+'</span><span>'+tr("rec.owner")+': '+esc(d.owner)+'</span></div>'
+        +'</div><div class="acts">'
+          +'<span class="score '+(d.band||"")+'">'+d.score+'</span>'
+          +'<button class="btn sm">'+tr("rec.transfer")+'</button>'
+          +'<button class="btn sm">Lose</button>'+nextBtn
+        +'</div></div>'
+        +'<div class="stages">'+stages+'</div>'
+      +'</div>'
+      +'<div class="rbody"><div class="rmain">'
+        +'<div class="upnext"><div class="uh"><span>Up next</span> <span class="n">· '+d.tasks.length+' '+tr("upnext.open")+'</span></div>'
+          +tasks
+          +'<div class="addtask"><span>＋</span> '+tr("task.add")+'</div></div>'
+        +'<div class="tabs"><div class="t on">'+tr("tab.overview")+'</div><div class="t">'+tr("tab.quote")+'</div><div class="t">'+tr("tab.messages")+'</div><div class="t">'+tr("tab.activity")+'</div><div class="t">'+tr("tab.notes")+'</div><div class="t">'+tr("tab.files")+'</div></div>'
+        +'<div class="kv"><span class="k">'+tr("ov.contact")+'</span><span class="v">'+esc(d.contact)+'</span></div>'
+        +'<div class="kv"><span class="k">'+tr("ov.address")+'</span><span class="v">'+esc(d.address)+'</span></div>'
+        +'<div class="kv"><span class="k">'+tr("ov.source")+'</span><span class="v">'+tr(d.sourceK)+'</span></div>'
+        +'<div class="kv"><span class="k">'+tr("ov.discGroup")+'</span><span class="v">'+tr(d.group)+' · '+tr("q.upto")+' '+d.maxpct+'</span></div>'
+        +'<div class="kv"><span class="k">'+tr("ov.next")+'</span><span class="v">'+tr(d.nextK)+'</span></div>'
+        +'<h4 class="ovhead">'+tr("ov.recent")+'</h4><div class="feed">'+feed+'</div>'
+      +'</div>'
+      +'<div class="qpanel"><div class="qcard">'
+        +'<div class="img"><span>'+tr("q.render")+'</span><span class="tag v">'+d.q.ver+' · Primary</span></div>'
+        +'<div class="b"><div class="tot"><span class="big tab-num">'+d.q.net+'</span><small>'+tr("q.net")+' · '+d.q.gross+' '+tr("q.vat")+'</small></div>'
+          +'<div class="cfg">'
+            +'<div class="l"><span class="k">'+tr("q.model")+'</span><span>'+esc(d.q.model)+'</span></div>'
+            +'<div class="l"><span class="k">'+tr("q.mount")+'</span><span>'+tr(d.q.mountK)+'</span></div>'
+            +'<div class="l"><span class="k">'+tr("q.ral")+'</span><span>'+esc(d.q.ral)+'</span></div>'
+            +'<div class="l"><span class="k">'+tr("q.options")+'</span><span>'+esc(d.q.opts)+'</span></div>'
+          +'</div>'
+          +'<div class="qmeta">'
+            +'<div class="l"><span>'+tr("q.version")+'</span><b>'+d.q.ver+' (Primary)</b></div>'
+            +'<div class="l"><span>'+tr("q.sent")+'</span><b>'+d.q.sent+'</b></div>'
+            +'<div class="l"><span>'+tr("q.viewed")+'</span><b>'+viewed+'</b></div>'
+            +'<div class="l"><span>'+tr("q.valid")+'</span><b>'+tr("q.until")+' '+d.q.validUntil+'</b></div>'
+            +'<div class="l"><span>'+tr("q.discount")+'</span><b>'+d.q.disc+'</b></div>'
+          +'</div>'
+          +'<div class="qbtns"><button class="btn primary sm wide" id="openCfgBtn">'+tr("q.open")+'</button><button class="btn sm">PDF</button><button class="btn sm">'+tr("q.share")+'</button></div>'
+          +'<div class="vlist"><h4>'+tr("q.versions")+'</h4>'+vlist+'</div>'
+        +'</div>'
+      +'</div></div></div>';
+
+    /* handlers inside record */
+    var back=$("#recBack",wrap); if(back) back.addEventListener("click",function(){$("#split").classList.remove("show-rec");});
+    var oc=$("#openCfgBtn",wrap); if(oc) oc.addEventListener("click",openCfg);
+    var tabs=$$(".tabs .t",wrap); tabs.forEach(function(t){t.addEventListener("click",function(){tabs.forEach(function(x){x.classList.remove("on");});t.classList.add("on");});});
+  }
+
+  function selectDeal(i){
+    selIdx=i;
+    $$(".row").forEach(function(x,j){x.classList.toggle("sel",j===i);});
+    renderRecord(DEALS[i]);
+    if(window.innerWidth<=1000) $("#split").classList.add("show-rec");
+  }
+  window.openDeal=function(i){ selectDeal(i); show("today"); if(window.innerWidth<=1000) $("#split").classList.add("show-rec"); };
+
+  /* ===== boards ===== */
+  var REQ=[
+    {tK:"st.new",sum:"€24 100",cards:[{n:"Клиент В.",di:3,sum:"€4 378",sc:3,dot:"grey",days:3},{n:"Клиент Д.",sum:"€8 900",sc:0,dot:"grey",days:1}]},
+    {tK:"st.processing",sum:"€6 300",cards:[{n:"Клиент А.",di:0,sum:"€6 300",sc:34,hot:1,stK:"cardst.call",dot:"green",days:1}]},
+    {tK:"st.proposal",sum:"€10 565",cards:[{n:"Клиент Б.",di:2,sum:"€10 565",sc:12,stK:"cardst.sent",dot:"amber",days:6,cold:1}]},
+    {tK:"st.negotiation",sum:"€21 000",cards:[{n:"Клиент Г.",di:1,sum:"€21 000",sc:41,hot:1,stK:"cardst.disc",dot:"red",days:8,rot:1,lock:1}]},
+    {tK:"st.winlose",sum:"",cards:[{tagK:"card.winOrder"},{tagK:"card.loseReason"}]}
+  ];
+  var ORD=[
+    {tK:"os.inbox",sum:"€13 400",cards:[{nOrd:"#A-118",sum:"€13 400",stK:"ords.new",dot:"green",days:0}]},
+    {tK:"os.measurement",sum:"€6 300",cards:[{nOrd:"#A-117",sum:"€6 300",stK:"ords.meas",dot:"amber",days:2}]},
+    {tK:"os.payment",sum:"€9 900",cards:[{nOrd:"#A-116",sum:"€9 900",stK:"ords.invoiced",dot:"amber",days:4}]},
+    {tK:"os.delivery",sum:"",cards:[]},
+    {tK:"os.instock",sum:"",cards:[]},
+    {tK:"os.installation",sum:"€18 200",cards:[{nOrd:"#A-113",sum:"€18 200",stK:"ords.install",dot:"green",days:1}]},
+    {tK:"os.done",sum:"€41 000",cards:[{nOrd:"#A-110",sum:"€22 000",stK:"ords.done",dot:"grey",days:12}]}
+  ];
+  function card(c){
+    if(c.tagK) return '<div class="kc"><span class="tag">'+tr(c.tagK)+'</span></div>';
+    var nm=c.nOrd?(tr("ord.order")+" "+c.nOrd):esc(c.n);
+    var st=c.stK?tr(c.stK):"";
+    var click=(c.di!=null)?' click" onclick="openDeal('+c.di+')':'';
+    return '<div class="kc'+(c.rot?' rot':(c.cold?' cold':''))+click+'">'
+      +'<div class="r1"><span class="nm">'+nm+'</span>'+(c.sc!=null?'<span class="score '+(c.hot?'hi':(c.sc>=20?'mid':''))+'">'+c.sc+'</span>':'')+'</div>'
+      +'<div class="r2"><span class="p">'+st+'</span><span class="sum tab-num">'+c.sum+'</span></div>'
+      +'<div class="r3"><span class="dot '+(c.dot||'grey')+'"></span>'+(c.lock?'<span class="lock">'+tr("card.lock")+'</span>':'<span>'+c.days+' '+tr("card.daysIn")+'</span>')+'<span class="av">LP</span></div>'
+      +'</div>';
+  }
+  function board(data){
+    return '<div class="kanban">'+data.map(function(col){
+      return '<div class="col"><div class="ch"><span class="nm">'+tr(col.tK)+'</span><span class="mt">'+col.cards.filter(function(x){return !x.tagK;}).length+'</span></div>'
+        +'<div class="sum tab-num">'+(col.sum||'—')+'</div><div class="cards">'+col.cards.map(card).join('')+'</div></div>';
+    }).join('')+'</div>';
+  }
+  function renderBoards(){
+    $("#boardReq").innerHTML=board(REQ);
+    $("#boardOrd").innerHTML=board(ORD);
+    $("#boardOrd2").innerHTML=board(ORD);
+  }
+  window.toggleBoard=function(btn,which){
+    $$(".board-top .seg button").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
+    $("#boardReq").hidden=which!=="req";$("#boardOrd").hidden=which!=="ord";
+  };
+
+  function applyLang(l){
+    lang=l;
+    var _cf=$("#cfgFrame"); if(_cf && _cf.getAttribute("src") && _cf.getAttribute("data-lang")!==l){ _cf.setAttribute("data-lang",l); _cf.setAttribute("src","configurator.html?lang="+l); }
+    $$("[data-i18n]").forEach(function(el){var m=T[el.getAttribute("data-i18n")]; if(m&&m[l]!=null) el.textContent=m[l];});
+    $$("[data-i18n-ph]").forEach(function(el){var m=T[el.getAttribute("data-i18n-ph")]; if(m&&m[l]!=null) el.setAttribute("placeholder",m[l]);});
+    document.documentElement.lang=l;
+    var _ll=$("#langLbl"); if(_ll)_ll.textContent=l.toUpperCase();
+    $$("#langMenu button").forEach(function(b){b.setAttribute("aria-current",b.dataset.l===l?"true":"false");});
+    renderRows(); renderBoards(); renderRecord(DEALS[selIdx]);
+    try{localStorage.setItem("dbp_lang",l);}catch(e){}
+  }
+
+  function cfgHide(){try{var doc=$("#cfgFrame").contentDocument;if(doc&&!doc.getElementById("__emb")){var st=doc.createElement("style");st.id="__emb";st.textContent=".f-lang,.f-pro{display:none!important}";(doc.head||doc.documentElement).appendChild(st);}}catch(e){}}
+  function loadCfg(){var f=$("#cfgFrame");if(!f)return;if(f.getAttribute("data-lang")!==lang){f.setAttribute("data-lang",lang);f.setAttribute("src","configurator.html?lang="+lang);}}
+  $("#cfgFrame")&&$("#cfgFrame").addEventListener("load",cfgHide);
+  var links=$$(".rail a"), screens=$$(".screen");
+  function show(id){
+    screens.forEach(function(s){s.classList.toggle("on",s.dataset.screen===id);});
+    links.forEach(function(a){a.classList.toggle("on",a.dataset.s===id);});
+    if(location.hash.replace("#","")!==id) history.replaceState(null,"","#"+id);
+    $("#rail").classList.remove("open");$("#scrim").classList.remove("on");
+    if(id==="configurator"){loadCfg();}
+    $(".content").scrollTop=0;
+  }
+  window.show=show;
+  links.forEach(function(a){a.addEventListener("click",function(){show(a.dataset.s);});});
+  window.addEventListener("hashchange",function(){var id=location.hash.replace("#","");if(id)show(id);});
+  var valid=screens.map(function(s){return s.dataset.screen;});
+  var start=location.hash.replace("#","");
+  show(valid.indexOf(start)>=0?start:"today");
+
+  $$(".subnav .t").forEach(function(t){t.addEventListener("click",function(){
+    $$(".subnav .t").forEach(function(x){x.classList.remove("on");});t.classList.add("on");
+    $$(".setpane").forEach(function(p){p.hidden=p.dataset.set!==t.dataset.set;p.classList.toggle("on",p.dataset.set===t.dataset.set);});
+  });});
+  $$(".ds .sw").forEach(function(s){s.addEventListener("click",function(){s.classList.toggle("on");});});
+
+  var openCfg=function(){show("configurator");};
+  $("#newCalcBtn")&&$("#newCalcBtn").addEventListener("click",openCfg);
+  $("#menubtn").addEventListener("click",function(){
+    var open=$("#rail").classList.toggle("open");$("#scrim").classList.toggle("on",open);
+  });
+  $("#scrim").addEventListener("click",function(){$("#rail").classList.remove("open");$("#scrim").classList.remove("on");});
+
+  $$("#langMenu button").forEach(function(b){b.addEventListener("click",function(){applyLang(b.dataset.l);});});
+
+  var saved="ru"; try{saved=localStorage.getItem("dbp_lang")||"ru";}catch(e){}
+  if(["ru","en","de","hr"].indexOf(saved)<0) saved="ru";
+  applyLang(saved);
+  window.__setLang=applyLang;window.__lang=function(){return lang;};
+})();
+</script>
+<script>/*THREE_MIN*/</script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var opening=false;
+  function t(k){try{return window.__t(k);}catch(e){return "";}}
+  $("gReveal").addEventListener("click",function(){var p=$("gPass");p.type=p.type==="password"?"text":"password";});
+  $("gToReq").addEventListener("click",function(){$("gLogin").hidden=true;$("gReqView").hidden=false;$("gReqEmail").focus();});
+  $("gToLogin").addEventListener("click",function(){$("gReqView").hidden=true;$("gLogin").hidden=false;});
+  var glb=$("gLangBtn"),glm=$("gLangMenu");
+  function markGL(){var cur=(window.__lang?window.__lang():"ru");var lbl=$("gLangLbl");if(lbl)lbl.textContent=cur.toUpperCase();if(glm)[].forEach.call(glm.children,function(b){b.setAttribute("aria-current",b.dataset.l===cur?"true":"false");});}
+  if(glb&&glm){glb.addEventListener("click",function(e){e.stopPropagation();glm.classList.toggle("open");});[].forEach.call(glm.children,function(b){b.addEventListener("click",function(){if(window.__setLang)window.__setLang(b.dataset.l);markGL();glm.classList.remove("open");});});document.addEventListener("click",function(){glm.classList.remove("open");});markGL();}
+  $("gForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gStatus");if(!$("gEmail").value.trim()||!$("gPass").value){s.textContent=t("gate.needBoth");s.className="gstatus warn";return;}s.textContent="";opening=true;setTimeout(function(){document.body.classList.add("authed");},550);});
+  $("gReqForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gReqStatus");var need=["gReqCompany","gReqFirst","gReqLast","gReqLocation","gReqEmail"].some(function(id){return !$(id).value.trim();});if(need){s.textContent=t("gate.needAll");s.className="gstatus warn";return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("gReqEmail").value.trim())){s.textContent=t("gate.badMail");s.className="gstatus warn";$("gReqEmail").focus();return;}s.textContent="";s.className="gstatus";$("gModal").hidden=false;});
+  function gCloseModal(){$("gModal").hidden=true;$("gReqForm").reset();$("gReqView").hidden=true;$("gLogin").hidden=false;}
+  $("gModalOk")&&$("gModalOk").addEventListener("click",gCloseModal);
+  $("gModal")&&$("gModal").addEventListener("click",function(e){if(e.target===$("gModal"))gCloseModal();});
+  // DEMO: generates a sample invite link. In the live cabinet this calls the create-invite Edge Function.
+  var invGen=$("invGen"); if(invGen){invGen.addEventListener("click",function(){var tok=(window.crypto&&crypto.randomUUID?crypto.randomUUID():String(Math.random())+String(Math.random())).replace(/-/g,"");var base=location.origin+location.pathname.replace(/[^/]*$/,"");$("invLink").value=base+"join.html?token="+tok;$("invOut").hidden=false;});}
+  var invCopy=$("invCopy"); if(invCopy){invCopy.addEventListener("click",function(){var i=$("invLink");i.select();try{document.execCommand("copy");}catch(e){}if(navigator.clipboard)navigator.clipboard.writeText(i.value);invCopy.textContent=t("inv.copied");setTimeout(function(){invCopy.textContent=t("inv.copy");},1500);});}
+  var canvas=$("gscene"),reduce=matchMedia("(prefers-reduced-motion:reduce)").matches,isMobile=Math.min(innerWidth,innerHeight)<560;
+  var renderer,scene,camera,root,lamellae=[],raf,sprite,baseYaw=0;
+  function mk(){var c=document.createElement("canvas");c.width=c.height=64;var g=c.getContext("2d"),rg=g.createRadialGradient(32,32,0,32,32,32);rg.addColorStop(0,"rgba(255,255,255,1)");rg.addColorStop(.25,"rgba(255,255,255,.85)");rg.addColorStop(.55,"rgba(255,255,255,.22)");rg.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=rg;g.fillRect(0,0,64,64);var tx=new THREE.Texture(c);tx.needsUpdate=true;return tx;}
+  function ap(p,c,s){var geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute(p,3));geo.setAttribute("color",new THREE.Float32BufferAttribute(c,3));return new THREE.Points(geo,new THREE.PointsMaterial({size:s,map:sprite,vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}));}
+  function build(){renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,isMobile?1.5:2));renderer.setClearColor(0,0);scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(42,1,.1,100);root=new THREE.Group();scene.add(root);var W=4.3,D=3,H=2,cW=new THREE.Color(0xffc980),cH=new THREE.Color(0xff8a4d),cC=new THREE.Color(0x5f8bff),cS=new THREE.Color(0x8aa0bd);var N=isMobile?7:9,A=isMobile?26:34;for(var i=0;i<N;i++){var z=-D/2+D*(i/(N-1)),fr=i/(N-1),P=[],C=[];for(var x=0;x<A;x++)for(var r=0;r<3;r++){P.push(-W/2+W*(x/(A-1))+(Math.random()-.5)*.03,(Math.random()-.5)*.02,(r-1)*.12+(Math.random()-.5)*.03);var b=cW.clone().lerp(cC,fr);if(Math.random()<.14)b.lerp(cH,.5);var k=1.2+Math.random()*.6;C.push(b.r*k,b.g*k,b.b*k);}var sl=ap(P,C,.08);sl.position.set(0,H,z);root.add(sl);lamellae.push(sl);}var fp=[],fc=[];function sp(x,y,z){fp.push(x,y,z);var b=1+Math.random()*.45;fc.push(cS.r*b,cS.g*b,cS.b*b);}[[-W/2,-D/2],[W/2,-D/2],[-W/2,D/2],[W/2,D/2]].forEach(function(c){var ST=isMobile?40:54,PW=.12;for(var k=0;k<ST;k++){var yy=H*(k/(ST-1));for(var n=0;n<7;n++)sp(c[0]+(Math.random()-.5)*PW,yy,c[1]+(Math.random()-.5)*PW);}});for(var k2=0;k2<120;k2++){var xx=-W/2+W*(k2/119);sp(xx,H,-D/2);sp(xx,H,D/2);}for(var m=0;m<90;m++){var zz=-D/2+D*(m/89);sp(-W/2,H,zz);sp(W/2,H,zz);}root.add(ap(fp,fc,.06));var s2=[],c2=[],sn=isMobile?700:1300;for(var q=0;q<sn;q++){var rr=9+Math.random()*16,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);s2.push(rr*Math.sin(ph)*Math.cos(th),Math.abs(rr*Math.cos(ph))*.6+1,rr*Math.sin(ph)*Math.sin(th));var w=.5+Math.random()*.5;c2.push(w,w,w*1.05);}var st=ap(s2,c2,.055);scene.add(st);build._st=st;root.position.y=-.75;resize();}
+  function resize(){var w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;var por=h>w;baseYaw=por?0.6:0;camera.position.set(por?0.5:0,por?2.7:1.2,por?5.6:5.5);camera.lookAt(0,por?0.35:.8,0);camera.updateProjectionMatrix();}
+  addEventListener("resize",function(){if(renderer)resize();});
+  var t0=performance.now();
+  function frame(now){var tt=(now-t0)/1000;root.rotation.y=(reduce?0:Math.sin(tt*.05)*.12)+baseYaw;root.rotation.x=-.02;for(var i=0;i<lamellae.length;i++){var fr=i/(lamellae.length-1),tg;if(opening)tg=1.32;else if(reduce)tg=.42;else tg=.42+Math.sin(tt*.6+fr*2.2)*.5;lamellae[i].rotation.x+=(tg-lamellae[i].rotation.x)*.06;}if(build._st&&!reduce)build._st.rotation.y=tt*.006;renderer.render(scene,camera);raf=requestAnimationFrame(frame);}
+  if(window.THREE){sprite=mk();try{build();raf=requestAnimationFrame(frame);}catch(e){canvas.style.display="none";}}else{canvas.style.display="none";}
+  document.addEventListener("visibilitychange",function(){if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=null;}else if(!raf&&renderer){t0=performance.now();raf=requestAnimationFrame(frame);}});
+})();
+</script>
+
+</body></html>
