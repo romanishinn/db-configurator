@@ -237,7 +237,7 @@
       else if (l.k === 'extra') out.push({ g: 'extra', t: l.t || t.extraT, d: '', a: l.a });
       else if (l.k === 'tbd') out.push({ g: 'colours', t: t.tbdPanels, d: t.onRequest, a: null });
     }
-    for (const svc of svcList()) out.push({ g: 'extra', svc: true, t: svc.k === 'install' ? t.montT : t.delivery, d: svc.k === 'install' ? t.svcInstallD : t.svcDelivD, a: svc.a });
+    for (const svc of svcList()) out.push({ g: 'extra', svc: true, t: svc.k === 'install' ? t.montT : t.delivery, d: '', a: svc.a }); // no "% of price" note in the offer
     return out;
   }
   const groupsOrder = ['pergola', 'sides', 'comfort', 'colours', 'extra'];
@@ -634,7 +634,7 @@
     }
     h += `</tbody></table><p class="f-lead" style="font-size:12px;margin:6px 0 0">${t.gross}</p>`;
     const _base = q().total;
-    const svcRow = (k, label, dsc, amt) => `<button type="button" class="f-svc" data-svc="${k}" aria-pressed="${svcOn(k)}"><span class="f-svc-ck" aria-hidden="true"></span><span class="f-svc-nm">${esc(label)}<small>${esc(dsc)}</small></span><span class="pr">${svcOn(k) ? '+' + fe(gross(amt)) : '\u2014'}</span></button>`;
+    const svcRow = (k, label, dsc, amt) => `<button type="button" class="f-svc" data-svc="${k}" aria-pressed="${svcOn(k)}"><span class="f-svc-ck" aria-hidden="true"></span><span class="f-svc-nm">${esc(label)}</span><span class="pr">${svcOn(k) ? '+' + fe(gross(amt)) : '\u2014'}</span></button>`;
     h += `<div class="f-h3"><span>${t.svcT}</span></div><div class="f-svc-list">${svcRow('install', t.montT, t.svcInstallD, Math.floor(_base * svcRate('install') / 10) * 10)}${svcRow('deliv', t.delivery, t.svcDelivD, Math.floor(_base * svcRate('deliv') / 10) * 10)}</div><p class="f-lead" style="font-size:12px;margin:6px 0 0">${esc(t.svcHint)}</p>`;
     const _miss = []; if (!svcOn('deliv')) _miss.push(t.deliveryLc); if (!svcOn('install')) _miss.push(t.montLc);
     const _cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
