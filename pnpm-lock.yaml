@@ -20,9 +20,17 @@ importers:
         specifier: 2.1.8
         version: 2.1.8(@types/node@22.10.2)
 
-  packages/products: {}
+  packages/products:
+    devDependencies:
+      typescript:
+        specifier: 5.7.2
+        version: 5.7.2
 
-  packages/shared: {}
+  packages/shared:
+    devDependencies:
+      typescript:
+        specifier: 5.7.2
+        version: 5.7.2
 
 packages:
 
