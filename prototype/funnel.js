@@ -284,12 +284,45 @@
     if (state.roof !== pr.roof) { state.roof = pr.roof; syncRoofButtons(); keepCamera(() => recompute(false)); }
     step = 0; render();
   }
+  // plain-language copy for the model cards, so a customer understands the difference at a glance
+  const PROD_COPY = {
+    louvered: {
+      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.' },
+      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'] }
+    },
+    slide: {
+      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.' },
+      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'] }
+    }
+  };
+  const pick = (d) => (d && (d[lang] || d.en)) || '';
+  function artSlat(x, y, w, h, rot) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.6" transform="rotate(${rot} ${(x + w / 2).toFixed(1)} ${(y + h / 2).toFixed(1)})" class="art-slat"/>`; }
+  function prodArt(id) {
+    const sun = `<circle cx="135" cy="24" r="11" class="art-sun"/>`;
+    const frame = `<path class="art-frame" d="M24 37v45M136 37v45"/><rect x="15" y="30" width="130" height="7" rx="2" class="art-beam"/><line x1="9" y1="83" x2="151" y2="83" class="art-ground"/>`;
+    if (id === 'louvered') {
+      let s = ''; for (let i = 0; i < 9; i++) s += artSlat(22 + i * 13.4, 14, 6, 17, 26);
+      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g>${frame}</svg>`;
+    }
+    if (id === 'slide') {
+      let s = ''; for (let i = 0; i < 6; i++) s += artSlat(21 + i * 5.4, 14, 4.4, 17, 0);
+      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g><line class="art-open" x1="56" y1="22" x2="128" y2="22" stroke-dasharray="3 6"/>${frame}</svg>`;
+    }
+    // carport: a flat canopy over a simple car
+    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true"><rect x="13" y="26" width="134" height="9" rx="2" class="art-beam"/><path class="art-frame" d="M26 35v47M134 35v47"/><path class="art-car" d="M46 74c0-7 6-12 13-12h18l12 10h13c6 0 10 4 10 10v2H46z"/><circle cx="64" cy="80" r="6" class="art-wheel"/><circle cx="104" cy="80" r="6" class="art-wheel"/><line class="art-ground" x1="9" y1="86" x2="151" y2="86"/></svg>`;
+  }
   function catalogHTML(t) {
     const cards = PRODUCTS.map((pr) => {
-      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true">🔒</span><span class="f-prod-ic">${pr.ic}</span><b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span></div>`;
+      const art = `<span class="f-prod-art">${prodArt(pr.id)}</span>`;
+      const title = `<b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span>`;
+      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true">🔒</span>${art}${title}</div>`;
       const x = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[pr.roof] }, cat).options[0];
-      const price = x ? (t.from + ' ' + fe(gross(x.total))) : '';
-      return `<button type="button" class="f-prod" data-product="${pr.id}"><span class="f-prod-ic">${pr.ic}</span><b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span><span class="f-prod-pr">${price}</span></button>`;
+      const price = x ? `<span class="f-prod-pr"><span class="from">${esc(t.from)}</span> ${fe(gross(x.total))}</span>` : '';
+      const c = PROD_COPY[pr.id] || {};
+      const desc = pick(c.desc) ? `<span class="f-prod-desc">${esc(pick(c.desc))}</span>` : '';
+      const feats = (c.feats && c.feats[lang] || (c.feats && c.feats.en) || []);
+      const chips = feats.length ? `<span class="f-prod-feats">${feats.map((f) => `<i>${esc(f)}</i>`).join('')}</span>` : '';
+      return `<button type="button" class="f-prod" data-product="${pr.id}">${art}${title}${desc}${chips}${price}</button>`;
     }).join('');
     return `<h2 class="f-cat-h">${esc(t.catT)}</h2><p class="f-lead">${esc(t.catL)}</p><div class="f-prods">${cards}</div>`;
   }
