@@ -509,7 +509,10 @@ body.cust.cat-only .app { grid-template-columns: minmax(0, 720px); justify-conte
 .f-chip.gtyp svg { width: 20px; height: 20px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* 3D-toolbar popups built from the funnel (louvre/opening + comfort): light theme via local var overrides */
-#tb-louv, #tb-kit-pop { --ink: #1c2226; --muted: #5b666e; --line: #c7ced2; --panel: #fff; --bg: #fff; --accent: #2c6a86; --accent-soft: #e1edf2; color: #1c2226; }
+#tb-louv, #tb-kit-pop, #tb-size-pop { --ink: #1c2226; --muted: #5b666e; --line: #c7ced2; --panel: #fff; --bg: #fff; --accent: #2c6a86; --accent-soft: #e1edf2; color: #1c2226; }
+#tb-size-pop h3, #tb-size-pop .f-h3 { color: #5b666e; }
+#tb-size-pop .f-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#tb-size-pop .f-dims { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 #tb-louv h3, #tb-kit-pop h3 { font-size: 13px; margin: 0 0 2px; color: #1c2226; }
 #tb-louv .f-lead, #tb-kit-pop .f-lead { font-size: 12px; margin: 0 0 8px; }
 #tb-kit-pop .f-kit-h { margin-bottom: 8px; }

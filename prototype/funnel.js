@@ -1170,7 +1170,7 @@
     window.TB_TEXT = tb; sopenText();
     window.STACK_TEXT = isCust() ? L().stackLbl : null;
     const cap = (id, s) => { const c = $(id).querySelector('.cap'); if (c) c.textContent = s; };
-    cap('tb-view', tb.view); cap('louv-dir', tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-light', tb.light); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-light').title = tb.light; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.SIDE_NAME = isCust() ? (id) => sideLabel(id, curOpt()) : null; window.VERTO_TEXT = isCust() ? { sideT: L().vSideT, pos: L().vPos, prof: L().vProf, none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop(); cap('tb-kit', (L().steps && L().steps[1]) || 'Kit'); $('tb-kit').title = (L().steps && L().steps[1]) || ''; if (!$('tb-louv').hidden) renderLouvPop(); if (!$('tb-kit-pop').hidden) renderKitPop();
+    cap('tb-view', tb.view); cap('louv-dir', (L().glTypT) || tb.louvCap); cap('tb-move', tb.move); cap('evening', tb.night); cap('tb-photo', tb.photo); cap('tb-size', (L().steps && L().steps[0]) || 'Размер'); cap('tb-color', tb.color); $('tb-color').title = tb.colorT; window.COLOR_TEXT = isCust() ? { glass: L().glassTint, frame: L().frame, roof: L().roof, zip: L().zipCol, fabric: L().fabricTone, fabricOf: L().fabric, ofName: L().ofName, slide: L().slideCol, verto: 'Decor', toneNames: L().tones, asFrame: L().asFrame, more: L().moreColours, groups: L().groups, noGlass: L().noGlass, tints: L().tints } : null; window.COLOR_NAME = isCust() ? (c) => cname(c.id) : null; if (!$('tb-colors').hidden) renderColorQuick(); $('tb-size').title = (L().steps && L().steps[0]) || 'Размер'; $('v-under').textContent = tb.under; window.LIGHT_TEXT = isCust() ? { groups: L().lightG, ...L().lightI } : null; window.SIDE_NAME = isCust() ? (id) => sideLabel(id, curOpt()) : null; window.VERTO_TEXT = isCust() ? { sideT: L().vSideT, pos: L().vPos, prof: L().vProf, none: L().vNone, types: L().vTypes, typesWall: L().vTypesWall, mountT: L().vMountT, mounts: L().vMounts, hint: L().vEdit, typesT: L().vTypesT } : null; if (!$('tb-vertos').hidden) renderVertoPop(); if (!$('tb-lights').hidden) renderLightPop(); cap('tb-kit', (L().steps && L().steps[1]) || 'Kit'); $('tb-kit').title = (L().steps && L().steps[1]) || ''; if (!$('tb-louv').hidden) renderLouvPop(); if (!$('tb-kit-pop').hidden) renderKitPop(); if (!$('tb-size-pop').hidden) renderSizePop();
     $('tb-photo').title = tb.photoT; $('photo-txt-s').textContent = tb.photoHelpS; $('photo-pts').textContent = tb.photoPts; if (PHOTO.pts) drawMarks(); else $('photo-txt').textContent = tb.photoHelp; $('photo-shot').textContent = tb.photoShot; $('photo-new').textContent = tb.photoNew; $('photo-off').textContent = tb.photoOff;
     $('tb-view').title = tb.view; $('tb-move').title = tb.moveT; $('evening').title = tb.nightT; $('evening').setAttribute('aria-label', tb.nightT);
     $('v-front').textContent = tb.front; $('v-top').textContent = tb.top;
@@ -1206,7 +1206,7 @@
     const panel = document.querySelector('.app > aside.panel');
     panel.prepend(b, mk(T.ru.openFile, () => fi.click()), mk(T.ru.saveFile, saveFile), fi);
   }
-  function setMount(m) { state.mount = m; $('mt-wall').setAttribute('aria-pressed', m === 'wall'); $('mt-free').setAttribute('aria-pressed', m === 'free'); recompute(false); }
+  function setMount(m) { state.mount = m; const a = $('mt-wall'), b = $('mt-free'); if (a) a.setAttribute('aria-pressed', m === 'wall'); if (b) b.setAttribute('aria-pressed', m === 'free'); recompute(false); }
 
   /* ---------- 3D call to action: a "+" on every side; tap it to choose what closes that side ---------- */
   const HS = document.createElement('div'); HS.id = 'hotspots'; HS.className = 'cust-only';
@@ -1277,17 +1277,32 @@
     const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }
     pop.innerHTML = stepComfort(t, o);
   }
-  window.renderLouvPop = renderLouvPop; window.renderKitPop = renderKitPop;
-  for (const id of ['tb-louv', 'tb-kit-pop']) {
+  function renderSizePop() {
+    const pop = $('tb-size-pop'); if (!pop) return;
+    const t = L(), wall = state.mount === 'wall';
+    const dim = (k, label, v) => `<div class="f-dim"><label for="tb-${k}">${esc(label)}, ${t.m}</label><div class="f-step"><button type="button" data-nudge="${k}" data-d="-100" aria-label="−">−</button><input id="tb-${k}" type="number" inputmode="decimal" step="0.1" min="1" value="${(v / 1000).toFixed(2)}" data-dim="${k}"><button type="button" data-nudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
+    const presets = [[3000, 3000], [4000, 3000], [5000, 3500], [6600, 3500], [8000, 4000]];
+    let h = `<div class="f-cards">`
+      + `<button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${esc(t.wall)}</b><span class="d">${esc(t.wallD)}</span></button>`
+      + `<button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${esc(t.free)}</b><span class="d">${esc(t.freeD)}</span></button></div>`;
+    h += `<div class="f-h3"><span>${t.width} × ${t.depth}</span></div><div class="f-dims">${dim('w', wall ? t.widthWall : t.width, state.width)}${dim('d', wall ? t.depthWall : t.depth, state.depth)}</div>`;
+    h += `<div class="f-h3"><span>${t.presets}</span></div><div class="f-chips">${presets.map(([w, d]) => `<button type="button" class="f-chip" data-preset="${w}x${d}" aria-pressed="${state.width === w && state.depth === d}">${metres(w).replace(/,00|\.00/, '')} × ${metres(d).replace(/,00|\.00/, '')} ${t.m}</button>`).join('')}</div>`;
+    pop.innerHTML = h;
+  }
+  window.renderLouvPop = renderLouvPop; window.renderKitPop = renderKitPop; window.renderSizePop = renderSizePop;
+  const POP_RENDER = { 'tb-louv': renderLouvPop, 'tb-kit-pop': renderKitPop, 'tb-size-pop': renderSizePop };
+  for (const id of Object.keys(POP_RENDER)) {
     const pop = $(id); if (!pop) continue;
     pop.addEventListener('click', (ev) => {
       const b = ev.target.closest('button'); if (!b || !pop.contains(b) || !b.dataset || Object.keys(b.dataset).length === 0) return;
       act(b.dataset);
-      if (!pop.hidden) { id === 'tb-louv' ? renderLouvPop() : renderKitPop(); }
+      if (!pop.hidden) POP_RENDER[id]();
     });
-    pop.addEventListener('change', (ev) => { // the "More…" selects inside comfort use change, like the funnel
-      const s = ev.target.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
-      act({ [s.dataset.sel]: s.value }); if (!pop.hidden) { id === 'tb-louv' ? renderLouvPop() : renderKitPop(); }
+    pop.addEventListener('change', (ev) => {
+      const el = ev.target;
+      if (el.dataset && el.dataset.dim) { applyDim(el); return; } // size field: update model/3D, keep the field focused (no re-render)
+      const s = el.closest && el.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
+      act({ [s.dataset.sel]: s.value }); if (!pop.hidden) POP_RENDER[id]();
     });
   }
 
