@@ -1309,7 +1309,8 @@ function setView(kind) {
   if (kind === 'under') { underView(); return; }
   const { W, D } = bounds(), c = new THREE.Vector3(W / 2, 1.2, D / 2);
   const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
-  const dir = kind === 'front' ? new THREE.Vector3(0, 0.18, 1) : kind === 'top' ? new THREE.Vector3(0, 1, 0.002) : new THREE.Vector3(0.42, 0.5, 0.78);
+  // default / "3D" view: a near-front three-quarter at a low, almost eye-level height — shows the louvres and the open front
+  const dir = kind === 'front' ? new THREE.Vector3(0, 0.18, 1) : kind === 'top' ? new THREE.Vector3(0, 1, 0.002) : new THREE.Vector3(0.2, 0.34, 1);
   dir.normalize();
   // fit the whole terrace (plus a margin) into both the horizontal and the vertical field of view
   const spanX = (W + 1.6) * (kind === 'iso' ? 0.95 : 1), spanY = kind === 'top' ? D + 1.6 : Math.max(H + 1.2, D * 0.9);
