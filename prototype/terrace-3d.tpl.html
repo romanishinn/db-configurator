@@ -360,6 +360,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
         <label id="sopen-l" hidden>Крыша <input type="range" id="sopen" min="0" max="100" value="0"><span id="sopenv">закрыта</span></label>
         <label id="drop-l">Скрины <input type="range" id="drop" min="0" max="100" value="70"><span id="dropv">70%</span></label>
         <label id="gopen-l" hidden>Остекление <input type="range" id="gopen" min="0" max="100" value="0"><span id="gopenv">закрыто</span></label>
+        <label id="open-l" hidden>Выход <input type="range" id="openanim" min="0" max="100" value="0"><span id="openanimv">закрыт</span></label>
       </div>
       <span id="louv-info" class="muted pro-only"></span>
       <div id="clr-pop" class="clr-pop pro-only" hidden></div>
@@ -425,7 +426,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, opening: { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' }, split: null, extra: { mont: 0, items: [] } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, opening: { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' }, openOpen: 0, split: null, extra: { mont: 0, items: [] } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -478,7 +479,7 @@ const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshS
 ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 let root = new THREE.Group(); scene.add(root);
 let pickables = [];
-let animated = { louvers: [], screens: [], leds: [], glass: [] };
+let animated = { louvers: [], screens: [], leds: [], glass: [], opening: [] };
 
 const M = {
   frame: new THREE.MeshStandardMaterial({ color: 0x383e42, roughness: 0.7, metalness: 0.15 }),
@@ -544,25 +545,40 @@ function buildOpeningFill(cx, ow, oh, wz) {
   box(fr, oh, 0.1, M.frame, cx + ow / 2, oh / 2, zf);
   box(ow, fr, 0.1, M.frame, cx, oh - fr / 2, zf);
   box(ow, fr, 0.1, M.frame, cx, fr / 2, zf);
-  const iw = ow - 2 * fr, ih = oh - 2 * fr, cy = oh / 2;
+  const iw = ow - 2 * fr, ih = oh - 2 * fr, cy = oh / 2, Lx = cx - iw / 2;
   if (op.kind === 'hole') return;                                           // just an opening, nothing in it
-  if (op.kind === 'pocket') { box(fr * 0.8, ih, 0.04, M.frame, cx - iw / 2 + 0.02, cy, zf); box(fr * 0.8, ih, 0.04, M.frame, cx + iw / 2 - 0.02, cy, zf); return; } // slides hidden: open
   if (op.kind === 'door') {
-    const leaves = op.doorLeaves === 2 ? 2 : 1, lw = iw / leaves, ajar = op.doorDir === 'aside' ? 0 : 0.14; // out/in: one leaf a touch ajar; aside: flat
+    const leaves = op.doorLeaves === 2 ? 2 : 1, lw = iw / leaves, inSign = op.doorDir === 'out' ? -1 : 1; // in → swings into the house (−z); out → into the pergola (+z)
     for (let i = 0; i < leaves; i++) {
-      const lx = cx - iw / 2 + lw * (i + 0.5), open = (leaves === 2 ? i === 1 : true) ? ajar : 0, dz = op.doorDir === 'out' ? open : -open;
-      box(lw - 0.03, ih, 0.03, M_DOOR_GLASS, lx, cy, zf + dz * 0.4);
-      box(lw - 0.03, 0.04, 0.035, M.frame, lx, ih + 0.02, zf + dz * 0.4);
-      box(0.04, 0.22, 0.05, M.frame, lx + (i === leaves - 1 ? lw / 2 - 0.1 : -lw / 2 + 0.1), cy, zf + dz * 0.4 + 0.03); // handle
+      const dirX = leaves === 2 ? (i === 0 ? 1 : -1) : 1;                    // leaf extends from its hinge toward the centre
+      const hingeX = leaves === 2 ? (i === 0 ? Lx : Lx + iw) : Lx;          // single: hinge on the left; double: hinge on the two outer edges
+      const g = new THREE.Group(); g.position.set(hingeX, cy, zf); root.add(g);
+      const leaf = new THREE.Mesh(new THREE.BoxGeometry(lw - 0.03, ih, 0.03), M_DOOR_GLASS); leaf.position.set(dirX * (lw - 0.03) / 2, 0, 0); leaf.castShadow = true; g.add(leaf);
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.2, 0.05), M.frame); handle.position.set(dirX * (lw - 0.12), 0, 0.04); g.add(handle);
+      if (op.doorDir === 'aside') animated.opening.push({ node: g, closedX: hingeX, openX: hingeX - dirX * (lw - 0.05) }); // slides to the side
+      else animated.opening.push({ pivot: g, openAngle: inSign * dirX * Math.PI / 2 * 0.92 });                           // swings on the hinge
     }
     return;
   }
-  // sliding: N glass panels across the width; active one(s) sit forward (they move), fixed ones flush
+  // sliding (incl. the into-the-wall / pocket mode): n glass panels fill the opening, the active one(s) slide open
   const n = Math.max(2, Math.min(4, op.slidePanels || 3)), pw = iw / n, am = op.slideActive || 'left';
-  if (am === 'pocket') { box(fr * 0.8, ih, 0.04, M.frame, cx - iw / 2 + 0.02, cy, zf); box(fr * 0.8, ih, 0.04, M.frame, cx + iw / 2 - 0.02, cy, zf); return; } // panels hide in the wall: full opening
-  const active = new Set(am === 'both' ? [0, 1] : am === 'right' ? [n - 1] : am === 'center' ? (n === 4 ? [1, 2] : [Math.floor(n / 2)]) : [0]);
-  for (let i = 0; i < n; i++) { const px = cx - iw / 2 + pw * (i + 0.5), fwd = active.has(i) ? 0.045 : 0; box(pw - 0.02, ih, 0.025, M_DOOR_GLASS, px, cy, zf + fwd); box(0.025, ih, 0.035, M.frame, cx - iw / 2 + pw * i, cy, zf + fwd); }
-  box(0.025, ih, 0.035, M.frame, cx + iw / 2, cy, zf);
+  const active = am === 'both' ? [0, 1] : am === 'right' ? [n - 1] : am === 'center' ? (n === 4 ? [1, 2] : [Math.floor(n / 2)]) : am === 'pocket' ? Array.from({ length: n }, (_, i) => i) : [0];
+  const aset = new Set(active);
+  for (let i = 0; i < n; i++) {
+    const closedX = Lx + pw * (i + 0.5), on = aset.has(i);
+    const g = new THREE.Group(); g.position.set(closedX, cy, zf + (on ? 0.03 : 0)); root.add(g);
+    const pane = new THREE.Mesh(new THREE.BoxGeometry(pw - 0.02, ih, 0.025), M_DOOR_GLASS); pane.castShadow = true; g.add(pane);
+    const mull = new THREE.Mesh(new THREE.BoxGeometry(0.025, ih, 0.035), M.frame); mull.position.set(-pw / 2, 0, 0); g.add(mull);
+    if (i === n - 1) { const mr = new THREE.Mesh(new THREE.BoxGeometry(0.025, ih, 0.035), M.frame); mr.position.set(pw / 2, 0, 0); g.add(mr); }
+    if (on) {
+      let openX;
+      if (am === 'pocket') openX = closedX < cx ? Lx - pw * 0.6 : Lx + iw + pw * 0.6;        // slide fully into the wall
+      else if (am === 'both' || am === 'center') openX = closedX < cx ? closedX - pw * 0.92 : closedX + pw * 0.92;
+      else if (am === 'right') openX = closedX + pw * 0.92;
+      else openX = closedX - pw * 0.92;
+      animated.opening.push({ node: g, closedX, openX });
+    }
+  }
 }
 function box(w, h, d, mat, x, y, z, parent = root) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
@@ -605,7 +621,7 @@ let H = 2.8; // post height to the top of the crown, m (standard 2800, option 30
 
 function build() {
   scene.remove(root); root = new THREE.Group(); scene.add(root);
-  pickables = []; animated = { louvers: [], screens: [], leds: [], glass: [] };
+  pickables = []; animated = { louvers: [], screens: [], leds: [], glass: [], opening: [] };
   const opt = state.options[state.optIndex];
   fitOptions(opt);
   H = state.po.postHeight / 1000;
@@ -777,6 +793,7 @@ function requiredPostPositions(opt) {
 function syncRoofControls(opt) {
   const slide = !!opt && opt.family === 'SLIDE';
   $('sopen-l').hidden = !slide;
+  $('open-l').hidden = !(state.mount === 'wall' && state.opening && state.opening.on);
   $('ang').max = slide ? 90 : 135;
   if (slide && state.angle > 90) { state.angle = 90; $('ang').value = 90; $('angv').textContent = '90°'; }
   sopenText();
@@ -1148,6 +1165,11 @@ function applyAnim() {
     const t = (state.glassCfg[g.id]?.open ?? state.glassOpen) / 100;
     g.node.position.x = g.closedX + (g.parkX - g.closedX) * t;
     g.node.position.z = g.closedZ + (g.parkZ - g.closedZ) * t;
+  }
+  const ko = (state.openOpen || 0) / 100; // the house-wall exit opening (door swings, sliding panels slide)
+  for (const o of animated.opening || []) {
+    if (o.pivot) o.pivot.rotation.y = (o.openAngle || 0) * ko;
+    else o.node.position.x = o.closedX + (o.openX - o.closedX) * ko;
   }
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
   for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.2 : 0.4;
@@ -2122,6 +2144,7 @@ $('ang').oninput = (e) => { state.angle = +e.target.value; $('angv').textContent
 $('sopen').oninput = (e) => { state.slideOpen = +e.target.value; sopenText(); applyAnim(); renderLabels(state.options[state.optIndex]); };
 $('drop').oninput = (e) => { state.drop = +e.target.value; $('dropv').textContent = state.drop + '%'; applyAnim(); };
 $('gopen').oninput = (e) => { for (const c of Object.values(state.glassCfg)) delete c.open; state.glassOpen = +e.target.value; $('gopenv').textContent = state.glassOpen === 0 ? 'закрыто' : state.glassOpen === 100 ? 'открыто' : state.glassOpen + '%'; applyAnim(); };
+$('openanim').oninput = (e) => { state.openOpen = +e.target.value; $('openanimv').textContent = state.openOpen === 0 ? 'закрыт' : state.openOpen === 100 ? 'открыт' : state.openOpen + '%'; applyAnim(); };
 function renderLouvreInfo(cur, alt) {
   const wall = state.mount === 'wall';
   const dir = state.louvres === 'parallel' ? (wall ? 'вдоль стены' : 'вдоль ширины') : (wall ? 'от стены вперёд' : 'вдоль глубины');
