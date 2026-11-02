@@ -15,6 +15,7 @@ t = open('prototype/terrace-3d.tpl.html').read()
 t = t.replace('/*CORE*/', open('prototype/dist/dbcore.js').read()).replace('/*CATALOG*/', 'const CATALOG_JSON=' + json.dumps(cat, separators=(',', ':')) + ';')
 t = t.replace('/*SHARED*/', open('prototype/dist/dbshared.js').read()).replace('/*PRODUCTS*/', open('prototype/dist/dbproducts.js').read())
 t = t.replace('/*I18N*/', open('prototype/dist/dbi18n.js').read())
+t = t.replace('/*THREE_MIN*/', open('prototype/vendor/three.min.js').read()).replace('/*ORBIT_CONTROLS*/', open('prototype/vendor/OrbitControls.js').read())
 t = t.replace('/*FUNNEL_CSS*/', open('prototype/funnel.css').read()).replace('/*FUNNEL_JS*/', open('prototype/funnel.js').read()).replace('/*BACKEND_JS*/', open('prototype/backend.js').read())
 open('prototype/dist/terrace-3d.html', 'w').write(t)
 PY

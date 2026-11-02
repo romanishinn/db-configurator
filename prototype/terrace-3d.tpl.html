@@ -394,8 +394,9 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 </div>
 <div id="quote" aria-hidden="true"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<!-- THREE.js and OrbitControls are inlined at build time (self-hosted) so the page never depends on an external CDN -->
+<script>/*THREE_MIN*/</script>
+<script>/*ORBIT_CONTROLS*/</script>
 <script>/*CORE*/</script>
 <script>/*CATALOG*/</script>
 <script>/*SHARED*/</script>
