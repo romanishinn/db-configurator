@@ -425,7 +425,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, opening: { on: false, type: 'slide', w: 2200, h: 2100, cx: null }, split: null, extra: { mont: 0, items: [] } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, opening: { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' }, split: null, extra: { mont: 0, items: [] } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -520,25 +520,48 @@ function glassMat(type) {
 
 // glass for the house-wall opening (door / sliding exit)
 const M_DOOR_GLASS = new THREE.MeshPhysicalMaterial({ color: 0x9fb8c4, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.34, side: THREE.DoubleSide });
-/** a door / sliding exit set into the house wall (wall-mount only). Purely visual context — the customer's own house, not in the price. */
-function buildOpening(W) {
-  const op = state.opening; if (!op || !op.on) return;
+/** The house wall. With an opening it is built as panels around a real through-gap (so the camera can look through),
+ *  then filled per kind: door (1/2 leaves), sliding (2–4 panels + active), pocket (hidden, full opening), or just a hole.
+ *  Purely visual context — the customer's own house, not in the price. Returns the opening geometry for the inside camera. */
+let OPENING_GEO = null;
+function buildWall(W) {
+  const wallW = W + 3, wallH = 3.6, wz = -0.125, wd = 0.25, wx0 = W / 2 - wallW / 2, wx1 = W / 2 + wallW / 2;
+  const op = state.opening; OPENING_GEO = null;
+  if (!op || !op.on) { box(wallW, wallH, wd, M.wall, W / 2, wallH / 2, wz); return; }
   const ow = Math.max(0.6, Math.min(op.w / 1000, W - 0.2)), oh = Math.max(0.6, Math.min(op.h / 1000, 3.4)), half = ow / 2;
   let cx = op.cx == null ? W / 2 : op.cx / 1000;
-  cx = Math.max(half + 0.1, Math.min(W - half - 0.1, cx)); // keep the opening within the wall
-  const zf = 0.02, fr = 0.06; // just in front of the wall face (z = 0), frame thickness
-  box(fr, oh, 0.08, M.frame, cx - half, oh / 2, zf);
-  box(fr, oh, 0.08, M.frame, cx + half, oh / 2, zf);
-  box(ow, fr, 0.08, M.frame, cx, oh - fr / 2, zf);
-  box(ow, fr, 0.08, M.frame, cx, fr / 2, zf);
-  if (op.type === 'door') {
-    box(ow - 2 * fr, oh - 2 * fr, 0.03, M_DOOR_GLASS, cx, oh / 2, zf);
-    box(0.04, 0.26, 0.05, M.frame, cx + half - 0.16, oh * 0.5, zf + 0.03); // handle
-  } else { // sliding: two leaves + a centre rail
-    box(ow / 2 - fr, oh - 2 * fr, 0.03, M_DOOR_GLASS, cx - ow / 4, oh / 2, zf);
-    box(ow / 2 - fr, oh - 2 * fr, 0.03, M_DOOR_GLASS, cx + ow / 4, oh / 2, zf + 0.025);
-    box(fr * 0.7, oh - 2 * fr, 0.05, M.frame, cx, oh / 2, zf + 0.04);
+  cx = Math.max(wx0 + half + 0.2, Math.min(wx1 - half - 0.2, cx));
+  const gx0 = cx - half, gx1 = cx + half;
+  box(gx0 - wx0, wallH, wd, M.wall, (wx0 + gx0) / 2, wallH / 2, wz);        // wall left of the opening
+  box(wx1 - gx1, wallH, wd, M.wall, (gx1 + wx1) / 2, wallH / 2, wz);        // wall right of the opening
+  if (wallH - oh > 0.02) box(ow, wallH - oh, wd, M.wall, cx, oh + (wallH - oh) / 2, wz); // lintel above
+  OPENING_GEO = { cx, ow, oh, z: wz };
+  buildOpeningFill(cx, ow, oh, wz);
+}
+function buildOpeningFill(cx, ow, oh, wz) {
+  const op = state.opening, fr = 0.06, zf = wz + 0.14; // the exit frame just in front of the wall's front face
+  box(fr, oh, 0.1, M.frame, cx - ow / 2, oh / 2, zf);
+  box(fr, oh, 0.1, M.frame, cx + ow / 2, oh / 2, zf);
+  box(ow, fr, 0.1, M.frame, cx, oh - fr / 2, zf);
+  box(ow, fr, 0.1, M.frame, cx, fr / 2, zf);
+  const iw = ow - 2 * fr, ih = oh - 2 * fr, cy = oh / 2;
+  if (op.kind === 'hole') return;                                           // just an opening, nothing in it
+  if (op.kind === 'pocket') { box(fr * 0.8, ih, 0.04, M.frame, cx - iw / 2 + 0.02, cy, zf); box(fr * 0.8, ih, 0.04, M.frame, cx + iw / 2 - 0.02, cy, zf); return; } // slides hidden: open
+  if (op.kind === 'door') {
+    const leaves = op.doorLeaves === 2 ? 2 : 1, lw = iw / leaves, ajar = op.doorDir === 'aside' ? 0 : 0.14; // out/in: one leaf a touch ajar; aside: flat
+    for (let i = 0; i < leaves; i++) {
+      const lx = cx - iw / 2 + lw * (i + 0.5), open = (leaves === 2 ? i === 1 : true) ? ajar : 0, dz = op.doorDir === 'out' ? open : -open;
+      box(lw - 0.03, ih, 0.03, M_DOOR_GLASS, lx, cy, zf + dz * 0.4);
+      box(lw - 0.03, 0.04, 0.035, M.frame, lx, ih + 0.02, zf + dz * 0.4);
+      box(0.04, 0.22, 0.05, M.frame, lx + (i === leaves - 1 ? lw / 2 - 0.1 : -lw / 2 + 0.1), cy, zf + dz * 0.4 + 0.03); // handle
+    }
+    return;
   }
+  // sliding: N glass panels across the width, active one forward; mullions between
+  const n = Math.max(2, Math.min(4, op.slidePanels || 3)), pw = iw / n;
+  const act = op.slideActive === 'right' ? n - 1 : op.slideActive === 'center' ? Math.floor(n / 2) : 0;
+  for (let i = 0; i < n; i++) { const px = cx - iw / 2 + pw * (i + 0.5), fwd = i === act ? 0.04 : 0; box(pw - 0.02, ih, 0.025, M_DOOR_GLASS, px, cy, zf + fwd); box(0.025, ih, 0.035, M.frame, cx - iw / 2 + pw * i, cy, zf + fwd); }
+  box(0.025, ih, 0.035, M.frame, cx + iw / 2, cy, zf);
 }
 function box(w, h, d, mat, x, y, z, parent = root) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
@@ -594,8 +617,7 @@ function build() {
   // deck + wall
   // on the customer's photo their own terrace and wall are in the picture: no drawn deck and wall
   if (!PHOTO.url) box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
-  if (state.mount === 'wall' && !PHOTO.url) box(W + 3, 3.6, 0.25, M.wall, W / 2, 1.8, -0.125);
-  if (state.mount === 'wall' && !PHOTO.url) buildOpening(W);
+  if (state.mount === 'wall' && !PHOTO.url) buildWall(W);
   const yTop = H, yC = H - sp.crown / 2;
   for (const m of opt.modules) {
     const x0 = m.x / 1000, z0 = m.y / 1000, w = m.width / 1000, d = m.depth / 1000;

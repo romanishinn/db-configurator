@@ -130,7 +130,8 @@
     for (const k of ['fills', 'glassOf', 'glassCfg', 'zipFab', 'zipCtl', 'panelOpt']) if (!s[k]) state[k] = {};
     if (!s.verto) state.verto = { mount: 'B', packs: {}, preset: null };
     if (!s.parapet) state.parapet = { sides: [], h: 900 };
-    if (!s.opening) state.opening = { on: false, type: 'slide', w: 2200, h: 2100, cx: null };
+    if (!s.opening) state.opening = { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' };
+    else state.opening = { kind: 'slide', doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left', ...s.opening };
     if (!s.split) state.split = null;
     state.extra = { mont: 0, items: [], ...(s.extra || {}) }; state.extra.items = (state.extra.items || []).map((x) => ({ t: x.t || '', a: Number(x.a) || 0 }));
     state.colors = { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40', ...(s.colors || {}) };
@@ -1069,7 +1070,11 @@
     if (d.parh) { state.parapet.h = Math.max(100, Math.min(1500, state.parapet.h + Number(d.parh))); rebuild(); applyAnim(); return; }
     // house-wall opening (door / sliding exit): visual context only
     if (d.openon) { state.opening.on = d.openon === '1'; rebuild(); applyAnim(); return; }
-    if (d.opentype) { state.opening.type = d.opentype; rebuild(); applyAnim(); return; }
+    if (d.openkind) { state.opening.kind = d.openkind; rebuild(); applyAnim(); return; }
+    if (d.doordir) { state.opening.doorDir = d.doordir; rebuild(); applyAnim(); return; }
+    if (d.doorleaves) { state.opening.doorLeaves = Number(d.doorleaves); rebuild(); applyAnim(); return; }
+    if (d.slidepanels) { state.opening.slidePanels = Number(d.slidepanels); rebuild(); applyAnim(); return; }
+    if (d.slideactive) { state.opening.slideActive = d.slideactive; rebuild(); applyAnim(); return; }
     if (d.onudge) { const k = d.onudge, cur = k === 'w' ? state.opening.w : state.opening.h, lim = k === 'w' ? [600, 6000] : [600, 3200]; state.opening[k] = Math.max(lim[0], Math.min(lim[1], cur + Number(d.d))); rebuild(); applyAnim(); return; }
     if (d.opos) { const o = state.opening; if (d.opos === 'center') o.cx = null; else { let c = o.cx == null ? state.width / 2 : o.cx; c += d.opos === '+' ? 100 : -100; o.cx = Math.max(300, Math.min(state.width - 300, c)); } rebuild(); applyAnim(); return; }
     if (d.nudge) { const k = d.nudge, v = (k === 'w' ? state.width : state.depth) + Number(d.d); if (k === 'w') setDims(v, state.depth); else setDims(state.width, v); return; }
@@ -1300,13 +1305,28 @@
     // ASSUMPTION: RU labels for now; localise (de/en/hr) once the feature is confirmed
     if (wall) {
       const op = state.opening;
+      const chip = (attr, val, label, cur) => `<button type="button" class="f-chip" data-${attr}="${val}" aria-pressed="${cur}">${label}</button>`;
+      const sub = (title) => `<div class="f-h3" style="margin-top:10px"><span>${title}</span></div>`;
       h += `<div class="f-h3"><span>Выход в стене</span></div>`;
       h += `<div class="f-chips"><button type="button" class="f-chip" data-openon="0" aria-pressed="${!op.on}">Нет</button><button type="button" class="f-chip" data-openon="1" aria-pressed="${op.on}">Есть</button></div>`;
       if (op.on) {
-        h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip" data-opentype="slide" aria-pressed="${op.type === 'slide'}">Раздвижная</button><button type="button" class="f-chip" data-opentype="door" aria-pressed="${op.type === 'door'}">Дверь</button></div>`;
+        // type of exit
+        h += `<div class="f-chips" style="margin-top:6px">${chip('openkind', 'slide', 'Слайдинг', op.kind === 'slide')}${chip('openkind', 'door', 'Дверь', op.kind === 'door')}${chip('openkind', 'pocket', 'Pocket', op.kind === 'pocket')}${chip('openkind', 'hole', 'Проём', op.kind === 'hole')}</div>`;
+        // size
         const odim = (k, label, v) => `<div class="f-dim"><label>${label}, ${t.m}</label><div class="f-step"><button type="button" data-onudge="${k}" data-d="-100" aria-label="−">−</button><input type="number" inputmode="decimal" step="0.1" min="0.6" value="${(v / 1000).toFixed(2)}" data-odim="${k}"><button type="button" data-onudge="${k}" data-d="100" aria-label="+">+</button></div></div>`;
         h += `<div class="f-dims" style="margin-top:6px">${odim('w', 'Ширина', op.w)}${odim('h', 'Высота', op.h)}</div>`;
+        // position along the wall
         h += `<div class="f-chips" style="margin-top:6px"><button type="button" class="f-chip gtyp" data-opos="-" aria-label="Левее" title="Левее">${GLASS_TYP_ICON.rtl}</button><button type="button" class="f-chip" data-opos="center" aria-pressed="${op.cx == null}">По центру</button><button type="button" class="f-chip gtyp" data-opos="+" aria-label="Правее" title="Правее">${GLASS_TYP_ICON.ltr}</button></div>`;
+        // door sub-options
+        if (op.kind === 'door') {
+          h += sub('Открывание двери') + `<div class="f-chips">${chip('doordir', 'in', 'Внутрь', op.doorDir === 'in')}${chip('doordir', 'out', 'Наружу', op.doorDir === 'out')}${chip('doordir', 'aside', 'В сторону', op.doorDir === 'aside')}</div>`;
+          h += sub('Створки') + `<div class="f-chips">${chip('doorleaves', '1', 'Одна', op.doorLeaves === 1)}${chip('doorleaves', '2', 'Две', op.doorLeaves === 2)}</div>`;
+        }
+        // sliding sub-options
+        if (op.kind === 'slide') {
+          h += sub('Полотен') + `<div class="f-chips">${[2, 3, 4].map((n) => chip('slidepanels', String(n), String(n), op.slidePanels === n)).join('')}</div>`;
+          h += sub('Активное открывается') + `<div class="f-chips"><button type="button" class="f-chip gtyp" data-slideactive="left" aria-pressed="${op.slideActive === 'left'}" aria-label="Влево">${GLASS_TYP_ICON.rtl}</button><button type="button" class="f-chip" data-slideactive="center" aria-pressed="${op.slideActive === 'center'}">По центру</button><button type="button" class="f-chip gtyp" data-slideactive="right" aria-pressed="${op.slideActive === 'right'}" aria-label="Вправо">${GLASS_TYP_ICON.ltr}</button></div>`;
+        }
       }
     }
     pop.innerHTML = h;
