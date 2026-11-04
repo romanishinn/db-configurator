@@ -191,8 +191,8 @@ const sb=window.supabase.createClient(CFG.url,CFG.key);
 
 const STAGES=[['new','Новый'],['contacted','Связался'],['visit_agreed','Договорились о выезде'],['consultation','Консультация'],['measured','Замер'],['quote_issued','КП выдано'],['negotiation','Переговоры'],['won','Заказ'],['lost','Отказ']];
 const SN=Object.fromEntries(STAGES);
-const ROLES={client:'клиент',seller:'продавец',dealer:'дилер',superdealer:'супердилер',superadmin:'суперадмин'};
-const STAFF=['seller','dealer','superdealer','superadmin'];
+const ROLES={client:'клиент',manager:'менеджер',dealer:'дилер',superdealer:'супердилер',superadmin:'суперадмин'};
+const STAFF=['manager','dealer','superdealer','superadmin'];
 const ICON={leads:'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
   model:'<svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12L3 7"/></svg>',
   brand:'<svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4zm0 0v10l8 4 8-4V7"/></svg>',
@@ -367,9 +367,9 @@ function detailPanel(){
   // responsible
   const resp=el('div','sec');resp.appendChild(el('h4',null,'Ответственный'));
   resp.appendChild(el('div','note-row',`Сейчас: <b>${esc(l.assignee_name||'не назначен')}</b>${l.assignee_org?' · '+esc(l.assignee_org):''}`));
-  if(seesAll()){const opt=staff.filter(x=>['seller','dealer'].includes(x.role)&&x.id!==l.assigned_to).map(x=>`<option value="${x.id}">${esc(nm(x))} · ${ROLES[x.role]}</option>`).join('');
+  if(seesAll()){const opt=staff.filter(x=>['manager','dealer'].includes(x.role)&&x.id!==l.assigned_to).map(x=>`<option value="${x.id}">${esc(nm(x))} · ${ROLES[x.role]}</option>`).join('');
     resp.appendChild(el('div','field',`<label>Назначить / переназначить</label><select data-assign="${l.id}"><option value="">Выберите…</option>${opt}</select>`));}
-  else if(me.role==='seller'&&l.assigned_to===me.id){const opt=staff.filter(x=>x.role==='dealer').map(x=>`<option value="${x.id}">${esc(nm(x))} · ${ROLES[x.role]}</option>`).join('');
+  else if(me.role==='manager'&&l.assigned_to===me.id){const opt=staff.filter(x=>x.role==='dealer').map(x=>`<option value="${x.id}">${esc(nm(x))} · ${ROLES[x.role]}</option>`).join('');
     resp.appendChild(el('div','field',`<label>Передать дилеру (с комментарием)</label><select data-transfer="${l.id}"><option value="">Выберите дилера…</option>${opt}</select>`));}
   body.appendChild(resp);
   // quotes
@@ -408,7 +408,7 @@ async function setStage(l,k){
 async function newLead(){
   const contact_name=prompt('Клиент: имя и фамилия');if(contact_name===null)return;
   const phone=prompt('Телефон')||null,object_address=prompt('Адрес объекта')||null;
-  const r=await sb.from('leads').insert({created_by:me.id,source:me.role==='dealer'?'dealer':me.role==='seller'?'seller':'office',contact_name,phone,object_address,postcode:((object_address||'').match(/\b\d{4}\b/)||[null])[0]}).select('id').single();
+  const r=await sb.from('leads').insert({created_by:me.id,source:me.role==='dealer'?'dealer':me.role==='manager'?'manager':'office',contact_name,phone,object_address,postcode:((object_address||'').match(/\b\d{4}\b/)||[null])[0]}).select('id').single();
   if(r.error)return toast(humanError(r.error));
   await refresh();state.sel=r.data.id;render();
 }

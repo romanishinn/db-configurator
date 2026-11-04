@@ -63,7 +63,7 @@
     <div class="bar"><button class="primary" type="submit">Войти</button></div>
   </form>
 
-  <div class="card" id="denied" hidden>Нет доступа: страницу открывает только суперадмин. <button type="button" id="out1">Выйти</button></div>
+  <div class="card" id="denied" hidden>Нет доступа: страницу открывают суперадмин и менеджер. <button type="button" id="out1">Выйти</button></div>
 
   <section class="card" id="listCard" hidden>
     <h2>Проекты</h2>
@@ -109,7 +109,7 @@
   var OPTIONS = { bioklimatisch: 'Bioklimatisch', glas: 'Glas', zip: 'ZIP-Screens', licht: 'Beleuchtung', heizung: 'Heizung' };
   var MAX_SIDE = 1800, QUALITY = 0.85; // phone photos are resized here: the bucket takes up to 5 MB per file
   var $ = function (id) { return document.getElementById(id); };
-  var sb = null, editing = null; // editing: {id, isNew, photos: [{path, file?, url}], removed: []}
+  var sb = null, editing = null, myRole = null; // editing: {id, isNew, photos: [{path, file?, url}], removed: []}
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function show(id, on) { $(id).hidden = !on; }
@@ -197,7 +197,7 @@
     $('sort').value = isNew ? 0 : p.sort; $('video_url').value = isNew ? '' : (p.video_url || '');
     $('reference_available').checked = !isNew && p.reference_available; $('published').checked = !isNew && p.published;
     Array.prototype.forEach.call(OPTS.querySelectorAll('input'), function (c) { c.checked = !isNew && p.options.indexOf(c.value) >= 0; });
-    $('del').hidden = isNew; say('msg', ''); renderPhotos();
+    $('del').hidden = isNew || myRole !== 'superadmin'; say('msg', ''); renderPhotos();
     show('form', true); show('listCard', false); $('form').scrollIntoView();
   }
   function closeForm() { editing = null; show('form', false); show('listCard', true); return loadList(); }
@@ -228,7 +228,7 @@
         photos: paths, reference_available: $('reference_available').checked, published: $('published').checked };
       return sb.from('projects').upsert(row).then(function (r) {
         if (r.error) throw r.error;
-        if (editing.removed.length) return sb.storage.from(BUCKET).remove(editing.removed); // after the row no longer points to them
+        if (editing.removed.length && myRole === 'superadmin') return sb.storage.from(BUCKET).remove(editing.removed).catch(function () {}); // superadmin only; a manager just unlinks. after the row no longer points to them
       });
     }).then(function () { return closeForm(); })
       .catch(function (err) { say('msg', humanError(err)); })
@@ -251,8 +251,8 @@
       show('login', !s); show('denied', false); show('listCard', false); show('form', false);
       if (!s) return;
       return sb.from('profiles').select('role').eq('id', s.user.id).single().then(function (p) {
-        if (!p.data || p.data.role !== 'superadmin') { show('denied', true); return; }
-        show('listCard', true); return loadList();
+        if (!p.data || (p.data.role !== 'superadmin' && p.data.role !== 'manager')) { show('denied', true); return; }
+        myRole = p.data.role; show('listCard', true); return loadList();
       });
     });
   }
