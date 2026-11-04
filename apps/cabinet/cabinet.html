@@ -108,6 +108,11 @@ select,.inp{font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--
 .quote-row .qv{font-size:11px;color:var(--good)}
 .quote-row .qedit{font:600 12px/1 var(--f-ui,inherit);color:var(--accent);background:none;border:1px solid var(--line);border-radius:7px;padding:7px 11px;cursor:pointer;white-space:nowrap}
 .quote-row .qedit:hover{background:var(--bg)}
+.journal{margin:0;padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;font:12px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto}
+.journal a{color:var(--accent)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px;margin-bottom:10px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere}
+.ro{font-size:12px;color:var(--muted);padding:8px 10px;border:1px dashed var(--line-strong);border-radius:8px}
 .timeline{display:flex;flex-direction:column;gap:0}
 .tl{display:grid;grid-template-columns:14px 1fr;gap:10px;padding-bottom:12px;position:relative}
 .tl .td{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:4px}
@@ -296,24 +301,26 @@ function navItems(){
   const it=[['leads','Заявки',ICON.leads],['model','Моделирование',ICON.model]];
   if(me.role==='dealer')it.push(['brand','Мой бренд',ICON.brand]);
   if(seesAll())it.push(['users','Пользователи',ICON.users]);
-  it.push(['quote','КП — предпросмотр',ICON.quote]);
   return it.map(([v,t,i])=>`<button data-view="${v}" aria-pressed="${state.view===v}">${i}<span>${t}</span></button>`).join('');
 }
 function botnav(){
   const it=[['leads','Заявки',ICON.leads],['model','Модель',ICON.model]];
   if(me.role==='dealer')it.push(['brand','Бренд',ICON.brand]);
   if(seesAll())it.push(['users','Люди',ICON.users]);
-  it.push(['quote','КП',ICON.quote]);
   return el('div','botnav',it.map(([v,t,i])=>`<button data-view="${v}" aria-pressed="${state.view===v}">${i}<span>${t}</span></button>`).join(''));
 }
-function viewContent(){return({leads:leadsView,model:modelView,brand:brandView,users:usersView,quote:quoteView}[state.view]||leadsView)()}
+function viewContent(){return({leads:leadsView,model:modelView,brand:brandView,users:usersView}[state.view]||leadsView)()}
 
-function tabsFor(){return seesAll()?[['all','Все'],['free','Без ответственного'],['stale','7+ дней']]:[['mine','Мои'],['given','От D&B']]}
+function tabsFor(){return seesAll()?[['all','Все'],['free','Без ответственного'],['stale','7+ дней']]:me.role==='manager'?[['site','С сайта'],['mine','Мои'],['given','От D&B']]:[['mine','Мои'],['given','От D&B']]}
+const isSiteFree=l=>l.source==='web'&&!l.created_by&&!l.assigned_to;
+/* manager only reads unassigned site requests (the database enforces it); everything else keeps the old rights */
+const canAct=l=>seesAll()||me.role!=='manager'||!isSiteFree(l);
 function visibleLeads(){
   const t=state.tab||tabsFor()[0][0];
+  if(t==='site')return leads.filter(isSiteFree);
   if(t==='free')return leads.filter(l=>!l.assigned_to);
   if(t==='stale')return leads.filter(l=>l.stale);
-  if(t==='given')return leads.filter(l=>l.created_by!==me.id);
+  if(t==='given')return leads.filter(l=>l.created_by&&l.created_by!==me.id);
   if(t==='mine')return leads.filter(l=>l.created_by===me.id);
   return leads;
 }
@@ -358,16 +365,18 @@ function detailPanel(){
   body.appendChild(el('div','d-head',`<div class="nm">${esc(l.contact_name||'—')}</div>
     <div class="sub"><span class="copy mono">${esc(l.phone||'')}</span>${l.email?`<span>${esc(l.email)}</span>`:''}<span>${esc(l.object_address||l.postcode||'')}</span><span>Источник: ${esc(srcOf(l))}</span></div>
     ${l.note?`<div class="hint" style="margin-top:6px">${esc(l.note)}</div>`:''}`));
+  body.appendChild(journalBlock(l));
   // stage
   const flow=el('div','sec');flow.appendChild(el('h4',null,'Стадия'));
   const seq=STAGES.filter(([k])=>k!=='lost'),ci=seq.findIndex(([k])=>k===cur),steps=el('div','stage-flow');
-  seq.forEach(([k,t],i)=>{const done=i<ci,is=i===ci;const s=el('button',`stage-step${done?' done':''}${is?' cur':''}`,`<span class="mk">${done?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg>':''}</span><span>${t}</span>`);s.onclick=()=>setStage(l,k);steps.appendChild(s)});
-  const lost=el('button',`stage-step lost${cur==='lost'?' cur':''}`,`<span class="mk"></span><span>Отказ${l.lost_reason&&cur==='lost'?' · '+esc(l.lost_reason):''}</span>`);lost.onclick=()=>setStage(l,'lost');steps.appendChild(lost);
+  seq.forEach(([k,t],i)=>{const done=i<ci,is=i===ci;const s=el('button',`stage-step${done?' done':''}${is?' cur':''}`,`<span class="mk">${done?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg>':''}</span><span>${t}</span>`);if(canAct(l))s.onclick=()=>setStage(l,k);else s.style.cursor='default';steps.appendChild(s)});
+  const lost=el('button',`stage-step lost${cur==='lost'?' cur':''}`,`<span class="mk"></span><span>Отказ${l.lost_reason&&cur==='lost'?' · '+esc(l.lost_reason):''}</span>`);if(canAct(l))lost.onclick=()=>setStage(l,'lost');else lost.style.cursor='default';steps.appendChild(lost);
   flow.appendChild(steps);body.appendChild(flow);
   // responsible
   const resp=el('div','sec');resp.appendChild(el('h4',null,'Ответственный'));
   resp.appendChild(el('div','note-row',`Сейчас: <b>${esc(l.assignee_name||'не назначен')}</b>${l.assignee_org?' · '+esc(l.assignee_org):''}`));
-  if(seesAll()){const opt=staff.filter(x=>['manager','dealer'].includes(x.role)&&x.id!==l.assigned_to).map(x=>`<option value="${x.id}">${esc(nm(x))} · ${ROLES[x.role]}</option>`).join('');
+  if(!canAct(l)){resp.appendChild(el('div','ro','Только просмотр'));}
+  else if(seesAll()){const opt=staff.filter(x=>['manager','dealer'].includes(x.role)&&x.id!==l.assigned_to).map(x=>`<option value="${x.id}">${esc(nm(x))} · ${ROLES[x.role]}</option>`).join('');
     resp.appendChild(el('div','field',`<label>Назначить / переназначить</label><select data-assign="${l.id}"><option value="">Выберите…</option>${opt}</select>`));}
   else if(me.role==='manager'&&l.assigned_to===me.id){const opt=staff.filter(x=>x.role==='dealer').map(x=>`<option value="${x.id}">${esc(nm(x))} · ${ROLES[x.role]}</option>`).join('');
     resp.appendChild(el('div','field',`<label>Передать дилеру (с комментарием)</label><select data-transfer="${l.id}"><option value="">Выберите дилера…</option>${opt}</select>`));}
@@ -377,22 +386,50 @@ function detailPanel(){
   const qs=l._quotes||[];
   if(qs.length){qs.forEach(x=>{const exp=x.valid_until&&new Date(x.valid_until)<new Date();
       const row=el('div','quote-row',`<div><div class="qn">КП ${esc(x.number)}</div><div class="qd">${day(x.created_at)}</div></div><div style="text-align:right;margin-left:auto"><div class="qamt">${eur(x.total_net)}</div><div class="qv" style="color:${exp?'var(--muted)':'var(--good)'}">${exp?'истёк':'до '+day(x.valid_until)}</div></div>`);
-      const ed=el('button','qedit','Скорректировать');ed.title='Открыть и сохранить как новую версию '+esc(x.number)+'.N';ed.onclick=()=>gotoModel(l.id,x.config,x.id,x.number);row.appendChild(ed);
+      const ed=canAct(l)?el('button','qedit','Скорректировать'):el('button','qedit','Открыть конфигурацию');
+      if(canAct(l)){ed.title='Открыть и сохранить как новую версию '+x.number+'.N';ed.onclick=()=>gotoModel(l.id,x.config,x.id,x.number);}
+      else ed.onclick=()=>gotoModel(null,x.config);
+      row.appendChild(ed);
       q.appendChild(row)});
-    const o=el('button','btn','Новый расчёт для лида');o.style.marginTop='10px';o.onclick=()=>gotoModel(l.id,null);q.appendChild(o);
-  }else{q.appendChild(el('div','hint','КП ещё нет. Соберите конфигурацию — она привяжется к этому лиду.'));const mk=el('button','btn primary','Собрать перголу');mk.style.marginTop='10px';mk.onclick=()=>gotoModel(l.id,null);q.appendChild(mk);}
+    if(canAct(l)){const o=el('button','btn','Новый расчёт для лида');o.style.marginTop='10px';o.onclick=()=>gotoModel(l.id,null);q.appendChild(o);}
+  }else{q.appendChild(el('div','hint',canAct(l)?'КП ещё нет. Соберите конфигурацию — она привяжется к этому лиду.':'КП нет.'));if(canAct(l)){const mk=el('button','btn primary','Собрать перголу');mk.style.marginTop='10px';mk.onclick=()=>gotoModel(l.id,null);q.appendChild(mk);}}
   body.appendChild(q);
   // comment
-  const cm=el('div','sec');cm.appendChild(el('h4',null,'Комментарий'));
+  const cm=el('div','sec');if(canAct(l)){cm.appendChild(el('h4',null,'Комментарий'));
   const ci2=el('input','inp');ci2.placeholder='Что обсудили, договорённости…';
   const cbtn=el('button','btn','Добавить');cbtn.onclick=async()=>{if(!ci2.value.trim())return;const r=await sb.rpc('comment_lead',{p_lead:l.id,p_comment:ci2.value.trim()});if(r.error)return toast(humanError(r.error));reopen(l.id)};
-  const crow=el('div','row-2');crow.appendChild(ci2);crow.appendChild(cbtn);cm.appendChild(crow);body.appendChild(cm);
+  const crow=el('div','row-2');crow.appendChild(ci2);crow.appendChild(cbtn);cm.appendChild(crow);body.appendChild(cm);}
   // history
   const h=el('div','sec');h.appendChild(el('h4',null,'История'));const tl=el('div','timeline');
   (events[l.id]||[]).slice().reverse().forEach(e=>tl.appendChild(el('div','tl',`<span class="td"></span><div class="tx"><b>${esc(evTitle(e))}</b>${e.comment?' · '+esc(e.comment):''}<time>${dt(e.at)}</time></div>`)));
   h.appendChild(tl);body.appendChild(h);
   p.appendChild(body);p.querySelector('.x').onclick=()=>{state.sel=null;render()};
   return p;
+}
+/* data from the database goes in only through textContent; links only https */
+function linkify(host,text){
+  const re=/https:\/\/[^\s<>"']+/g;let i=0,m;
+  while((m=re.exec(text))){
+    if(m.index>i)host.appendChild(document.createTextNode(text.slice(i,m.index)));
+    const a=document.createElement('a');a.href=m[0];a.target='_blank';a.rel='noopener noreferrer';a.textContent=m[0];host.appendChild(a);
+    i=m.index+m[0].length;
+  }
+  if(i<text.length)host.appendChild(document.createTextNode(text.slice(i)));
+}
+function journalBlock(l){
+  const sec=el('div','sec');sec.appendChild(el('h4',null,'Журнал клиента'));
+  const kv=document.createElement('dl');kv.className='kv';
+  const qs=l._quotes||[];
+  const add=(k,v)=>{if(v==null||v==='')return;const dt=document.createElement('dt');dt.textContent=k;const dd=document.createElement('dd');dd.textContent=v;kv.append(dt,dd)};
+  add('Заявка',(qs[0]&&qs[0].number)||l.last_quote);
+  add('Сумма (нетто)',l.last_total_net!=null?eur(l.last_total_net):'');
+  add('Имя',l.contact_name);add('Телефон',l.phone);add('E-mail',l.email);
+  add('Адрес',[l.object_address,l.postcode].filter(Boolean).join(', '));add('Заметка',l.note);
+  add('Создана',dt(l.created_at));
+  if(kv.children.length)sec.appendChild(kv);
+  if(l.journey&&String(l.journey).trim()){const pre=document.createElement('pre');pre.className='journal';linkify(pre,String(l.journey));sec.appendChild(pre);}
+  else sec.appendChild(el('div','hint','Журнала нет: клиент не отправлял его с заявкой.'));
+  return sec;
 }
 function evTitle(e){const who=nm(staff.find(p=>p.id===e.to_user));return{created:'Создан',assigned:'Назначен: '+who,transferred:'Передан: '+who,stage:(SN[e.from_stage]||'')+' → '+SN[e.to_stage],comment:'Комментарий',quote:'КП '+(e.comment||'')}[e.kind]||e.kind}
 
@@ -419,12 +456,9 @@ function gotoModel(leadId,config,quoteId,quoteNo){
 function modelView(){
   const w=el('div');
   w.appendChild(el('div','view-title','<h1>Моделирование</h1>'));
-  w.appendChild(el('div','hint','Открывается 3D-конфигуратор перголы. Собранную конфигурацию сохраните как КП — она привяжется к лиду и попадёт в расчёт.'));
-  w.appendChild(el('div','canvas3d','<span>3D-конфигуратор перголы</span>'));
-  w.appendChild(el('div','m-tools',['Размер','Стороны','Комфорт','Цвета','Decor'].map(t=>`<span>${t}</span>`).join('')));
-  const bar=el('div','m-bar',`<div class="m-price"><b class="mono">Новый расчёт</b><small>откроется полный конфигуратор</small></div>`);
-  const acts=el('div','m-acts');const go=el('button','btn primary','Открыть конфигуратор →');go.onclick=()=>gotoModel(null,null);acts.appendChild(go);bar.appendChild(acts);
-  w.appendChild(bar);return w;
+  w.appendChild(el('div','hint','Откроется конфигуратор. Собранную конфигурацию сохраните как КП — она привяжется к лиду.'));
+  const go=el('button','btn primary','Открыть конфигуратор →');go.style.marginTop='12px';go.onclick=()=>gotoModel(null,null);w.appendChild(go);
+  return w;
 }
 async function brandView(){return brandViewSync()}
 function brandViewSync(){
@@ -466,22 +500,6 @@ function usersView(){
   if(!staff.length)box.appendChild(el('div','empty','<b>Нет сотрудников</b>'));
   w.appendChild(box);return w;
 }
-function quoteView(){
-  const w=el('div');const dealer=me.role==='dealer';const o=myOrg();const c=(o&&o.company)||{};
-  w.appendChild(el('div','view-title','<h1>КП — предпросмотр</h1>'));
-  w.appendChild(el('div','hint',dealer?'Так клиент увидит ваше предложение: ваш логотип и реквизиты, цена гарантирована D&B, срок 14 дней.':'Под брендом D&B. У дилера здесь его логотип и реквизиты.'));
-  const lg=dealer&&brandLogo()?`<img src="${esc(brandLogo())}" alt="">`:esc(dealer?brandMono():'DB');
-  const cd=dealer?[c.address,c.phone,c.email,c.web].filter(Boolean).map(esc).join('<br>'):'Wien · +43 1 000 00 00<br>office@db-solutions.at';
-  const sw=el('div','sheet-wrap');
-  sw.appendChild(el('div','sheet',`<div class="hd"><div class="co"><div class="lg">${lg}</div><div><div class="cn">${esc(dealer?brandName():'D&B Solutions')}</div><div class="cd">${cd}</div></div></div>
-    <div class="meta"><h3>Angebot</h3><div class="no">Nr. 251025-3 · ${new Date().toLocaleDateString('de-AT')}</div></div></div>
-    <div class="pic">3D-визуализация перголы</div>
-    <h5>KONFIGURATION</h5><table><tr><td>Größe · Modell</td><td class="a">6,60 × 3,50 m · S400</td></tr><tr><td>Seiten</td><td class="a">ZIP vorne · Decor rechts</td></tr></table>
-    <h5>PREIS</h5><table><tr><td>Pergola S400 · 6,60 × 3,50</td><td class="a">16 669 €</td></tr><tr><td>ZIP-Screen · Decor</td><td class="a">4 150 €</td></tr><tr><td>Montage</td><td class="a">1 250 €</td></tr><tr><td>Summe netto</td><td class="a">20 353 €</td></tr><tr class="tot"><td>Gesamt inkl. USt.</td><td class="a">24 424 €</td></tr></table>
-    <div class="foot">Richtpreis auf Basis der Katalogpreise 07/2026. Nicht enthalten: Lieferung, Fundamente, Elektroanschluss. Endgültiger Preis nach Aufmaß vor Ort.</div>`));
-  w.appendChild(sw);return w;
-}
-
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
   const nv=e.target.closest('[data-view]');if(nv){state.view=nv.dataset.view;state.sel=null;render(false);return}
