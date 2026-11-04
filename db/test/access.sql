@@ -209,4 +209,52 @@ select pg_temp.check((select count(*) from public.invites where role = 'dealer')
 -- an invite is only for dealer or architect
 select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('client')$$, 'invites_role_check'), 'an invite role must be dealer or architect');
 
+-- ---------- 13. reference projects on the landing page + their photo bucket (0008) ----------
+select pg_temp.as_root();
+insert into public.projects (id, title, district, country, options, photos, published, reference_available) values
+  ('00000000-0000-0000-0000-0000000000c1', 'Villa mit Glasdach, Wien 13.', 'Wien 13', 'AT', '{bioklimatisch,glas}', '{a/1.jpg}', true, true),
+  ('00000000-0000-0000-0000-0000000000c2', 'Entwurf', 'Linz', 'AT', '{zip}', '{}', false, false);
+-- the public sees published projects only
+select pg_temp.as_anon();
+select pg_temp.check((select count(*) from public.projects) = 1, 'anon sees only published projects');
+select pg_temp.check((select count(*) from public.projects where title = 'Entwurf') = 0, 'a draft project is hidden from the public');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'permission denied'), 'anon cannot add a project');
+select pg_temp.check(pg_temp.fails($$update public.projects set published = false$$, 'permission denied'), 'anon cannot change a project');
+select pg_temp.check(pg_temp.fails($$delete from public.projects$$, 'permission denied'), 'anon cannot delete a project');
+-- a logged-in non-admin (seller) reads like the public and writes nothing
+select pg_temp.as_user(:'seller');
+select pg_temp.check((select count(*) from public.projects) = 1, 'a seller sees only published projects');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'row-level'), 'a seller cannot add a project');
+update public.projects set title = 'hacked';
+delete from public.projects;
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin sees drafts too');
+select pg_temp.check((select count(*) from public.projects where title = 'hacked') = 0, 'a seller cannot change a project (policy hides the write)');
+-- the superadmin manages projects; the data rules hold
+insert into public.projects (title, district, country, options, photos, published, sort)
+  values ('Terrasse mit ZIP-Screens, Wien 19.', 'Wien 19', 'AT', '{bioklimatisch,zip,licht}', '{b/1.jpg,b/2.jpg}', true, 5);
+update public.projects set sort = 1 where id = '00000000-0000-0000-0000-0000000000c2';
+select pg_temp.check((select sort from public.projects where id = '00000000-0000-0000-0000-0000000000c2') = 1, 'superadmin can edit a project');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, published) values ('x', 'y', 'AT', true)$$, 'published_needs_photo'), 'a published project needs a photo');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, options) values ('x', 'y', 'AT', '{sauna}')$$, 'projects_options_check'), 'only known options are allowed');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'DE')$$, 'projects_country_check'), 'country is AT or HR');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('  ', 'y', 'AT')$$, 'projects_title_check'), 'a title is required');
+delete from public.projects where id = '00000000-0000-0000-0000-0000000000c2';
+select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin can delete a project');
+-- photo bucket: public bucket, only the superadmin writes
+select pg_temp.as_root();
+select pg_temp.check((select public from storage.buckets where id = 'project-photos'), 'the photo bucket is public');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'anon cannot upload a photo');
+select pg_temp.as_user(:'seller');
+select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'a seller cannot upload a photo');
+select pg_temp.as_user(:'admin');
+insert into storage.objects (bucket_id, name) values ('project-photos', 'c/1.jpg');
+select pg_temp.check((select count(*) from storage.objects where bucket_id = 'project-photos') = 1, 'superadmin can upload a photo');
+select pg_temp.as_anon();
+select pg_temp.check((select count(*) from storage.objects) = 0, 'the bucket cannot be listed by the public');
+select pg_temp.as_user(:'admin');
+delete from storage.objects where name = 'c/1.jpg';
+select pg_temp.check((select count(*) from storage.objects) = 0, 'superadmin can delete a photo');
+
 select 'access tests passed' as result;

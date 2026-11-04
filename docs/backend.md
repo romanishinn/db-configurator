@@ -23,6 +23,17 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   7+ days; dealer/seller: mine · from D&B), lead card with stage, assignee, assign (superadmin/superdealer) or transfer to a
   dealer (seller), comments, history, open the last quote. The public request form also stores the lead and its quote.
 
+## Reference projects on the landing page (migration 0008)
+- Table `projects` (public data only: title, district, country, options, installation date, photo paths, video link, flags
+  `reference_available` / `published`, order) and the public bucket `project-photos`. The public sees published projects only;
+  only the superadmin writes (rows and photos). A published project needs at least one photo. The owner's contact is never stored:
+  the flag only says the owner agreed to a reference call, the office passes the contact on by phone.
+- `apps/projects/index.html` → `projects.html`: the superadmin's form (phone friendly): fields, photo upload (resized in the browser to 1800 px),
+  cover = first photo, publish switch. Adding a project needs no deploy.
+- `apps/landing/index.html` → `landing.html`: German B2C landing. Reads the published projects over the REST API with the public key;
+  when the database is off, unreachable or has no published project, the static placeholder cards stay. `noindex` until the placeholders
+  (photos, address, phone) are replaced with real data. The request form there is still a preview (not yet wired to `submit_request`).
+
 ## Switching it on (D&B)
 1. supabase.com → New project, region **Frankfurt (eu-central-1)**, free plan.
 2. GitHub → repository Settings → Secrets and variables → Actions → `SUPABASE_DB_URL` = Project Settings → Database →

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- noindex until the placeholders (photos, address, phone, projects) are replaced with real data -->
+<meta name="robots" content="noindex">
+<title>D&B Pergolen</title>
+<style>
+/* Layout: single-column editorial flow, architectural; anthracite structure, warm paper, brass evening-light accent */
+:root{
+  --paper:#f3efe8; --paper-2:#eae4d9; --ink:#1c1b19; --ink-2:#4a4740;
+  --line:#d8d0c3; --brass:#a9741f; --brass-soft:#c79a4e; --anthracite:#26262a;
+  --card:#fbf9f5; --ok:#5b7a4a;
+  --serif:"Bricolage Grotesque",Georgia,serif;
+  --sans:"Hanken Grotesk",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#17171a; --paper-2:#1f1f23; --ink:#f0ece4; --ink-2:#b4afa4;
+  --line:#33333a; --brass:#d6a24e; --brass-soft:#c79a4e; --anthracite:#0f0f12;
+  --card:#202024; --ok:#8fb07a; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#17171a; --paper-2:#1f1f23; --ink:#f0ece4; --ink-2:#b4afa4;
+  --line:#33333a; --brass:#d6a24e; --brass-soft:#c79a4e; --anthracite:#0f0f12;
+  --card:#202024; --ok:#8fb07a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--anthracite)}
+.wrap{width:100%;max-width:1120px;margin-inline:auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--serif);font-weight:600;text-wrap:balance;line-height:1.08;letter-spacing:-.01em;margin:0}
+p{margin:0}
+.eyebrow{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);font-weight:600}
+a{color:inherit}
+.btn{display:inline-flex;align-items:center;gap:.5em;font-family:var(--sans);font-weight:600;font-size:.98rem;border-radius:2px;padding:.85em 1.4em;border:1px solid transparent;cursor:pointer;text-decoration:none;transition:.15s}
+.btn-primary{background:var(--anthracite);color:#f3efe8;border-color:var(--anthracite)}
+.btn-primary:hover{background:var(--brass);border-color:var(--brass);color:#1c1b19}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--brass);color:var(--brass)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* header */
+header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.7rem}
+.brand{font-family:var(--serif);font-weight:600;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:.55rem}
+.brand .mk{width:26px;height:26px;flex:none}
+.bar .btn{padding:.6em 1em;font-size:.9rem}
+.ph-note{font-size:.6rem;color:var(--ink-2);opacity:.7}
+
+/* placeholder image block */
+.ph{position:relative;border-radius:3px;overflow:hidden;background:linear-gradient(135deg,var(--paper-2),var(--card));border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-2)}
+.ph svg{width:46%;max-width:150px;opacity:.28}
+.ph .lab{position:absolute;left:10px;bottom:9px;font-size:.62rem;letter-spacing:.04em;background:color-mix(in srgb,var(--anthracite) 82%,transparent);color:#f3efe8;padding:.25em .6em;border-radius:2px}
+
+/* hero */
+.hero{padding-block:clamp(2.6rem,7vw,5rem) clamp(2rem,5vw,3.5rem);display:grid;gap:clamp(1.6rem,4vw,3rem);grid-template-columns:1fr;align-items:center}
+@media(min-width:860px){.hero{grid-template-columns:1.05fr .95fr}}
+.hero h1{font-size:clamp(2.1rem,6vw,3.5rem)}
+.hero .lead{font-size:clamp(1.05rem,2.2vw,1.22rem);color:var(--ink-2);margin-top:1.1rem;max-width:34ch}
+.hero-cta{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.6rem}
+.hero .ph{aspect-ratio:4/3}
+.trust{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin-top:1.8rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+.trust b{font-family:var(--serif);font-size:1.02rem}
+.trust span{display:flex;flex-direction:column;font-size:.74rem;color:var(--ink-2);letter-spacing:.02em}
+
+/* sections */
+section{padding-block:clamp(2.6rem,6vw,4.4rem)}
+.band{background:var(--paper-2)}
+.sec-head{max-width:46ch;margin-bottom:clamp(1.6rem,4vw,2.4rem)}
+.sec-head h2{font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem}
+.sec-head p{color:var(--ink-2);margin-top:.7rem;font-size:1.02rem}
+
+/* references grid */
+.grid{display:grid;gap:1.1rem;grid-template-columns:1fr}
+@media(min-width:620px){.grid{grid-template-columns:1fr 1fr}}
+@media(min-width:960px){.grid-3{grid-template-columns:1fr 1fr 1fr}}
+.proj{background:var(--card);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:flex;flex-direction:column}
+.proj .ph{aspect-ratio:3/2;border:0;border-radius:0}
+.proj .body{padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:.5rem;min-width:0}
+.proj h3{font-size:1.1rem}
+.proj .meta{font-size:.82rem;color:var(--ink-2)}
+.badge{align-self:flex-start;font-size:.7rem;font-weight:600;letter-spacing:.03em;color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 45%,var(--line));border-radius:20px;padding:.25em .7em;display:inline-flex;gap:.4em;align-items:center}
+
+/* steps */
+.steps{display:grid;gap:1rem;grid-template-columns:1fr;counter-reset:s}
+@media(min-width:720px){.steps{grid-template-columns:1fr 1fr}}
+@media(min-width:1000px){.steps{grid-template-columns:repeat(4,1fr)}}
+.step{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1.3rem 1.2rem;min-width:0}
+.step .n{counter-increment:s;font-family:var(--serif);font-size:2rem;color:var(--brass);line-height:1}
+.step .n::before{content:counter(s,decimal-leading-zero)}
+.step h3{font-size:1.06rem;margin:.6rem 0 .35rem}
+.step p{font-size:.9rem;color:var(--ink-2)}
+
+/* feature split */
+.split{display:grid;gap:clamp(1.4rem,4vw,2.6rem);grid-template-columns:1fr;align-items:center}
+@media(min-width:820px){.split{grid-template-columns:1fr 1fr}}
+.split .ph{aspect-ratio:5/4}
+.split ul{list-style:none;padding:0;margin:1.1rem 0 0;display:flex;flex-direction:column;gap:.7rem}
+.split li{display:flex;gap:.7rem;font-size:.98rem}
+.split li svg{flex:none;width:20px;height:20px;color:var(--brass);margin-top:.15rem}
+
+/* warranty strip */
+.war{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:720px){.war{grid-template-columns:repeat(3,1fr)}}
+.war .c{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1.3rem;text-align:left}
+.war .big{font-family:var(--serif);font-size:2.3rem;color:var(--brass);line-height:1}
+.war h3{font-size:1rem;margin:.5rem 0 .3rem}
+.war p{font-size:.86rem;color:var(--ink-2)}
+
+/* product chips */
+.chips{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.2rem}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:30px;padding:.55em 1.1em;font-size:.9rem;font-weight:500}
+
+/* faq */
+.faq{display:flex;flex-direction:column;gap:.6rem;max-width:760px}
+details{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:.3rem 1.1rem}
+summary{cursor:pointer;list-style:none;padding:.9rem 0;font-weight:600;font-size:1rem;display:flex;justify-content:space-between;gap:1rem;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--brass);font-size:1.4rem;font-family:var(--serif);line-height:1}
+details[open] summary::after{content:"–"}
+details p{padding:0 0 1rem;color:var(--ink-2);font-size:.94rem}
+
+/* form */
+.form-wrap{display:grid;gap:clamp(1.4rem,4vw,2.6rem);grid-template-columns:1fr;align-items:start}
+@media(min-width:820px){.form-wrap{grid-template-columns:1fr 1fr}}
+form{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:clamp(1.3rem,3vw,1.8rem);display:flex;flex-direction:column;gap:.9rem}
+label{font-size:.82rem;font-weight:600;color:var(--ink-2);display:flex;flex-direction:column;gap:.35rem}
+input,textarea{font-family:var(--sans);font-size:1rem;padding:.75em .85em;border:1px solid var(--line);border-radius:3px;background:var(--paper);color:var(--ink);width:100%}
+textarea{resize:vertical;min-height:84px}
+.form-ok{background:color-mix(in srgb,var(--ok) 14%,var(--card));border:1px solid color-mix(in srgb,var(--ok) 45%,var(--line));border-radius:6px;padding:1.4rem;color:var(--ink)}
+.contact-line{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:.95rem}
+.copy{border:1px solid var(--line);background:var(--paper);border-radius:3px;padding:.3em .7em;font-size:.8rem;cursor:pointer;color:var(--ink)}
+
+footer{background:var(--anthracite);color:#d8d2c6}
+footer .wrap{padding-block:2.4rem}
+footer a{color:#d8d2c6}
+.foot-grid{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1.4rem}
+footer .brand{color:#f3efe8}
+.fine{font-size:.76rem;color:#9a938a;margin-top:1.4rem;border-top:1px solid #343438;padding-top:1.2rem}
+
+/* project cards from the database */
+.proj .ph{cursor:default}
+.proj.live .ph{cursor:pointer}
+.proj .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.proj .cnt{position:absolute;right:10px;bottom:9px;font-size:.62rem;background:color-mix(in srgb,var(--anthracite) 82%,transparent);color:#f3efe8;padding:.25em .6em;border-radius:2px}
+dialog.gal{border:0;border-radius:6px;padding:0;max-width:min(880px,94vw);width:100%;background:var(--card);color:var(--ink)}
+dialog.gal::backdrop{background:rgba(0,0,0,.6)}
+dialog.gal .in{padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem;max-height:90vh;overflow:auto}
+dialog.gal img{width:100%;height:auto;border-radius:3px;display:block}
+dialog.gal .top{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- pergola line motif, reused in placeholders -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="perg" viewBox="0 0 120 90"><g fill="none" stroke="currentColor" stroke-width="2.4"><rect x="12" y="30" width="96" height="48"/><path d="M12 30 L24 14 H108 L108 30"/><path d="M24 14 V78 M48 30 V78 M72 30 V78 M96 30 V78"/><path d="M12 42 H108 M12 54 H108 M12 66 H108" stroke-width="1.2"/></g></symbol></svg>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <span class="brand"><svg class="mk" viewBox="0 0 120 90" aria-hidden="true"><use href="#perg"/></svg>D&amp;B Pergolen</span>
+    <a href="#anfrage" class="btn btn-primary">Angebot anfordern</a>
+  </div>
+</header>
+
+<main>
+  <!-- HERO — proof-first -->
+  <div class="wrap">
+    <section class="hero" style="padding-top:clamp(2.2rem,6vw,4rem)">
+      <div>
+        <span class="eyebrow">Bioklimatische Pergolen · Wien &amp; Kroatien</span>
+        <h1>Ihre Terrasse. Das ganze Jahr nutzbar.</h1>
+        <p class="lead">Premium-Pergolen, die wir bei Ihnen in Wien bereits gebaut haben. Angebot in 24 Stunden, Montage durch unser eigenes Team, 10 Jahre Garantie und jährlicher Service.</p>
+        <div class="hero-cta">
+          <a href="#projekte" class="btn btn-primary">Projekte in Ihrer Nähe ansehen</a>
+          <a href="#anfrage" class="btn btn-ghost">Angebot anfordern</a>
+        </div>
+        <div class="trust">
+          <span><b>20+ Jahre</b>Erfahrung</span>
+          <span><b>Echte Projekte</b>in Wien gebaut</span>
+          <span><b>Eigenes Team</b>Monteure, keine Subunternehmer</span>
+          <span><b>10 Jahre</b>Garantie + Service</span>
+        </div>
+      </div>
+      <div class="ph" role="img" aria-label="Foto eines fertigen Projekts einfügen">
+        <svg aria-hidden="true"><use href="#perg"/></svg>
+        <span class="lab">Echtes Foto: fertige Pergola, Wien</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- PROJECTS / REFERENCES — the conversion asset, kept high on the page -->
+  <section class="band" id="projekte">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Projekte</span>
+        <h2>Pergolen, die wir bereits gebaut haben</h2>
+        <p>Keine Renderings — echte Terrassen in Wien und Kroatien. Viele unserer Kundinnen und Kunden geben gerne telefonisch Auskunft, bevor Sie sich entscheiden.</p>
+      </div>
+      <div class="grid grid-3" id="projects-grid">
+        <article class="proj">
+          <div class="ph" role="img" aria-label="Projektfoto einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: Projekt Wien 13.</span></div>
+          <div class="body">
+            <h3>Villa mit Glasdach, Wien 13.</h3>
+            <p class="meta">Bioklimatisch · Glas · ZIP-Screens · Beleuchtung · Montage 2026</p>
+            <span class="badge">● Referenz auf Anfrage</span>
+          </div>
+        </article>
+        <article class="proj">
+          <div class="ph" role="img" aria-label="Projektfoto einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: Projekt Wien 19.</span></div>
+          <div class="body">
+            <h3>Terrasse mit ZIP-Screens, Wien 19.</h3>
+            <p class="meta">Bioklimatisch · ZIP-Screens · Beleuchtung · Montage 2026</p>
+            <span class="badge">● Referenz auf Anfrage</span>
+          </div>
+        </article>
+        <article class="proj">
+          <div class="ph" role="img" aria-label="Projektfoto einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: Café-Terrasse</span></div>
+          <div class="body">
+            <h3>Café-Terrasse, Niederösterreich</h3>
+            <p class="meta">Gastronomie · Glas · Heizung · Montage 2026</p>
+            <span class="badge">● Referenz auf Anfrage</span>
+          </div>
+        </article>
+      </div>
+      <p class="ph-note" id="projects-note" style="margin-top:1rem">Platzhalter — mit echten Projektfotos, Orten und (mit Einverständnis) kontaktierbaren Referenzen ersetzen.</p>
+    </div>
+  </section>
+
+  <!-- SEE IT MOVE -->
+  <section>
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">Konfigurator</span>
+        <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Sehen Sie Ihre Pergola — in Bewegung</h2>
+        <p style="color:var(--ink-2);margin-top:.8rem">In unserem 3D-Konfigurator sehen Sie Ihre eigene Pergola: wie sich das Lamellendach öffnet, wie die ZIP-Screens laufen, das Glas und das Licht am Abend. Und Sie bekommen einen echten Preis — kein vages „ab“.</p>
+        <div class="hero-cta"><a href="#anfrage" class="btn btn-primary">Konfiguration starten</a></div>
+      </div>
+      <div class="ph" role="img" aria-label="Screenshot des Konfigurators einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Konfigurator / Video der Bewegung</span></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS — speed -->
+  <section class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">In vier Schritten</span>
+        <h2>Schnell, klar, mit festen Terminen</h2>
+        <p>In Österreich warten viele wochenlang auf ein Angebot. Bei uns nicht.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="n"></div><h3>Anfrage</h3><p>Online konfigurieren oder kurz anfragen — wir melden uns.</p></div>
+        <div class="step"><div class="n"></div><h3>Rückruf in 2 Stunden</h3><p>Ein echter Mensch, der Ihre Terrasse versteht.</p></div>
+        <div class="step"><div class="n"></div><h3>Aufmaß &amp; Festpreis in 24 Stunden</h3><p>Vor Ort, mit fixem Liefer- und Montagetermin — sofort.</p></div>
+        <div class="step"><div class="n"></div><h3>Montage durch unser Team</h3><p>Eigene, geschulte Monteure. Keine fremden Subunternehmer.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WARRANTY & SERVICE -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Garantie &amp; Service</span>
+        <h2>Wir bleiben auch nach der Montage</h2>
+        <p>Die Garantie steht fest — und wir sagen sie Ihnen vor dem Kauf, nicht danach.</p>
+      </div>
+      <div class="war">
+        <div class="c"><div class="big">10</div><h3>Jahre auf die Struktur</h3><p>Aluminium und Beschichtung.</p></div>
+        <div class="c"><div class="big">5</div><h3>Jahre auf Motoren &amp; Screens</h3><p>Antriebe, Steuerung, ZIP-Screens.</p></div>
+        <div class="c"><div class="big">1×</div><h3>Service-Besuch pro Jahr</h3><p>Eine feste Ansprechperson prüft alles — das bieten Premium-Marken nicht.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY US -->
+  <section class="band">
+    <div class="wrap split">
+      <div class="ph" role="img" aria-label="Foto Team oder Montage einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: unser Montageteam</span></div>
+      <div>
+        <span class="eyebrow">Warum wir</span>
+        <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Die Qualität der Top-Marken — mit einem Team, das schneller ist und bleibt</h2>
+        <ul>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>20+ Jahre Engineering.</b> Wir kennen die Systeme von innen — auch die der Mitbewerber.</span></li>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Eigene Monteure</b> in Österreich und ein Team von 26 Monteuren in Kroatien.</span></li>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Geschwindigkeit:</b> Rückruf in 2 Stunden, Angebot in 24 — mit festen Terminen.</span></li>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Service, der bleibt:</b> 10 Jahre Garantie und ein Besuch pro Jahr.</span></li>
+        </ul>
+        <div class="chips">
+          <span class="chip">Bioklimatisches Lamellendach</span>
+          <span class="chip">Glas</span>
+          <span class="chip">ZIP-Screens</span>
+          <span class="chip">Beleuchtung</span>
+          <span class="chip">Heizung</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Häufige Fragen</span>
+        <h2>Was Kundinnen und Kunden wissen wollen</h2>
+      </div>
+      <div class="faq">
+        <details open><summary>Was kostet eine Pergola?</summary><p>Je nach Größe und Ausstattung (Glas, ZIP-Screens, Beleuchtung) liegen die meisten Projekte zwischen 10.000 und 16.000 €. Im Konfigurator sehen Sie Ihren echten Preis — kein „ab“.</p></details>
+        <details><summary>Wie lange dauert es bis zur Montage?</summary><p>Rückruf in 2 Stunden, Aufmaß und Festpreis in 24 Stunden. Den fixen Liefer- und Montagetermin nennen wir Ihnen direkt vor Ort. <span class="ph-note">[Konkrete Lieferzeit einsetzen]</span></p></details>
+        <details><summary>Was ist mit der Garantie nach ein paar Jahren?</summary><p>10 Jahre auf die Struktur, 5 Jahre auf Motoren und Screens. Zusätzlich kommen wir einmal im Jahr zum Service-Besuch. Das sagen wir Ihnen vor dem Kauf.</p></details>
+        <details><summary>Eigene Marke — ist die Qualität wie bei den großen Namen?</summary><p>Wir bauen mit geprüften Systemen und nennen Ihnen den Hersteller und die Komponenten transparent. <span class="ph-note">[Hersteller / Wind- und Schneelastwerte einsetzen]</span></p></details>
+        <details><summary>Wie verhält sich die Pergola bei Wind und Regen?</summary><p>Das Lamellendach und die ZIP-Screens sind für Wind und Wetter ausgelegt. <span class="ph-note">[Wind-/Schneelast, Sensorik einsetzen]</span></p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOWROOM + FORM -->
+  <section class="band" id="anfrage">
+    <div class="wrap">
+      <div class="form-wrap">
+        <div>
+          <span class="eyebrow">Schauraum &amp; Kontakt</span>
+          <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Kommen Sie vorbei — oder lassen Sie sich zurückrufen</h2>
+          <p style="color:var(--ink-2);margin-top:.8rem">In unserem Schauraum in Wien sehen und berühren Sie eine echte Pergola. Oder fordern Sie einen Rückruf an — wir melden uns innerhalb von 2 Stunden.</p>
+          <div style="margin-top:1.4rem;display:flex;flex-direction:column;gap:.7rem">
+            <div class="contact-line">Schauraum: <b>[Adresse Wien einsetzen]</b></div>
+            <div class="contact-line">Telefon: <b id="tel">[Telefonnummer]</b> <button class="copy" type="button" data-copy="tel">Kopieren</button></div>
+            <div class="contact-line">E-Mail: <b id="mail">[E-Mail]</b> <button class="copy" type="button" data-copy="mail">Kopieren</button></div>
+          </div>
+        </div>
+        <div>
+          <form id="lead" novalidate>
+            <label>Name<input name="name" autocomplete="name" required></label>
+            <label>Ort / PLZ<input name="ort" autocomplete="postal-code" placeholder="z. B. 1130 Wien" required></label>
+            <label>Telefon oder E-Mail<input name="kontakt" autocomplete="tel" required></label>
+            <label>Nachricht (optional)<textarea name="msg" placeholder="Größe der Terrasse, Wünsche …"></textarea></label>
+            <button class="btn btn-primary" type="submit" style="justify-content:center">Rückruf in 2 Stunden anfordern</button>
+            <p class="ph-note">Formular ist eine Vorschau — an Ihr CRM / Ihre Mailadresse anbinden.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <span class="brand"><svg class="mk" viewBox="0 0 120 90" aria-hidden="true" style="color:#c79a4e"><use href="#perg"/></svg>D&amp;B Pergolen</span>
+      <div style="font-size:.9rem;max-width:30ch">Echte Projekte, echte Garantie, ein Team vor Ort. Wien &amp; Kroatien.</div>
+    </div>
+    <p class="fine">© 2026 D&amp;B Pergolen (Arbeitsname) · Platzhalter-Seite nach der Validierungs-Methodik. Projektfotos, Referenzen, Adresse und Kontaktdaten mit echten Daten ersetzen.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var form=document.getElementById('lead');
+  if(form){form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(!form.reportValidity())return;
+    var card=document.createElement('div');
+    card.className='form-ok';
+    card.setAttribute('role','status');
+    card.innerHTML='<strong>Danke!</strong><br>Ihre Anfrage ist angekommen. In der echten Version meldet sich das Team innerhalb von 2 Stunden. <span class="ph-note">(Vorschau — bitte an CRM anbinden.)</span>';
+    form.replaceWith(card);
+  });}
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var el=document.getElementById(b.dataset.copy);
+      var t=el?el.textContent:'';
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(function(){b.textContent='Kopiert';setTimeout(function(){b.textContent='Kopieren';},1400);}).catch(select);
+      }else select();
+      function select(){try{var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);}catch(e){}}
+    });
+  });
+})();
+
+// ---- Projekte aus der Datenbank (Tabelle projects, nur veröffentlichte) ----
+// Without BACKEND.url, offline, or with no published project the static placeholder cards above stay as they are.
+(function(){
+  var BACKEND={url:'https://zypujyrvbegilvtvqras.supabase.co',anonKey:'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9'};
+  if(!BACKEND.url||!BACKEND.anonKey||!window.fetch)return;
+  var grid=document.getElementById('projects-grid'),note=document.getElementById('projects-note');
+  if(!grid)return;
+  var LABEL={bioklimatisch:'Bioklimatisch',glas:'Glas',zip:'ZIP-Screens',licht:'Beleuchtung',heizung:'Heizung'};
+  var photoUrl=function(p){return BACKEND.url+'/storage/v1/object/public/project-photos/'+p.split('/').map(encodeURIComponent).join('/');};
+  function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+  function meta(p){
+    var parts=(p.options||[]).map(function(o){return LABEL[o]||o;});
+    if(p.installed_on)parts.push('Montage '+String(p.installed_on).slice(0,4));
+    return parts.join(' · ');
+  }
+  var dlg=null;
+  function openGallery(p){
+    if(!dlg){dlg=document.createElement('dialog');dlg.className='gal';document.body.appendChild(dlg);
+      dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close();});}
+    dlg.textContent='';
+    var inner=el('div','in'),top=el('div','top'),close=el('button','btn btn-ghost','Schließen');
+    close.type='button';close.addEventListener('click',function(){dlg.close();});
+    top.appendChild(el('h3',null,p.title));top.appendChild(close);inner.appendChild(top);
+    inner.appendChild(el('p','meta',meta(p)));
+    p.photos.forEach(function(ph){var im=el('img');im.src=photoUrl(ph);im.alt=p.title;im.loading='lazy';inner.appendChild(im);});
+    if(p.video_url&&/^https:\/\//.test(p.video_url)){var a=el('a','btn btn-ghost','Video ansehen');a.href=p.video_url;a.target='_blank';a.rel='noopener';inner.appendChild(a);}
+    dlg.appendChild(inner);
+    if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','');
+  }
+  function card(p){
+    var a=el('article','proj live'),ph=el('div','ph');
+    ph.setAttribute('role','img');ph.setAttribute('aria-label',p.title);
+    var im=el('img');im.src=photoUrl(p.photos[0]);im.alt=p.title;im.loading='lazy';ph.appendChild(im);
+    if(p.photos.length>1)ph.appendChild(el('span','cnt',p.photos.length+' Fotos'));
+    ph.addEventListener('click',function(){openGallery(p);});
+    var body=el('div','body');
+    body.appendChild(el('h3',null,p.title));
+    body.appendChild(el('p','meta',meta(p)));
+    if(p.reference_available)body.appendChild(el('span','badge','● Referenz auf Anfrage'));
+    a.appendChild(ph);a.appendChild(body);return a;
+  }
+  var ctl=window.AbortController?new AbortController():null;
+  var timer=setTimeout(function(){if(ctl)ctl.abort();},6000);
+  fetch(BACKEND.url+'/rest/v1/projects?select=id,title,options,installed_on,photos,video_url,reference_available&published=eq.true&order=sort.asc,installed_on.desc.nullslast',
+    {headers:{apikey:BACKEND.anonKey},signal:ctl?ctl.signal:undefined})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+    .then(function(rows){
+      rows=(rows||[]).filter(function(p){return p&&p.title&&p.photos&&p.photos.length;});
+      if(!rows.length)return;
+      grid.textContent='';
+      rows.forEach(function(p){grid.appendChild(card(p));});
+      if(note)note.remove();
+    })
+    .catch(function(){/* keep the static cards */})
+    .then(function(){clearTimeout(timer);});
+})();
+</script>
+</body>
+</html>
