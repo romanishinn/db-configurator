@@ -308,6 +308,12 @@ select pg_temp.as_user(:'admin');
 select public.set_user_role(:'newbie', 'manager');
 select pg_temp.as_root();
 select pg_temp.check((select role from public.profiles where id = :'newbie') = 'manager', 'the superadmin can make someone a manager');
+-- nobody raises his own role or limit by a plain UPDATE: only full_name and phone are granted on profiles
+select pg_temp.as_user(:'manager');
+select pg_temp.fails(format($q$update public.profiles set role = 'superadmin' where id = %L$q$, :'manager'), 'permission denied') as okr \gset
+select pg_temp.check(:'okr', 'a manager cannot set his own role by a direct update');
+select pg_temp.fails(format($q$update public.profiles set discount_limit = 100 where id = %L$q$, :'manager'), 'permission denied') as okl \gset
+select pg_temp.check(:'okl', 'a manager cannot set his own discount limit by a direct update');
 select pg_temp.as_user(:'superdealer');
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'client')$q$, :'newbie'), 'FORBIDDEN') as ok \gset
 select pg_temp.as_root();

@@ -31,7 +31,7 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   `reference_available` / `published`, order) and the public bucket `project-photos`. The public sees published projects only;
   the superadmin and managers add and edit (rows and photos; a manager also sees drafts), only the superadmin deletes (migration 0009). A published project needs at least one photo. The owner's contact is never stored:
   the flag only says the owner agreed to a reference call, the office passes the contact on by phone.
-- `apps/projects/index.html` → `projects.html`: the superadmin's form (phone friendly): fields, photo upload (resized in the browser to 1800 px),
+- `apps/projects/index.html` → `projects.html`: the form for the superadmin and managers (phone friendly): fields, photo upload (resized in the browser to 1800 px),
   cover = first photo, publish switch. Adding a project needs no deploy.
 - `apps/landing/index.html` → `landing.html`: German B2C landing. Reads the published projects over the REST API with the public key;
   when the database is off, unreachable or has no published project, the static placeholder cards stay. `noindex` until the placeholders
