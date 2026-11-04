@@ -1055,8 +1055,8 @@
       el.className="row"+(i===selIdx?" sel":"");el.dataset.i=i;el.tabIndex=0;
       el.innerHTML='<span class="av">'+esc(d.av||d.name.replace("Клиент ",""))+'</span><div class="mid">'
         +'<div class="r1"><span class="nm">'+esc(d.name)+'</span><span class="sum tab-num">'+d.q.net+'</span></div>'
-        +'<div class="r2"><span class="score '+d.band+'">'+d.score+'</span>'+(d.hot?'<span class="hotchip">🔥</span>':'')+'<span class="p">'+esc(d.product)+' · '+d.id+'</span></div>'
-        +'<div class="r3"><span class="dot '+d.dot+'"></span><span class="st">'+tr(d.statusK)+'</span><span class="time">'+tr(d.timeK)+'</span></div>'
+        +'<div class="r2"><span class="score '+d.band+'">'+d.score+'</span>'+(d.hot?'<span class="hotchip">🔥</span>':'')+'<span class="p">'+esc(d.product)+' · '+esc(d.id)+'</span></div>'
+        +'<div class="r3"><span class="dot '+d.dot+'"></span><span class="st">'+esc(tr(d.statusK))+'</span><span class="time">'+esc(tr(d.timeK))+'</span></div>'
         +'</div>';
       el.addEventListener("click",function(){ selectDeal(i); });
       rows.appendChild(el);
@@ -1169,8 +1169,8 @@
   ];
   function card(c){
     if(c.tagK) return '<div class="kc"><span class="tag">'+tr(c.tagK)+'</span></div>';
-    var nm=c.nOrd?(tr("ord.order")+" "+c.nOrd):esc(c.n);
-    var st=c.stK?tr(c.stK):"";
+    var nm=c.nOrd?(tr("ord.order")+" "+esc(c.nOrd)):esc(c.n);
+    var st=c.stK?esc(tr(c.stK)):"";
     var click=(c.di!=null)?' click" onclick="openDeal('+c.di+')':'';
     if(c.oid) click=' click" data-oid="'+esc(c.oid);
     return '<div class="kc'+(c.rot?' rot':(c.cold?' cold':''))+click+'">'
