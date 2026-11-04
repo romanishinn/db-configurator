@@ -151,7 +151,7 @@
   button.cchip{background:transparent;color:var(--muted);font:inherit;font-size:12.5px;min-height:32px}
   button.cchip.on{color:var(--fg);background:rgba(240,182,103,.08)}
   .row .r2 .score,.row .r2 .hotchip{flex:none}
-  @media (pointer:coarse){.btn,.iconbtn,.cchip,.chips2 button,.seg2 button,.contact a{min-height:44px}.iconbtn{min-width:44px}.rail a{min-height:44px}}
+  @media (pointer:coarse){.btn,.iconbtn,.cchip,.chips2 button,.seg2 button{min-height:44px}.contact a{min-height:36px}.iconbtn{min-width:44px}.rail a{min-height:44px}}
   @media(max-width:680px){.dlgback{padding:0}.dlg{max-width:none;min-height:100%;border-radius:0}.bar .inp{max-width:none;flex:1 1 100%}}
 
   /* ===== premium feel: calm motion, touch comfort, tablet layout ===== */
@@ -350,6 +350,26 @@
   .fe.hot::before{background:var(--hot);border-color:var(--hot)}
   .fe .who{font-size:11.5px;color:var(--muted)} .fe b{font-weight:600}
   .ovhead{margin:18px 0 8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .ovh2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:18px}
+  .ovh2 .ovhead{margin:0}
+  .person{padding:9px 0;border-bottom:1px solid var(--line2)}
+  .person .pt{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .person .pt .pe{margin-left:auto;padding:2px 8px;min-height:30px}
+  .person .pl{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+  .person .pl a{color:var(--fg);text-decoration:none;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:4px 9px;font-size:12.5px}
+  /* the header of a lead: contacts and actions take less room */
+  .contact{gap:5px;margin-top:6px}
+  .contact a{padding:4px 9px;font-size:12.5px;border-radius:8px}
+  .rhead .acts{gap:6px}
+  .rhead .acts .btn{padding:6px 11px;font-size:13px;min-height:40px}
+  @media(max-width:700px){
+    .rhead .acts .btn{flex:1 1 auto;min-width:0;justify-content:center}
+    .rhead .acts .primary{flex:2 1 auto}
+    .rhead .acts .adv{display:none}
+    .rhead .top{gap:6px}
+    .rhead{padding:10px 14px}
+    .rhead .back{margin-bottom:6px}
+  }
 
   .qpanel{border-left:1px solid var(--line2);padding:16px;background:var(--panel);min-width:0}
   .qcard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}

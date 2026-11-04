@@ -651,4 +651,32 @@ select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($q$select count(*) from public.account_types$q$, 'permission denied'), 'the public site reads no types');
 select pg_temp.as_root();
 
+-- ---------- 25. people connected to a lead (0019) ----------
+select pg_temp.as_root();
+insert into public.leads (created_by, assigned_to, source, contact_name, phone) values (:'graz1', :'graz1', 'dealer', 'Contacts Lead', '+43 1 901');
+select id as lead_ct from public.leads where contact_name = 'Contacts Lead' \gset
+select pg_temp.as_user(:'graz1');
+insert into public.lead_contacts (lead_id, name, role, phone) values (:'lead_ct', 'Ivan Foreman', 'foreman', '+43 660 1');
+select pg_temp.check((select count(*) from public.lead_contacts where lead_id = :'lead_ct') = 1, 'the owner of a lead adds a person to it');
+update public.lead_contacts set role = 'installer', note = 'on site from 8' where lead_id = :'lead_ct';
+select pg_temp.check((select role from public.lead_contacts where lead_id = :'lead_ct') = 'installer', 'the owner changes the person');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.lead_contacts (lead_id, name) values (%L, '  ')$q$, :'lead_ct'), 'lead_contacts_name_check'), 'an empty name is refused');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.lead_contacts (lead_id, name, phone) values (%L, 'X', %L)$q$, :'lead_ct', repeat('1', 41)), 'lead_contacts_phone_check'), 'a phone of 41 characters is refused');
+select pg_temp.check(pg_temp.fails(format($q$update public.lead_contacts set lead_id = %L$q$, :'lead_ct'), 'permission denied'), 'a person cannot be moved to another lead');
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.lead_contacts) = 0, 'a dealer of another company does not see the persons');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.lead_contacts (lead_id, name) values (%L, 'Spy')$q$, :'lead_ct'), 'row-level security'), 'a dealer of another company cannot add a person');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.lead_contacts) = 0 and pg_temp.fails(format($q$insert into public.lead_contacts (lead_id, name) values (%L, 'Spy')$q$, :'lead_ct'), 'row-level security'), 'a manager does not see or add persons of a dealer''s lead');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.lead_contacts where lead_id = :'lead_ct') = 1, 'the superadmin sees the persons');
+select pg_temp.as_user(:'graz1');
+delete from public.lead_contacts where lead_id = :'lead_ct';
+select pg_temp.check((select count(*) from public.lead_contacts) = 0, 'the owner removes the person');
+select pg_temp.as_user(:'client');
+select pg_temp.check((select count(*) from public.lead_contacts) = 0, 'a client sees no persons');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$select count(*) from public.lead_contacts$q$, 'permission denied'), 'the public site reads no persons');
+select pg_temp.as_root();
+
 select 'access tests passed' as result;

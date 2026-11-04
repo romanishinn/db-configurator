@@ -192,11 +192,12 @@
   const loadGroups = async () => { try { groups = await run(sb.from('discount_groups').select('id, code, title, max_discount').order('title')); } catch (e) { groups = []; } };
   async function loadDetail(lid, force) {
     if (detail[lid] && !force) return detail[lid];
-    const [events, quotes] = await Promise.all([
+    const [events, quotes, contacts] = await Promise.all([
       run(sb.from('lead_events').select('id, at, by, kind, from_stage, to_stage, to_user, comment').eq('lead_id', lid).order('at', { ascending: false })),
       run(sb.from('quotes').select('id, number, created_at, valid_until, total_net, discount, config, revises, owner').eq('lead_id', lid).order('created_at', { ascending: false })),
+      run(sb.from('lead_contacts').select('id, name, role, phone, email, note').eq('lead_id', lid).order('created_at')).catch(() => []),
     ]);
-    return (detail[lid] = { events, quotes });
+    return (detail[lid] = { events, quotes, contacts });
   }
 
   /* ---------- model ---------- */
@@ -473,7 +474,7 @@
     }).join('');
     let own = '';
     if (open) own = !l.assigned_to ? (sees() ? _('<button class="btn sm" data-act="take">Взять себе</button>') : '') : (mine || sees() ? _('<button class="btn sm" data-act="transfer">Передать</button>') : '');
-    const next = open ? _('<button class="btn primary sm" data-act="advance">Перевести → ') + esc(idx + 1 >= lastIx() ? _('Заказ') : stepNames[idx + 1]) + '</button>' : '';
+    const next = open ? _('<button class="btn primary sm" data-act="advance"><span class="adv">Перевести </span>→ ') + esc(idx + 1 >= lastIx() ? _('Заказ') : stepNames[idx + 1]) + '</button>' : '';
     const lose = open ? _('<button class="btn sm" data-act="lose">Отказ</button>') : _('<button class="btn sm" data-act="reopen">Вернуть в работу</button>');
     const wa = waNum(l.phone);
     const contacts = (l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '">📞 ' + esc(l.phone) + '</a>' : '') + (wa ? '<a href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (l.email ? '<a href="mailto:' + esc(l.email) + '">✉ ' + esc(l.email) + '</a>' : '') + (l.object_address ? '<a href="' + esc(mapUrl(l.object_address)) + _('" target="_blank" rel="noopener">📍 Карта</a>') : '');
@@ -494,11 +495,16 @@
     let tabBody = '';
     const evs = dt && dt.events, qs = dt && dt.quotes;
     if (tab === 'ov') {
-      tabBody = kv(_('Телефон'), l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '" style="color:inherit">' + esc(l.phone) + '</a>' : '—') + kv('E-mail', l.email ? '<a href="mailto:' + esc(l.email) + '" style="color:inherit">' + esc(l.email) + '</a>' : '—')
+      const cts = (detail[l.id] || {}).contacts;
+      const persons = _('<div class="ovh2"><h4 class="ovhead">Связанные лица</h4><button class="btn sm ghost" data-act="addperson">＋ Добавить</button></div>')
+        + (!cts ? '' : cts.length ? cts.map((c) => '<div class="person"><div class="pt"><b>' + esc(c.name) + '</b>' + (c.role ? ' <span class="tag">' + esc(_(c.role)) + '</span>' : '') + '<button class="btn sm ghost pe" data-act="editperson" data-p="' + c.id + '" title="' + esc(_('Править')) + '">✎</button></div><div class="pl">'
+            + (c.phone ? '<a href="tel:' + esc(tel(c.phone)) + '">📞 ' + esc(c.phone) + '</a>' : '') + (waNum(c.phone) ? '<a href="https://wa.me/' + waNum(c.phone) + '" target="_blank" rel="noopener">💬</a>' : '') + (c.email ? '<a href="mailto:' + esc(c.email) + '">✉ ' + esc(c.email) + '</a>' : '') + '</div>'
+            + (c.note ? '<div class="muted" style="font-size:12.5px;margin-top:3px">' + esc(c.note) + '</div>' : '') + '</div>').join('') : _('<div class="muted" style="font-size:13px">Прораб, монтажник, человек на объекте — добавьте, кто ещё участвует.</div>'));
+      tabBody = _('<div class="ovh2" style="margin-top:0"><h4 class="ovhead" style="margin-top:0">Данные клиента</h4><button class="btn sm ghost" data-act="edit">✎ Править</button></div>') + kv(_('Телефон'), l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '" style="color:inherit">' + esc(l.phone) + '</a>' : '—') + kv('E-mail', l.email ? '<a href="mailto:' + esc(l.email) + '" style="color:inherit">' + esc(l.email) + '</a>' : '—')
         + kv(_('Адрес объекта'), esc(l.object_address || '—') + (l.postcode ? ' · ' + esc(l.postcode) : '')) + kv(_('Ответственный'), esc(d.owner) + (d.comp ? ' · ' + esc(d.comp) : '')) + kv(_('Создан'), dmy(l.created_at))
         + (l.stage === 'lost' ? kv(_('Причина отказа'), esc(l.lost_reason || '—')) : '')
-        + _('<div id="dupHint"></div><h4 class="ovhead">Недавняя активность</h4><div class="feed">') + (evs ? feedHtml(evs, 5) : _('<div class="muted">Загрузка…</div>')) + '</div>'
-        + _('<div style="margin-top:14px"><button class="btn sm" data-act="edit">✎ Править данные клиента</button></div>');
+        + persons
+        + _('<div id="dupHint"></div><h4 class="ovhead">Недавняя активность</h4><div class="feed">') + (evs ? feedHtml(evs, 5) : _('<div class="muted">Загрузка…</div>')) + '</div>';
     } else if (tab === 'q') {
       tabBody = !qs ? _('<div class="muted">Загрузка…</div>') : qs.length ? qs.map((q) => '<div class="vrow"><span>' + esc(q.number) + '</span><span class="d">' + dmy(q.created_at) + _(' · до ') + dmy(q.valid_until) + apprTag(q.id) + '</span><span class="s tab-num">' + money(q.total_net) + '</span><button class="btn sm" data-act="openq" data-q="' + q.id + _('">Открыть</button></div>')).join('') : _('<div class="muted">КП ещё нет. Нажмите «Рассчитать КП».</div>');
     } else if (tab === 'hist') {
@@ -567,6 +573,24 @@
       foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Передать'), primary: true, run: async (c, r) => { const t = val(r, 'c').trim(); if (!t) return toast(_('Нужен комментарий'), true); await act(async () => { await run(sb.rpc('transfer_lead', { p_lead: l.id, p_to: val(r, 'u'), p_comment: t })); }, _('Лид передан')); c(); } }],
     });
   }
+  const PERSON_ROLES = ['Прораб', 'Монтажник', 'На объекте', 'Архитектор', 'Другое'];
+  function personDialog(l, p) {
+    dialog({
+      title: p ? _('Связанное лицо') : _('Новое связанное лицо'), sub: esc(l.contact_name || ''),
+      body: '<div class="fld"><label>' + esc(_('Имя')) + '</label><input class="inp" name="n" maxlength="200" value="' + esc(p ? p.name : '') + '" autofocus></div>'
+        + '<div class="fld"><label>' + esc(_('Кто это')) + '</label><div class="chips2" data-prole>' + PERSON_ROLES.map((r) => '<button type="button" class="cchip" data-r="' + esc(r) + '">' + esc(_(r)) + '</button>').join('') + '</div><input class="inp" name="r" maxlength="60" style="margin-top:8px" placeholder="' + esc(_('Или напишите свой вариант')) + '" value="' + esc(p ? (p.role || '') : '') + '"></div>'
+        + '<div class="fld"><label>' + esc(_('Телефон')) + '</label><input class="inp" type="tel" name="p" maxlength="40" value="' + esc(p ? (p.phone || '') : '') + '"></div>'
+        + '<div class="fld"><label>E-mail</label><input class="inp" type="email" name="e" maxlength="254" value="' + esc(p ? (p.email || '') : '') + '"></div>'
+        + '<div class="fld"><label>' + esc(_('Заметка')) + '</label><textarea class="inp" name="t" maxlength="1000" rows="2">' + esc(p ? (p.note || '') : '') + '</textarea></div>',
+      onOpen: (r) => r.querySelector('[data-prole]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) r.querySelector('[name=r]').value = b.dataset.r; }),
+      foot: [{ label: _('Отмена'), run: (c) => c() }].concat(p ? [{ label: _('Удалить'), run: async (c) => { try { await run(sb.from('lead_contacts').delete().eq('id', p.id)); c(); toast(_('Удалено')); await refreshContacts(l.id); } catch (er) { toast(humanError(er), true); } } }] : []).concat([{ label: _('Сохранить'), primary: true, run: async (c, r) => {
+        const row = { name: val(r, 'n').trim(), role: val(r, 'r').trim() || null, phone: val(r, 'p').trim() || null, email: val(r, 'e').trim() || null, note: val(r, 't').trim() || null };
+        if (!row.name) return toast(_('Нужно имя'), true);
+        try { if (p) await run(sb.from('lead_contacts').update(row).eq('id', p.id)); else await run(sb.from('lead_contacts').insert(Object.assign({ lead_id: l.id }, row))); c(); toast(_('Сохранено')); await refreshContacts(l.id); } catch (er) { toast(humanError(er), true); }
+      } }]),
+    });
+  }
+  async function refreshContacts(lid) { await loadDetail(lid, true); if (curLid === lid) C.rerenderRecord(); }
   function editDialog(l) {
     dialog({
       title: _('Данные клиента'),
@@ -622,6 +646,8 @@
       await run(sb.from('leads').update({ next_action: null, next_action_at: null }).eq('id', l.id));
     }, _('Готово. Назначьте следующий шаг')).then(() => { const nl = curLead(); if (nl && isOpen(nl)) nextDialog(nl); });
     if (act0 === 'edit') return editDialog(l);
+    if (act0 === 'addperson') return personDialog(l, null);
+    if (act0 === 'editperson') return personDialog(l, (((detail[l.id] || {}).contacts) || []).find((x) => x.id === a.dataset.p));
     if (act0 === 'comment') { const t = ($('#noteTxt') || {}).value || ''; if (!t.trim()) return toast(_('Напишите заметку'), true); return act(async () => { await run(sb.rpc('comment_lead', { p_lead: l.id, p_comment: t.trim() })); }, _('Заметка добавлена')); }
     if (act0 === 'newq') return handoff(l, null);
     if (act0 === 'openq') { const q = ((detail[l.id] || {}).quotes || []).find((x) => x.id === a.dataset.q); return handoff(l, q || null); }
