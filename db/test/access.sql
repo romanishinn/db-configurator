@@ -606,6 +606,10 @@ select pg_temp.check(pg_temp.fails($q$select public.set_pipeline(array['a', '  '
 select pg_temp.check(pg_temp.fails(format($q$select public.set_pipeline(array['a', %L])$q$, repeat('x', 41)), 'PIPELINE_TITLE'), 'a name of 41 characters is refused');
 select public.set_pipeline(array['Neu', 'A', 'B', 'C', 'D', 'E', 'Fertig']);
 select pg_temp.check((select count(*) from public.pipeline_stages) = 7 and (select count(*) from public.lead_page('c3') where contact_name = 'Pipe A') = 1, 'with seven stages the lead is back in its own stage');
+-- a lost lead that is reopened: the position follows the stage; a move between equal stage names writes no history line
+update public.leads set stage = 'lost', lost_reason = 'x' where contact_name = 'Pipe B';
+update public.leads set stage = 'processing', lost_reason = null where contact_name = 'Pipe B';
+select pg_temp.check((select col from public.leads where contact_name = 'Pipe B') = 1, 'a reopened lead is back in the stage of its status');
 select pg_temp.as_user(:'manager');
 select pg_temp.check(pg_temp.fails($q$select public.set_pipeline(array['a', 'b'])$q$, 'FORBIDDEN'), 'a manager cannot change the pipeline');
 select pg_temp.check((select count(*) from public.pipeline_stages) = 7, 'a manager reads the stages');

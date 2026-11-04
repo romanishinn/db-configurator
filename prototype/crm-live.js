@@ -70,6 +70,10 @@
     if (/COMMENT_REQUIRED/.test(m)) return _('Нужен комментарий');
     if (/lost_needs_reason/.test(m)) return _('Укажите причину отказа');
     if (/BAD_ASSIGNEE/.test(m)) return _('Этому человеку лид передать нельзя');
+    if (/PIPELINE_SIZE/.test(m)) return _('Этапов должно быть от 2 до 7');
+    if (/PIPELINE_TITLE/.test(m)) return _('Название этапа: от 1 до 40 символов');
+    if (/TYPE_UNKNOWN/.test(m)) return _('Такого типа нет');
+    if (/_input_limits|_limit\b|violates check constraint/i.test(m)) return _('Слишком длинное или неверное значение');
     if (/FORBIDDEN|permission denied|row-level security/i.test(m)) return _('Нет прав на это действие');
     if (/Failed to fetch|NetworkError/i.test(m)) return _('Нет связи с сервером');
     return m || _('Ошибка');
@@ -98,7 +102,7 @@
     const foot = back.querySelector('.foot');
     (o.foot || [{ label: _('Закрыть'), run: (c) => c() }]).forEach((f) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (f.primary ? ' primary' : ''); b.textContent = f.label;
-      b.onclick = async () => { if (b.disabled) return; b.disabled = true; try { await f.run(close, back); } finally { b.disabled = false; } };
+      b.onclick = async () => { if (b.disabled) return; b.disabled = true; actFail = false; try { await f.run((...a) => { if (actFail) return; close(...a); }, back); } finally { b.disabled = false; } };   // a failed action keeps the dialog (and what was typed) open
       foot.appendChild(b);
     });
     if (o.onOpen) o.onOpen(back, close);
@@ -237,7 +241,7 @@
       const sum = list.reduce((a, x) => a + (Number(x.d.raw.last_total_net) || 0), 0);
       return { tK, key: colKey(ix), total, more: Math.max(0, total - list.length), sum: sum && total <= list.length ? money(sum) : '', cards: list.map(({ d, di }) => ({ n: d.name, di, sum: d.q.net, sc: d.score, hot: d.hot, stK: d.raw.stage === 'won' || d.raw.stage === 'lost' ? STAGE_RU[d.raw.stage] : (d.raw.next_action || stageName(d.raw)), dot: d.dot, days: d.curDays, rot: !!d.raw.stale, cold: false })) };
     };
-    const req = pipe.map((t, ix) => col(ix === lastIx() ? 'st.winlose' : _(t), ix));
+    const req = pipe.map((t, ix) => col(_(t), ix));
     const ord = ORDER_COL.map(([tK, st]) => {
       const list = orders.filter((o) => o.stage === st);
       const sum = list.reduce((a, o) => a + (Number(o.quotes && o.quotes.total_net) || 0), 0);
@@ -544,8 +548,10 @@
 
   /* ---------- actions on the card ---------- */
   const curLead = () => byId.get(curLid);
+  let actFail = false;
   async function act(fn, okMsg, undo) {
-    try { await fn(); if (okMsg) toast(okMsg, false, undo ? { label: _('Отменить'), run: () => act(undo, _('Возвращено')) } : null); const lid = curLid, old = JSON.stringify(detail[lid]); await refresh(lid, true); await loadDetail(lid, true); if (curLid === lid && JSON.stringify(detail[lid]) !== old) C.rerenderRecord(); } catch (e) { toast(humanError(e), true); }
+    actFail = false;
+    try { await fn(); if (okMsg) toast(okMsg, false, undo ? { label: _('Отменить'), run: () => act(undo, _('Возвращено')) } : null); const lid = curLid, old = JSON.stringify(detail[lid]); await refresh(lid, true); await loadDetail(lid, true); if (curLid === lid && JSON.stringify(detail[lid]) !== old) C.rerenderRecord(); } catch (e) { actFail = true; toast(humanError(e), true); }
   }
   function nextDialog(l) {
     dialog({
@@ -586,6 +592,7 @@
       foot: [{ label: _('Отмена'), run: (c) => c() }].concat(p ? [{ label: _('Удалить'), run: async (c) => { try { await run(sb.from('lead_contacts').delete().eq('id', p.id)); c(); toast(_('Удалено')); await refreshContacts(l.id); } catch (er) { toast(humanError(er), true); } } }] : []).concat([{ label: _('Сохранить'), primary: true, run: async (c, r) => {
         const row = { name: val(r, 'n').trim(), role: val(r, 'r').trim() || null, phone: val(r, 'p').trim() || null, email: val(r, 'e').trim() || null, note: val(r, 't').trim() || null };
         if (!row.name) return toast(_('Нужно имя'), true);
+        if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) return toast(_('Проверьте e-mail'), true);
         try { if (p) await run(sb.from('lead_contacts').update(row).eq('id', p.id)); else await run(sb.from('lead_contacts').insert(Object.assign({ lead_id: l.id }, row))); c(); toast(_('Сохранено')); await refreshContacts(l.id); } catch (er) { toast(humanError(er), true); }
       } }]),
     });
@@ -593,6 +600,7 @@
   async function refreshContacts(lid) { await loadDetail(lid, true); if (curLid === lid) C.rerenderRecord(); }
   function editDialog(l) {
     dialog({
+      onOpen: (r) => [['n', 200], ['p', 40], ['e', 254], ['a', 300], ['z', 20]].forEach(([k, m]) => { const i = r.querySelector('[name="' + k + '"]'); if (i) i.maxLength = m; }),
       title: _('Данные клиента'),
       body: _('<div class="fld"><label>Имя</label><input class="inp" name="n" value="') + esc(l.contact_name || '') + _('"></div><div class="fld"><label>Телефон</label><input class="inp" type="tel" name="p" value="') + esc(l.phone || '') + '"></div><div class="fld"><label>E-mail</label><input class="inp" type="email" name="e" value="' + esc(l.email || '') + _('"></div><div class="fld"><label>Адрес объекта</label><input class="inp" name="a" value="') + esc(l.object_address || '') + _('"></div><div class="fld"><label>Индекс</label><input class="inp" name="z" value="') + esc(l.postcode || '') + '"></div>',
       foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Сохранить'), primary: true, run: async (c, r) => { const n = val(r, 'n').trim(), p = val(r, 'p').trim(), e = val(r, 'e').trim(); if (!n && !p && !e) return toast(_('Нужны имя, телефон или e-mail'), true); await act(async () => { await run(sb.from('leads').update({ contact_name: n || null, phone: p || null, email: e || null, object_address: val(r, 'a').trim() || null, postcode: val(r, 'z').trim() || null }).eq('id', l.id)); }, _('Сохранено')); c(); } }],
@@ -988,9 +996,11 @@
       if (e.target.closest('[data-padd]')) { draft.splice(draft.length - 1, 0, _('Новый этап')); return box._redraw(); }
       const d = e.target.closest('[data-pdel]'); if (d) { draft.splice(+d.dataset.pdel, 1); return box._redraw(); }
       if (e.target.closest('[data-psave]')) {
+        if (box._busy) return; box._busy = true;
         const t = draft.map((x) => String(x).trim());
-        if (t.some((x) => !x)) return toast(_('Название этапа не может быть пустым'), true);
+        if (t.some((x) => !x)) { box._busy = false; return toast(_('Название этапа не может быть пустым'), true); }
         try { await run(sb.rpc('set_pipeline', { p_titles: t })); await loadPipeline(); toast(_('Сохранено')); try { await refresh(curLid, true); } catch (er) {} rebuild(curLid); renderChips(); if (curLid) C.rerenderRecord(); } catch (er) { toast(humanError(er), true); }
+        box._busy = false;
       }
     });
     box._reset = () => { draft = pipe.slice(); draw(); };
@@ -1012,6 +1022,7 @@
   async function pollChanges() {
     if (document.hidden || !booted) return;
     try {
+      const before = pipe.join('\u0001'); await loadPipeline(); if (pipe.join('\u0001') !== before && !$('.dlgback')) { await refresh(); renderChips(); }
       const [c, l] = await Promise.all([run(sb.rpc('lead_counts')), run(sb.from('leads').select('last_activity_at').order('last_activity_at', { ascending: false }).limit(1))]);
       const mark = JSON.stringify([c, l]);
       if (lastMark && mark !== lastMark) { const a = document.activeElement; if (!$('.dlgback') && !(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) await refresh(); }

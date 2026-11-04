@@ -27,7 +27,7 @@ begin
     t := btrim(coalesce(p_titles[i], ''));
     if length(t) < 1 or length(t) > 40 then raise exception 'PIPELINE_TITLE: 1 to 40 characters' using errcode = '22023'; end if;
   end loop;
-  delete from public.pipeline_stages;
+  delete from public.pipeline_stages where true;
   for i in 1 .. n loop insert into public.pipeline_stages (pos, title) values (i - 1, btrim(p_titles[i])); end loop;
 end $$;
 revoke all on function public.set_pipeline(text[]) from public, anon;
@@ -50,6 +50,10 @@ create index leads_col on public.leads (col) where stage not in ('won', 'lost');
 create or replace function public.leads_sync_col() returns trigger
 language plpgsql set search_path = public as $$
 begin
+  if old.stage in ('won', 'lost') and new.stage not in ('won', 'lost') and new.col is not distinct from old.col then   -- reopened: the position follows the stage
+    new.col := case new.stage when 'new' then 0 when 'contacted' then 1 when 'processing' then 1 when 'visit_agreed' then 1 when 'consultation' then 1 when 'measured' then 1 when 'quote_issued' then 2 when 'proposal' then 2 else 3 end;
+    return new;
+  end if;
   if new.stage in ('won', 'lost') or old.stage in ('won', 'lost') then return new; end if;
   if new.col is distinct from old.col and new.stage is not distinct from old.stage then
     new.stage := case when new.col = 0 then 'new' when new.col = 1 then 'contacted' when new.col = 2 then 'quote_issued' else 'negotiation' end;
@@ -92,7 +96,9 @@ begin
     perform set_config('crm.move', '', true);
     select title into a from public.pipeline_stages where pos = least(old.col, (select count(*) - 2 from public.pipeline_stages));
     select title into b from public.pipeline_stages where pos = least(new.col, (select count(*) - 2 from public.pipeline_stages));
-    insert into public.lead_events (lead_id, by, kind, comment) values (new.id, auth.uid(), 'step', coalesce(a, '?') || ' → ' || coalesce(b, '?'));
+    if a is distinct from b then
+      insert into public.lead_events (lead_id, by, kind, comment) values (new.id, auth.uid(), 'step', coalesce(a, '?') || ' → ' || coalesce(b, '?'));
+    end if;
   elsif new.stage is distinct from old.stage then
     insert into public.lead_events (lead_id, by, kind, from_stage, to_stage, comment)
     values (new.id, auth.uid(), 'stage', old.stage, new.stage, case when new.stage = 'lost' then new.lost_reason end);
