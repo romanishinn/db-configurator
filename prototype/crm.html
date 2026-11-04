@@ -159,8 +159,8 @@
   ::selection{background:rgba(240,182,103,.28)}
   *{scrollbar-width:thin;scrollbar-color:rgba(176,192,222,.18) transparent}
   @media (prefers-reduced-motion:no-preference){
-    .screen.on{animation:scrIn .32s var(--ease) both}
-    @keyframes scrIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .screen.on{animation:scrIn .22s var(--ease) both}
+    @keyframes scrIn{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes dlgIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
     @keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
@@ -174,12 +174,19 @@
     .dlgback{animation:fadeIn .22s ease both;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
     .dlg{animation:dlgIn .32s var(--ease) both}
     .toast2{animation:toastIn .34s var(--ease) both}
-    .record>*{animation:recIn .3s var(--ease) both}
+    .record.fresh>*{animation:recIn .28s var(--ease) both}
     .kc.landed{animation:landed .9s var(--ease)}
     .rail{transition:transform .32s var(--ease)}
     .scrim{transition:opacity .3s}
   }
   @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  /* loading states: a calm placeholder instead of demo text or a blank flash */
+  .skel{padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+  .skel i{display:block;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--panel) 25%,var(--panel2) 50%,var(--panel) 75%);background-size:200% 100%}
+  .skel i.h{height:26px;width:34%}
+  @media (prefers-reduced-motion:no-preference){.skel i{animation:shim 1.4s linear infinite}@keyframes shim{to{background-position:-200% 0}}}
+  .screen.loading>.pad{display:none}
+  .restoring #gate{visibility:hidden}
   .brief,.upnext,.qcard,.panel,.dlg{box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
   .row{border-radius:0}
   .row.sel{background:linear-gradient(90deg,rgba(240,182,103,.07),transparent 70%),var(--panel2)}

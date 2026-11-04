@@ -72,6 +72,9 @@
     return m || _('Ошибка');
   }
 
+  const skeleton = (n) => '<div class="skel" aria-busy="true"><i class="h"></i>' + '<i></i>'.repeat(n || 6) + '</div>';
+  let loaded = false;        // the first data has arrived; until then screens show a placeholder, never demo or "empty" text
+
   /* ---------- toast + dialog ---------- */
   function toast(msg, bad, action) {
     let box = $('#toasts'); if (!box) { box = document.createElement('div'); box.id = 'toasts'; box.className = 'toasts'; box.setAttribute('role', 'status'); document.body.appendChild(box); }
@@ -192,12 +195,18 @@
     renderChips(); renderBadges();
     if (curScreen() === 'approvals') renderApprovals();
   }
-  async function refresh(keepLid) {
+  let sig = '';
+  async function refresh(keepLid, force) {
     await Promise.all([loadLeads(), loadOrders(), loadApprovals()]);
+    loaded = true;
+    const s = JSON.stringify([leads, orders, approvals]) + curLang();
+    if (s === sig && !force) return false;         // nothing changed: do not redraw (no flicker, scroll and typing stay)
+    sig = s;
     rebuild(keepLid === undefined ? curLid : keepLid);
     if (curScreen() === 'quotes') renderQuotes();
     if (curScreen() === 'customers') renderCustomers();
     if (curScreen() === 'admin') renderAdmin();
+    return true;
   }
   const curScreen = () => (($('.screen.on') || {}).dataset || {}).screen;
 
@@ -216,6 +225,7 @@
   };
   function renderChips() {
     const box = $('.lh .chips'); if (!box) return;
+    if (!loaded) { box.innerHTML = ''; return; }
     const cnt = (k) => leads.filter(preds[k]).length;
     const def = [['need', _('Нужны вам')], ['late', _('Просрочено')], ['wait', _('Ждут клиента')], ['all', _('Все открытые')]];
     box.innerHTML = def.map(([k, t]) => '<button type="button" class="cchip' + (chip === k ? ' on' : '') + '" data-chip="' + k + '"><span class="n">' + cnt(k) + '</span> <span>' + t + '</span></button>').join('');
@@ -229,10 +239,11 @@
     if (al) { let ab = al.querySelector('.badge'); if (!ab) { ab = document.createElement('span'); ab.className = 'badge'; al.appendChild(ab); } const pn = approvals.filter((a) => a.status === 'pending').length; ab.textContent = pn; ab.hidden = !pn; }
   }
   C.emptyList = () => {
+    if (!loaded) return skeleton(5);
     const empty = !leads.length;
     return '<div class="empty" style="height:auto;padding:48px 18px"><div class="ic">✓</div><div>' + (empty ? _('Пока нет ни одного лида.<br><span class="muted">Заявки с сайта появятся здесь сами. Или добавьте первого клиента вручную.</span>') : _('В этом списке пусто.<br><span class="muted">Переключите фильтр или очистите поиск.</span>')) + _('</div><button class="btn primary" data-act="newlead">＋ Новый лид</button></div>');
   };
-  C.emptyRecord = () => _('<div class="empty"><div class="ic">◍</div><div>Выберите лид слева<br><span class="muted">или создайте нового кнопкой «Новый лид»</span></div></div>');
+  C.emptyRecord = () => !loaded ? skeleton(4) : _('<div class="empty"><div class="ic">◍</div><div>Выберите лид слева<br><span class="muted">или создайте нового кнопкой «Новый лид»</span></div></div>');
 
   /* ---------- login / boot ---------- */
   C.login = async (email, pass, status, done) => {
@@ -282,18 +293,25 @@
     if (booted) return; booted = true;
     applyRole();
     await Promise.all([loadUsers(), loadGroups()]);
-    try { await refresh(null); } catch (e) { toast(humanError(e), true); }
+    try { await refresh(null, true); } catch (e) { loaded = true; toast(humanError(e), true); C.rerender(); }
+    renderChips(); C.onShow(curScreen());
     pollNotifications(); setInterval(() => { pollNotifications(); }, 60000);
-    setInterval(() => { if (!document.hidden && !$('.dlgback')) refresh().catch(() => {}); }, 120000);
+    setInterval(() => { const a = document.activeElement; if (!document.hidden && !$('.dlgback') && !(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) refresh().catch(() => {}); }, 120000);
     const h = location.hash.replace('#', ''); if (h) C.onShow(h);
   }
 
+  // a stored session is being restored: keep the login screen out of sight meanwhile
+  try { if (Object.keys(localStorage).some((k) => /^sb-.+-auth-token$/.test(k))) document.documentElement.classList.add('restoring'); } catch (e) {}
+  const unrestore = () => document.documentElement.classList.remove('restoring');
   // start: demo data must never show when the backend is on
   C.setData([], buildBoards([])[0], buildBoards([])[1]);
+  ['admin', 'quotes', 'customers', 'approvals'].forEach((id) => setScreen(id, skeleton()));
+  { const st = $('[data-screen="settings"]'); if (st) { st.classList.add('loading'); st.insertAdjacentHTML('afterbegin', skeleton(5)); } }
   C.rerender(); renderChips();
   ready.then(async (ok) => {
-    if (!ok) return;
+    if (!ok) { unrestore(); return; }
     me = await loadMe();
+    unrestore();
     if (me && STAFF.includes(me.role)) { document.body.classList.add('authed'); await boot(); }
     sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT' && booted) location.reload(); });
   });
@@ -329,6 +347,12 @@
   C.renderLive = (d, wrap) => {
     const l = d.raw;
     if (curLid !== l.id) { curLid = l.id; tab = 'ov'; }
+    const same = wrap.dataset.lid === l.id;
+    const keepScroll = same ? ((wrap.querySelector('.rbody') || {}).scrollTop || 0) : 0;
+    const keepNote = same && $('#noteTxt', wrap) ? $('#noteTxt', wrap).value : '';
+    const hadFocus = same && document.activeElement && document.activeElement.id === 'noteTxt';
+    wrap.classList.toggle('fresh', !same); wrap.dataset.lid = l.id;
+    if (!same) { clearTimeout(wrap._ft); wrap._ft = setTimeout(() => wrap.classList.remove('fresh'), 420); }
     const dt = detail[l.id];
     if (!dt) loadDetail(l.id).then(() => { if (curLid === l.id) C.rerenderRecord(); }).catch((e) => toast(humanError(e), true));
     const src = srcInfo(l), late = overdue(l), open = isOpen(l), idx = d.stage;
@@ -388,6 +412,8 @@
       + '<div class="rbody"><div class="rmain">' + brief + _('<div class="upnext"><div class="uh"><span>Следующий шаг</span></div>') + nextBlock + '</div><div class="tabs" role="tablist">' + tabs + '</div>' + tabBody + '</div>' + qpanel + '</div>';
     const back = $('#recBack', wrap); if (back) back.onclick = () => $('#split').classList.remove('show-rec');
     if (tab === 'ov') dupHint(l);
+    const nt = $('#noteTxt', wrap); if (nt && keepNote) { nt.value = keepNote; if (hadFocus) nt.focus(); }
+    const rb = wrap.querySelector('.rbody'); if (rb && keepScroll) rb.scrollTop = keepScroll;
   };
   const kv = (k, v) => '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
 
@@ -402,7 +428,7 @@
   /* ---------- actions on the card ---------- */
   const curLead = () => leads.find((x) => x.id === curLid);
   async function act(fn, okMsg) {
-    try { await fn(); if (okMsg) toast(okMsg); delete detail[curLid]; await refresh(curLid); } catch (e) { toast(humanError(e), true); }
+    try { await fn(); if (okMsg) toast(okMsg); const lid = curLid, old = JSON.stringify(detail[lid]); await refresh(lid, true); await loadDetail(lid, true); if (curLid === lid && JSON.stringify(detail[lid]) !== old) C.rerenderRecord(); } catch (e) { toast(humanError(e), true); }
   }
   function nextDialog(l) {
     dialog({
@@ -554,34 +580,46 @@
   }
 
   /* ---------- screens: quotes, customers, admin, settings ---------- */
-  function setScreen(id, html) { const sc = $('[data-screen="' + id + '"]'); if (sc) sc.innerHTML = '<div class="pad">' + html + '</div>'; }
+  function setScreen(id, html) { const sc = $('[data-screen="' + id + '"]'); if (!sc) return; const out = html.startsWith('<div class="skel"') ? html : '<div class="pad">' + html + '</div>'; if (sc.dataset.h === out) return; sc.dataset.h = out; sc.innerHTML = out; }
   let quotes = [], qTab = 'act', qSearch = '';
+  let quotesLoaded = false;
   async function renderQuotes() {
-    const sc = $('[data-screen="quotes"]');
-    if (!sc) return;
-    try { quotes = await run(sb.from('quotes').select('id, number, created_at, valid_until, total_net, revises, lead_id, owner, config, leads(contact_name, phone)').order('created_at', { ascending: false }).limit(500)); } catch (e) { toast(humanError(e), true); return; }
+    if (!quotesLoaded) setScreen('quotes', skeleton());
+    try { await loadQuotes(); quotesLoaded = true; } catch (e) { toast(humanError(e), true); return; }
+    drawQuotes();
+  }
+  async function loadQuotes() {
+    quotes = await run(sb.from('quotes').select('id, number, created_at, valid_until, total_net, revises, lead_id, owner, config, leads(contact_name, phone)').order('created_at', { ascending: false }).limit(500));
+  }
+  function drawQuotes() {
     const revised = new Set(quotes.map((q) => q.revises).filter(Boolean)), t = today();
     const isAct = (q) => q.valid_until >= t && !revised.has(q.id);
     const list = quotes.filter((q) => (qTab === 'act' ? isAct(q) : !isAct(q))).filter((q) => !qSearch || [q.number, q.leads && q.leads.contact_name, q.leads && q.leads.phone].some((x) => String(x || '').toLowerCase().includes(qSearch.toLowerCase())));
     setScreen('quotes', _('<div class="h1" style="margin-bottom:12px">Коммерческие предложения</div><div class="bar"><div class="seg2"><button class="') + (qTab === 'act' ? 'on' : '') + _('" data-qt="act">Действующие</button><button class="') + (qTab === 'arc' ? 'on' : '') + _('" data-qt="arc">Архив</button></div><input class="inp" id="qSearch" placeholder="Поиск: номер, клиент…" value="') + esc(qSearch) + _('"><div class="sp"></div><button class="btn primary sm" data-act="configurator">＋ Новое КП</button></div>')
       + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>№ КП</th><th>Клиент</th><th class="num">Сумма, нетто</th><th>Создано</th><th>Действует до</th></tr></thead><tbody>') + list.map((q) => '<tr class="click" data-qrow="' + q.id + '"><td><b>' + esc(q.number) + '</b>' + apprTag(q.id) + '</td><td>' + esc((q.leads && (q.leads.contact_name || q.leads.phone)) || '—') + '</td><td class="num">' + money(q.total_net) + '</td><td>' + dmy(q.created_at) + '</td><td class="' + (q.valid_until < t ? 'late' : '') + '">' + dmy(q.valid_until) + '</td></tr>').join('') + '</tbody></table></div></div>'
         : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">❏</div><div>' + (qTab === 'act' ? _('Действующих КП нет.<br><span class="muted">Рассчитайте первое в конфигураторе или из карточки лида.</span>') : _('Архив пуст.')) + '</div></div>'));
-    const si = $('#qSearch'); if (si) { si.oninput = () => { qSearch = si.value; renderQuotesLocal(); }; }
+    const si = $('#qSearch'); if (si) si.oninput = () => { qSearch = si.value; const pos = si.selectionStart; drawQuotes(); const s = $('#qSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } };
   }
-  function renderQuotesLocal() { const pos = ($('#qSearch') || {}).selectionStart; renderQuotes().then(() => { const s = $('#qSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } }); }
   let cust = [], cSearch = '';
+  let custLoaded = false;
   async function renderCustomers() {
+    if (!custLoaded) setScreen('customers', skeleton());
+    await loadCustomers(); custLoaded = true; drawCustomers();
+  }
+  async function loadCustomers() {
     try { cust = await run(sb.from('customers').select('*').order('last_activity_at', { ascending: false }).limit(1000)); }
     catch (e) { // the view comes with migration 0008; until then group the leads here (same rule: last 9 digits of the phone, else e-mail)
       const g = {}; leads.forEach((l) => { const k = normPhone(l.phone) || (l.email || '').toLowerCase(); if (!k) return; const c = g[k] || (g[k] = { key: k, name: l.contact_name, phone: l.phone, email: l.email, object_address: l.object_address, leads: 0, won: 0, last_activity_at: l.last_activity_at }); c.leads++; if (l.stage === 'won') c.won++; if (l.last_activity_at > c.last_activity_at) c.last_activity_at = l.last_activity_at; });
       cust = Object.values(g).sort((a, b) => (a.last_activity_at < b.last_activity_at ? 1 : -1));
     }
+  }
+  function drawCustomers() {
     const q = cSearch.toLowerCase(), dg = cSearch.replace(/\D/g, '');
     const list = cust.filter((c) => !q || [c.name, c.email, c.object_address].some((x) => String(x || '').toLowerCase().includes(q)) || (dg.length >= 3 && String(c.phone || '').replace(/\D/g, '').includes(dg)));
     setScreen('customers', _('<div class="h1" style="margin-bottom:12px">Клиенты</div><div class="bar"><input class="inp" id="cSearch" placeholder="Поиск: имя, телефон, e-mail…" value="') + esc(cSearch) + _('"><div class="sp"></div><button class="btn primary sm" data-act="newlead">＋ Новый клиент</button></div>')
       + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>Клиент</th><th>Телефон</th><th>Адрес</th><th class="num">Обращений</th><th class="num">Заказов</th><th>Последний контакт</th></tr></thead><tbody>') + list.map((c) => '<tr class="click" data-cust="' + esc(c.key) + '"><td><b>' + esc(c.name || c.email || c.phone) + '</b></td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.object_address || '—') + '</td><td class="num">' + c.leads + '</td><td class="num">' + c.won + '</td><td>' + ago(c.last_activity_at) + '</td></tr>').join('') + '</tbody></table></div></div>'
         : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">◍</div><div>' + (cust.length ? _('Никого не найдено.') : _('Клиентов пока нет.<br><span class="muted">Они появятся из лидов — с сайта или созданных вручную.</span>')) + _('</div><button class="btn primary" data-act="newlead">＋ Новый клиент</button></div>')));
-    const si = $('#cSearch'); if (si) si.oninput = () => { cSearch = si.value; const pos = si.selectionStart; renderCustomers().then(() => { const s = $('#cSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } }); };
+    const si = $('#cSearch'); if (si) si.oninput = () => { cSearch = si.value; const pos = si.selectionStart; drawCustomers(); const s = $('#cSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } };
   }
   function customerDialog(key) {
     const c = cust.find((x) => x.key === key); if (!c) return;
@@ -598,6 +636,7 @@
 
   function renderAdmin() {
     const sc = $('[data-screen="admin"]'); if (!sc) return;
+    if (!loaded) return setScreen('admin', skeleton());
     const open = leads.filter(isOpen), won = leads.filter((l) => l.stage === 'won'), lost = leads.filter((l) => l.stage === 'lost');
     const pipe = open.reduce((a, l) => a + (Number(l.last_total_net) || 0), 0);
     const wr = won.length + lost.length ? Math.round(100 * won.length / (won.length + lost.length)) : null;
@@ -618,6 +657,7 @@
   let apprTab = 'pending';
   function discText(d, lim) { const k = { pergola: _('Пергола'), sides: _('Боковые'), extras: _('Прочее') }; return Object.keys(d || {}).map((x) => (k[x] || x) + ' ' + d[x] + '%').join(', ') + (lim != null ? _(' · лимит ') + lim + '%' : ''); }
   function renderApprovals() {
+    if (!loaded) return setScreen('approvals', skeleton());
     const list = approvals.filter((a) => (apprTab === 'pending' ? a.status === 'pending' : a.status !== 'pending'));
     const row = (a) => {
       const q = a.quotes || {}, u = users.find((x) => x.id === q.owner) || {};
@@ -663,6 +703,7 @@
       pp.innerHTML = _('<div class="panel"><div class="ph"><h3>Наценки на услуги</h3></div><div style="padding:14px 15px;display:flex;flex-direction:column;gap:12px;max-width:360px"><div class="fld"><label>Монтаж, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rIns" value="') + (rate ? Number(rate.install_pct) : '') + _('"></div><div class="fld"><label>Доставка, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rDel" value="') + (rate ? Number(rate.delivery_pct) : '') + _('"></div><button class="btn primary sm" id="rSave" style="align-self:flex-start">Сохранить</button><p class="muted" style="margin:0">Применяется в новых расчётах сразу, без обновления сайта.</p></div></div>');
       const sv = $('#rSave'); if (sv) sv.onclick = async () => { try { await run(sb.from('pricing_config').update({ install_pct: Number($('#rIns').value), delivery_pct: Number($('#rDel').value), updated_at: new Date().toISOString() }).eq('id', 1)); toast(_('Сохранено')); } catch (e) { toast(humanError(e), true); } };
     }
+    const stScreen = $('[data-screen="settings"]'); if (stScreen && stScreen.classList.contains('loading')) { stScreen.classList.remove('loading'); const sk = stScreen.querySelector(':scope > .skel'); if (sk) sk.remove(); }
     const tabNames = { pipe: _('Наценки'), roles: _('Роли и доступ'), disc: _('Группы скидок') };
     $$('.subnav .t').forEach((t) => { if (tabNames[t.dataset.set]) { t.removeAttribute('data-i18n'); t.textContent = tabNames[t.dataset.set]; } });
   }
@@ -715,7 +756,7 @@
   $$('.rail a').forEach((a) => a.addEventListener('keydown', (e) => { if (e.key === 'Enter') a.click(); }));
 
   document.addEventListener('click', (e) => {
-    const qt = e.target.closest('[data-qt]'); if (qt) { qTab = qt.dataset.qt; renderQuotes(); return; }
+    const qt = e.target.closest('[data-qt]'); if (qt) { qTab = qt.dataset.qt; drawQuotes(); return; }
     const qr = e.target.closest('[data-qrow]'); if (qr) { const q = quotes.find((x) => x.id === qr.dataset.qrow); if (q && q.lead_id) openLead(q.lead_id); return; }
     const cr = e.target.closest('[data-cust]'); if (cr) { customerDialog(cr.dataset.cust); return; }
     const cf = e.target.closest('[data-act="configurator"]'); if (cf) { try { localStorage.removeItem('db.handoff'); } catch (er) {} openConfigurator(true); }
@@ -844,7 +885,7 @@
     if (!booted) return;
     chrome(); rebuild(curLid);      // the deals and boards carry translated texts: build them again
     const sc = curScreen();
-    if (sc === 'quotes') renderQuotes(); if (sc === 'customers') renderCustomers(); if (sc === 'admin') renderAdmin();
+    if (sc === 'quotes') (quotesLoaded ? drawQuotes() : renderQuotes()); if (sc === 'customers') (custLoaded ? drawCustomers() : renderCustomers()); if (sc === 'admin') renderAdmin();
     if (sc === 'approvals') renderApprovals(); if (sc === 'settings') renderSettings();
     const nb = $('#ntfBox'); if (nb) nb.remove();
   };
