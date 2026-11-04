@@ -525,7 +525,7 @@ body.cust.cat-only .app { grid-template-columns: minmax(0, 720px); justify-conte
 .f-svc .pr { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
 
 /* No 3D flash before the product catalog: hidden from the first paint, released after first render */
-:root.boot-cat .stage { display: none !important; }
+:root.boot-cat .stage, :root.boot-cat .pro-only { display: none !important; } /* the staff panels (terrace, estimate) must not flash before the customer screen takes over */
 
 /* opening-direction chips: a single clean arrow, centred */
 .f-chip.gtyp { min-width: 44px; justify-content: center; padding: 6px 12px; }
