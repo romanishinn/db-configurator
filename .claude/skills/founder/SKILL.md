@@ -26,7 +26,10 @@ side on an important decision. It never replaces the owner's decision and is nev
    material only (idea, competitors with linked public sources, customer portrait, pitch, objections, recommendations).
    **Finance never goes into the repository:** `numbers.json`, margins, purchase or dealer terms, commissions, ad budgets, unit
    economics, the business-plan figures. Show them in the chat only; the owner stores them privately. Do not write them to any file
-   in the project, not even temporarily. Until the owner names a private place, chat only.
+   in the project, not even temporarily. **Private place (owner's decision, 2026-11-04): one personal Google Doc in the owner's own Drive**,
+   titled "D&B — Founder: финансовые выводы (приватно)". Create it on the first run (Drive/Docs connector), add one dated section per
+   run, and tell the owner in the chat that it exists. Never share it (no sharing, no link access, no copies, no second place), never
+   paste its content or link into any file of the project. If the Drive connector is unavailable, show the numbers in the chat only.
 4. **Red lines of the project apply to the outputs:** never name the manufacturer or any other company's name the owner has put
    off-limits; no secrets; no invented facts (a missing number is an open question).
 5. **Status of results.** Every conclusion is a **hypothesis** until confirmed by real people or real data. Simulated-buyer quotes are
