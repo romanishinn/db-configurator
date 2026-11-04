@@ -465,4 +465,18 @@ insert into public.access_requests (company, first_name, last_name, location, em
 select pg_temp.as_user(:'admin');
 select pg_temp.check(pg_temp.fails(format($q$select public.comment_lead(%L, %L)$q$, :'lead_anna', repeat('c', 5000)), 'lead_events_comment_limit'), 'a comment of 5000 characters is refused');
 
+
+-- ---------- 21. speed of the access rules (0015): helpers once per statement, same answers ----------
+select pg_temp.as_root();
+select pg_temp.check(not exists (
+  select 1 from pg_policy pol join pg_class r on r.oid = pol.polrelid join pg_namespace n on n.oid = r.relnamespace
+  where n.nspname = 'public' and (coalesce(pg_get_expr(pol.polqual, pol.polrelid), '') || ' ' || coalesce(pg_get_expr(pol.polwithcheck, pol.polrelid), ''))
+        ~ '(?<!SELECT )\m(auth\.uid|sees_all|my_role|my_org|is_superadmin|can_edit_projects)\(\)'), 'no policy calls a helper function once per row');
+select pg_temp.check(not exists (
+  select 1 from pg_policy pol where pg_get_expr(pol.polqual, pol.polrelid) like '%org_of(%'), 'the company check of a dealer is a single array, not org_of() per row');
+select pg_temp.check(public.norm_phone('+43 660 112 020') = '660112020' and public.norm_phone('0660 112 020') = '660112020' and public.norm_phone('12-34') = '1234' and public.norm_phone('') is null and public.norm_phone(null) is null and public.norm_phone('abc') is null, 'norm_phone gives the same keys as before');
+select pg_temp.check((select count(*) from pg_indexes where schemaname = 'public' and indexname in ('quotes_created', 'quotes_lead_created', 'quotes_owner_created', 'notifications_user_at', 'notifications_unread')) = 5, 'the list indexes exist');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select public.my_org_users()$$, 'permission denied'), 'the public site cannot call the company helper');
+
 select 'access tests passed' as result;
