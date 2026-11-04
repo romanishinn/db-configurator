@@ -304,28 +304,36 @@
     }
   };
   const pick = (d) => (d && (d[lang] || d.en)) || '';
-  function artSlat(x, y, w, h, rot) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.6" transform="rotate(${rot} ${(x + w / 2).toFixed(1)} ${(y + h / 2).toFixed(1)})" class="art-slat"/>`; }
+  /* Model illustrations (160 x 92). One frame, one floor line (y = 83) and one shadow for every model, drawn with the
+   * theme colours (--ink / --muted / --accent / --panel) so they work in the light and the dark theme. On hover the
+   * louvres tilt and the sliding roof unfolds (CSS, only when motion is allowed). */
+  const ART_FLOOR = '<ellipse class="art-shadow" cx="80" cy="84.4" rx="66" ry="3.2"/><line class="art-ground" x1="9" y1="83" x2="151" y2="83"/><path class="art-tile" d="M30 83.8l-5 3M62 83.8l-3 3M98 83.8l3 3M130 83.8l5 3"/>';
+  const ART_FRAME = '<rect class="art-post back" x="34" y="30" width="3" height="53" rx="1.2"/><rect class="art-post back" x="123" y="30" width="3" height="53" rx="1.2"/>';
+  const ART_FRONT = '<rect class="art-post" x="22" y="37" width="4.6" height="46" rx="1.6"/><rect class="art-post" x="133.4" y="37" width="4.6" height="46" rx="1.6"/><rect class="art-beam" x="14" y="30" width="132" height="8" rx="2.4"/><rect class="art-hi" x="16" y="31.3" width="128" height="1.5" rx=".75"/>';
+  const artDefs = (id) => `<defs><linearGradient id="sl-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.58"/></linearGradient><radialGradient id="gl-${id}"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.5"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></radialGradient></defs>`;
+  const artSun = (id) => `<circle cx="146" cy="14" r="14" fill="url(#gl-${id})"/><circle cx="146" cy="14" r="4.8" class="art-sun"/>`;
   function prodArt(id) {
-    const sun = `<circle cx="146" cy="15" r="6.5" class="art-sun"/>`;
-    const frame = `<path class="art-frame" d="M24 37v45M136 37v45"/><rect x="15" y="30" width="130" height="7" rx="2" class="art-beam"/><line x1="9" y1="83" x2="151" y2="83" class="art-ground"/>`;
     if (id === 'louvered') {
-      let s = ''; for (let i = 0; i < 9; i++) s += artSlat(22 + i * 13.4, 14, 6, 17, 26);
-      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g>${frame}</svg>`;
+      let sl = ''; for (let i = 0; i < 9; i++) sl += `<rect class="art-slat" style="--i:${i}" x="${(22 + i * 13.4).toFixed(1)}" y="14" width="6" height="17" rx="1.6" fill="url(#sl-${id})"/>`;
+      return `<svg class="f-prod-svg louv" viewBox="0 0 160 92" fill="none" aria-hidden="true">${artDefs(id)}${artSun(id)}${ART_FLOOR}${ART_FRAME}<g>${sl}</g>${ART_FRONT}</svg>`;
     }
     if (id === 'slide') {
-      let s = ''; for (let i = 0; i < 6; i++) s += artSlat(21 + i * 5.4, 14, 4.4, 17, 0);
-      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g><line class="art-open" x1="56" y1="22" x2="128" y2="22" stroke-dasharray="3 6"/>${frame}</svg>`;
+      let sl = ''; for (let i = 0; i < 6; i++) sl += `<rect class="art-slat" style="--i:${i}" x="${(21 + i * 5.4).toFixed(1)}" y="14" width="4.4" height="17" rx="1.4" fill="url(#sl-${id})"/>`;
+      return `<svg class="f-prod-svg slid" viewBox="0 0 160 92" fill="none" aria-hidden="true">${artDefs(id)}${artSun(id)}${ART_FLOOR}${ART_FRAME}<line class="art-open" x1="52" y1="22" x2="128" y2="22" stroke-dasharray="3 6"/><g>${sl}</g>${ART_FRONT}</svg>`;
     }
-    // carport: the same frame and floor line as the other cards; the car stands on the floor between the posts
-    // (floor y=83, wheels r=6.5 centred at y=76 touch it; the body is outlined, so the roof clears the beam)
-    const car = `<path class="art-car" d="M38 75v-6c0-3 2-5 5-6l11-3 9-10c2-2 4-3 7-3h19c3 0 5 1 7 3l9 10 12 2c3 1 5 3 5 6v7z"/><circle cx="54" cy="76" r="6.5" class="art-wheel"/><circle cx="106" cy="76" r="6.5" class="art-wheel"/>`;
-    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${frame}${car}</svg>`;
+    // carport: a flat canopy; the car stands on the same floor between the posts (wheels r=6.5 centred at y=76 touch y=83)
+    const car = '<ellipse class="art-shadow dark" cx="80" cy="83.6" rx="46" ry="2"/>'
+      + '<path class="art-car" d="M38 75v-6c0-3 2-5 5-6l11-3 9-10c2-2 4-3 7-3h19c3 0 5 1 7 3l9 10 12 2c3 1 5 3 5 6v7z"/>'
+      + '<path class="art-win" d="M65.5 59l5.8-7.4c.8-1 1.8-1.6 3.1-1.6H82v9z"/><path class="art-win" d="M86 50h9c1.6 0 2.7.6 3.6 1.7l5.9 7.3H86z"/>'
+      + '<path class="art-line" d="M84 60v11"/><rect class="art-lamp" x="124.6" y="65.4" width="2.6" height="3.2" rx="1"/><rect class="art-lamp dim" x="38.8" y="66.6" width="2.4" height="3" rx="1"/>'
+      + '<circle class="art-tire" cx="54" cy="76" r="6.5"/><circle class="art-hub" cx="54" cy="76" r="2.6"/><circle class="art-tire" cx="106" cy="76" r="6.5"/><circle class="art-hub" cx="106" cy="76" r="2.6"/>';
+    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${ART_FLOOR}${ART_FRAME}<path class="art-roof" d="M14 30l7-7h118l7 7z"/>${ART_FRONT}${car}</svg>`;
   }
   function catalogHTML(t) {
     const cards = PRODUCTS.map((pr) => {
       const art = `<span class="f-prod-art">${prodArt(pr.id)}</span>`;
       const title = `<b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span>`;
-      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true">🔒</span>${art}${title}</div>`;
+      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="7" width="9.6" height="6.8" rx="1.8"/><path d="M5.4 7V5.2a2.6 2.6 0 0 1 5.2 0V7"/></svg></span>${art}${title}</div>`;
       const x = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[pr.roof] }, cat).options[0];
       const price = x ? `<span class="f-prod-pr"><span class="from">${esc(t.from)}</span> ${fe(gross(x.total))}</span>` : '';
       const c = PROD_COPY[pr.id] || {};
