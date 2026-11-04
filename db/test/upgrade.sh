@@ -40,7 +40,7 @@ SQL
   echo 'failed 0009 left the old state intact'; exit 0
 fi
 # later migrations on top of 0009 (the access tests below cover them)
-for f in migrations/00[1-9][0-9]_*.sql; do [ "$f" = migrations/0009_manager_role.sql ] || $P -f "$f" >/dev/null; done
+for f in migrations/00[1-9][0-9]_*.sql; do $P -f "$f" >/dev/null; done
 # stage 2: the old data moved over and the actions work
 $P <<'SQL'
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000e2', false) \gset

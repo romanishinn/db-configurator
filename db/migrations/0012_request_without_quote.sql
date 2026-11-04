@@ -1,4 +1,6 @@
--- 0012: a callback request from the landing page has no configuration, so it has no quote.
+-- 0012: (numbers 0010 and 0011 are reserved for the planned dealer-submission and seller-cleanup migrations; they apply
+-- after this one if it goes live first, and none of them touches submit_request)
+-- a callback request from the landing page has no configuration, so it has no quote.
 -- Before: submit_request always inserted a quote, and a request without one failed (catalog is NOT NULL).
 -- Now: the quote is inserted only when the request carries one (p_quote has a "catalog"); otherwise the
 -- lead is created alone and the function returns null instead of a quote number.
