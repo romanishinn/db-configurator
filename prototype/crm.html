@@ -566,7 +566,6 @@
       <button class="iconbtn menubtn" id="menubtn" aria-label="Меню">☰</button>
       <label class="srch"><span class="q0" aria-hidden="true">⌕</span><input id="gsearch" type="search" autocomplete="off" placeholder="Поиск: имя, телефон, e-mail, №КП…" data-i18n-ph="top.searchPh" aria-label="Поиск" data-i18n-aria="top.searchPh"><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></label>
       <div class="sp"></div>
-      <div class="lang" id="lang" style="position:relative"><button class="langbtn" id="langBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="lang.title" aria-label="Язык"><span class="gl" aria-hidden="true">🌐</span><span id="langLbl">RU</span><span style="opacity:.6" aria-hidden="true">▾</span></button><div class="langmenu" id="langMenuTop" role="menu"></div></div>
       <button class="btn primary sm newbtn" id="newCalcBtn">＋<span class="lbl" data-i18n="top.newCalc"> Новый расчёт</span></button>
       <button class="iconbtn" id="bellBtn" aria-label="Уведомления"><span aria-hidden="true">🔔</span><span class="d" id="bellDot" hidden></span></button>
     </div>
@@ -1257,7 +1256,7 @@
   });
   $("#scrim").addEventListener("click",function(){$("#rail").classList.remove("open");$("#scrim").classList.remove("on");});
 
-  /* the same list in three places: login screen, top bar, Settings */
+  /* the same list in two places: login screen and Settings (the top bar has none, by the owner's decision of 04.11) */
   function langItems(){return LANGS.map(function(x){return '<button type="button" role="menuitem" data-l="'+x[0]+'"><b>'+x[0].toUpperCase()+'</b> '+x[1]+'</button>';}).join("");}
   ["gLangMenu","langMenuTop","langMenu"].forEach(function(id){var m=document.getElementById(id);if(m)m.innerHTML=langItems();});
   $$("#langMenu button, #langMenuTop button").forEach(function(b){b.addEventListener("click",function(){applyLang(b.dataset.l);closeTopLang();});});
