@@ -306,6 +306,12 @@
   .cv.done{color:var(--fg2);background:var(--panel3)}
   .cv.now{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
   .cv.now small{color:rgba(26,18,6,.7)}
+  /* live cards: colours come from the gradient set inline; the passed ones are calm, the next ones dimmed, the current one is full */
+  .stages .cv[style]{font-weight:600}
+  .stages .cv[style].done{opacity:.8}
+  .stages .cv[style]:not(.done):not(.now){opacity:.75}
+  .stages .cv[style].now{opacity:1;font-weight:800;filter:saturate(1.15);box-shadow:inset 0 0 0 2px #fff6}
+  .stages .cv[style] small{color:inherit;opacity:.75}
   @media(max-width:700px){
     .stages{gap:2px}
     .cv,.cv:first-child{padding:8px 2px;font-size:9.5px;letter-spacing:-.1px;clip-path:none;border-radius:8px}

@@ -454,11 +454,13 @@
     const src = srcInfo(l), late = overdue(l), open = isOpen(l), idx = d.stage;
     const mine = l.assigned_to && me && l.assigned_to === me.id;
     const stepNames = stepsL();
+    // stages run from light to dark in the brand gold; the text colour follows the lightness
+    const shade = (i, n) => { const k = n > 1 ? i / (n - 1) : 0, A = [243, 217, 164], B = [86, 58, 16], c = A.map((v, j) => Math.round(v + (B[j] - v) * k)); return 'background:rgb(' + c.join(',') + ');color:' + ((c[0] * 299 + c[1] * 587 + c[2] * 114) / 1000 > 140 ? '#1a1206' : '#f6e7c8'); };
     const steps = stepNames.map((t, i) => {
       const cls = l.stage === 'won' ? 'cv done' : i < idx ? 'cv done' : i === idx ? 'cv now' : 'cv';
       const small = i === idx ? '<small>' + (l.stage === 'lost' ? _('Отказ · ') : l.stage === 'won' ? _('Заказ · ') : (STAGE_RU[l.stage] !== stepNames[i] ? STAGE_RU[l.stage] + ' · ' : '')) + d.curDays + _(' дн</small>') : '';
       // an open lead: tap a stage to move the lead there (back or forward)
-      return open ? '<button type="button" class="' + cls + '" data-act="goto" data-i="' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><span>' + t + '</span>' + small + '</button>' : '<div class="' + cls + '"><span>' + t + '</span>' + small + '</div>';
+      return open ? '<button type="button" style="' + shade(i, stepNames.length) + '" class="' + cls + '" data-act="goto" data-i="' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><span>' + t + '</span>' + small + '</button>' : '<div style="' + shade(i, stepNames.length) + '" class="' + cls + '"><span>' + t + '</span>' + small + '</div>';
     }).join('');
     let own = '';
     if (open) own = !l.assigned_to ? (sees() ? _('<button class="btn sm" data-act="take">Взять себе</button>') : '') : (mine || sees() ? _('<button class="btn sm" data-act="transfer">Передать</button>') : '');
@@ -858,7 +860,32 @@
     rp.innerHTML = _('<div class="ph"><h3>Заявки на доступ</h3><span class="muted" style="font-size:12px">пригласите нужных кнопкой выше</span></div>') + (reqs.length ? _('<div class="tblwrap"><table class="tbl"><thead><tr><th>Компания</th><th>Имя</th><th>Город</th><th>E-mail</th><th>Дата</th></tr></thead><tbody>') + reqs.map((r) => '<tr><td>' + esc(r.company) + '</td><td>' + esc((r.first_name || '') + ' ' + (r.last_name || '')) + '</td><td>' + esc(r.location) + '</td><td>' + esc(r.email) + '</td><td>' + dmy(r.created_at) + '</td></tr>').join('') + '</tbody></table></div>' : _('<div style="padding:14px 15px" class="muted">Новых заявок нет</div>'));
     // discount groups: real
     const dp = $('.setpane[data-set="disc"] .panel');
-    if (dp) dp.innerHTML = _('<div class="ph"><h3>Группы скидок</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Группа</th><th class="num">Макс. скидка %</th></tr></thead><tbody>') + groups.map((g) => '<tr><td>' + esc(g.title) + '</td><td class="num">' + Number(g.max_discount) + '</td></tr>').join('') + _('</tbody></table></div><div style="padding:12px 15px" class="muted">Скидка выше личного лимита блокируется системой при сохранении КП.</div>');
+    if (dp) {
+      const ed = isAdmin();
+      dp.innerHTML = _('<div class="ph"><h3>Группы скидок</h3>') + (ed ? _('<button class="btn sm primary" data-gadd>＋ Добавить группу</button>') : '') + _('</div><div class="tblwrap"><table class="tbl"><thead><tr><th>Группа</th><th class="num">Макс. скидка %</th>') + (ed ? '<th></th>' : '') + '</tr></thead><tbody>'
+        + groups.map((g) => ed
+          ? '<tr data-g="' + g.id + '"><td><input class="inp" data-gf="title" maxlength="80" value="' + esc(g.title) + '"></td><td class="num"><input class="inp" data-gf="max" type="number" min="0" max="100" step="0.5" style="width:90px;text-align:right" value="' + Number(g.max_discount) + '"></td><td class="num"><button class="btn sm ghost" data-gdel title="' + esc(_('Удалить')) + '">✕</button></td></tr>'
+          : '<tr><td>' + esc(g.title) + '</td><td class="num">' + Number(g.max_discount) + '</td></tr>').join('')
+        + _('</tbody></table></div><div style="padding:12px 15px" class="muted">Скидка выше личного лимита блокируется системой при сохранении КП.</div>');
+      if (!dp._wired) {
+        dp._wired = true;
+        const reload = async () => { await loadGroups(); invGroupsReady = false; renderSettings(); };
+        dp.addEventListener('change', async (e) => {
+          const f = e.target.dataset.gf, tr = e.target.closest('tr[data-g]'); if (!f || !tr) return;
+          const patch = f === 'title' ? { title: e.target.value.trim() } : { max_discount: Math.min(100, Math.max(0, Number(e.target.value) || 0)) };
+          if (f === 'title' && !patch.title) { toast(_('Название не может быть пустым'), true); return reload(); }
+          try { await run(sb.from('discount_groups').update(patch).eq('id', tr.dataset.g)); toast(_('Сохранено')); await reload(); } catch (er) { toast(humanError(er), true); reload(); }
+        });
+        dp.addEventListener('click', (e) => {
+          if (e.target.closest('[data-gadd]')) {
+            return (async () => { try { await run(sb.from('discount_groups').insert({ code: 'g' + Date.now().toString(36), title: _('Новая группа'), max_discount: 0 })); await reload(); } catch (er) { toast(humanError(er), true); } })();
+          }
+          const del = e.target.closest('[data-gdel]'); if (!del) return;
+          const tr = del.closest('tr[data-g]'), g = groups.find((x) => x.id === tr.dataset.g); if (!g) return;
+          dialog({ title: _('Удалить группу?'), sub: esc(g.title), body: _('<div class="muted">Компании этой группы останутся без группы. Если группа уже указана в приглашении, удалить её нельзя.</div>'), foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Удалить'), primary: true, run: async (c) => { try { await run(sb.from('discount_groups').delete().eq('id', g.id)); c(); toast(_('Группа удалена')); await reload(); } catch (er) { c(); toast(_('Группу нельзя удалить: она уже используется'), true); } } }] });
+        });
+      }
+    }
     // roles: plain text instead of fake switches
     const rl = $('.setpane[data-set="roles"]');
     if (rl) rl.innerHTML = _('<div class="panel"><div class="ph"><h3>Кто что видит</h3></div><div style="padding:14px 15px;line-height:1.7"><p style="margin:0 0 8px"><b>Суперадмин, суперДилер</b> — все лиды и КП.</p><p style="margin:0 0 8px"><b>Дилер</b> — свои лиды и лиды своей компании.</p><p style="margin:0 0 8px"><b>Продавец</b> — только те, что создал сам или получил.</p><p class="muted" style="margin:0">Права закреплены в базе данных и не зависят от этой страницы.</p></div></div>');
