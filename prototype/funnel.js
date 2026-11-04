@@ -74,6 +74,21 @@
       ctlH: { pergola: 'bez drugog odašiljača – prijemni modul u stupu', remote: 'mali dodatni ručni odašiljač samo za screenove', smart: 'putem aplikacije na pametnom telefonu, i izvan kuće', switch: 'fiksni taster na zidu, samo s YOODA ili Somfy motorima', solar: 'motor sa solarnim panelom, bez strujnog kabela, vlastiti ručni odašiljač' },
       photo: 'Fotografija', photoT: 'Pogledajte pergolu na fotografiji svoje terase', photoHelp: 'Povucite 4 točke tamo gdje će stajati stupovi: 1 i 2 uz zid kuće (lijevo, desno), 3 i 4 sprijeda. Pergola se postavlja u perspektivu fotografije. Fotografija ostaje u vašem pregledniku.', photoBad: 'Točke su zamijenjene: 1 i 2 uz zid lijevo i desno, 3 i 4 sprijeda desno i lijevo.', photoPts: 'Točke', photoHelpS: 'Povucite 4 točke na uglove pergole', photoShot: 'Spremi sliku', photoNew: 'Druga fotografija', photoOff: 'Ukloni fotografiju', photoTip: 'Kako će izgledati kod vas? Učitajte fotografiju svoje terase – pergola se pojavljuje na njoj, i u ponudi.', photoBtn: '📷 Učitaj fotografiju',
     },
+    // ES-TODO: translate (copied from en)
+    es: {
+      roofT: 'Roof', roofRot: 'Rotating louvres', roofSlide: 'Sliding roof',
+      roofRotD: 'The louvres rotate (up to about 135°) – light and air as you like, the roof stays above you.',
+      roofSlideD: 'The louvres tilt and fold together to one side – the sky opens up.',
+      slideStack: (st, rest, side) => `Fully open, the folded louvres sit ${side}: about ${st} m, ${rest} m are open.`, sideWall: 'at the house wall', sideEdge: 'on one side',
+      reqPosts: 'Additional posts (depth over 6 m)', pergolaSlide: 'Sliding louvre roof', part: 'part',
+      lightG: { louvre: 'In the louvres', gutter: 'In the gutter, all round', crown: 'Spots in the frame', posts: 'On the posts', zipled: 'In the ZIP guide rails' }, lightI: { none: 'None', white: 'LED strip, warm white', rgb: 'LED strip, RGB', rgbw: 'LED strip, RGBW', spots: 'LED spots, 3 per louvre', lamps: 'LED lamps, 2 per louvre', bwhite: 'warm white', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'white + RGB', crown8: '8 LED spots', postsAll: 'a light on every post', zipLedOn: 'LED light in the rails' }, zipLedT: 'LED light in the ZIP guide rails', zipLedD: 'guide rails with LED strip, power supply and switch', crownNote: 'Only on sides without glass or a ZIP screen', perLouvre: 'per louvre', lightsSlide: { none: 'No light', bwhite: 'LED in the gutter, warm white', brgb: 'LED in the gutter, RGB', brgbw: 'LED in the gutter, RGBW', cwhitergb: 'LED in the gutter, white + RGB' },
+      heatsSlide: { 's5.single': '1 heater 1.5 kW (~10 m²)', 's5.double': 'Double heater 4 kW (~25 m²)' },
+      windSun: 'Wind + sun', stackLbl: (v) => `folded ${v} mm`, tbRoof: 'Roof', roofClosed: 'closed', roofOpen: 'open',
+      reqPostH: 'Taller additional posts',
+      glTypT: 'Opening', glTyp: { ltr: 'to the right', rtl: 'to the left', center: 'from the centre' }, glOpen: 'open', ctaS: 'Tap ＋ to close a side', tones: ['anthracite', 'graphite', 'grey', 'light grey', 'white', 'beige', 'taupe', 'black'], tbColor: 'Colour', tbColorT: 'Glass and frame colour', noGlass: 'Appears once a side has glass', tbLight: 'Light', tbUnder: 'From below', tbInside: 'From inside', tbExit: 'Exit', ctlNa: 'not for this size', ctlS: { pergola: 'Remote', switch: 'Wall button', smart: 'Smartphone', solar: 'Solar' },
+      ctlH: { pergola: 'no second remote – receiver module in the post', remote: 'small extra remote just for the screens', smart: 'with the smartphone app, also when away', switch: 'fixed push button on the wall, only with YOODA or Somfy motors', solar: 'motor with solar panel, no power cable, own remote' },
+      photo: 'Photo', photoT: 'See the pergola on a photo of your terrace', photoHelp: 'Drag the 4 points to where the posts will stand: 1 and 2 at the house wall (left, right), 3 and 4 at the front. The pergola takes the perspective of the photo. The photo stays in your browser.', photoBad: 'Points mixed up: 1 and 2 at the wall left and right, 3 and 4 at the front right and left.', photoPts: 'Points', photoHelpS: 'Drag the 4 points to the pergola corners', photoShot: 'Save picture', photoNew: 'Other photo', photoOff: 'Remove photo', photoTip: 'How will it look at your place? Upload a photo of your terrace – the pergola appears on it, also in the quote.', photoBtn: '📷 Upload a photo',
+    },
   };
   for (const [l, x] of Object.entries(EXTRA)) {
     Object.assign(T[l], x);
@@ -91,7 +106,7 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode: ignore */ } },
   };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  const metres = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const metres = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const gross = (n) => n * (1 + VAT);
   const fe = (n) => eur(Math.round(n));
   const plusE = (n) => n > 0.5 ? '+' + fe(n) : L().incl;
@@ -101,7 +116,7 @@
     if (q && T[q]) return q;
     const s = Store.get('db.lang'); if (s && T[s]) return s;
     const n = (navigator.language || 'de').slice(0, 2).toLowerCase();
-    return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : 'de';
+    return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : n === 'es' && T.es ? 'es' : 'de';
   };
   let lang = pickLang();
   let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false, sending = false, reqErr = '', reqNo = '', dbNo = '';
@@ -285,6 +300,10 @@
   T.hr.catT = 'Odaberite model'; T.hr.catL = 'Kakav krov ima vaša pergola. Zatim: veličina, strane, udobnost i boje.'; T.hr.catChange = 'promijeni';
   T.hr.kitT = 'Oprema'; T.hr.kitL = 'Strane, ostakljenje i udobnost — sve što isporučujemo.';
   T.hr.svcT = 'Montaža i dostava'; T.hr.svcHint = 'Uključeno po zadanom — odznačite da uklonite iz ponude.'; T.hr.svcInstallD = '10 % cijene'; T.hr.svcDelivD = '4 % cijene'; T.hr.montLc = 'montaža'; T.hr.deliveryLc = 'dostava'; T.hr.andW = 'i'; T.hr.qExclPre = 'Nije uključeno: '; T.hr.qExclBase = 'temelji, električni priključak, dozvole';
+  // ES-TODO: translate (copied from en)
+  T.es.catT = T.en.catT; T.es.catL = T.en.catL; T.es.catChange = T.en.catChange;
+  T.es.kitT = T.en.kitT; T.es.kitL = T.en.kitL;
+  T.es.svcT = T.en.svcT; T.es.svcHint = T.en.svcHint; T.es.svcInstallD = T.en.svcInstallD; T.es.svcDelivD = T.en.svcDelivD; T.es.montLc = T.en.montLc; T.es.deliveryLc = T.en.deliveryLc; T.es.andW = T.en.andW; T.es.qExclPre = T.en.qExclPre; T.es.qExclBase = T.en.qExclBase;
   const prodById = (id) => PRODUCTS.find((pp) => pp.id === id) || null;
   function pickProduct(id) {
     const pr = prodById(id); if (!pr || pr.locked) return;
@@ -298,16 +317,18 @@
     ru: { title: 'Выход в стене', no: 'Нет', yes: 'Есть', slide: 'Слайдинг', door: 'Дверь', hole: 'Проём', width: 'Ширина', height: 'Высота', center: 'По центру', left: 'Левее', right: 'Правее', panels: 'Полотен', opening: 'Открывание', mLeft: 'Влево', mRight: 'Вправо', both: 'Обе', pocket: 'В стену', doorOpen: 'Открывание двери', dIn: 'Внутрь', dOut: 'Наружу', dAside: 'В сторону', leaves: 'Створки', one: 'Одна', two: 'Две' },
     en: { title: 'Exit in the wall', no: 'No', yes: 'Yes', slide: 'Sliding', door: 'Door', hole: 'Opening', width: 'Width', height: 'Height', center: 'Centre', left: 'Left', right: 'Right', panels: 'Panels', opening: 'Opening', mLeft: 'Left', mRight: 'Right', both: 'Both', pocket: 'Into the wall', doorOpen: 'Door opening', dIn: 'Inward', dOut: 'Outward', dAside: 'To the side', leaves: 'Leaves', one: 'One', two: 'Two' },
     de: { title: 'Ausgang in der Wand', no: 'Nein', yes: 'Ja', slide: 'Schiebe', door: 'Tür', hole: 'Öffnung', width: 'Breite', height: 'Höhe', center: 'Mittig', left: 'Links', right: 'Rechts', panels: 'Elemente', opening: 'Öffnung', mLeft: 'Links', mRight: 'Rechts', both: 'Beide', pocket: 'In die Wand', doorOpen: 'Türöffnung', dIn: 'Nach innen', dOut: 'Nach außen', dAside: 'Zur Seite', leaves: 'Flügel', one: 'Eins', two: 'Zwei' },
-    hr: { title: 'Izlaz u zidu', no: 'Ne', yes: 'Da', slide: 'Klizna', door: 'Vrata', hole: 'Otvor', width: 'Širina', height: 'Visina', center: 'U sredini', left: 'Lijevo', right: 'Desno', panels: 'Elementi', opening: 'Otvaranje', mLeft: 'Lijevo', mRight: 'Desno', both: 'Oba', pocket: 'U zid', doorOpen: 'Otvaranje vrata', dIn: 'Prema unutra', dOut: 'Prema van', dAside: 'U stranu', leaves: 'Krila', one: 'Jedno', two: 'Dva' }
+    hr: { title: 'Izlaz u zidu', no: 'Ne', yes: 'Da', slide: 'Klizna', door: 'Vrata', hole: 'Otvor', width: 'Širina', height: 'Visina', center: 'U sredini', left: 'Lijevo', right: 'Desno', panels: 'Elementi', opening: 'Otvaranje', mLeft: 'Lijevo', mRight: 'Desno', both: 'Oba', pocket: 'U zid', doorOpen: 'Otvaranje vrata', dIn: 'Prema unutra', dOut: 'Prema van', dAside: 'U stranu', leaves: 'Krila', one: 'Jedno', two: 'Dva' },
+    // ES-TODO: translate (copied from en)
+    es: { title: 'Exit in the wall', no: 'No', yes: 'Yes', slide: 'Sliding', door: 'Door', hole: 'Opening', width: 'Width', height: 'Height', center: 'Centre', left: 'Left', right: 'Right', panels: 'Panels', opening: 'Opening', mLeft: 'Left', mRight: 'Right', both: 'Both', pocket: 'Into the wall', doorOpen: 'Door opening', dIn: 'Inward', dOut: 'Outward', dAside: 'To the side', leaves: 'Leaves', one: 'One', two: 'Two' }
   };
   const PROD_COPY = {
     louvered: {
-      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.' },
-      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'] }
+      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.', es: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.' }, // ES-TODO: translate (copied from en)
+      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'], es: ['Sun & shade', 'Rain-proof', 'Open sky'] } // ES-TODO: translate (copied from en)
     },
     slide: {
-      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.' },
-      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'] }
+      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.', es: 'The louvres fold into a stack on one side — a completely open sky above you.' }, // ES-TODO: translate (copied from en)
+      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'], es: ['Fully opens', 'Folds aside', 'Maximum light'] } // ES-TODO: translate (copied from en)
     }
   };
   const pick = (d) => (d && (d[lang] || d.en)) || '';
@@ -356,7 +377,7 @@
     // catalog screen shows products only — hide the 3D stage/toolbar until a model is picked
     document.body.classList.toggle('cat-only', product === null);
     const t = L(), o = curOpt();
-    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski' };
+    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski', es: 'Español' };
     const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
       <details class="f-lang" aria-label="Language"><summary>${lang.toUpperCase()}<span class="f-lang-car" aria-hidden="true">▾</span></summary><div class="f-lang-menu">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${esc(LANGNAME[k] || k.toUpperCase())}</button>`).join('')}</div></details>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
@@ -741,6 +762,8 @@
       de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', yes: 'Einverstanden', no: 'Ablehnen' },
       en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', yes: 'Accept', no: 'Decline' },
       hr: { t: 'Smijemo li anonimno analizirati kako koristite konfigurator kako bismo ga poboljšali? Unosi poput imena ili telefona nikada se ne bilježe.', yes: 'Prihvaćam', no: 'Odbij' },
+      // ES-TODO: translate (copied from en)
+      es: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', yes: 'Accept', no: 'Decline' },
       ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', yes: 'Согласен', no: 'Отказаться' },
     };
     function load() {
@@ -982,7 +1005,7 @@
       [t.qFacts.sides, ops.length ? ops.map((x) => `${sideLabel(x.id, o)}: ${t.fills[state.fills[x.id]]}`).join('; ') : t.open],
       [t.qFacts.colours, `${t.frame}: ${cname(e.construction)}${state.colors.roof ? '; ' + t.roof + ': ' + cname(e.roof) : ''}`],
     ];
-    const img = snapshotImage(), date = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : lang === 'ru' ? 'ru-RU' : 'de-AT');
+    const img = snapshotImage(), date = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : lang === 'ru' ? 'ru-RU' : lang === 'es' ? 'es-ES' : 'de-AT');
     // one line per item (details in grey on the same line), grouped like on the screen — fits one A4 page
     const rows = groupsOrder.map((g) => {
       const ls = lines.filter((l) => l.g === g); if (!ls.length) return '';
@@ -1313,7 +1336,7 @@
   CTA.addEventListener('click', () => { step = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
   // 3D toolbar popups built from the funnel: louvre direction + per-side glass opening, and the comfort equipment
-  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.' };
+  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.', es: 'Close a side with glass first — then the opening choice appears.' }; // ES-TODO: translate (copied from en)
   function renderLouvPop() {
     const pop = $('tb-louv'); if (!pop) return;
     const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }

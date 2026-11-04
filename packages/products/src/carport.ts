@@ -6,6 +6,6 @@ export const carport: ProductModule = {
   id: 'carport',
   locked: true,
   ic: '▭',
-  name: { de: 'Carport', en: 'Carport', ru: 'Навес для авто', hr: 'Nadstrešnica' },
-  tag: { de: 'Bald verfügbar', en: 'Coming soon', ru: 'Скоро', hr: 'Uskoro' },
+  name: { de: 'Carport', en: 'Carport', ru: 'Навес для авто', hr: 'Nadstrešnica', es: 'Cochera abierta (Carport)' },
+  tag: { de: 'Bald verfügbar', en: 'Coming soon', ru: 'Скоро', hr: 'Uskoro', es: 'Próximamente' },
 };
