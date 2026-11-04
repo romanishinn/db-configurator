@@ -10,7 +10,11 @@ echo "=== ХАРНЕСС ЗАГРУЖЕН. Это единственная ст�
 cat docs/STATE.md
 upd=$(sed -n 's/^\*\*Обновлено:\*\* *\([0-9-]*\).*/\1/p' docs/STATE.md | head -1)
 if [ -n "$upd" ]; then
-  age=$(( ( $(date +%s) - $(date -d "$upd" +%s 2>/dev/null || echo 0) ) / 86400 ))
-  [ "$age" -gt 3 ] 2>/dev/null && echo "!!! STATE.md обновлялся $age дн. назад: сверь его с git log и состоянием проекта, прежде чем верить."
+  # GNU date -d, or BSD/macOS date -j -f; if neither works the age is simply not checked
+  ts=$(date -d "$upd" +%s 2>/dev/null) || ts=$(date -j -f %Y-%m-%d "$upd" +%s 2>/dev/null) || ts=""
+  if [ -n "$ts" ]; then
+    age=$(( ( $(date +%s) - ts ) / 86400 ))
+    [ "$age" -gt 3 ] && echo "!!! STATE.md обновлялся $age дн. назад: сверь его с git log и состоянием проекта, прежде чем верить."
+  fi
 fi
 echo "=== Роли и протокол: docs/harness/README.md · цикл задачи: навык /task ==="

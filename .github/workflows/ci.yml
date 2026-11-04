@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -16,6 +17,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Red lines (secrets, forbidden names, purchase data)
         run: sh tools/harness/redlines.sh
-        env: { REDLINE_TERMS: '${{ secrets.REDLINE_TERMS }}' }
+        env:
+          REDLINE_TERMS: ${{ secrets.REDLINE_TERMS }}
+          REDLINE_BASE: ${{ github.event.pull_request.base.sha || 'origin/main' }}
       - run: pnpm -r typecheck
       - run: pnpm -r test
