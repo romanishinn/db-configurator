@@ -352,8 +352,11 @@
     if (!me) return;
     const nm = me.full_name || me.email || _('Пользователь');
     const av = $('.rail .me .av'); if (av) av.textContent = initials(nm);
-    const box = $('.rail .me > div'); if (box) box.innerHTML = '<div style="font-size:12.5px">' + esc(nm) + '</div><small>' + esc(ROLE_RU[me.role] || me.role) + _(' · <a href="#" id="logout" style="color:var(--accent)">выйти</a></small>');
-    const lo = $('#logout'); if (lo) lo.onclick = (e) => { e.preventDefault(); signOut(); };
+    const box = $('.rail .me > div'); if (box) box.innerHTML = '<div style="font-size:12.5px">' + esc(nm) + '</div><small>' + esc(ROLE_RU[me.role] || me.role) + '</small>';
+    // a real "log out" item at the bottom of the rail: full label on desktop and in the phone drawer ("Ещё"), icon only on a tablet
+    let lo = $('#logout');
+    if (!lo) { const rail = $('#rail'); if (rail) { lo = document.createElement('a'); lo.id = 'logout'; lo.href = '#'; lo.setAttribute('role', 'button'); lo.style.marginTop = '4px'; lo.innerHTML = '<span class="ic" aria-hidden="true">⎋</span><span></span>'; rail.appendChild(lo); } }
+    if (lo) { lo.querySelector('span:nth-child(2)').textContent = _('Выйти'); lo.title = _('Выйти'); lo.setAttribute('aria-label', _('Выйти')); lo.onclick = (e) => { e.preventDefault(); signOut(); }; }
     const l = $('#newCalcBtn .lbl'); if (l) l.textContent = _(' Новый лид');
     $$('.rail a').forEach((a) => { const t = a.querySelector('span:nth-child(2)'); if (t) a.title = t.textContent; });
   }
