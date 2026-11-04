@@ -85,7 +85,7 @@ select pg_temp.check((select count(*) from public.leads) = 1, 'a colleague in th
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.quotes) = 0, 'another dealer sees nothing');
 select pg_temp.as_user(:'manager');
-select pg_temp.check((select count(*) from public.leads) = 0, 'a manager sees nothing that is not his');
+select pg_temp.check((select count(*) from public.leads where id <> :'lead_karl') = 0, 'a manager sees nothing that is not his, except new site requests (0012)');
 
 -- ---------- 4. stages: history, required reason for a refusal, assignment cannot be changed directly ----------
 select pg_temp.as_user(:'graz1');
@@ -320,3 +320,37 @@ select pg_temp.as_root();
 select pg_temp.check(:'ok' and (select role from public.profiles where id = :'newbie') = 'manager', 'a superdealer cannot change a manager''s role');
 
 select 'access tests passed' as result;
+
+-- ---------- 15. a manager reads new site requests (0012), read only ----------
+-- Karl's request is still unassigned: no creator, no assignee. Maria's went to a dealer in section 3.
+select pg_temp.as_service();
+select public.submit_request('{"name":"Journey Test","email":"j@x.at"}', '{"catalog":"c","config":{},"total_net":5}', '{}', 'Schritt 1: Breite 4000') as n3 \gset
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where source = 'web') = 2, 'a manager sees the two unassigned site requests, not the assigned one');
+select pg_temp.check((select count(*) from public.leads where id = :'lead_maria') = 0, 'a manager does not see a site request after it went to a dealer');
+select pg_temp.check((select journey from public.leads where contact_name = 'Journey Test') = 'Schritt 1: Breite 4000', 'a manager reads the client journey');
+select pg_temp.check((select count(*) from public.quotes where number = :'n3') = 1, 'a manager reads the quote of a site request');
+select pg_temp.check((select count(*) from public.quotes where lead_id = :'lead_maria') = 0, '... but not the quote of an assigned one');
+select pg_temp.check((select count(*) from public.lead_events e join public.leads l on l.id = e.lead_id where l.contact_name = 'Journey Test') >= 1, 'a manager reads the history of a site request');
+select pg_temp.check((select count(*) from public.lead_board where contact_name = 'Journey Test') = 1, 'a manager sees it on the board view');
+-- read only: updates hit no row, no comment, no assignment
+update public.leads set note = 'hacked', contact_name = 'X' where contact_name = 'Journey Test';
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Journey Test' and note is null) = 1, 'a manager cannot edit a site request');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format('select public.comment_lead(%L, %L)', (select id from public.leads where contact_name = 'Journey Test'), 'hi'), 'FORBIDDEN'), 'a manager cannot comment on an unassigned site request');
+select pg_temp.check(pg_temp.fails(format('select public.assign_lead(%L, %L)', (select id from public.leads where contact_name = 'Journey Test'), :'manager'), 'FORBIDDEN'), 'a manager cannot assign a site request to himself');
+select pg_temp.check(pg_temp.fails($q$delete from public.leads$q$, 'permission denied'), 'a manager cannot delete leads');
+-- not a dealer's lead
+select pg_temp.check((select count(*) from public.leads where source = 'dealer') = 0, 'a manager sees no dealer lead');
+-- everybody else
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.leads where contact_name in ('Journey Test', 'Karl')) = 0, 'a dealer does not see unassigned site requests');
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.leads where source = 'web') = 0 and (select count(*) from public.quotes) = 0, 'another dealer does not see them either');
+select pg_temp.as_user(:'client');
+select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.lead_events) = 0, 'a client does not see site requests');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$select journey from public.leads$q$, 'permission denied'), 'anon cannot read the journey');
+select pg_temp.check(pg_temp.fails($q$select * from public.lead_events$q$, 'permission denied'), 'anon cannot read the history');
+select pg_temp.check(pg_temp.fails($q$select public.submit_request('{"email":"a@b.at"}', '{"catalog":"c","config":{},"total_net":1}')$q$, 'permission denied'), 'anon still cannot call submit_request (0012)');
