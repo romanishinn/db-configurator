@@ -212,8 +212,11 @@ select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('
 -- ---------- 13. reference projects on the landing page + their photo bucket (0008) ----------
 select pg_temp.as_root();
 insert into public.projects (id, title, district, country, options, photos, published, reference_available) values
-  ('00000000-0000-0000-0000-0000000000c1', 'Villa mit Glasdach, Wien 13.', 'Wien 13', 'AT', '{bioklimatisch,glas}', '{a/1.jpg}', true, true),
+  ('00000000-0000-0000-0000-0000000000c1', 'Villa mit Glasdach, Wien 13.', 'Wien 13', 'AT', '{bioklimatisch,glas}', '{a/1.jpg}', false, true),
   ('00000000-0000-0000-0000-0000000000c2', 'Entwurf', 'Linz', 'AT', '{zip}', '{}', false, false);
+-- 0010: publishing needs a recorded consent, so the published fixture gets one first
+insert into public.project_private (project_id, consent_at, consent_channel, consent_version) values ('00000000-0000-0000-0000-0000000000c1', now(), 'paper', 'v0');
+update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000c1';
 -- the public sees published projects only
 select pg_temp.as_anon();
 select pg_temp.check((select count(*) from public.projects) = 1, 'anon sees only published projects');
@@ -236,15 +239,19 @@ select pg_temp.as_user(:'admin');
 select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin sees drafts too');
 select pg_temp.check((select count(*) from public.projects where title = 'hacked') = 0, 'dealer and superdealer cannot change a project (policy hides the write)');
 -- the superadmin manages projects; the data rules hold
-insert into public.projects (title, district, country, options, photos, published, sort)
-  values ('Terrasse mit ZIP-Screens, Wien 19.', 'Wien 19', 'AT', '{bioklimatisch,zip,licht}', '{b/1.jpg,b/2.jpg}', true, 5);
+insert into public.projects (id, title, district, country, options, photos, sort)
+  values ('00000000-0000-0000-0000-0000000000c4', 'Terrasse mit ZIP-Screens, Wien 19.', 'Wien 19', 'AT', '{bioklimatisch,zip,licht}', '{b/1.jpg,b/2.jpg}', 5);
+select public.record_consent('00000000-0000-0000-0000-0000000000c4', 'call', 'v1', true, false);
+update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000c4';
 update public.projects set sort = 1 where id = '00000000-0000-0000-0000-0000000000c2';
 select pg_temp.check((select sort from public.projects where id = '00000000-0000-0000-0000-0000000000c2') = 1, 'superadmin can edit a project');
-select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, published) values ('x', 'y', 'AT', true)$$, 'published_needs_photo'), 'a published project needs a photo');
+select pg_temp.check(pg_temp.fails($$update public.projects set photos = '{}' where id = '00000000-0000-0000-0000-0000000000c4'$$, 'published_needs_photo'), 'a published project needs a photo');
 select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, options) values ('x', 'y', 'AT', '{sauna}')$$, 'projects_options_check'), 'only known options are allowed');
 select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'DE')$$, 'projects_country_check'), 'country is AT or HR');
-select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('  ', 'y', 'AT')$$, 'projects_title_check'), 'a title is required');
-delete from public.projects where id = '00000000-0000-0000-0000-0000000000c2';
+select pg_temp.check(pg_temp.fails($$update public.projects set title = '  ' where id = '00000000-0000-0000-0000-0000000000c4'$$, 'published_needs_text'), 'a published project needs a title');
+select pg_temp.check(pg_temp.fails($$update public.projects set district = '' where id = '00000000-0000-0000-0000-0000000000c4'$$, 'published_needs_text'), 'a published project needs a district');
+insert into public.projects (title, district, country) values ('', '', 'AT');  -- a draft (a dealer's request) may start empty
+delete from public.projects where id = '00000000-0000-0000-0000-0000000000c2' or (title = '' and district = '');
 select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin can delete a project');
 -- a manager adds and edits projects, sees drafts, but never deletes (only the superadmin)
 select pg_temp.as_user(:'manager');
@@ -252,6 +259,7 @@ select pg_temp.check((select count(*) from public.projects) = 2, 'a manager sees
 insert into public.projects (id, title, district, country) values ('00000000-0000-0000-0000-0000000000c3', 'Von Manager', 'Graz', 'AT');
 update public.projects set district = 'Graz 2' where id = '00000000-0000-0000-0000-0000000000c3';
 select pg_temp.check((select district from public.projects where id = '00000000-0000-0000-0000-0000000000c3') = 'Graz 2', 'a manager can add and edit a project');
+select public.record_consent('00000000-0000-0000-0000-0000000000c3', 'call', 'v1', false, false);
 update public.projects set photos = '{c/1.jpg}', published = true where id = '00000000-0000-0000-0000-0000000000c3';
 select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c3'), 'a manager can publish a project');
 delete from public.projects;

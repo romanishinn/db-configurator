@@ -18,3 +18,10 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant usage on schema storage to anon, authenticated, service_role;
 grant select, insert, update, delete on storage.objects to anon, authenticated;
+-- as in Supabase: the folders of an object path (all parts but the file name)
+create function storage.foldername(name text) returns text[] language plpgsql as $$
+declare _parts text[];
+begin
+  select string_to_array(name, '/') into _parts;
+  return _parts[1:array_length(_parts, 1) - 1];
+end $$;
