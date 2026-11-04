@@ -18,7 +18,7 @@
   const DICT = window.CRM_I18N || {};
   const curLang = () => (C.lang && C.lang()) || 'ru';
   const _ = (s) => { const l = curLang(); if (l === 'ru') return s; const e = DICT[s]; if (!e) return s; return e[l] != null ? e[l] : (e.en != null ? e.en : s); };
-  const LOCALES = { ru: 'ru-RU', en: 'en-GB', de: 'de-AT', hr: 'hr-HR' };
+  const LOCALES = { ru: 'ru-RU', en: 'en-GB', de: 'de-AT', hr: 'hr-HR', es: 'es-ES' };
   const LOC = () => LOCALES[curLang()] || 'en-GB';
   // a table of source texts that is translated when read, so a language switch needs no reload
   const L = (o) => new Proxy(o, { get: (t, k) => (typeof t[k] === 'string' ? _(t[k]) : t[k]) });
@@ -470,7 +470,7 @@
   function openConfigurator(model) {
     const f = $('#cfgFrame'); if (!f) return;
     f.setAttribute('data-lang', C.lang());
-    f.setAttribute('src', 'configurator.html?' + (model ? 'model&' : '') + 'lang=' + C.lang());
+    f.setAttribute('src', 'configurator.html?' + (model ? 'model&' : '') + 'lang=' + C.cfgLang());
     C.show('configurator');
   }
 
@@ -772,7 +772,7 @@
     if (id === 'approvals') renderApprovals();
     if (id === 'configurator') {
       const f = $('#cfgFrame');
-      if (f && !/[?&]model/.test(f.getAttribute('src') || '')) { try { localStorage.removeItem('db.handoff'); } catch (e) {} f.setAttribute('data-lang', C.lang()); f.setAttribute('src', 'configurator.html?model&lang=' + C.lang()); }
+      if (f && !/[?&]model/.test(f.getAttribute('src') || '')) { try { localStorage.removeItem('db.handoff'); } catch (e) {} f.setAttribute('data-lang', C.lang()); f.setAttribute('src', 'configurator.html?model&lang=' + C.cfgLang()); }
     }
   };
 
