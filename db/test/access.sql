@@ -584,4 +584,36 @@ select pg_temp.check((select count(*) from pg_indexes where schemaname = 'public
 select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($$select public.my_org_users()$$, 'permission denied'), 'the public site cannot call the company helper');
 
+-- ---------- 23. configurable pipeline stages (0017) ----------
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.pipeline_stages) = 5, 'the pipeline starts with five stages');
+insert into public.leads (created_by, assigned_to, source, contact_name, phone) values (:'admin', :'admin', 'office', 'Pipe A', '+43 1 801'), (:'admin', :'admin', 'office', 'Pipe B', '+43 1 802');
+select pg_temp.as_user(:'admin');
+update public.leads set col = 3 where contact_name = 'Pipe A';
+select pg_temp.check((select stage::text from public.leads where contact_name = 'Pipe A') = 'negotiation', 'moving the position moves the old stage along');
+select pg_temp.check((select count(*) from public.lead_events e join public.leads l on l.id = e.lead_id where l.contact_name = 'Pipe A' and e.kind = 'step' and e.comment = 'Предложение → Переговоры') = 0 and (select count(*) from public.lead_events e join public.leads l on l.id = e.lead_id where l.contact_name = 'Pipe A' and e.kind = 'step' and e.comment = 'Новый → Переговоры') = 1, 'a move between stages is written to the history with the stage names');
+update public.leads set stage = 'contacted' where contact_name = 'Pipe B';
+select pg_temp.check((select col from public.leads where contact_name = 'Pipe B') = 1, 'the older stage buttons move the position too');
+select pg_temp.check((select count(*) from public.lead_page('c3') where contact_name = 'Pipe A') = 1 and (select c3 from public.lead_counts()) >= 1, 'the board column and its counter follow the position');
+-- the pipeline becomes three stages: the lead of position 3 waits in the last open one (position 1)
+select public.set_pipeline(array['Neu', 'Arbeit ', 'Fertig']);
+select pg_temp.check((select count(*) from public.pipeline_stages) = 3 and (select title from public.pipeline_stages where pos = 1) = 'Arbeit', 'the superadmin sets three stages (names trimmed)');
+select pg_temp.check((select count(*) from public.lead_page('c1') where contact_name in ('Pipe A', 'Pipe B')) = 2 and (select count(*) from public.lead_page('c3') where contact_name = 'Pipe A') = 0, 'a lead beyond the shortened pipeline waits in the last open stage');
+select pg_temp.check((select c1 from public.lead_counts()) >= 2 and (select c3 from public.lead_counts()) = 0, 'the counters follow the shortened pipeline');
+select pg_temp.check(pg_temp.fails($q$select public.set_pipeline(array['only one'])$q$, 'PIPELINE_SIZE'), 'one stage is refused');
+select pg_temp.check(pg_temp.fails($q$select public.set_pipeline(array['1','2','3','4','5','6','7','8'])$q$, 'PIPELINE_SIZE'), 'eight stages are refused');
+select pg_temp.check(pg_temp.fails($q$select public.set_pipeline(array['a', '  '])$q$, 'PIPELINE_TITLE'), 'an empty name is refused');
+select pg_temp.check(pg_temp.fails(format($q$select public.set_pipeline(array['a', %L])$q$, repeat('x', 41)), 'PIPELINE_TITLE'), 'a name of 41 characters is refused');
+select public.set_pipeline(array['Neu', 'A', 'B', 'C', 'D', 'E', 'Fertig']);
+select pg_temp.check((select count(*) from public.pipeline_stages) = 7 and (select count(*) from public.lead_page('c3') where contact_name = 'Pipe A') = 1, 'with seven stages the lead is back in its own stage');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails($q$select public.set_pipeline(array['a', 'b'])$q$, 'FORBIDDEN'), 'a manager cannot change the pipeline');
+select pg_temp.check((select count(*) from public.pipeline_stages) = 7, 'a manager reads the stages');
+select pg_temp.as_user(:'client');
+select pg_temp.check((select count(*) from public.pipeline_stages) = 0, 'a client does not read the stages');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$select count(*) from public.pipeline_stages$q$, 'permission denied') and pg_temp.fails($q$select public.set_pipeline(array['a', 'b'])$q$, 'permission denied'), 'the public site reads and sets nothing');
+select pg_temp.as_user(:'admin');
+select public.set_pipeline(array['Новый', 'В работе', 'Предложение', 'Переговоры', 'Итог']);
+
 select 'access tests passed' as result;

@@ -294,7 +294,7 @@
     .rhead .acts .btn{flex:1 1 auto}
     .rhead .acts .primary{flex:1 1 100%;justify-content:center}
   }
-  .stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;margin-top:14px}
+  .stages{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));gap:3px;margin-top:14px}
   .cv{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:44px;background:var(--panel);border:0;color:var(--muted);font:inherit;
     padding:8px 12px 8px 16px;font-size:11.5px;line-height:1.2;clip-path:polygon(0 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,0 100%,9px 50%);text-align:center}
   button.cv{cursor:pointer;transition:filter .15s,transform .15s}
@@ -313,7 +313,8 @@
   .stages .cv[style].now{opacity:1;font-weight:800;filter:saturate(1.15);box-shadow:inset 0 0 0 2px #fff6}
   .stages .cv[style] small{color:inherit;opacity:.75}
   @media(max-width:700px){
-    .stages{gap:2px}
+    .stages{gap:2px;grid-template-columns:repeat(var(--n,5),minmax(66px,1fr));overflow-x:auto;scrollbar-width:none}
+    .stages::-webkit-scrollbar{display:none}
     .cv,.cv:first-child{padding:8px 2px;font-size:9.5px;letter-spacing:-.1px;clip-path:none;border-radius:8px}
     .cv small{font-size:9px}
   }

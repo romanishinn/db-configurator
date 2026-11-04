@@ -24,11 +24,14 @@
   const L = (o) => new Proxy(o, { get: (t, k) => (typeof t[k] === 'string' ? _(t[k]) : t[k]) });
 
   /* ---------- vocabulary ---------- */
-  const STAGE_IDX = { new: 0, contacted: 1, processing: 1, visit_agreed: 1, consultation: 1, measured: 1, quote_issued: 2, proposal: 2, negotiation: 3, won: 4, lost: 4 };
   const STAGE_RU = L({ new: 'Новый', contacted: 'Связались', processing: 'В обработке', visit_agreed: 'Выезд согласован', consultation: 'Консультация', measured: 'Замер сделан', quote_issued: 'КП выдано', proposal: 'Предложение', negotiation: 'Переговоры', won: 'Заказ', lost: 'Отказ' });
-  const stepsL = () => ['Новый', 'В работе', 'Предложение', 'Переговоры', 'Итог'].map(_);
-  // the button "Перевести →" moves to the first stage of the next column
-  const NEXT_STAGE = { 0: 'contacted', 1: 'quote_issued', 2: 'negotiation', 3: 'won' };
+  // the stages of the pipeline are set in the settings (2 to 7, the last one is the outcome); a lead keeps its position in leads.col
+  let pipe = ['Новый', 'В работе', 'Предложение', 'Переговоры', 'Итог'];
+  const stepsL = () => pipe.map(_);
+  const lastIx = () => pipe.length - 1;
+  const colPos = (l) => (l.stage === 'won' || l.stage === 'lost') ? lastIx() : Math.min(Number(l.col) || 0, lastIx() - 1);
+  const stageName = (l) => (l.stage === 'won' || l.stage === 'lost') ? STAGE_RU[l.stage] : _(pipe[colPos(l)]);
+  const loadPipeline = async () => { try { const r = await run(sb.from('pipeline_stages').select('pos, title').order('pos')); if (r && r.length >= 2) pipe = r.map((x) => x.title); } catch (e) {} };
   const ORDER_RU = L({ inbox: 'Входящие', measurement: 'Замер', awaiting_payment: 'Ожидает оплаты', delivery: 'Поставка', in_stock: 'На складе', installation: 'Монтаж', done: 'Выполнено' });
   const ORDER_COL = [['os.inbox', 'inbox'], ['os.measurement', 'measurement'], ['os.payment', 'awaiting_payment'], ['os.delivery', 'delivery'], ['os.instock', 'in_stock'], ['os.installation', 'installation'], ['os.done', 'done']];
   const ROLE_RU = L({ client: 'клиент', seller: 'продавец', manager: 'менеджер', dealer: 'дилер', superdealer: 'суперДилер', superadmin: 'суперадмин', architect: 'архитектор' });
@@ -126,7 +129,8 @@
   const PAGE = 40, COL_PAGE = 20;
   const byId = new Map();
   const T0 = { rows: [], done: false, busy: false };                       // Today list: ids in server order
-  const colD = [0, 1, 2, 3, 4].map(() => ({ ids: [], done: false }));      // board columns
+  const colD = [0, 1, 2, 3, 4, 5, 6].map(() => ({ ids: [], done: false }));      // board columns (the open stages by position, the outcome last)
+  const colKey = (ix) => ix === lastIx() ? 'c6' : 'c' + ix;
   let counts = null, stats = null, colsLoaded = false, ordersLoaded = false, tgen = 0;
   const pinned = new Set();                                                 // opened from elsewhere: kept in the deal list
   const SRV = { need: 'need', late: 'late', wait: 'wait', all: 'open' };    // chip -> server filter
@@ -147,9 +151,9 @@
     T0.done = rows.length < lim;
   }
   async function loadCols(reset) {
-    await Promise.all(colD.map(async (c, i) => {
+    await Promise.all(colD.slice(0, pipe.length).map(async (c, i) => {
       const off = reset ? 0 : c.ids.length, lim = reset ? Math.max(COL_PAGE, Math.min(100, c.ids.length)) : COL_PAGE;
-      const rows = await fetchPage('c' + i, null, off, lim);
+      const rows = await fetchPage(colKey(i), null, off, lim);
       const ids = remember(rows);
       if (reset) c.ids = ids; else { const have = new Set(c.ids); ids.forEach((x) => { if (!have.has(x)) c.ids.push(x); }); }
       c.done = rows.length < lim;
@@ -207,15 +211,15 @@
   const dueNow = (l) => isOpen(l) && !!l.next_action_at && l.next_action_at <= today();
 
   function toDeal(l) {
-    const name = l.contact_name || l.phone || l.email || _('Без имени'), idx = STAGE_IDX[l.stage] ?? 0, late = overdue(l);
+    const name = l.contact_name || l.phone || l.email || _('Без имени'), idx = colPos(l), late = overdue(l);
     const sc = l.score || 0;
     return {
       live: true, lid: l.id, raw: l, name, av: initials(name),
       comp: l.assignee_org || '', owner: l.assignee_name || (l.assigned_to ? userName(l.assigned_to) : _('Не назначен')),
       id: l.last_quote ? _('КП ') + l.last_quote : '', score: sc, band: sc >= HOT ? 'hi' : sc >= 8 ? 'mid' : '', hot: sc >= HOT && isOpen(l),
       product: l.object_address || (l.note ? String(l.note).replace(/\s+/g, ' ').slice(0, 48) : '—'),
-      dot: late || l.stale ? 'red' : l.stage === 'new' ? 'amber' : isOpen(l) ? 'green' : 'grey',
-      statusK: late ? _('Шаг просрочен · ') + (l.next_action || STAGE_RU[l.stage]) : (l.next_action ? l.next_action : STAGE_RU[l.stage]),
+      dot: late || l.stale ? 'red' : isOpen(l) && idx === 0 ? 'amber' : isOpen(l) ? 'green' : 'grey',
+      statusK: late ? _('Шаг просрочен · ') + (l.next_action || stageName(l)) : (l.next_action ? l.next_action : stageName(l)),
       timeK: ago(l.last_activity_at), stage: idx, curDays: days(l.last_activity_at),
       q: { net: l.last_total_net != null ? money(l.last_total_net) : '—' },
     };
@@ -224,11 +228,11 @@
     const col = (tK, ix) => {
       const cd = colD[ix];
       const list = cd.ids.map((id) => idxOf.get(id)).filter((i) => i != null).map((i) => ({ d: deals[i], di: i }));
-      const total = counts ? (ix === 4 ? Number(counts.won) + Number(counts.lost) : Number(counts['c' + ix])) : list.length;
+      const total = counts ? (ix === lastIx() ? Number(counts.won) + Number(counts.lost) : Number(counts['c' + ix])) : list.length;
       const sum = list.reduce((a, x) => a + (Number(x.d.raw.last_total_net) || 0), 0);
-      return { tK, key: 'c' + ix, total, more: Math.max(0, total - list.length), sum: sum && total <= list.length ? money(sum) : '', cards: list.map(({ d, di }) => ({ n: d.name, di, sum: d.q.net, sc: d.score, hot: d.hot, stK: d.raw.stage === 'won' || d.raw.stage === 'lost' ? STAGE_RU[d.raw.stage] : (d.raw.next_action || STAGE_RU[d.raw.stage]), dot: d.dot, days: d.curDays, rot: !!d.raw.stale, cold: false })) };
+      return { tK, key: colKey(ix), total, more: Math.max(0, total - list.length), sum: sum && total <= list.length ? money(sum) : '', cards: list.map(({ d, di }) => ({ n: d.name, di, sum: d.q.net, sc: d.score, hot: d.hot, stK: d.raw.stage === 'won' || d.raw.stage === 'lost' ? STAGE_RU[d.raw.stage] : (d.raw.next_action || stageName(d.raw)), dot: d.dot, days: d.curDays, rot: !!d.raw.stale, cold: false })) };
     };
-    const req = [col('st.new', 0), col('st.processing', 1), col('st.proposal', 2), col('st.negotiation', 3), col('st.winlose', 4)];
+    const req = pipe.map((t, ix) => col(ix === lastIx() ? 'st.winlose' : _(t), ix));
     const ord = ORDER_COL.map(([tK, st]) => {
       const list = orders.filter((o) => o.stage === st);
       const sum = list.reduce((a, o) => a + (Number(o.quotes && o.quotes.total_net) || 0), 0);
@@ -315,10 +319,10 @@
   };
   async function more(what) {
     if (what === 'today') { try { await loadToday(false); rebuild(curLid); } catch (e) { toast(humanError(e), true); } return; }
-    const i = +String(what).slice(1); if (!(i >= 0 && i <= 4)) return;
+    const k = +String(what).slice(1), i = k === 6 ? lastIx() : k; if (!(k >= 0 && k <= 6 && i < pipe.length)) return;
     const cd = colD[i]; if (cd.done) return;
     try {
-      const rows = await fetchPage('c' + i, null, cd.ids.length, COL_PAGE);
+      const rows = await fetchPage(colKey(i), null, cd.ids.length, COL_PAGE);
       const have = new Set(cd.ids); remember(rows).forEach((x) => { if (!have.has(x)) cd.ids.push(x); }); cd.done = rows.length < COL_PAGE;
       rebuild(curLid);
     } catch (e) { toast(humanError(e), true); }
@@ -378,7 +382,7 @@
     if (booted) return; booted = true;
     applyRole();
     if (cacheLoad()) { loaded = true; rebuild(null); }       // the saved first page, at once; the server answers next
-    await Promise.all([loadUsers(), loadGroups()]);
+    await Promise.all([loadUsers(), loadGroups(), loadPipeline()]);
     try { await refresh(null, true); } catch (e) { loaded = true; T0.busy = false; toast(humanError(e), true); C.rerender(); }
     renderChips(); C.onShow(curScreen());
     pollNotifications(); pollChanges();
@@ -423,6 +427,7 @@
       case 'assigned': return _('Назначен: ') + userName(e.to_user) + (e.comment ? ' — ' + e.comment : '');
       case 'transferred': return _('Передан: ') + userName(e.to_user) + (e.comment ? ' — ' + e.comment : '');
       case 'stage': return _('Стадия: ') + (STAGE_RU[e.from_stage] || '—') + ' → ' + (STAGE_RU[e.to_stage] || '—') + (e.comment ? ' — ' + e.comment : '');
+      case 'step': return _('Этап: ') + String(e.comment || '');
       case 'comment': return evComment(e.comment);
       case 'quote': return _('Выставлено КП') + (e.comment ? ' ' + e.comment : '');
       default: return e.kind;
@@ -451,20 +456,20 @@
     if (!same) { clearTimeout(wrap._ft); wrap._ft = setTimeout(() => wrap.classList.remove('fresh'), 420); }
     const dt = detail[l.id];
     if (!dt) loadDetail(l.id).then(() => { if (curLid === l.id) C.rerenderRecord(); }).catch((e) => toast(humanError(e), true));
-    const src = srcInfo(l), late = overdue(l), open = isOpen(l), idx = d.stage;
+    const src = srcInfo(l), late = overdue(l), open = isOpen(l), idx = colPos(l);
     const mine = l.assigned_to && me && l.assigned_to === me.id;
     const stepNames = stepsL();
     // stages run from light to dark in the brand gold; the text colour follows the lightness
     const shade = (i, n) => { const k = n > 1 ? i / (n - 1) : 0, A = [243, 217, 164], B = [86, 58, 16], c = A.map((v, j) => Math.round(v + (B[j] - v) * k)); return 'background:rgb(' + c.join(',') + ');color:' + ((c[0] * 299 + c[1] * 587 + c[2] * 114) / 1000 > 140 ? '#1a1206' : '#f6e7c8'); };
     const steps = stepNames.map((t, i) => {
       const cls = l.stage === 'won' ? 'cv done' : i < idx ? 'cv done' : i === idx ? 'cv now' : 'cv';
-      const small = i === idx ? '<small>' + (l.stage === 'lost' ? _('Отказ · ') : l.stage === 'won' ? _('Заказ · ') : (STAGE_RU[l.stage] !== stepNames[i] ? STAGE_RU[l.stage] + ' · ' : '')) + d.curDays + _(' дн</small>') : '';
+      const small = i === idx ? '<small>' + (l.stage === 'lost' ? _('Отказ · ') : l.stage === 'won' ? _('Заказ · ') : (stageName(l) !== stepNames[i] ? stageName(l) + ' · ' : '')) + d.curDays + _(' дн</small>') : '';
       // an open lead: tap a stage to move the lead there (back or forward)
       return open ? '<button type="button" style="' + shade(i, stepNames.length) + '" class="' + cls + '" data-act="goto" data-i="' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><span>' + t + '</span>' + small + '</button>' : '<div style="' + shade(i, stepNames.length) + '" class="' + cls + '"><span>' + t + '</span>' + small + '</div>';
     }).join('');
     let own = '';
     if (open) own = !l.assigned_to ? (sees() ? _('<button class="btn sm" data-act="take">Взять себе</button>') : '') : (mine || sees() ? _('<button class="btn sm" data-act="transfer">Передать</button>') : '');
-    const next = open && NEXT_STAGE[idx] ? _('<button class="btn primary sm" data-act="advance">Перевести → ') + esc(NEXT_STAGE[idx] === 'won' ? _('Заказ') : STAGE_RU[NEXT_STAGE[idx]]) + '</button>' : '';
+    const next = open ? _('<button class="btn primary sm" data-act="advance">Перевести → ') + esc(idx + 1 >= lastIx() ? _('Заказ') : stepNames[idx + 1]) + '</button>' : '';
     const lose = open ? _('<button class="btn sm" data-act="lose">Отказ</button>') : _('<button class="btn sm" data-act="reopen">Вернуть в работу</button>');
     const wa = waNum(l.phone);
     const contacts = (l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '">📞 ' + esc(l.phone) + '</a>' : '') + (wa ? '<a href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (l.email ? '<a href="mailto:' + esc(l.email) + '">✉ ' + esc(l.email) + '</a>' : '') + (l.object_address ? '<a href="' + esc(mapUrl(l.object_address)) + _('" target="_blank" rel="noopener">📍 Карта</a>') : '');
@@ -507,8 +512,9 @@
       + '<div class="qbtns"><button class="btn ' + (lq ? '' : 'primary ') + _('sm wide" data-act="newq">＋ Рассчитать ') + (lq ? _('новое ') : '') + _('КП</button></div>')
       + '</div></div></div>';
 
-    wrap.innerHTML = _('<div class="rhead"><button class="btn sm ghost back" id="recBack">← Назад</button><div class="top"><div class="idn"><h2>') + esc(d.name) + (d.hot ? ' <span class="hotchip">🔥 HOT</span>' : '') + '</h2><div class="meta"><span>' + esc(d.owner) + '</span>' + (d.id ? '<span>' + esc(d.id) + '</span>' : '') + '<span>' + esc(STAGE_RU[l.stage]) + '</span></div><div class="contact">' + contacts + '</div></div><div class="acts">' + own + lose + next + '</div></div><div class="stages">' + steps + '</div></div>'
+    wrap.innerHTML = _('<div class="rhead"><button class="btn sm ghost back" id="recBack">← Назад</button><div class="top"><div class="idn"><h2>') + esc(d.name) + (d.hot ? ' <span class="hotchip">🔥 HOT</span>' : '') + '</h2><div class="meta"><span>' + esc(d.owner) + '</span>' + (d.id ? '<span>' + esc(d.id) + '</span>' : '') + '<span>' + esc(stageName(l)) + '</span></div><div class="contact">' + contacts + '</div></div><div class="acts">' + own + lose + next + '</div></div><div class="stages" style="--n:' + stepNames.length + '">' + steps + '</div></div>'
       + '<div class="rbody"><div class="rmain">' + brief + _('<div class="upnext"><div class="uh"><span>Следующий шаг</span></div>') + nextBlock + '</div><div class="tabs" role="tablist">' + tabs + '</div>' + tabBody + '</div>' + qpanel + '</div>';
+    { const st = wrap.querySelector('.stages'), nw = st && st.querySelector('.now'); if (nw && st.scrollWidth > st.clientWidth) st.scrollLeft = nw.offsetLeft - (st.clientWidth - nw.offsetWidth) / 2; }   // a long pipeline scrolls sideways on a phone: show the current stage
     const back = $('#recBack', wrap); if (back) back.onclick = () => $('#split').classList.remove('show-rec');
     if (tab === 'ov') dupHint(l);
     const nt = $('#noteTxt', wrap); if (nt && keepNote) { nt.value = keepNote; if (hadFocus) nt.focus(); }
@@ -595,18 +601,15 @@
     if (act0 === 'lose') return loseDialog(l);
     if (act0 === 'reopen') return act(async () => { await run(sb.from('leads').update({ stage: 'processing', lost_reason: null }).eq('id', l.id)); }, _('Лид снова в работе'));
     if (act0 === 'advance') {
-      const to = NEXT_STAGE[STAGE_IDX[l.stage]];
-      const prev = l.stage, go = () => act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to], to === 'won' ? null : async () => { await run(sb.from('leads').update({ stage: prev }).eq('id', l.id)); });
-      if (to === 'won') return dialog({ title: _('Оформить заказ?'), sub: _('Лид станет клиентом, а в «Заказах» появится карточка.'), foot: [{ label: _('Нет'), run: (c) => c() }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await go(); c(); } }] });
-      return go();
+      const to = colPos(l) + 1;
+      if (to >= lastIx()) return dialog({ title: _('Оформить заказ?'), sub: _('Лид станет клиентом, а в «Заказах» появится карточка.'), foot: [{ label: _('Нет'), run: (c) => c() }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await act(async () => { await run(sb.from('leads').update({ stage: 'won' }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU.won); c(); } }] });
+      return moveCol(l, to);
     }
     if (act0 === 'goto') {
       const i = +a.dataset.i;
-      if (!isOpen(l) || i === STAGE_IDX[l.stage]) return;
-      if (i === 4) return dialog({ title: _('Итог сделки'), sub: _('Выберите, чем закончилась сделка.'), foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отказ'), run: (c) => { c(); loseDialog(l); } }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await act(async () => { await run(sb.from('leads').update({ stage: 'won' }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU.won); c(); } }] });
-      const to = ['new', 'contacted', 'quote_issued', 'negotiation'][i];
-      const prev = l.stage;
-      return act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to], async () => { await run(sb.from('leads').update({ stage: prev }).eq('id', l.id)); });
+      if (!isOpen(l) || i === colPos(l)) return;
+      if (i === lastIx()) return outcomeDialog(l, l.contact_name);
+      return moveCol(l, i);
     }
     if (act0 === 'setnext') return nextDialog(l);
     if (act0 === 'done') return act(async () => {
@@ -787,7 +790,7 @@
       title: c.name || c.email || c.phone, sub: esc([c.phone, c.email].filter(Boolean).join(' · ')),
       body: '<div class="contact">' + (c.phone ? '<a href="tel:' + esc(tel(c.phone)) + _('">📞 Позвонить</a>') : '') + (waNum(c.phone) ? '<a href="https://wa.me/' + waNum(c.phone) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (c.email ? '<a href="mailto:' + esc(c.email) + _('">✉ Написать</a>') : '') + '</div>'
         + (c.object_address ? _('<div class="kv"><span class="k">Адрес</span><span class="v">') + esc(c.object_address) + '</span></div>' : '')
-        + _('<h4 class="ovhead">Обращения (') + mine.length + ')</h4>' + mine.map((l) => '<div class="vrow" style="cursor:pointer" data-lead="' + l.id + '"><span>' + dmy(l.created_at) + '</span><span class="d">' + esc(STAGE_RU[l.stage]) + (l.last_quote ? _(' · КП ') + esc(l.last_quote) : '') + '</span><span class="s tab-num">' + money(l.last_total_net) + '</span></div>').join(''),
+        + _('<h4 class="ovhead">Обращения (') + mine.length + ')</h4>' + mine.map((l) => '<div class="vrow" style="cursor:pointer" data-lead="' + l.id + '"><span>' + dmy(l.created_at) + '</span><span class="d">' + esc(stageName(l)) + (l.last_quote ? _(' · КП ') + esc(l.last_quote) : '') + '</span><span class="s tab-num">' + money(l.last_total_net) + '</span></div>').join(''),
       onOpen: (r, close) => r.addEventListener('click', (e) => { const x = e.target.closest('[data-lead]'); if (x) { close(); openLead(x.dataset.lead); } }),
       foot: [{ label: _('Закрыть'), run: (cl) => cl() }, { label: _('＋ Новое обращение'), primary: true, run: (cl) => { cl(); newLeadDialog({ name: c.name, phone: c.phone }); } }],
     });
@@ -893,11 +896,40 @@
     if (pp) {
       let rate = null; try { rate = await run(sb.from('pricing_config').select('install_pct, delivery_pct').eq('id', 1).single()); } catch (e) {}
       pp.innerHTML = _('<div class="panel"><div class="ph"><h3>Наценки на услуги</h3></div><div style="padding:14px 15px;display:flex;flex-direction:column;gap:12px;max-width:360px"><div class="fld"><label>Монтаж, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rIns" value="') + (rate ? Number(rate.install_pct) : '') + _('"></div><div class="fld"><label>Доставка, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rDel" value="') + (rate ? Number(rate.delivery_pct) : '') + _('"></div><button class="btn primary sm" id="rSave" style="align-self:flex-start">Сохранить</button><p class="muted" style="margin:0">Применяется в новых расчётах сразу, без обновления сайта.</p></div></div>');
+      renderPipePanel(pp);
       const sv = $('#rSave'); if (sv) sv.onclick = async () => { try { await run(sb.from('pricing_config').update({ install_pct: Number($('#rIns').value), delivery_pct: Number($('#rDel').value), updated_at: new Date().toISOString() }).eq('id', 1)); toast(_('Сохранено')); } catch (e) { toast(humanError(e), true); } };
     }
     const stScreen = $('[data-screen="settings"]'); if (stScreen && stScreen.classList.contains('loading')) { stScreen.classList.remove('loading'); const sk = stScreen.querySelector(':scope > .skel'); if (sk) sk.remove(); }
-    const tabNames = { pipe: _('Наценки'), roles: _('Роли и доступ'), disc: _('Группы скидок') };
+    const tabNames = { pipe: _('Этапы и наценки'), roles: _('Роли и доступ'), disc: _('Группы скидок') };
     $$('.subnav .t').forEach((t) => { if (tabNames[t.dataset.set]) { t.removeAttribute('data-i18n'); t.textContent = tabNames[t.dataset.set]; } });
+  }
+  // the stages of the pipeline: 2 to 7, the last one is the outcome (order / lost); light to dark in the brand gold
+  const shadeOf = (i, n) => { const k = n > 1 ? i / (n - 1) : 0, A = [243, 217, 164], B = [86, 58, 16], c = A.map((v, j) => Math.round(v + (B[j] - v) * k)); return 'rgb(' + c.join(',') + ')'; };
+  function renderPipePanel(pp) {
+    let box = $('#pipePanel'); if (!box) { box = document.createElement('div'); box.id = 'pipePanel'; box.className = 'panel'; pp.insertBefore(box, pp.firstChild); }
+    let draft = pipe.slice();
+    const draw = () => {
+      const ed = isAdmin();
+      box.innerHTML = _('<div class="ph"><h3>Этапы сделки</h3></div><div style="padding:14px 15px;display:flex;flex-direction:column;gap:10px;max-width:440px">')
+        + draft.map((t, i) => '<div style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:34px;border-radius:5px;flex:none;background:' + shadeOf(i, draft.length) + '"></span><input class="inp" data-pt="' + i + '" maxlength="40" value="' + esc(t) + '"' + (ed ? '' : ' disabled') + ' style="flex:1">'
+          + (ed && draft.length > 2 && i < draft.length - 1 ? '<button class="btn sm ghost" data-pdel="' + i + '" title="' + esc(_('Удалить')) + '">✕</button>' : '<span style="width:34px"></span>') + '</div>').join('')
+        + (ed ? '<div style="display:flex;gap:8px;flex-wrap:wrap">' + (draft.length < 7 ? _('<button class="btn sm" data-padd>＋ Добавить этап</button>') : '') + _('<button class="btn sm primary" data-psave>Сохранить</button></div>') : '')
+        + _('<div class="muted" style="font-size:12px;line-height:1.5">От 2 до 7 этапов. Последний этап — итог: заказ или отказ. Новый этап встаёт перед итогом. Если убрать этап, его лиды переходят в ближайший оставшийся.</div></div>');
+    };
+    draw();
+    if (box._wired) { box._redraw = draw; return; }
+    box._wired = true; box._redraw = draw;
+    box.addEventListener('input', (e) => { const i = e.target.dataset && e.target.dataset.pt; if (i != null) draft[+i] = e.target.value; });
+    box.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-padd]')) { draft.splice(draft.length - 1, 0, _('Новый этап')); return box._redraw(); }
+      const d = e.target.closest('[data-pdel]'); if (d) { draft.splice(+d.dataset.pdel, 1); return box._redraw(); }
+      if (e.target.closest('[data-psave]')) {
+        const t = draft.map((x) => String(x).trim());
+        if (t.some((x) => !x)) return toast(_('Название этапа не может быть пустым'), true);
+        try { await run(sb.rpc('set_pipeline', { p_titles: t })); await loadPipeline(); toast(_('Сохранено')); try { await refresh(curLid, true); } catch (er) {} rebuild(curLid); renderChips(); if (curLid) C.rerenderRecord(); } catch (er) { toast(humanError(er), true); }
+      }
+    });
+    box._reset = () => { draft = pipe.slice(); draw(); };
   }
   async function createInvite() {
     const { data: { session } } = await sb.auth.getSession();
@@ -1032,16 +1064,16 @@
     st.card.classList.remove('dragging');
     if (st.info.kind === 'lead') moveLead(byId.get(st.info.id), idx); else moveOrder(orders.find((x) => x.id === st.info.id), idx);
   }
-  const STAGE_AT = ['new', 'contacted', 'quote_issued', 'negotiation'];
+  // a move between stages of the pipeline: only the position is written (the database moves the old stage along), with an undo
+  const moveCol = (l, to) => { const prev = Number(l.col) || 0; return act(async () => { await run(sb.from('leads').update({ col: to }).eq('id', l.id)); }, _('Этап: ') + _(pipe[to]), async () => { await run(sb.from('leads').update({ col: prev }).eq('id', l.id)); }); };
+  const outcomeDialog = (l, sub, before) => dialog({ title: _('Итог сделки'), sub: esc(sub || ''), body: _('<div class="muted">Лид закрыт как заказ или как отказ.</div>'),
+    foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отказ'), run: (c) => { c(); if (before) before(); loseDialog(l); } }, { label: _('Оформить заказ'), primary: true, run: async (c) => { c(); if (before) before(); await act(async () => { await run(sb.from('leads').update({ stage: 'won' }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU.won); } }] });
   function moveLead(l, idx) {
-    if (!l || idx === STAGE_IDX[l.stage]) return;
+    if (!l || idx === colPos(l)) return;
     DRAG.landed = l.id;
-    if (idx === 4) {
-      return dialog({ title: _('Итог по лиду'), sub: esc(l.contact_name || ''), body: _('<div class="muted">Лид закрыт как заказ или как отказ.</div>'),
-        foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отказ'), run: (c) => { c(); curLid = l.id; loseDialog(l); } }, { label: _('Оформить заказ'), primary: true, run: async (c) => { c(); curLid = l.id; await act(async () => { await run(sb.from('leads').update({ stage: 'won', next_action: null, next_action_at: null }).eq('id', l.id)); }, _('Заказ оформлен')); landed(); } }] });
-    }
+    if (idx === lastIx()) { if (!isOpen(l)) return; return outcomeDialog(l, l.contact_name, () => { curLid = l.id; }); }
     curLid = l.id;
-    act(async () => { await run(sb.from('leads').update({ stage: STAGE_AT[idx] }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[STAGE_AT[idx]]).then(landed);
+    moveCol(l, idx).then(landed);
   }
   async function moveOrder(o, idx) {
     if (!o || !ORDER_COL[idx] || ORDER_COL[idx][1] === o.stage) return;
