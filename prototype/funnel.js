@@ -104,7 +104,7 @@
     return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : 'de';
   };
   let lang = pickLang();
-  let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
+  let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false, sending = false, reqErr = '', reqNo = '', dbNo = '';
   const isCust = () => document.body.classList.contains('cust');
   const curOpt = () => state.options[state.optIndex];
   const sysOf = (o) => famKey(o);
@@ -362,8 +362,9 @@
     const price = ok ? `<b>${fe(total)}</b><span>${t.net}<span class="nt"> · ${fe(gross(total))} ${t.gross}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
     const to = step < 3 ? nextStep() : 3;
-    const nextLabel = step === 3 ? esc(t.send) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
-    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 3 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
+    const noBE = !window.Backend; // without the database there is no request form: the offer step ends with the PDF
+    const nextLabel = step === 3 ? (noBE ? 'PDF' : sending ? esc(t.sending) : esc(t.send)) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
+    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" ${step === 3 ? (noBE ? 'data-act="print"' : 'data-go="form"') : 'data-go="1"'} ${ok && !sending ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
   }
 
   /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
@@ -688,8 +689,11 @@
     h += `<div class="f-h3" style="margin-top:22px"><span>${t.faqT}</span></div><div class="f-faq">${t.faq.map(([qq, a]) => `<details><summary>${qq}</summary><p>${a}</p></details>`).join('')}</div>`;
     return h;
   }
+  const RETRY = ['server_error', 'turnstile_failed', 'turnstile_missing', 'network']; // errors where trying again makes sense (a new token is fetched each time)
   function formHtml(t) {
-    if (sentOk) return `<div class="f-done" id="f-form"><b>${t.sentT}</b><p style="margin:6px 0 8px">${t.sent}</p><div style="display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="f-link" data-act="reopen">${t.reopen}</button><button type="button" class="f-link" data-act="copytext">${t.noMail}</button></div></div>`;
+    const more = `<p class="f-more"><button type="button" class="f-link" data-act="print">${t.printS}</button> · <button type="button" class="f-link" data-act="share">${t.share}</button></p>`;
+    if (!window.Backend) return more; // no database: no request form, only PDF and link
+    if (sentOk) return `<div class="f-done" id="f-form" role="status"><b>${t.sentT(esc(reqNo))}</b><p style="margin:6px 0 0">${t.sent}</p></div>${more}`;
     const err = (k) => formErr[k] ? `<span class="err">${formErr[k]}</span>` : '';
     // one action on this step: "Send request" in the bar; the form keeps an invisible submit so Enter works
     return `<form class="f-form" id="f-form" novalidate><div class="f-h3" style="margin:22px 0 0"><span>${t.formT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.requestS}</span></div>
@@ -700,9 +704,9 @@
       <label>${t.when}<select name="when">${t.whens.map((w, i) => `<option value="${i}" ${form.when === i ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
       <label class="chk"><input type="checkbox" name="visit" ${form.visit ? 'checked' : ''}> ${t.wantVisit}</label>
       <label>${t.msg}<textarea name="msg">${esc(form.msg)}</textarea></label>
+      ${sending ? `<p class="f-note" role="status">${t.sending}</p>` : ''}${reqErr ? `<div class="f-note" role="alert">${esc(t.errs[reqErr] || t.errs.server_error)}${RETRY.includes(reqErr) ? ` <button type="button" class="f-link" data-act="retry">${t.retry}</button>` : ''}</div>` : ''}
       <p class="f-priv">${t.privacy}</p>
-      <button type="submit" class="f-sr" tabindex="-1">${t.send}</button></form>
-      <p class="f-more"><button type="button" class="f-link" data-act="print">${t.printS}</button> · <button type="button" class="f-link" data-act="share">${t.share}</button></p>`;
+      <button type="submit" class="f-sr" tabindex="-1">${t.send}</button></form>${more}`;
   }
 
 
@@ -780,14 +784,14 @@
   })();
   document.addEventListener('click', (e) => { // the buttons on the 3D view
     const b = e.target.closest('button'); if (!b) return;
-    if (b.closest('#tb-views')) J.views.add(b.id);
-    else if (b.id === 'evening') J.night += 1;
+    if (b.closest('#tb-views')) { J.views.add(b.id); logEv('3D-вид: ' + b.id.replace(/^v-/, '')); }
+    else if (b.id === 'evening') { J.night += 1; logEv('вечерний вид'); }
     else if (b.closest('#tb-colors') && (b.dataset.qcol !== undefined || b.dataset.tone || b.dataset.gtint || b.dataset.qof)) J.colours += 1;
     else if (b.closest('#tb-lights') && b.dataset.light) J.lights += 1;
     else if (b.id === 'louv-dir') J.layouts += 1;
   }, true);
-  const photoIn = $('photo-in'); if (photoIn) photoIn.addEventListener('change', () => { J.photo += 1; A.track('photo_uploaded'); });
-  window.addEventListener('beforeprint', () => { if (isCust()) J.printed += 1; });
+  const photoIn = $('photo-in'); if (photoIn) photoIn.addEventListener('change', () => { J.photo += 1; logEv('загрузил фото террасы'); A.track('photo_uploaded'); });
+  window.addEventListener('beforeprint', () => { if (isCust()) { J.printed += 1; logEv('PDF / печать'); } });
   function trackAct(d) {
     // the same actions as named events for the analytics (no personal data, only what was chosen)
     if (d.step !== undefined) A.track('step_opened', { step: Number(d.step) + 1, via: 'tab' });
@@ -800,7 +804,17 @@
     if (d.vpreset !== undefined || d.vpos) A.track('decor_changed');
     if (d.act === 'share') A.track('link_copied');
     if (d.act === 'photo') A.track('photo_clicked');
-    if (d.nudge || d.preset || d.fix) setTimeout(() => J.sizes.add(state.width + 'x' + state.depth), 0);
+    if (d.nudge || d.preset || d.fix) setTimeout(() => { J.sizes.add(state.width + 'x' + state.depth); logEv(`размер ${(state.width / 1000).toFixed(2)} × ${(state.depth / 1000).toFixed(2)} м`); }, 0);
+    if (d.step !== undefined) logEv(`открыл шаг «${JTR.stepN[Number(d.step)] || d.step}»`);
+    if (d.fill) logEv(`сторона: ${JTR.fills[d.fill] || d.fill}`);
+    if (d.all) logEv(`все стороны: ${JTR.fills[d.all] || d.all}`);
+    if (d.rooft) logEv(`крыша: ${JTR.roofs[d.rooft] || d.rooft}`);
+    if (d.mount) logEv(`установка: ${d.mount === 'wall' ? 'у стены' : 'отдельно стоящая'}`);
+    if (d.light) logEv('свет');
+    if (d.of || d.gl || d.cl || d.frame || d.roofc || d.roof === 'same' || d.tone) logEv('цвет');
+    if (d.heat || d.sensor || d.smart || d.thermal || d.audio || d.sock !== undefined) logEv('комфорт');
+    if (d.act === 'share') logEv('скопировал ссылку');
+    if (d.act === 'photo') logEv('фото: нажал «загрузить»');
     if (d.rooft) J.roofs.add(d.rooft);
     if (d.mount) J.mounts.add(d.mount);
     if (d.opt !== undefined || d.louv || d.spl) J.layouts += 1;
@@ -827,73 +841,71 @@
     if (J.rot >= 5) p += 1;
     return { p, lvl: p >= 9 ? 'high' : p >= 5 ? 'mid' : 'low' };
   }
-  const JT = {
-    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', replay: 'Sitzungsaufzeichnung (intern)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Ausstattung', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
-    en: { head: 'How I used the configurator (for your advice)', replay: 'Session recording (internal)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Equipment', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
-    ru: { head: 'Как я пользовался конфигуратором (для консультации)', replay: 'Запись сессии (для офиса)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Комплектация', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
-    hr: { head: 'Kako sam koristio konfigurator (za vaše savjetovanje)', replay: 'Snimka sesije (interno)', visit: (n, d) => n > 1 ? `${n}. posjet, prvi ${d}` : 'Prvi posjet', src: 'Pronađeno putem', direct: 'izravno', active: 'Aktivno vrijeme', open: 'stranica otvorena', steps: 'Vrijeme po koraku', stepN: ['Veličina', 'Oprema', 'Boje', 'Ponuda'], tried: 'Isprobano', sizes: 'veličina', roofs: { rotating: 'zakretne lamele', sliding: 'klizni krov' }, sides: 'promjena strana', colours: 'promjena boja', lights: 'odabira svjetla', comfort: 'promjena udobnosti', layouts: 'rasporeda/smjerova', range: 'Viđene cijene', looked: '3D', rot: 'okretano', views: 'prikaza', night: 'večernji prikaz', printed: 'Ponuda ispisana/PDF', link: 'poveznica kopirana', photo: 'učitana fotografija terase', yes: 'da', no: 'ne', interest: 'Interes', lvl: { high: 'visok', mid: 'srednji', low: 'nizak' }, pts: 'bodova', min: 'min', s: 's' },
-  };
+  /* The log goes to the manager only (stored with the request in the database): always Russian, whatever language the visitor uses.
+   * Retail prices only. Short timeline (consecutive duplicates collapsed) + totals. */
+  const JTR = { sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, fills: { zip: 'ZIP-штора', glass: 'стекло', verto: 'Decor', panels: 'панели', none: 'открыто' }, stepN: ['Размер', 'Комплектация', 'Цвета', 'Предложение'], lvl: { high: 'высокий', mid: 'средний', low: 'низкий' } };
+  const evLog = []; // { s: seconds from the start, x: text }
+  function logEv(x) { if (evLog.length < 500) evLog.push({ s: Math.round((Date.now() - J.t0) / 1000), x }); }
+  const mmss = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  const durRu = (sec) => sec >= 60 ? `${Math.floor(sec / 60)} мин ${String(sec % 60).padStart(2, '0')} с` : `${sec} с`;
+  function timeline() {
+    const out = [];
+    for (const e of evLog) { const l = out[out.length - 1]; if (l && (l.x === e.x || (l.x.startsWith('размер') && e.x.startsWith('размер')))) { l.x = e.x; l.n += 1; } else out.push({ s: e.s, x: e.x, n: 1 }); }
+    const MAX = 40, cut = out.length > MAX ? out.length - MAX : 0;
+    const keep = cut ? [...out.slice(0, 10), null, ...out.slice(10 + cut)] : out;
+    return keep.map((e) => (e ? `${mmss(e.s)} ${e.x}${e.n > 1 ? ` ×${e.n}` : ''}` : `… (пропущено ${cut})`));
+  }
   function journeyText() {
     trackPrice();
-    const j = JT[lang] || JT.de, v = J.visit || { n: 1, first: Date.now(), src: '' };
-    const dur = (sec) => sec >= 60 ? `${Math.floor(sec / 60)} ${j.min} ${String(sec % 60).padStart(2, '0')} ${j.s}` : `${sec} ${j.s}`;
-    const dt = new Date(v.first).toLocaleDateString(lang === 'en' ? 'en-GB' : 'de-AT');
-    const src = v.src && v.now && v.now !== v.src ? `${v.src} (${v.now})` : v.src || v.now || j.direct;
-    const tried = [`${J.sizes.size} ${j.sizes}`, [...J.roofs].map((r) => j.roofs[r] || r).join(' + ')];
-    for (const [k, n] of [['sides', J.sides], ['colours', J.colours], ['lights', J.lights], ['comfort', J.comfort], ['layouts', J.layouts]]) if (n) tried.push(`${n} ${j[k]}`);
-    const look = [`${j.rot} ${J.rot}×`]; if (J.views.size) look.push(`${j.views} ${J.views.size}`); if (J.night) look.push(j.night);
-    const yn = (n) => (n ? j.yes : j.no), it = interest();
-    return [`— ${j.head} —`,
-      `${j.visit(v.n, dt)} · ${j.src}: ${src}`,
-      `${j.active}: ${dur(J.active)} (${j.open} ${dur(J.open)})`,
-      `${j.steps}: ${J.stepSec.map((sec, i) => (sec ? `${j.stepN[i]} ${dur(sec)}` : '')).filter(Boolean).join(' · ')}`,
-      `${j.tried}: ${tried.filter(Boolean).join(', ')}`,
-      J.maxP ? `${j.range}: ${fe(J.minP)} – ${fe(J.maxP)}` : '',
-      `${j.looked}: ${look.join(', ')}`,
-      `${j.printed}: ${yn(J.printed)} · ${j.link}: ${yn(J.linkCopied)} · ${j.photo}: ${yn(J.photo)}`,
-      `${j.interest}: ${j.lvl[it.lvl]} (${it.p} ${j.pts})`,
-      A.replayUrl() ? `${j.replay}: ${A.replayUrl()}` : ''].filter(Boolean).join('\n');
+    const v = J.visit || { n: 1, first: Date.now(), src: '' }, it = interest();
+    const dt = new Date(v.first).toLocaleDateString('ru-RU');
+    const src = v.src && v.now && v.now !== v.src ? `${v.src} (${v.now})` : v.src || v.now || 'напрямую';
+    const tried = [`${J.sizes.size} ${JTR.sizes}`, [...J.roofs].map((r) => JTR.roofs[r] || r).join(' + ')];
+    for (const [k, n] of [['сторон изменено', J.sides], ['смен цвета', J.colours], ['выборов света', J.lights], ['изменений комфорта', J.comfort], ['вариантов/направлений', J.layouts]]) if (n) tried.push(`${n} ${k}`);
+    const yn = (n) => (n ? 'да' : 'нет');
+    const out = ['— Ход работы клиента в конфигураторе —',
+      `${v.n > 1 ? `${v.n}-й визит, первый ${dt}` : 'Первый визит'} · откуда: ${src} · язык клиента: ${lang}`,
+      `Активное время: ${durRu(J.active)} (страница открыта ${durRu(J.open)})`,
+      `Время по шагам: ${J.stepSec.map((sec, i) => (sec ? `${JTR.stepN[i]} ${durRu(sec)}` : '')).filter(Boolean).join(' · ')}`,
+      `Пробовал: ${tried.filter(Boolean).join(', ')}`,
+      J.maxP ? `Видел цены (розница, брутто): ${fe(J.minP)} – ${fe(J.maxP)}` : '',
+      `3D: вращал ${J.rot}×, видов ${J.views.size}, вечерний вид ${J.night}×`,
+      `PDF: ${yn(J.printed)} · ссылка скопирована: ${yn(J.linkCopied)} · фото террасы: ${yn(J.photo)}`,
+      `Интерес: ${JTR.lvl[it.lvl]} (${it.p} баллов)`,
+      A.replayUrl() ? `Запись сессии: ${A.replayUrl()}` : '',
+      '', 'Хронология (мин:сек от входа):', ...timeline()].filter((x, i) => x !== '' || i > 9);
+    return out.join('\n').slice(0, 18000);
   }
   window.journeyText = journeyText; // for the manager: journeyText() in the console
 
   /* ---------- request e-mail and quote ---------- */
   function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} ${L().m}` : ''; } // as built (louvre spacing may round the size)
-  function mailText() {
-    const t = L(), lines = quoteLines(), total = grandNet();
-    const parts = [t.mailHi, '', `${t.qFacts.size}: ${sizeText()} (${state.mount === 'wall' ? t.wall : t.free})`];
-    for (const l of lines) parts.push(`- ${l.t}${l.d ? ' (' + l.d + ')' : ''}: ${l.a == null ? '—' : fe(gross(l.a))}`);
-    parts.push('', `${t.qGross}: ${fe(gross(total))} (${t.net} ${fe(total)})`, '');
-    parts.push(`${t.name}: ${form.name}`, `${t.email}: ${form.email}`);
-    if (form.phone) parts.push(`${t.phone.replace(/ \(.*\)/, '')}: ${form.phone}`);
-    if (form.place.trim()) parts.push(`${t.place.replace(/ \(.*\)/, '')}: ${form.place}`);
-    parts.push(`${t.when}: ${t.whens[form.when]}`);
-    if (form.mount) parts.push('✓ ' + t.wantMount);
-    if (form.visit) parts.push('✓ ' + t.wantVisit);
-    if (form.msg) parts.push('', form.msg);
-    parts.push('', `${t.qLink}: ${shareUrl()}`, '', journeyText(), '', t.mailBye, form.name);
-    return parts.join('\n');
-  }
-  let lastMailto = '';
-  function openMail() { window.__lastMailto = lastMailto; const a = document.createElement('a'); a.href = lastMailto; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
   /** take the values straight from the fields (browser autofill does not always send input events) */
   function syncForm() {
     const f = F.querySelector('#f-form'); if (!f || f.tagName !== 'FORM') return; // after sending it is the confirmation box
     for (const el of Array.from(f.elements)) if (el.name && el.name in form) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
   }
-  function sendRequest() {
+  async function sendRequest() {
+    if (sending || !window.Backend) return; // one request at a time; without the database there is no request at all
     syncForm();
     const t = L(); formErr = {};
     if (!form.name.trim()) formErr.name = t.required;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
     // postcode / town: optional for now
     if (Object.keys(formErr).length) { render(); const f = F.querySelector('#f-form'); if (f) f.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
-    const subj = t.mailSubj(sizeText(), fe(gross(grandNet())));
-    lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
-    openMail();
-    // with the database switched on the request is also stored as a lead (the office sees it on its board)
-    if (window.Backend) window.Backend.submitRequest({ name: form.name, phone: form.phone, email: form.email, address: form.place, postcode: (String(form.place || '').match(/\b\d{4}\b/) || [''])[0], note: [form.msg, form.mount ? t.wantMount : '', form.visit ? t.wantVisit : ''].filter(Boolean).join(' · ') }, journeyText());
-    A.track('request_sent', { total_gross: Math.round(gross(grandNet())), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
-    sentOk = true; render();
+    sending = true; reqErr = ''; logEv('отправляет заявку'); render();
+    const contact = { name: form.name, phone: form.phone, email: form.email, address: form.place, postcode: (String(form.place || '').match(/\b\d{4}\b/) || [''])[0], note: [form.msg, form.mount ? t.wantMount : '', form.visit ? t.wantVisit : ''].filter(Boolean).join(' · ') };
+    let r; try { r = await window.Backend.submitRequest(contact, journeyText()); } catch (e) { r = { ok: false, error: 'network' }; }
+    sending = false;
+    if (r && r.ok) {
+      sentOk = true; reqNo = r.number; dbNo = r.number; logEv('заявка № ' + r.number);
+      A.track('request_sent', { total_gross: Math.round(gross(grandNet())), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
+    } else {
+      reqErr = (r && r.error) || 'server_error'; logEv('ошибка отправки: ' + reqErr);
+      A.track('request_failed', { code: reqErr });
+      if (reqErr === 'contact_required' || reqErr === 'invalid_payload') { formErr = { name: form.name.trim() ? '' : t.required, email: t.badEmail }; if (!formErr.name) delete formErr.name; }
+    }
+    render();
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
   function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return (OFFICE.name ? 'DB-' : '') + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
@@ -911,7 +923,10 @@
     // on the customer's photo: exactly what they set up (photo + pergola), no camera change
     if (PHOTO.url) { try { return (lastImg = compositeImage()); } catch (e) { return lastImg; } }
     // a sharp picture for A4: render off-screen at 1600 × 900 in the 3D view, then put everything back
+    // a glide in progress would be cut by setView() and leave the camera half-way: finish it first, then keep everything instant
+    const ci = window.__camInstant; window.__camInstant = true; try { endTr(); } catch (e) { /* older 3D page */ }
     const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved, asp = camera.aspect;
+    const lim = [controls.minDistance, controls.maxDistance, controls.maxPolarAngle]; // setView() resets them; without restoring, update() pushes a view like 'under' up to the default limit
     const size = renderer.getSize(new THREE.Vector2()), pr = renderer.getPixelRatio();
     try {
       renderer.setPixelRatio(1); renderer.setSize(1680, 600, false); camera.aspect = 1680 / 600; camera.updateProjectionMatrix(); // the A4 picture's own proportion
@@ -931,7 +946,7 @@
     } catch (e) { return lastImg; }
     finally {
       renderer.setPixelRatio(pr); renderer.setSize(size.x, size.y, false); camera.aspect = asp; camera.updateProjectionMatrix();
-      camera.position.copy(pos); controls.target.copy(tgt); controls.update(); lastView = lv; userMoved = um;
+      [controls.minDistance, controls.maxDistance, controls.maxPolarAngle] = lim; camera.position.copy(pos); controls.target.copy(tgt); controls.update(); lastView = lv; userMoved = um; window.__camInstant = ci;
     }
   }
   function buildQuote() {
@@ -959,7 +974,7 @@
     // top left: the customer from the request form (empty lines to fill in by hand when nothing is typed yet)
     const cl = [form.name, form.phone, form.email].map((x) => String(x || '').trim());
     const client = `<div class="client"><div class="lb">${t.qClient}</div>${cl.some(Boolean) ? `${cl[0] ? `<b>${esc(cl[0])}</b>` : ''}${cl[1] ? `<div>${esc(cl[1])}</div>` : ''}${cl[2] ? `<div>${esc(cl[2])}</div>` : ''}` : '<div class="ln"></div><div class="ln"></div><div class="ln"></div>'}</div>`;
-    const no = quoteNum || nextQuoteNo(false);
+    const no = quoteNum || dbNo || nextQuoteNo(false); // after a stored request the offer carries the database number
     return `<div class="q"><div class="hdr">${client}<div class="meta">${logoImg}<h1>${t.qTitle}</h1>${t.qNo} ${no} · ${t.qDate} ${date}${BR.name ? `<div class="brand">${esc(BR.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
       <h2>${t.qConfig}</h2><table class="facts"><tbody>${facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
@@ -985,7 +1000,7 @@
   let titleBefore = null;
   function pdfTitle() { if (titleBefore === null) titleBefore = document.title; document.title = 'Quotation ' + quoteNum; }
   function printQuote() {
-    quoteNum = nextQuoteNo(true); // every generated PDF gets its own number
+    quoteNum = dbNo || nextQuoteNo(true); // the request number once stored; else every generated PDF gets its own local number
     pdfTitle(); A.track('pdf_generated', { quote_no: quoteNum, total_gross: Math.round(gross(q().total)) });
     $('quote').innerHTML = buildQuote(); fitQuote();
     document.body.classList.add('printing');
@@ -996,7 +1011,7 @@
   window.addEventListener('beforeprint', () => {
     if (!isCust() || !curOpt()) return;
     // printed from the browser menu: this PDF needs its own number too (the button has already taken one)
-    if (!quoteNum) { quoteNum = nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
+    if (!quoteNum) { quoteNum = dbNo || nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
     pdfTitle();
     document.body.classList.add('printing');
   });
@@ -1029,7 +1044,7 @@
   function nextStep() { for (let i = step + 1; i < 3; i++) if (!stepDone(i)) return i; return 3; }
   function go(d) {
     if (d > 0) { visited.add(step); step = nextStep(); } else step = Math.max(0, step - 1);
-    A.track('step_opened', { step: step + 1, via: d > 0 ? 'next' : 'back' });
+    A.track('step_opened', { step: step + 1, via: d > 0 ? 'next' : 'back' }); logEv(`шаг «${JTR.stepN[step]}»`);
     focusId = null; lastTap = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   let dimT = 0;
@@ -1146,8 +1161,7 @@
     if (d.act === 'share') { copy(shareUrl(), L().copied); return; }
     if (d.act === 'save') { saveFile(); return; }
     if (d.act === 'open') { $('f-file').click(); return; }
-    if (d.act === 'reopen') { if (lastMailto) openMail(); return; }
-    if (d.act === 'copytext') { copy(mailText(), L().textCopied); return; }
+    if (d.act === 'retry') { sendRequest(); return; }
   }
   F.addEventListener('input', (ev) => {
     const el = ev.target;

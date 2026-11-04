@@ -57,8 +57,10 @@ export function buildT(CATALOGUE) {
       whens: ['So bald wie möglich', 'In 1–3 Monaten', 'Später in diesem Jahr', 'Ich informiere mich nur'],
       wantMount: 'Montage gewünscht', wantVisit: 'Besichtigung und Aufmaß vor Ort gewünscht', msg: 'Nachricht (optional)',
       required: 'Bitte ausfüllen', badEmail: 'Bitte eine gültige E-Mail-Adresse eingeben',
-      privacy: 'Ihre Angaben werden nur für diese Anfrage verwendet. Die Nachricht wird über Ihr E-Mail-Programm gesendet – auf dieser Seite wird nichts gespeichert.',
-      sendBtn: 'E-Mail mit Anfrage öffnen', sentT: 'Fast geschafft', reopen: 'E-Mail noch einmal öffnen', sent: 'Ihr E-Mail-Programm hat sich mit der fertigen Nachricht geöffnet. Bitte senden Sie sie ab.', noMail: 'Kein E-Mail-Programm? Text kopieren', textCopied: 'Text kopiert',
+      // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
+      privacy: 'Mit dem Absenden übermitteln Sie Ihre Kontaktdaten, die Konfiguration und Ihren Weg durch die Seite. Wir nutzen das nur für Ihr Angebot und die Kontaktaufnahme.',
+      sending: 'Wird gesendet …', sentT: (n) => `Anfrage Nr. ${n} eingegangen`, sent: 'Wir melden uns persönlich bei Ihnen. Das Angebot können Sie unten als PDF speichern.', retry: 'Noch einmal versuchen',
+      errs: { server_error: 'Das hat leider nicht geklappt. Bitte versuchen Sie es noch einmal.', network: 'Keine Verbindung. Bitte prüfen Sie das Netz und versuchen Sie es noch einmal.', turnstile_missing: 'Die Sicherheitsprüfung wurde nicht geladen (Werbeblocker?). Bitte noch einmal versuchen.', turnstile_failed: 'Die Sicherheitsprüfung ist fehlgeschlagen. Bitte noch einmal versuchen.', too_many_requests: 'Zu viele Anfragen. Bitte rufen Sie uns an.', contact_required: 'Bitte Name und gültige E-Mail-Adresse eingeben.', invalid_payload: 'Bitte prüfen Sie Ihre Angaben.' },
       faqT: 'Häufige Fragen',
       faq: [
         ['Ist der Preis verbindlich?', 'Nein. Es ist ein Richtpreis auf Basis der Katalogpreise ' + CATALOGUE + '. Den verbindlichen Preis erhalten Sie nach dem Aufmaß vor Ort.'],
@@ -85,7 +87,6 @@ export function buildT(CATALOGUE) {
       vProf: 'Profile', vPack: 'Paket', vClosed: 'In der Öffnung nicht möglich – die Seite ist schon geschlossen. Montage am Rahmen wählen.', vHigh: 'Profile zu lang für die Preisliste', vMountW: 'Montage',
       coat: 'Farbaufpreis', coatMin: 'Mindermengenzuschlag Beschichtung', fabricS: 'Stoffaufpreis', corner: 'Eckverbindung Lamellenwand', tbdPanels: 'Farbaufpreis Paneele', onRequest: 'auf Anfrage', extra: 'Zuschlag',
       sysName: { S400: 'Pergola', S500: 'Pergola', GLASS: 'Schiebeglas', SCREEN_ZIP: 'ZIP-Screens', VERTO: 'Lamellenwand' },
-      mailSubj: (s, p) => `Anfrage Lamellendach ${s} – Richtpreis ${p}`, mailHi: 'Guten Tag,\n\nich interessiere mich für folgende Konfiguration:', mailBye: 'Mit freundlichen Grüßen',
       mm: 'mm',
     },
     en: {
@@ -138,8 +139,10 @@ export function buildT(CATALOGUE) {
       whens: ['As soon as possible', 'In 1–3 months', 'Later this year', 'Just looking'],
       wantMount: 'Installation wanted', wantVisit: 'Site visit and measurement wanted', msg: 'Message (optional)',
       required: 'Please fill in', badEmail: 'Please enter a valid e-mail address',
-      privacy: 'Your details are only used for this request. The message is sent from your own e-mail program – nothing is stored on this page.',
-      sendBtn: 'Open e-mail with request', sentT: 'Almost done', reopen: 'Open the e-mail again', sent: 'Your e-mail program opened with the message ready. Please send it.', noMail: 'No e-mail program? Copy the text', textCopied: 'Text copied',
+      // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
+      privacy: 'By sending, you share your contact details, the configuration and how you moved through the site. We use it only for your quote and to get in touch.',
+      sending: 'Sending …', sentT: (n) => `Request no. ${n} received`, sent: 'We will get back to you personally. You can save the offer as a PDF below.', retry: 'Try again',
+      errs: { server_error: 'That did not work. Please try again.', network: 'No connection. Please check your network and try again.', turnstile_missing: 'The security check did not load (ad blocker?). Please try again.', turnstile_failed: 'The security check failed. Please try again.', too_many_requests: 'Too many requests. Please call us.', contact_required: 'Please enter your name and a valid e-mail address.', invalid_payload: 'Please check your details.' },
       faqT: 'Questions',
       faq: [
         ['Is the price binding?', 'No. It is an indicative price based on catalogue prices ' + CATALOGUE + '. You get a binding price after the site survey.'],
@@ -165,7 +168,6 @@ export function buildT(CATALOGUE) {
       vProf: 'profiles', vPack: 'package', vClosed: 'Not possible in the opening – the side is already closed. Choose mounting on the frame.', vHigh: 'Profiles too long for the price list', vMountW: 'mounting',
       coat: 'Colour surcharge', coatMin: 'Small-batch coating surcharge', fabricS: 'Fabric surcharge', corner: 'Louvre wall corner joint', tbdPanels: 'Panel colour surcharge', onRequest: 'on request', extra: 'surcharge',
       sysName: { S400: 'pergola', S500: 'pergola', GLASS: 'sliding glass', SCREEN_ZIP: 'ZIP screens', VERTO: 'louvre wall' },
-      mailSubj: (s, p) => `Request: louvred roof ${s} – indicative price ${p}`, mailHi: 'Hello,\n\nI am interested in the following configuration:', mailBye: 'Kind regards',
       mm: 'mm',
     },
     ru: {
@@ -218,8 +220,10 @@ export function buildT(CATALOGUE) {
       whens: ['Как можно скорее', 'Через 1–3 месяца', 'Позже в этом году', 'Пока просто смотрю'],
       wantMount: 'Нужен монтаж', wantVisit: 'Нужен выезд и замер', msg: 'Сообщение (необязательно)',
       required: 'Заполните, пожалуйста', badEmail: 'Введите правильный e-mail',
-      privacy: 'Ваши данные используются только для этого запроса. Письмо отправляется из вашей почтовой программы – на сайте ничего не сохраняется.',
-      sendBtn: 'Открыть письмо с запросом', sentT: 'Почти готово', reopen: 'Открыть письмо ещё раз', sent: 'Открылась ваша почтовая программа с готовым письмом. Отправьте его, пожалуйста.', noMail: 'Нет почтовой программы? Скопировать текст', textCopied: 'Текст скопирован',
+      // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
+      privacy: 'Отправляя запрос, вы передаёте контакты, конфигурацию и ход выбора на сайте. Мы используем это только для расчёта и связи.',
+      sending: 'Отправляем …', sentT: (n) => `Заявка № ${n} принята`, sent: 'Мы свяжемся с вами лично. Предложение можно сохранить в PDF ниже.', retry: 'Повторить',
+      errs: { server_error: 'Не получилось. Попробуйте ещё раз.', network: 'Нет связи. Проверьте интернет и повторите.', turnstile_missing: 'Проверка безопасности не загрузилась (блокировщик?). Повторите.', turnstile_failed: 'Проверка безопасности не пройдена. Повторите.', too_many_requests: 'Слишком много заявок. Позвоните нам.', contact_required: 'Укажите имя и верный e-mail.', invalid_payload: 'Проверьте введённые данные.' },
       faqT: 'Частые вопросы',
       faq: [
         ['Цена окончательная?', 'Нет. Это ориентировочная цена по каталогу ' + CATALOGUE + '. Окончательную цену вы получите после замера на месте.'],
@@ -245,7 +249,6 @@ export function buildT(CATALOGUE) {
       vProf: 'профилей', vPack: 'пакет', vClosed: 'В проёме невозможно – сторона уже закрыта. Выберите монтаж на раме.', vHigh: 'Профили длиннее, чем в прайсе', vMountW: 'монтаж',
       coat: 'Доплата за цвет', coatMin: 'Минимальная партия покраски', fabricS: 'Доплата за ткань', corner: 'Угловое соединение ламельной стены', tbdPanels: 'Доплата за цвет панелей', onRequest: 'по запросу', extra: 'доплата',
       sysName: { S400: 'перголы', S500: 'перголы', GLASS: 'стекла', SCREEN_ZIP: 'ZIP-скринов', VERTO: 'ламельной стены' },
-      mailSubj: (s, p) => `Запрос: пергола ${s} – ориентировочно ${p}`, mailHi: 'Здравствуйте!\n\nМеня интересует такая конфигурация:', mailBye: 'С уважением',
       mm: 'мм',
     },
     hr: {
@@ -303,8 +306,10 @@ export function buildT(CATALOGUE) {
       whens: ['Što je prije moguće', 'Za 1–3 mjeseca', 'Kasnije ove godine', 'Samo se informiram'],
       wantMount: 'Želim montažu', wantVisit: 'Želim obilazak i izmjeru na licu mjesta', msg: 'Poruka (nije obavezno)',
       required: 'Molimo ispunite', badEmail: 'Molimo unesite ispravnu e-mail adresu',
-      privacy: 'Vaši podaci koriste se samo za ovaj upit. Poruka se šalje putem vašeg e-mail programa – na ovoj stranici ništa se ne pohranjuje.',
-      sendBtn: 'Otvori e-mail s upitom', sentT: 'Skoro gotovo', reopen: 'Ponovno otvori e-mail', sent: 'Vaš e-mail program otvorio se s gotovom porukom. Molimo pošaljite je.', noMail: 'Nemate e-mail program? Kopiraj tekst', textCopied: 'Tekst kopiran',
+      // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
+      privacy: 'Slanjem upita šaljete kontakt, konfiguraciju i svoj put kroz stranicu. Koristimo to samo za ponudu i javljanje vama.',
+      sending: 'Šaljem …', sentT: (n) => `Upit br. ${n} primljen`, sent: 'Javit ćemo vam se osobno. Ponudu možete spremiti kao PDF ispod.', retry: 'Pokušaj ponovno',
+      errs: { server_error: 'Nije uspjelo. Pokušajte ponovno.', network: 'Nema veze. Provjerite mrežu i pokušajte ponovno.', turnstile_missing: 'Sigurnosna provjera nije učitana (blokator oglasa?). Pokušajte ponovno.', turnstile_failed: 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.', too_many_requests: 'Previše upita. Molimo nazovite nas.', contact_required: 'Unesite ime i ispravan e-mail.', invalid_payload: 'Provjerite svoje podatke.' },
       faqT: 'Česta pitanja',
       faq: [
         ['Je li cijena obvezujuća?', 'Ne. To je okvirna cijena na temelju kataloških cijena ' + CATALOGUE + '. Obvezujuću cijenu dobivate nakon izmjere na licu mjesta.'],
@@ -331,7 +336,6 @@ export function buildT(CATALOGUE) {
       vProf: 'profila', vPack: 'paket', vClosed: 'U otvoru nije moguće – strana je već zatvorena. Odaberite montažu na okviru.', vHigh: 'Profili predugi za cjenik', vMountW: 'montaža',
       coat: 'Doplata za boju', coatMin: 'Doplata za malu količinu bojanja', fabricS: 'Doplata za tkaninu', corner: 'Kutni spoj lamelne stijene', tbdPanels: 'Doplata za boju panela', onRequest: 'na upit', extra: 'doplata',
       sysName: { S400: 'pergole', S500: 'pergole', GLASS: 'kliznog stakla', SCREEN_ZIP: 'ZIP-screenova', VERTO: 'lamelne stijene' },
-      mailSubj: (s, p) => `Upit: krov s lamelama ${s} – okvirno ${p}`, mailHi: 'Dobar dan,\n\nzanima me sljedeća konfiguracija:', mailBye: 'Srdačan pozdrav',
       mm: 'mm',
     },
     };
