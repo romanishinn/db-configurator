@@ -1,4 +1,6 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head>
+<script>try{if(window.top!==window.self){var _o=window.top.location.origin;if(_o!==location.origin)throw 0}}catch(e){document.documentElement.innerHTML='';try{window.top.location=window.self.location}catch(x){}}</script>
+<meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>D&B Pergola CRM</title>
 <style>
@@ -84,9 +86,175 @@
   .tag.warn{color:var(--warn);border-color:rgba(232,182,95,.4);background:var(--warnbg)}
   .tag.bad{color:var(--bad);border-color:rgba(232,116,95,.4);background:var(--badbg)}
 
-  .split{display:grid;grid-template-columns:378px 1fr;height:calc(100vh - 52px)}
+  .split{display:grid;grid-template-columns:378px 1fr;grid-template-rows:minmax(0,1fr);height:calc(100vh - 52px);height:calc(100dvh - 52px)}
+
+  /* ===== live CRM layer: search, dialogs, forms, tables, toasts ===== */
+  .srch input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;color:var(--fg);font:inherit;font-size:13.5px}
+  .srch input::placeholder{color:var(--muted)}
+  .srch:focus-within{border-color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rail a{outline-offset:-2px}
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl td{padding:11px 12px;border-bottom:1px solid var(--line2);font-size:13px}
+  .tbl tr.click{cursor:pointer} .tbl tr.click:hover td{background:var(--panel2)}
+  .tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+  .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .bar .inp{max-width:300px}
+  .bar .sp{flex:1}
+  .seg2{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg2 button{background:var(--panel);color:var(--muted);border:0;padding:7px 12px;cursor:pointer;font-size:12.5px}
+  .seg2 button.on{background:var(--panel3);color:var(--fg)}
+  .dlgback{position:fixed;inset:0;background:rgba(4,6,10,.66);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:max(16px,4vh) 12px;overflow:auto}
+  .dlg{width:100%;max-width:520px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)}
+  .dlg h3{margin:0;font-size:15px;padding:16px 18px 6px}
+  .dlg .sub{padding:0 18px 4px;color:var(--muted);font-size:12.5px}
+  .dlg .body{padding:10px 18px 4px;display:flex;flex-direction:column;gap:12px}
+  .dlg .foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:14px 18px 16px}
+  .fld label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .fld .inp,.fld textarea,.fld select{width:100%;min-height:38px;font-size:14px}
+  .fld textarea{height:auto;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--fg);font:inherit;resize:vertical;min-height:70px}
+  .fld .inp:focus,.fld textarea:focus,.fld select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+  .fld .err{color:var(--bad);font-size:12px;margin-top:4px}
+  .chips2{display:flex;gap:6px;flex-wrap:wrap}
+  .chips2 button{border:1px solid var(--line);background:var(--panel2);color:var(--fg2);border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}
+  .chips2 button.on{border-color:var(--accent);background:rgba(240,182,103,.12);color:var(--fg)}
+  .dup{border:1px solid rgba(232,182,95,.5);background:var(--warnbg);border-radius:10px;padding:10px 12px;font-size:12.5px;display:flex;flex-direction:column;gap:7px}
+  .dup .a{display:flex;gap:8px;flex-wrap:wrap}
+  .toasts{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast2{background:var(--panel3);border:1px solid var(--line);color:var(--fg);padding:10px 14px;border-radius:10px;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.7);pointer-events:auto}
+  .toast2.bad{border-color:rgba(232,116,95,.6)}
+  .contact{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}
+  .contact a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);color:var(--fg);text-decoration:none;border-radius:9px;padding:7px 11px;font-size:13px}
+  .contact a:hover{border-color:var(--accent)}
+  .brief{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:9px}
+  .brief .lb{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  .brief .msg{white-space:pre-wrap;word-break:break-word}
+  .src{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg2)}
+  .src.meta{color:#8fb3ff;border-color:rgba(111,155,255,.45);background:rgba(111,155,255,.12)}
+  .src.google{color:#ffd37a;border-color:rgba(232,182,95,.45);background:var(--warnbg)}
+  .src.web{color:var(--ok);border-color:rgba(94,201,138,.4);background:var(--okbg)}
+  details.jr{border:1px solid var(--line2);border-radius:9px;padding:8px 11px;background:var(--panel2)}
+  details.jr summary{cursor:pointer;color:var(--fg2);font-size:12.5px}
+  details.jr pre{white-space:pre-wrap;word-break:break-word;margin:8px 0 0;font:inherit;font-size:12.5px;color:var(--fg2)}
+  .late{color:var(--bad)!important}
+  .task .go{cursor:pointer;border:0;background:transparent;font:inherit;padding:6px 8px}
+  .ntf{text-align:left;font-weight:400;cursor:default;position:absolute;right:0;top:44px;width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 50px -18px #000;z-index:60;max-height:70vh;overflow:auto}
+  .ntf .it{padding:10px 12px;border-bottom:1px solid var(--line2);font-size:12.5px;cursor:pointer}
+  .ntf .it.un{background:rgba(240,182,103,.07)}
+  .ntf .it small{display:block;color:var(--faint);margin-top:2px}
+  .demo-flag{background:var(--warnbg);color:var(--warn);border:1px solid rgba(232,182,95,.4);border-radius:6px;font-size:10.5px;padding:2px 7px;letter-spacing:.06em}
+  .kc.click{cursor:pointer}
+  .morerows{display:flex;justify-content:center;padding:14px 10px}
+  .colmore{width:100%;justify-content:center;margin-top:2px}
+  button.cchip{background:transparent;color:var(--muted);font:inherit;font-size:12.5px;min-height:32px}
+  button.cchip.on{color:var(--fg);background:rgba(240,182,103,.08)}
+  .row .r2 .score,.row .r2 .hotchip{flex:none}
+  @media (pointer:coarse){.btn,.iconbtn,.cchip,.chips2 button,.seg2 button,.contact a{min-height:44px}.iconbtn{min-width:44px}.rail a{min-height:44px}}
+  @media(max-width:680px){.dlgback{padding:0}.dlg{max-width:none;min-height:100%;border-radius:0}.bar .inp{max-width:none;flex:1 1 100%}}
+
+  /* ===== premium feel: calm motion, touch comfort, tablet layout ===== */
+  :root{--ease:cubic-bezier(.22,.8,.3,1);--spring:cubic-bezier(.34,1.4,.5,1)}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{-webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility}
+  .content,.rows,.rbody,.kanban,.col .cards,.dlgback,.ntf,.tblwrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .btn,.iconbtn,.cchip,.chips2 button,.seg2 button,.contact a,.rail a,.row,.kc,.tabbar a{user-select:none;-webkit-user-select:none}
+  ::selection{background:rgba(240,182,103,.28)}
+  *{scrollbar-width:thin;scrollbar-color:rgba(176,192,222,.18) transparent}
+  @media (prefers-reduced-motion:no-preference){
+    .screen.on{animation:scrIn .22s var(--ease) both}
+    @keyframes scrIn{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes dlgIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+    @keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+    @keyframes landed{0%{box-shadow:0 0 0 0 rgba(240,182,103,.55)}100%{box-shadow:0 0 0 14px rgba(240,182,103,0)}}
+    @keyframes recIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+    .btn,.iconbtn,.cchip,.chips2 button,.seg2 button,.contact a,.rail a,.row,.kc,.tabbar a,.src,.tag{transition:background-color .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease),transform .16s var(--ease),box-shadow .25s var(--ease),opacity .2s}
+    .btn:active,.iconbtn:active,.cchip:active,.chips2 button:active,.seg2 button:active,.contact a:active,.tabbar a:active{transform:scale(.965)}
+    .btn.primary:hover{box-shadow:0 8px 22px -8px rgba(240,182,103,.75)}
+    .row:active{background:var(--panel2)}
+    .kc.click:hover{transform:translateY(-1px);box-shadow:0 8px 20px -12px rgba(0,0,0,.8)}
+    .dlgback{animation:fadeIn .22s ease both;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+    .dlg{animation:dlgIn .32s var(--ease) both}
+    .toast2{animation:toastIn .34s var(--ease) both}
+    .record.fresh>*{animation:recIn .28s var(--ease) both}
+    .kc.landed{animation:landed .9s var(--ease)}
+    .rail{transition:transform .32s var(--ease)}
+    .scrim{transition:opacity .3s}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  /* loading states: a calm placeholder instead of demo text or a blank flash */
+  .skel{padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+  .skel i{display:block;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--panel) 25%,var(--panel2) 50%,var(--panel) 75%);background-size:200% 100%}
+  .skel i.h{height:26px;width:34%}
+  @media (prefers-reduced-motion:no-preference){.skel i{animation:shim 1.4s linear infinite}@keyframes shim{to{background-position:-200% 0}}}
+  .screen.loading>.pad{display:none}
+  .restoring #gate{visibility:hidden}
+  .brief,.upnext,.qcard,.panel,.dlg{box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
+  .row{border-radius:0}
+  .row.sel{background:linear-gradient(90deg,rgba(240,182,103,.07),transparent 70%),var(--panel2)}
+
+  /* boards: columns snap under the finger, headers stay put, cards can be dragged */
+  .kanban{scroll-snap-type:x proximity;scroll-padding:0 16px;padding-bottom:16px}
+  .col{scroll-snap-align:start;transition:background-color .2s var(--ease),border-color .2s var(--ease),box-shadow .2s var(--ease)}
+  .col .ch,.col .sum{position:sticky;top:0;background:var(--panel);z-index:2}
+  .col.drop{border-color:var(--accent);background:linear-gradient(180deg,rgba(240,182,103,.07),var(--panel) 60%);box-shadow:0 0 0 1px rgba(240,182,103,.35) inset}
+  .kc.dragging{opacity:.28;transform:scale(.98)}
+  .kc.ghost{position:fixed;z-index:400;pointer-events:none;margin:0;opacity:.96;transform-origin:50% 50%;box-shadow:0 24px 48px -16px rgba(0,0,0,.85),0 0 0 1px rgba(240,182,103,.45);cursor:grabbing}
+  body.dragmode{cursor:grabbing;-webkit-user-select:none;user-select:none}
+  .kc[data-oid],.kc.click{touch-action:pan-x pan-y}
+
+  /* touch + tablet */
+  @media (pointer:coarse){
+    body{font-size:14.5px}
+    .row{padding:15px 16px}
+    .btn{padding:10px 16px;font-size:13.5px}.btn.sm{padding:9px 14px;font-size:13px}
+    .inp,.fld .inp,.fld select{min-height:46px;font-size:16px}.fld textarea{font-size:16px}
+    .rail a{padding:12px 12px}
+    .kc{padding:14px}.kc .nm{font-size:13.5px}
+    .col{flex-basis:288px}
+    .tabs .t{padding:13px 14px;min-height:44px}
+    .cv{min-height:44px}
+    .task .go{min-height:44px;padding:0 12px}
+    .tag{font-size:11.5px;padding:3px 8px}
+    .score{height:26px;font-size:13px}
+    th,.tbl th{font-size:12px}
+    .tbl td{padding:14px 12px}
+  }
+  /* tablet: a slim icon rail keeps the work area wide */
+  @media (min-width:681px) and (max-width:1180px){
+    .rail{width:74px;padding-left:8px;padding-right:8px;align-items:center}
+    .rail .brand{padding:6px 0 14px;justify-content:center}.rail .brand b,.rail .brand span:not(.dot){display:none}
+    .rail nav{width:100%}
+    .rail a{justify-content:center;padding:12px 0}
+    .rail a>span:not(.ic):not(.badge){display:none}
+    .rail a .ic{font-size:18px}
+    .rail a .badge{position:absolute;top:4px;right:10px}
+    .rail .grp{font-size:0;padding:8px 0;border-top:1px solid var(--line2);margin-top:6px}
+    .rail .me{padding:10px 0;justify-content:center;border-top:1px solid var(--line2);width:100%}
+    .rail .me>div{display:none}
+    .split{grid-template-columns:340px 1fr}
+    .rbody{grid-template-columns:1fr}
+  }
+  @media (min-width:681px) and (max-width:1000px){.split{grid-template-columns:1fr}}
+
+  /* phone: bottom tab bar */
+  .tabbar{display:none}
+  @media (max-width:680px){
+    .live .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:35;background:rgba(14,19,32,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));justify-content:space-around}
+    .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;color:var(--muted);font-size:10.5px;text-decoration:none;border-radius:10px;min-height:48px;justify-content:center;position:relative}
+    .tabbar a .ic{font-size:19px;line-height:1}
+    .tabbar a.on{color:var(--accent)}
+    .tabbar a.plus .ic{width:44px;height:44px;border-radius:14px;background:linear-gradient(180deg,#f6c57e,var(--accent));color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-size:24px;margin-top:-14px;box-shadow:0 10px 22px -8px rgba(240,182,103,.7)}
+    .tabbar a .badge{position:absolute;top:2px;right:24%;background:var(--hot);color:#fff;border-radius:9px;font-size:10px;padding:0 5px}
+    .live .content{padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))}
+    .live .split{height:calc(100dvh - 52px - 62px - env(safe-area-inset-bottom,0px))}
+    .live .menubtn{display:none!important}
+    .toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  }
   @media(max-width:1000px){.split{grid-template-columns:1fr}.split .record{display:none}.split.show-rec .list{display:none}.split.show-rec .record{display:flex}}
-  .list{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+  .list{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
   .list .lh{padding:14px 14px 10px;border-bottom:1px solid var(--line2)}
   .list .lh .r{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
   .chips{display:flex;gap:7px;flex-wrap:wrap}
@@ -280,7 +448,15 @@
   /* ===== login gate ===== */
   #gate{position:fixed;inset:0;z-index:100;display:flex;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:linear-gradient(180deg,#05070d,#090d16);padding:84px max(16px,env(safe-area-inset-left,0px)) 40px max(16px,env(safe-area-inset-right,0px))}
   body.authed #gate{display:none}
-  #gscene{position:fixed;inset:0;width:100%;height:100%;display:block}
+  /* login backdrop: a louvre roof made of eight CSS bars (no WebGL, no JS); the louvres open when the user signs in */
+  #gscene{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;perspective:900px;perspective-origin:50% 36%;overflow:hidden;background:radial-gradient(120% 90% at 50% 16%,#14203f 0%,#070a12 64%)}
+  #gscene i{display:block;flex:none;width:min(80vw,780px);height:clamp(10px,2.6vh,22px);border-radius:5px;background:linear-gradient(180deg,#f0cf9a,#b27c34 58%,#6b4719);box-shadow:0 10px 24px rgba(0,0,0,.5);transform:rotateX(62deg);opacity:.92;will-change:transform}
+  #gscene.open i{transform:rotateX(88deg)}
+  @media (prefers-reduced-motion:no-preference){
+    #gscene i{animation:louv 8s ease-in-out infinite;animation-delay:calc(var(--n) * -.4s);transition:transform 1.1s cubic-bezier(.22,.8,.3,1)}
+    @keyframes louv{0%,100%{transform:rotateX(56deg)}50%{transform:rotateX(70deg)}}
+    #gscene.open i{animation:none}
+  }
   #gvig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(160% 140% at 50% 40%,rgba(5,7,13,0) 60%,rgba(5,7,13,.5) 100%)}
   .gbrand{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));left:max(18px,env(safe-area-inset-left,0px));z-index:3;display:flex;gap:9px;align-items:center;justify-content:flex-start;font-weight:700;letter-spacing:.16em;font-size:13px;text-transform:uppercase;color:#eaf0fb}
   .gbrand .dot{width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe3ad,#f0b667 60%,#b9772a);box-shadow:0 0 14px 2px rgba(240,182,103,.55)}
@@ -322,7 +498,7 @@
 </style>
 
 <div id="gate">
-  <canvas id="gscene"></canvas>
+  <div id="gscene" aria-hidden="true"><i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i><i style="--n:3"></i><i style="--n:4"></i><i style="--n:5"></i><i style="--n:6"></i><i style="--n:7"></i></div>
   <div id="gvig"></div>
   <div class="glang" id="gLang"><button class="glangbtn" id="gLangBtn"><span>🌐</span><span id="gLangLbl">RU</span><span style="opacity:.6">▾</span></button><div class="glangmenu" id="gLangMenu"><button data-l="ru"><b>RU</b> Русский</button><button data-l="en"><b>EN</b> English</button><button data-l="de"><b>DE</b> Deutsch</button><button data-l="hr"><b>HR</b> Hrvatski</button></div></div>
   <div class="gbrand"><span class="dot"></span><b>D&amp;B</b>&nbsp;<span>PERGOLA</span></div>
@@ -362,7 +538,7 @@
 <div class="app">
   <aside class="rail" id="rail">
     <div class="brand"><span class="dot"></span>D&amp;B<span>&nbsp;PERGOLA</span></div>
-    <nav>
+    <nav id="mainNav">
       <a data-s="today" class="on"><span class="ic">◎</span><span data-i18n="nav.today">Сегодня</span></a>
       <a data-s="leads"><span class="ic">▦</span><span data-i18n="nav.leads">Лиды · доска</span></a>
       <a data-s="orders"><span class="ic">▣</span><span data-i18n="nav.orders">Заказы · доска</span></a>
@@ -377,14 +553,22 @@
     <div class="me"><span class="av">NR</span><div><div style="font-size:12.5px">Nick R.</div><small data-i18n="me.role">Суперадмин · EUR</small></div></div>
   </aside>
   <div class="scrim" id="scrim"></div>
+  <nav class="tabbar" id="tabbar" aria-label="Быстрая навигация" data-i18n-aria="tb.nav">
+    <a data-t="today" tabindex="0"><span class="ic" aria-hidden="true">◎</span><span data-i18n="tb.today">Сегодня</span></a>
+    <a data-t="leads" tabindex="0"><span class="ic" aria-hidden="true">▦</span><span data-i18n="tb.leads">Лиды</span></a>
+    <a data-t="new" class="plus" tabindex="0" aria-label="Новый лид" data-i18n-aria="tb.new"><span class="ic" aria-hidden="true">＋</span></a>
+    <a data-t="customers" tabindex="0"><span class="ic" aria-hidden="true">◍</span><span data-i18n="tb.customers">Клиенты</span></a>
+    <a data-t="more" tabindex="0"><span class="ic" aria-hidden="true">☰</span><span data-i18n="tb.more">Ещё</span></a>
+  </nav>
 
   <div class="main">
     <div class="topbar">
-      <button class="iconbtn menubtn" id="menubtn">☰</button>
-      <div class="srch"><span class="q" data-i18n="top.search">⌕ Поиск сделок, клиентов, №КП…</span><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></div>
+      <button class="iconbtn menubtn" id="menubtn" aria-label="Меню">☰</button>
+      <label class="srch"><span class="q0" aria-hidden="true">⌕</span><input id="gsearch" type="search" autocomplete="off" placeholder="Поиск: имя, телефон, e-mail, №КП…" data-i18n-ph="top.searchPh" aria-label="Поиск" data-i18n-aria="top.searchPh"><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></label>
       <div class="sp"></div>
+      <div class="lang" id="lang" style="position:relative"><button class="langbtn" id="langBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="lang.title" aria-label="Язык"><span class="gl" aria-hidden="true">🌐</span><span id="langLbl">RU</span><span style="opacity:.6" aria-hidden="true">▾</span></button><div class="langmenu" id="langMenuTop" role="menu"></div></div>
       <button class="btn primary sm newbtn" id="newCalcBtn">＋<span class="lbl" data-i18n="top.newCalc"> Новый расчёт</span></button>
-      <button class="iconbtn">🔔<span class="d"></span></button>
+      <button class="iconbtn" id="bellBtn" aria-label="Уведомления"><span aria-hidden="true">🔔</span><span class="d" id="bellDot" hidden></span></button>
     </div>
 
     <div class="content">
@@ -507,7 +691,6 @@
                     <label><span class="sw on"></span> <span data-i18n="ds.d2">Скидка в пределах группы</span></label>
                     <label><span class="sw"></span> <span data-i18n="ds.d3">Скидка выше лимита (→ утверждение)</span></label>
                     <label><span class="sw on"></span> <span data-i18n="ds.d4">Двигать стадии (правка → утверждение)</span></label>
-                    <label><span class="sw"></span> <span data-i18n="ds.d5">Видеть маржу</span></label>
                   </div>
                   <div class="ds"><h4 data-i18n="ds.cansee">Может видеть</h4>
                     <label><span class="sw on"></span> <span data-i18n="ds.s1">Только свои и переданные</span></label>
@@ -532,7 +715,19 @@
             </div>
           </div>
           <div class="setpane" data-set="pipe" hidden>
-            <div class="setpane" data-set="lang" hidden>
+            <div class="panel"><div class="ph"><h3 data-i18n="set.pipeTitle">Воронка «Запросы» — стадии</h3></div>
+              <table>
+                <thead><tr><th data-i18n="th.stage">Стадия</th><th class="num" data-i18n="th.cold">Остывает, дн</th><th class="num" data-i18n="th.rot">Протухает, дн</th><th data-i18n="th.appr">Утверждение</th></tr></thead>
+                <tbody>
+                  <tr><td data-i18n="st.new">Новый</td><td class="num">3</td><td class="num">7</td><td>—</td></tr>
+                  <tr><td data-i18n="st.processing">В обработке</td><td class="num">3</td><td class="num">5</td><td>—</td></tr>
+                  <tr><td data-i18n="st.proposal">Предложение</td><td class="num">4</td><td class="num">7</td><td>—</td></tr>
+                  <tr><td data-i18n="st.negotiation">Переговоры</td><td class="num">3</td><td class="num">5</td><td><span class="tag warn" data-i18n="set.discLimit">скидка > лимит</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+<div class="setpane" data-set="lang" hidden>
             <div class="panel"><div class="ph"><h3 data-i18n="set.langTitle">Язык интерфейса</h3></div>
               <div style="padding:14px 15px">
                 <p class="muted" style="margin:0 0 12px;font-size:12.5px" data-i18n="set.langHint">Выберите язык интерфейса. Можно сменить в любой момент — выбор сохранится.</p>
@@ -543,18 +738,6 @@
                   <button data-l="hr"><b>HR</b> Hrvatski</button>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="panel"><div class="ph"><h3 data-i18n="set.pipeTitle">Воронка «Запросы» — стадии</h3></div>
-              <table>
-                <thead><tr><th data-i18n="th.stage">Стадия</th><th class="num" data-i18n="th.cold">Остывает, дн</th><th class="num" data-i18n="th.rot">Протухает, дн</th><th data-i18n="th.appr">Утверждение</th></tr></thead>
-                <tbody>
-                  <tr><td data-i18n="st.new">Новый</td><td class="num">3</td><td class="num">7</td><td>—</td></tr>
-                  <tr><td data-i18n="st.processing">В обработке</td><td class="num">3</td><td class="num">5</td><td>—</td></tr>
-                  <tr><td data-i18n="st.proposal">Предложение</td><td class="num">4</td><td class="num">7</td><td>—</td></tr>
-                  <tr><td data-i18n="st.negotiation">Переговоры</td><td class="num">3</td><td class="num">5</td><td><span class="tag warn" data-i18n="set.discLimit">скидка > лимит</span></td></tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
@@ -575,248 +758,261 @@
 (function(){
   var $=function(s,r){return (r||document).querySelector(s);};
   var $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s));};
-  var esc=function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");};
+  var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");};
 
   var T={
-    "nav.today":{ru:"Сегодня",en:"Today",de:"Heute",hr:"Danas"},
-    "nav.leads":{ru:"Лиды · доска",en:"Leads · board",de:"Leads · Board",hr:"Upiti · ploča"},
-    "nav.orders":{ru:"Заказы · доска",en:"Orders · board",de:"Aufträge · Board",hr:"Narudžbe · ploča"},
-    "nav.quotes":{ru:"КП",en:"Quotes",de:"Angebote",hr:"Ponude"},
-    "nav.customers":{ru:"Клиенты",en:"Customers",de:"Kunden",hr:"Klijenti"},
-    "nav.config":{ru:"Конфигуратор",en:"Configurator",de:"Konfigurator",hr:"Konfigurator"},
-    "nav.grpAdmin":{ru:"Суперадмин",en:"Superadmin",de:"Superadmin",hr:"Superadmin"},
-    "nav.console":{ru:"Пульт",en:"Console",de:"Konsole",hr:"Konzola"},
-    "nav.approvals":{ru:"Утверждения",en:"Approvals",de:"Freigaben",hr:"Odobrenja"},
-    "nav.settings":{ru:"Настройки",en:"Settings",de:"Einstellungen",hr:"Postavke"},
-    "me.role":{ru:"Суперадмин · EUR",en:"Superadmin · EUR",de:"Superadmin · EUR",hr:"Superadmin · EUR"},
-    "gate.email":{ru:"E-Mail",en:"E-Mail",de:"E-Mail",hr:"E-Mail"},
-    "gate.pass":{ru:"Пароль",en:"Password",de:"Passwort",hr:"Lozinka"},
-    "gate.signin":{ru:"Войти",en:"Sign in",de:"Anmelden",hr:"Prijava"},
-    "gate.request":{ru:"Запросить доступ",en:"Request access",de:"Zugang anfragen",hr:"Zatraži pristup"},
-    "gate.needAll":{ru:"Заполните все поля",en:"Fill in all fields",de:"Alle Felder ausfüllen",hr:"Ispunite sva polja"},
-    "gate.badMail":{ru:"Введите e-mail в формате name@domain",en:"Enter a valid e-mail (name@domain)",de:"Gültige E-Mail eingeben (name@domain)",hr:"Unesite ispravan e-mail (ime@domena)"},
-    "gate.sentTitle":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano"},
-    "gate.sentPopup":{ru:"Письмо улетело нашему менеджеру — мы свяжемся с вами.",en:"Your message reached our manager — we'll get back to you.",de:"Ihre Nachricht ist bei unserem Manager — wir melden uns.",hr:"Vaša poruka je stigla našem voditelju — javit ćemo vam se."},
-    "gate.ok":{ru:"Готово",en:"Done",de:"Fertig",hr:"Gotovo"},
-    "req.company":{ru:"Компания",en:"Company",de:"Firma",hr:"Tvrtka"},
-    "req.first":{ru:"Имя",en:"First name",de:"Vorname",hr:"Ime"},
-    "req.last":{ru:"Фамилия",en:"Last name",de:"Nachname",hr:"Prezime"},
-    "req.location":{ru:"Локация (город, страна)",en:"Location (city, country)",de:"Standort (Stadt, Land)",hr:"Lokacija (grad, država)"},
-    "inv.title":{ru:"Пригласить партнёра",en:"Invite a partner",de:"Partner einladen",hr:"Pozovite partnera"},
-    "inv.gen":{ru:"Создать ссылку-приглашение",en:"Create invite link",de:"Einladungslink erstellen",hr:"Stvori poveznicu za poziv"},
-    "inv.pwnote":{ru:"Партнёр откроет ссылку, заполнит данные и задаст свой пароль: буквы, цифры и спецсимвол, минимум 8 символов.",en:"The partner opens the link, fills in their details and sets their own password: letters, digits and a special character, at least 8 characters.",de:"Der Partner öffnet den Link, trägt seine Daten ein und legt sein eigenes Passwort fest: Buchstaben, Ziffern und ein Sonderzeichen, mindestens 8 Zeichen.",hr:"Partner otvara poveznicu, ispunjava podatke i postavlja vlastitu lozinku: slova, brojke i poseban znak, najmanje 8 znakova."},
-    "inv.copy":{ru:"Скопировать",en:"Copy",de:"Kopieren",hr:"Kopiraj"},
-    "inv.copied":{ru:"Скопировано",en:"Copied",de:"Kopiert",hr:"Kopirano"},
-    "gate.send":{ru:"Отправить",en:"Send",de:"Senden",hr:"Pošalji"},
-    "gate.back":{ru:"← Назад",en:"← Back",de:"← Zurück",hr:"← Natrag"},
-    "gate.needBoth":{ru:"Введите e-mail и пароль",en:"Enter email and password",de:"E-Mail und Passwort eingeben",hr:"Unesite e-mail i lozinku"},
-    "gate.needMail":{ru:"Введите e-mail",en:"Enter email",de:"E-Mail eingeben",hr:"Unesite e-mail"},
-    "gate.reqOk":{ru:"Готово — мы свяжемся с вами",en:"Thanks — we'll be in touch",de:"Danke — wir melden uns",hr:"Hvala — javit ćemo vam se"},
-    "top.search":{ru:"⌕ Поиск сделок, клиентов, №КП…",en:"⌕ Search deals, customers, quote #…",de:"⌕ Suche: Deals, Kunden, Angebot-Nr…",hr:"⌕ Pretraži poslove, klijente, br. ponude…"},
-    "top.newCalc":{ru:" Новый расчёт",en:" New quote",de:" Neue Kalkulation",hr:" Nova ponuda"},
-    "today.allDeals":{ru:"Все сделки ▾",en:"All deals ▾",de:"Alle Deals ▾",hr:"Svi poslovi ▾"},
-    "chip.needYou":{ru:"Нужны вам",en:"Needs you",de:"Zu erledigen",hr:"Trebaju vas"},
-    "chip.waiting":{ru:"Ждут клиента",en:"Waiting",de:"Warten",hr:"Čekaju klijenta"},
-    "chip.appr":{ru:"На утв.",en:"Approvals",de:"Freigaben",hr:"Za odobr."},
-    "chip.overdue":{ru:"Просрочено",en:"Overdue",de:"Überfällig",hr:"Kasni"},
-    "rec.back":{ru:"← Список",en:"← List",de:"← Liste",hr:"← Popis"},
-    "rec.deal":{ru:"Сделка",en:"Deal",de:"Deal",hr:"Posao"},
-    "rec.owner":{ru:"Ответств.",en:"Owner",de:"Verantw.",hr:"Vlasnik"},
-    "rec.transfer":{ru:"Передать",en:"Transfer",de:"Übergeben",hr:"Prenesi"},
-    "rec.move":{ru:"Перевести",en:"Move",de:"Weiter",hr:"Pomakni"},
-    "rec.nowWord":{ru:"сейчас",en:"now",de:"jetzt",hr:"sada"},
-    "rec.empty":{ru:"Выберите сделку слева",en:"Select a deal on the left",de:"Deal links auswählen",hr:"Odaberite posao slijeva"},
-    "st.new":{ru:"Новый",en:"New",de:"Neu",hr:"Novo"},
-    "st.processing":{ru:"В обработке",en:"In progress",de:"In Bearbeitung",hr:"U obradi"},
-    "st.proposal":{ru:"Предложение",en:"Proposal",de:"Angebot",hr:"Prijedlog"},
-    "st.negotiation":{ru:"Переговоры",en:"Negotiation",de:"Verhandlung",hr:"Pregovori"},
-    "st.winlose":{ru:"Win / Lose",en:"Win / Lose",de:"Win / Lose",hr:"Win / Lose"},
-    "st.active":{ru:"активен",en:"active",de:"aktiv",hr:"aktivan"},
-    "u.days":{ru:"дн",en:"d",de:"T",hr:"d"},
-    "upnext.open":{ru:"открыто",en:"open",de:"offen",hr:"otvoreno"},
-    "task.call":{ru:"Позвонить клиенту",en:"Call customer",de:"Kunde anrufen",hr:"Nazovi klijenta"},
-    "task.callDesc":{ru:"Открыл КП дважды сегодня — тёплый контакт",en:"Opened the quote twice today — warm lead",de:"Angebot heute 2× geöffnet — warmer Kontakt",hr:"Otvorio ponudu dvaput danas — topao kontakt"},
-    "task.callGo":{ru:"Звонок",en:"Call",de:"Anruf",hr:"Poziv"},
-    "task.meas":{ru:"Договориться о замере",en:"Arrange measurement",de:"Aufmaß vereinbaren",hr:"Dogovori izmjeru"},
-    "task.measDesc":{ru:"Клиент спрашивал про сроки",en:"Customer asked about timing",de:"Kunde fragte nach Terminen",hr:"Klijent je pitao za rokove"},
-    "task.measGo":{ru:"В календарь",en:"To calendar",de:"Zum Kalender",hr:"U kalendar"},
-    "task.waitAppr":{ru:"Ждёт вашего утверждения скидки",en:"Awaiting your discount approval",de:"Wartet auf Ihre Rabatt-Freigabe",hr:"Čeka vaše odobrenje popusta"},
-    "task.waitApprD":{ru:"Скидка 22% выше лимита 15%",en:"Discount 22% above the 15% limit",de:"Rabatt 22% über Limit 15%",hr:"Popust 22% iznad limita 15%"},
-    "task.openGo":{ru:"Открыть",en:"Open",de:"Öffnen",hr:"Otvori"},
-    "task.followup":{ru:"Напомнить о КП",en:"Follow up on the quote",de:"Ans Angebot erinnern",hr:"Podsjeti na ponudu"},
-    "task.followupD":{ru:"Отправлено 1 день назад, без ответа",en:"Sent 1 day ago, no reply",de:"Vor 1 Tag gesendet, keine Antwort",hr:"Poslano prije 1 dan, bez odgovora"},
-    "task.msgGo":{ru:"Написать",en:"Message",de:"Schreiben",hr:"Poruka"},
-    "task.firstCall":{ru:"Первый звонок по заявке",en:"First call on the inquiry",de:"Erstanruf zur Anfrage",hr:"Prvi poziv po upitu"},
-    "task.firstCallD":{ru:"Новая заявка с сайта",en:"New inquiry from the site",de:"Neue Anfrage über die Website",hr:"Novi upit sa stranice"},
-    "task.add":{ru:"Добавить задачу…",en:"Add task…",de:"Aufgabe hinzufügen…",hr:"Dodaj zadatak…"},
-    "tab.overview":{ru:"Обзор",en:"Overview",de:"Übersicht",hr:"Pregled"},
-    "tab.quote":{ru:"КП",en:"Quote",de:"Angebot",hr:"Ponuda"},
-    "tab.messages":{ru:"Сообщения",en:"Messages",de:"Nachrichten",hr:"Poruke"},
-    "tab.activity":{ru:"Активность",en:"Activity",de:"Aktivität",hr:"Aktivnost"},
-    "tab.notes":{ru:"Заметки",en:"Notes",de:"Notizen",hr:"Bilješke"},
-    "tab.files":{ru:"Файлы",en:"Files",de:"Dateien",hr:"Datoteke"},
-    "ov.contact":{ru:"Контакт",en:"Contact",de:"Kontakt",hr:"Kontakt"},
-    "ov.address":{ru:"Адрес объекта",en:"Site address",de:"Objektadresse",hr:"Adresa objekta"},
-    "ov.source":{ru:"Источник",en:"Source",de:"Quelle",hr:"Izvor"},
-    "ov.discGroup":{ru:"Группа скидок",en:"Discount group",de:"Rabattgruppe",hr:"Grupa popusta"},
-    "ov.next":{ru:"Следующий шаг",en:"Next step",de:"Nächster Schritt",hr:"Sljedeći korak"},
-    "ov.recent":{ru:"Недавняя активность",en:"Recent activity",de:"Letzte Aktivität",hr:"Nedavna aktivnost"},
-    "q.upto":{ru:"до",en:"up to",de:"bis",hr:"do"},
-    "next.callToday":{ru:"Позвонить сегодня",en:"Call today",de:"Heute anrufen",hr:"Nazovi danas"},
-    "next.appr":{ru:"Утвердить/отклонить скидку",en:"Approve or reject discount",de:"Rabatt freigeben/ablehnen",hr:"Odobri ili odbij popust"},
-    "next.remind":{ru:"Напоминание завтра",en:"Reminder tomorrow",de:"Erinnerung morgen",hr:"Podsjetnik sutra"},
-    "feed.hot":{ru:"КП стало HOT",en:"Quote went HOT",de:"Angebot ist HOT",hr:"Ponuda postala HOT"},
-    "feed.system":{ru:"система · 14:22",en:"system · 14:22",de:"System · 14:22",hr:"sustav · 14:22"},
-    "feed.opened":{ru:"Клиент открыл",en:"Customer opened",de:"Kunde öffnete",hr:"Klijent otvorio"},
-    "feed.today":{ru:"сегодня · 14:19",en:"today · 14:19",de:"heute · 14:19",hr:"danas · 14:19"},
-    "feed.stage":{ru:"Стадия",en:"Stage",de:"Stufe",hr:"Faza"},
-    "feed.yesterday":{ru:"вчера",en:"yesterday",de:"gestern",hr:"jučer"},
-    "feed.created":{ru:"Создан расчёт",en:"Quote created",de:"Angebot erstellt",hr:"Ponuda stvorena"},
-    "q.render":{ru:"3D / рендер перголы",en:"3D / pergola render",de:"3D / Pergola-Render",hr:"3D / prikaz pergole"},
-    "q.net":{ru:"нетто",en:"net",de:"netto",hr:"neto"},
-    "q.vat":{ru:"с НДС",en:"incl. VAT",de:"inkl. MwSt",hr:"s PDV-om"},
-    "q.model":{ru:"Модель",en:"Model",de:"Modell",hr:"Model"},
-    "q.mount":{ru:"Крепление",en:"Mounting",de:"Montage",hr:"Montaža"},
-    "q.freestanding":{ru:"Отдельностоящая",en:"Freestanding",de:"Freistehend",hr:"Samostojeća"},
-    "q.attached":{ru:"Пристенная",en:"Wall-mounted",de:"Wandmontage",hr:"Zidna montaža"},
-    "q.ral":{ru:"Цвет RAL",en:"RAL colour",de:"RAL-Farbe",hr:"RAL boja"},
-    "q.options":{ru:"Опции",en:"Options",de:"Optionen",hr:"Opcije"},
-    "q.version":{ru:"Версия",en:"Version",de:"Version",hr:"Verzija"},
-    "q.sent":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano"},
-    "q.viewed":{ru:"Просмотрено",en:"Viewed",de:"Angesehen",hr:"Pregledano"},
-    "q.notViewed":{ru:"не открыт",en:"not opened",de:"nicht geöffnet",hr:"nije otvoreno"},
-    "q.valid":{ru:"Действует",en:"Valid",de:"Gültig",hr:"Vrijedi"},
-    "q.until":{ru:"до",en:"until",de:"bis",hr:"do"},
-    "q.discount":{ru:"Скидка",en:"Discount",de:"Rabatt",hr:"Popust"},
-    "q.open":{ru:"Открыть в конфигураторе",en:"Open in configurator",de:"Im Konfigurator öffnen",hr:"Otvori u konfiguratoru"},
-    "q.share":{ru:"Поделиться",en:"Share",de:"Teilen",hr:"Podijeli"},
-    "q.versions":{ru:"Версии",en:"Versions",de:"Versionen",hr:"Verzije"},
-    "q.noDisc":{ru:"без скидки",en:"no discount",de:"ohne Rabatt",hr:"bez popusta"},
-    "src.metaAt":{ru:"Meta · «pergola-at»",en:"Meta · «pergola-at»",de:"Meta · «pergola-at»",hr:"Meta · «pergola-at»"},
-    "src.metaReels":{ru:"Meta · «reels»",en:"Meta · «reels»",de:"Meta · «reels»",hr:"Meta · «reels»"},
-    "src.referral":{ru:"Рекомендация",en:"Referral",de:"Empfehlung",hr:"Preporuka"},
-    "src.site":{ru:"Сайт",en:"Website",de:"Website",hr:"Stranica"},
-    "board.title":{ru:"Доска",en:"Board",de:"Board",hr:"Ploča"},
-    "board.requests":{ru:"Запросы",en:"Requests",de:"Anfragen",hr:"Upiti"},
-    "board.orders":{ru:"Заказы",en:"Orders",de:"Aufträge",hr:"Narudžbe"},
-    "board.scope":{ru:"Я / Команда / Все ▾",en:"Me / Team / All ▾",de:"Ich / Team / Alle ▾",hr:"Ja / Tim / Svi ▾"},
-    "board.rotting":{ru:"⚑ Протухают",en:"⚑ Rotting",de:"⚑ Überfällig",hr:"⚑ Zastarijevaju"},
-    "board.byStage":{ru:"Все · по стадиям",en:"All · by stage",de:"Alle · nach Stufe",hr:"Svi · po fazama"},
-    "admin.title":{ru:"Пульт суперадмина",en:"Superadmin console",de:"Superadmin-Konsole",hr:"Superadmin konzola"},
-    "admin.sub":{ru:"Все пользователи и обе воронки. Переключатель «Все / пользователь» применяется ко всем экранам.",en:"All users and both pipelines. The «All / user» switch applies across all screens.",de:"Alle Benutzer und beide Pipelines. Der «Alle / Benutzer»-Schalter gilt überall.",hr:"Svi korisnici i obje faze toka. Prekidač «Svi / korisnik» primjenjuje se na sve zaslone."},
-    "kpi.pipeline":{ru:"Открытый пайплайн",en:"Open pipeline",de:"Offene Pipeline",hr:"Otvoreni tok"},
-    "kpi.winrate":{ru:"Win rate",en:"Win rate",de:"Win-Rate",hr:"Win rate"},
-    "kpi.avg":{ru:"Средний чек",en:"Avg deal",de:"Ø Auftrag",hr:"Prosječan posao"},
-    "kpi.eng":{ru:"Engagement (откр÷отпр)",en:"Engagement (open÷sent)",de:"Engagement (geöffnet÷gesendet)",hr:"Angažman (otvoreno÷poslano)"},
-    "kpi.d1":{ru:"▲ 12% к мес.",en:"▲ 12% MoM",de:"▲ 12% z. Vmt.",hr:"▲ 12% m/m"},
-    "kpi.d2":{ru:"▲ 4 пп",en:"▲ 4 pp",de:"▲ 4 PP",hr:"▲ 4 pb"},
-    "kpi.d4":{ru:"▲ 6 пп",en:"▲ 6 pp",de:"▲ 6 PP",hr:"▲ 6 pb"},
-    "admin.queue":{ru:"Очередь на утверждение",en:"Approval queue",de:"Freigabe-Warteschlange",hr:"Red za odobrenje"},
-    "admin.waiting":{ru:"2 ждут",en:"2 waiting",de:"2 offen",hr:"2 čekaju"},
-    "admin.r1":{ru:"Скидка 22% > лимит 15%",en:"Discount 22% > limit 15%",de:"Rabatt 22% > Limit 15%",hr:"Popust 22% > limit 15%"},
-    "admin.sellerMarko":{ru:"менеджер: Marko",en:"manager: Marko",de:"Vertriebsmitarbeiter: Marko",hr:"menadžer: Marko"},
-    "admin.r2":{ru:"Сумма > €10k",en:"Amount > €10k",de:"Betrag > €10k",hr:"Iznos > €10k"},
-    "admin.archEva":{ru:"архитектор: Eva",en:"architect: Eva",de:"Architekt: Eva",hr:"arhitekt: Eva"},
-    "admin.reject":{ru:"Отклонить",en:"Reject",de:"Ablehnen",hr:"Odbij"},
-    "admin.approve":{ru:"Утвердить",en:"Approve",de:"Freigeben",hr:"Odobri"},
-    "admin.users":{ru:"Пользователи",en:"Users",de:"Benutzer",hr:"Korisnici"},
-    "admin.usersHint":{ru:"клик по строке — фильтр досок по пользователю",en:"click a row to filter boards by user",de:"Zeile klicken — Boards nach Benutzer filtern",hr:"kliknite redak za filtriranje ploča po korisniku"},
-    "th.user":{ru:"Пользователь",en:"User",de:"Benutzer",hr:"Korisnik"},
-    "th.role":{ru:"Роль",en:"Role",de:"Rolle",hr:"Uloga"},
-    "th.group":{ru:"Группа",en:"Group",de:"Gruppe",hr:"Grupa"},
-    "th.deals":{ru:"Сделок",en:"Deals",de:"Deals",hr:"Poslovi"},
-    "th.pipeline":{ru:"Пайплайн",en:"Pipeline",de:"Pipeline",hr:"Tok"},
-    "th.rotting":{ru:"Протух.",en:"Rotting",de:"Überf.",hr:"Zastar."},
-    "th.seen":{ru:"Был",en:"Seen",de:"Zuletzt",hr:"Zadnje"},
-    "t.2h":{ru:"2ч",en:"2h",de:"2 Std",hr:"2 h"},
-    "t.1d":{ru:"1д",en:"1d",de:"1 T",hr:"1 d"},
-    "t.10m":{ru:"10м",en:"10m",de:"10 Min",hr:"10 min"},
-    "t.overdue":{ru:"просроч.",en:"overdue",de:"überf.",hr:"kasni"},
-    "t.3d":{ru:"3д",en:"3d",de:"3 T",hr:"3 d"},
-    "role.manager":{ru:"менеджер",en:"manager",de:"Vertriebsmitarbeiter",hr:"menadžer"},
-    "role.dealer":{ru:"дилер",en:"dealer",de:"Händler",hr:"diler"},
-    "role.architect":{ru:"архитектор",en:"architect",de:"Architekt",hr:"arhitekt"},
-    "grp.agent":{ru:"агент",en:"agent",de:"Agent",hr:"agent"},
-    "grp.dealer":{ru:"дилер",en:"dealer",de:"Händler",hr:"diler"},
-    "grp.architect":{ru:"архитектор",en:"architect",de:"Architekt",hr:"arhitekt"},
-    "set.users":{ru:"Пользователи",en:"Users",de:"Benutzer",hr:"Korisnici"},
-    "set.roles":{ru:"Роли и доступ",en:"Roles & access",de:"Rollen & Zugriff",hr:"Uloge i pristup"},
-    "set.disc":{ru:"Группы скидок",en:"Discount groups",de:"Rabattgruppen",hr:"Grupe popusta"},
-    "set.pipe":{ru:"Воронки и стадии",en:"Pipelines & stages",de:"Pipelines & Stufen",hr:"Tokovi i faze"},
-    "set.lang":{ru:"Язык",en:"Language",de:"Sprache",hr:"Jezik"},
-    "set.langTitle":{ru:"Язык интерфейса",en:"Interface language",de:"Oberflächensprache",hr:"Jezik sučelja"},
-    "set.langHint":{ru:"Выберите язык интерфейса. Можно сменить в любой момент — выбор сохранится.",en:"Choose the interface language. You can change it anytime — your choice is saved.",de:"Wählen Sie die Oberflächensprache. Jederzeit änderbar — Ihre Wahl wird gespeichert.",hr:"Odaberite jezik sučelja. Možete ga promijeniti u bilo kojem trenutku — izbor se sprema."},
-    "set.create":{ru:"Создать аккаунт",en:"Create account",de:"Konto erstellen",hr:"Stvori račun"},
-    "set.pass":{ru:"Пароль",en:"Password",de:"Passwort",hr:"Lozinka"},
-    "set.role":{ru:"Роль",en:"Role",de:"Rolle",hr:"Uloga"},
-    "set.group":{ru:"Группа скидок",en:"Discount group",de:"Rabattgruppe",hr:"Grupa popusta"},
-    "set.genPh":{ru:"сгенерировать",en:"generate",de:"generieren",hr:"generiraj"},
-    "set.rolePh":{ru:"менеджер / архитектор / дилер",en:"manager / architect / dealer",de:"Vertriebsmitarbeiter / Architekt / Händler",hr:"menadžer / arhitekt / diler"},
-    "set.groupPh":{ru:"агент",en:"agent",de:"Agent",hr:"agent"},
-    "set.createBtn":{ru:"Создать и выдать логин",en:"Create and issue login",de:"Erstellen & Login vergeben",hr:"Stvori i dodijeli prijavu"},
-    "th.name":{ru:"Имя",en:"Name",de:"Name",hr:"Ime"},
-    "th.personal":{ru:"Личный %",en:"Personal %",de:"Persönl. %",hr:"Osobni %"},
-    "th.status":{ru:"Статус",en:"Status",de:"Status",hr:"Status"},
-    "set.roleManager":{ru:"Роль: Менеджер",en:"Role: Manager",de:"Rolle: Vertriebsmitarbeiter",hr:"Uloga: Menadžer"},
-    "ds.cando":{ru:"Может делать",en:"Can do",de:"Kann tun",hr:"Može raditi"},
-    "ds.cansee":{ru:"Может видеть",en:"Can see",de:"Kann sehen",hr:"Može vidjeti"},
-    "ds.d1":{ru:"Создавать расчёты и КП",en:"Create quotes",de:"Kalkulationen erstellen",hr:"Stvarati ponude"},
-    "ds.d2":{ru:"Скидка в пределах группы",en:"Discount within group",de:"Rabatt in Gruppe",hr:"Popust unutar grupe"},
-    "ds.d3":{ru:"Скидка выше лимита (→ утверждение)",en:"Discount above limit (→ approval)",de:"Rabatt über Limit (→ Freigabe)",hr:"Popust iznad limita (→ odobrenje)"},
-    "ds.d4":{ru:"Двигать стадии (правка → утверждение)",en:"Move stages (edit → approval)",de:"Stufen bewegen (→ Freigabe)",hr:"Pomicati faze (uređivanje → odobrenje)"},
-    "ds.d5":{ru:"Видеть маржу",en:"See margin",de:"Marge sehen",hr:"Vidjeti maržu"},
-    "ds.s1":{ru:"Только свои и переданные",en:"Own and assigned only",de:"Nur eigene & zugewiesene",hr:"Samo svoje i dodijeljene"},
-    "ds.s2":{ru:"Свою компанию / дилер-группу",en:"Own company / dealer group",de:"Eigene Firma / Händlergruppe",hr:"Vlastitu tvrtku / diler-grupu"},
-    "ds.s3":{ru:"Все записи",en:"All records",de:"Alle Datensätze",hr:"Sve zapise"},
-    "set.discTitle":{ru:"Группы скидок (%)",en:"Discount groups (%)",de:"Rabattgruppen (%)",hr:"Grupe popusta (%)"},
-    "th.groupName":{ru:"Группа",en:"Group",de:"Gruppe",hr:"Grupa"},
-    "th.base":{ru:"База %",en:"Base %",de:"Basis %",hr:"Osnovni %"},
-    "th.maxman":{ru:"Макс. ручная %",en:"Max manual %",de:"Max. manuell %",hr:"Maks. ručni %"},
-    "th.price":{ru:"Прайс",en:"Price list",de:"Preisliste",hr:"Cjenik"},
-    "th.members":{ru:"Участников",en:"Members",de:"Mitglieder",hr:"Članovi"},
-    "grp.architectsPl":{ru:"Архитекторы",en:"Architects",de:"Architekten",hr:"Arhitekti"},
-    "grp.agentsPl":{ru:"Агенты",en:"Agents",de:"Agenten",hr:"Agenti"},
-    "grp.dealersPl":{ru:"Дилеры",en:"Dealers",de:"Händler",hr:"Dileri"},
-    "grp.shared":{ru:"общий",en:"shared",de:"gemeinsam",hr:"zajednički"},
-    "set.discNote":{ru:"Правка % показывает живой пример: «Пергола 4×3 м €6 900 → €5 865». Выше лимита — уходит на утверждение.",en:"Editing % shows a live example: «Pergola 4×3 m €6,900 → €5,865». Above the limit goes to approval.",de:"Beim Ändern des % erscheint ein Beispiel: «Pergola 4×3 m €6.900 → €5.865». Über dem Limit → Freigabe.",hr:"Uređivanje % prikazuje živi primjer: «Pergola 4×3 m €6.900 → €5.865». Iznad limita ide na odobrenje."},
-    "set.pipeTitle":{ru:"Воронка «Запросы» — стадии",en:"Pipeline «Requests» — stages",de:"Pipeline «Anfragen» — Stufen",hr:"Tok «Upiti» — faze"},
-    "th.stage":{ru:"Стадия",en:"Stage",de:"Stufe",hr:"Faza"},
-    "th.cold":{ru:"Остывает, дн",en:"Cold, d",de:"Kalt, T",hr:"Hladi se, d"},
-    "th.rot":{ru:"Протухает, дн",en:"Rotting, d",de:"Überf., T",hr:"Zastarijeva, d"},
-    "th.appr":{ru:"Утверждение",en:"Approval",de:"Freigabe",hr:"Odobrenje"},
-    "set.discLimit":{ru:"скидка > лимит",en:"discount > limit",de:"Rabatt > Limit",hr:"popust > limit"},
-    "empty.quotes":{ru:"Список КП (Активные / Черновики / Архив)",en:"Quotes list (Active / Drafts / Archived)",de:"Angebote (Aktiv / Entwürfe / Archiv)",hr:"Popis ponuda (Aktivne / Nacrti / Arhiva)"},
-    "empty.quotesSub":{ru:"поиск, фильтры, массовые действия, экспорт",en:"search, filters, bulk actions, export",de:"Suche, Filter, Massenaktionen, Export",hr:"pretraga, filtri, skupne radnje, izvoz"},
-    "empty.custSub":{ru:"карточки контактов и компаний, GDPR-поля",en:"contact and company records, GDPR fields",de:"Kontakt- und Firmenkarten, DSGVO-Felder",hr:"zapisi kontakata i tvrtki, GDPR polja"},
-    "empty.apprSub":{ru:"см. Пульт суперадмина → блок «На утверждение»",en:"see Superadmin console → approvals block",de:"siehe Superadmin-Konsole → Freigaben",hr:"vidi Superadmin konzolu → blok odobrenja"},
-    "status.opened3":{ru:"Открыл КП 3×",en:"Opened quote 3×",de:"Angebot 3× geöffnet",hr:"Otvorio ponudu 3×"},
-    "status.awaitDisc":{ru:"Ждёт утв. скидки",en:"Awaiting discount approval",de:"Rabatt-Freigabe offen",hr:"Čeka odobrenje popusta"},
-    "status.sent":{ru:"Отправлено КП",en:"Quote sent",de:"Angebot gesendet",hr:"Ponuda poslana"},
-    "status.newInq":{ru:"Новая заявка",en:"New inquiry",de:"Neue Anfrage",hr:"Novi upit"},
-    "cardst.call":{ru:"Звонок",en:"Call",de:"Anruf",hr:"Poziv"},
-    "cardst.sent":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano"},
-    "cardst.disc":{ru:"Утв. скидки",en:"Disc. approval",de:"Rabatt-Freig.",hr:"Odobr. popusta"},
-    "card.winOrder":{ru:"Win → заказ",en:"Win → order",de:"Win → Auftrag",hr:"Win → narudžba"},
-    "card.loseReason":{ru:"Lose + причина",en:"Lose + reason",de:"Lose + Grund",hr:"Lose + razlog"},
-    "card.daysIn":{ru:"дн в стадии",en:"d in stage",de:"T in Stufe",hr:"d u fazi"},
-    "card.lock":{ru:"🔒 на утв.",en:"🔒 approval",de:"🔒 Freigabe",hr:"🔒 odobrenje"},
-    "ord.order":{ru:"Заказ",en:"Order",de:"Auftrag",hr:"Narudžba"},
-    "ords.new":{ru:"новый заказ",en:"new order",de:"neuer Auftrag",hr:"nova narudžba"},
-    "ords.meas":{ru:"замер 04.11",en:"measure 04.11",de:"Aufmaß 04.11",hr:"izmjera 04.11"},
-    "ords.invoiced":{ru:"счёт выставлен",en:"invoiced",de:"Rechnung gestellt",hr:"račun izdan"},
-    "ords.install":{ru:"монтаж 06.11",en:"install 06.11",de:"Montage 06.11",hr:"montaža 06.11"},
-    "ords.done":{ru:"сдан",en:"handed over",de:"übergeben",hr:"predano"},
-    "os.inbox":{ru:"Входящие",en:"Inbox",de:"Eingang",hr:"Ulazni"},
-    "os.measurement":{ru:"Замер",en:"Measurement",de:"Aufmaß",hr:"Izmjera"},
-    "os.payment":{ru:"Ожидание оплаты",en:"Awaiting payment",de:"Zahlung offen",hr:"Čeka se plaćanje"},
-    "os.delivery":{ru:"Поставка",en:"Delivery",de:"Lieferung",hr:"Dostava"},
-    "os.instock":{ru:"Готово на складе",en:"In stock",de:"Im Lager",hr:"Na skladištu"},
-    "os.installation":{ru:"Монтаж",en:"Installation",de:"Montage",hr:"Montaža"},
-    "os.done":{ru:"Выполнено",en:"Done",de:"Erledigt",hr:"Završeno"}
+    "nav.today":{ru:"Сегодня",en:"Today",de:"Heute",hr:"Danas",es:"Hoy"},
+    "nav.leads":{ru:"Лиды · доска",en:"Leads · board",de:"Leads · Board",hr:"Upiti · ploča",es:"Leads · tablero"},
+    "nav.orders":{ru:"Заказы · доска",en:"Orders · board",de:"Aufträge · Board",hr:"Narudžbe · ploča",es:"Pedidos · tablero"},
+    "nav.quotes":{ru:"КП",en:"Quotes",de:"Angebote",hr:"Ponude",es:"Presupuestos"},
+    "nav.customers":{ru:"Клиенты",en:"Customers",de:"Kunden",hr:"Klijenti",es:"Clientes"},
+    "nav.config":{ru:"Конфигуратор",en:"Configurator",de:"Konfigurator",hr:"Konfigurator",es:"Configurador"},
+    "nav.grpAdmin":{ru:"Суперадмин",en:"Superadmin",de:"Superadmin",hr:"Superadmin",es:"Superadministrador"},
+    "nav.console":{ru:"Пульт",en:"Console",de:"Konsole",hr:"Konzola",es:"Consola"},
+    "nav.approvals":{ru:"Утверждения",en:"Approvals",de:"Freigaben",hr:"Odobrenja",es:"Aprobaciones"},
+    "nav.settings":{ru:"Настройки",en:"Settings",de:"Einstellungen",hr:"Postavke",es:"Ajustes"},
+    "me.role":{ru:"Суперадмин · EUR",en:"Superadmin · EUR",de:"Superadmin · EUR",hr:"Superadmin · EUR",es:"Superadministrador · EUR"},
+    "gate.email":{ru:"E-Mail",en:"E-Mail",de:"E-Mail",hr:"E-Mail",es:"Correo electrónico"},
+    "gate.pass":{ru:"Пароль",en:"Password",de:"Passwort",hr:"Lozinka",es:"Contraseña"},
+    "gate.signin":{ru:"Войти",en:"Sign in",de:"Anmelden",hr:"Prijava",es:"Iniciar sesión"},
+    "gate.request":{ru:"Запросить доступ",en:"Request access",de:"Zugang anfragen",hr:"Zatraži pristup",es:"Solicitar acceso"},
+    "gate.needAll":{ru:"Заполните все поля",en:"Fill in all fields",de:"Alle Felder ausfüllen",hr:"Ispunite sva polja",es:"Rellene todos los campos"},
+    "gate.badMail":{ru:"Введите e-mail в формате name@domain",en:"Enter a valid e-mail (name@domain)",de:"Gültige E-Mail eingeben (name@domain)",hr:"Unesite ispravan e-mail (ime@domena)",es:"Introduzca un correo válido (nombre@dominio)"},
+    "gate.sentTitle":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano",es:"Enviado"},
+    "gate.sentPopup":{ru:"Письмо улетело нашему менеджеру — мы свяжемся с вами.",en:"Your message reached our manager — we'll get back to you.",de:"Ihre Nachricht ist bei unserem Manager — wir melden uns.",hr:"Vaša poruka je stigla našem voditelju — javit ćemo vam se.",es:"Su mensaje ha llegado a nuestro responsable: nos pondremos en contacto."},
+    "gate.ok":{ru:"Готово",en:"Done",de:"Fertig",hr:"Gotovo",es:"Listo"},
+    "req.company":{ru:"Компания",en:"Company",de:"Firma",hr:"Tvrtka",es:"Empresa"},
+    "req.first":{ru:"Имя",en:"First name",de:"Vorname",hr:"Ime",es:"Nombre"},
+    "req.last":{ru:"Фамилия",en:"Last name",de:"Nachname",hr:"Prezime",es:"Apellidos"},
+    "req.location":{ru:"Локация (город, страна)",en:"Location (city, country)",de:"Standort (Stadt, Land)",hr:"Lokacija (grad, država)",es:"Ubicación (ciudad, país)"},
+    "inv.title":{ru:"Пригласить партнёра",en:"Invite a partner",de:"Partner einladen",hr:"Pozovite partnera",es:"Invitar a un socio"},
+    "inv.gen":{ru:"Создать ссылку-приглашение",en:"Create invite link",de:"Einladungslink erstellen",hr:"Stvori poveznicu za poziv",es:"Crear enlace de invitación"},
+    "inv.pwnote":{ru:"Партнёр откроет ссылку, заполнит данные и задаст свой пароль: буквы, цифры и спецсимвол, минимум 8 символов.",en:"The partner opens the link, fills in their details and sets their own password: letters, digits and a special character, at least 8 characters.",de:"Der Partner öffnet den Link, trägt seine Daten ein und legt sein eigenes Passwort fest: Buchstaben, Ziffern und ein Sonderzeichen, mindestens 8 Zeichen.",hr:"Partner otvara poveznicu, ispunjava podatke i postavlja vlastitu lozinku: slova, brojke i poseban znak, najmanje 8 znakova.",es:"El socio abre el enlace, rellena sus datos y define su propia contraseña: letras, cifras y un carácter especial, mínimo 8 caracteres."},
+    "inv.copy":{ru:"Скопировать",en:"Copy",de:"Kopieren",hr:"Kopiraj",es:"Copiar"},
+    "inv.copied":{ru:"Скопировано",en:"Copied",de:"Kopiert",hr:"Kopirano",es:"Copiado"},
+    "gate.send":{ru:"Отправить",en:"Send",de:"Senden",hr:"Pošalji",es:"Enviar"},
+    "gate.back":{ru:"← Назад",en:"← Back",de:"← Zurück",hr:"← Natrag",es:"← Atrás"},
+    "gate.needBoth":{ru:"Введите e-mail и пароль",en:"Enter email and password",de:"E-Mail und Passwort eingeben",hr:"Unesite e-mail i lozinku",es:"Introduzca correo y contraseña"},
+    "gate.needMail":{ru:"Введите e-mail",en:"Enter email",de:"E-Mail eingeben",hr:"Unesite e-mail",es:"Introduzca el correo"},
+    "gate.reqOk":{ru:"Готово — мы свяжемся с вами",en:"Thanks — we'll be in touch",de:"Danke — wir melden uns",hr:"Hvala — javit ćemo vam se",es:"Gracias, nos pondremos en contacto"},
+    "top.search":{ru:"⌕ Поиск сделок, клиентов, №КП…",en:"⌕ Search deals, customers, quote #…",de:"⌕ Suche: Deals, Kunden, Angebot-Nr…",hr:"⌕ Pretraži poslove, klijente, br. ponude…",es:"⌕ Buscar operaciones, clientes, n.º de presupuesto…"},
+    "top.newCalc":{ru:" Новый расчёт",en:" New quote",de:" Neue Kalkulation",hr:" Nova ponuda",es:" Nuevo presupuesto"},
+    "today.allDeals":{ru:"Все сделки ▾",en:"All deals ▾",de:"Alle Deals ▾",hr:"Svi poslovi ▾",es:"Todas las operaciones ▾"},
+    "chip.needYou":{ru:"Нужны вам",en:"Needs you",de:"Zu erledigen",hr:"Trebaju vas",es:"Le necesitan"},
+    "chip.waiting":{ru:"Ждут клиента",en:"Waiting",de:"Warten",hr:"Čekaju klijenta",es:"En espera"},
+    "chip.appr":{ru:"На утв.",en:"Approvals",de:"Freigaben",hr:"Za odobr.",es:"Aprobaciones"},
+    "chip.overdue":{ru:"Просрочено",en:"Overdue",de:"Überfällig",hr:"Kasni",es:"Vencido"},
+    "rec.back":{ru:"← Список",en:"← List",de:"← Liste",hr:"← Popis",es:"← Lista"},
+    "rec.deal":{ru:"Сделка",en:"Deal",de:"Deal",hr:"Posao",es:"Operación"},
+    "rec.owner":{ru:"Ответств.",en:"Owner",de:"Verantw.",hr:"Vlasnik",es:"Responsable"},
+    "rec.transfer":{ru:"Передать",en:"Transfer",de:"Übergeben",hr:"Prenesi",es:"Transferir"},
+    "rec.move":{ru:"Перевести",en:"Move",de:"Weiter",hr:"Pomakni",es:"Mover"},
+    "rec.nowWord":{ru:"сейчас",en:"now",de:"jetzt",hr:"sada",es:"ahora"},
+    "rec.empty":{ru:"Выберите сделку слева",en:"Select a deal on the left",de:"Deal links auswählen",hr:"Odaberite posao slijeva",es:"Seleccione una operación a la izquierda"},
+    "st.new":{ru:"Новый",en:"New",de:"Neu",hr:"Novo",es:"Nuevo"},
+    "st.processing":{ru:"В обработке",en:"In progress",de:"In Bearbeitung",hr:"U obradi",es:"En curso"},
+    "st.proposal":{ru:"Предложение",en:"Proposal",de:"Angebot",hr:"Prijedlog",es:"Propuesta"},
+    "st.negotiation":{ru:"Переговоры",en:"Negotiation",de:"Verhandlung",hr:"Pregovori",es:"Negociación"},
+    "st.winlose":{ru:"Win / Lose",en:"Win / Lose",de:"Win / Lose",hr:"Win / Lose",es:"Ganado / Perdido"},
+    "st.active":{ru:"активен",en:"active",de:"aktiv",hr:"aktivan",es:"activo"},
+    "u.days":{ru:"дн",en:"d",de:"T",hr:"d",es:"d"},
+    "upnext.open":{ru:"открыто",en:"open",de:"offen",hr:"otvoreno",es:"abiertas"},
+    "task.call":{ru:"Позвонить клиенту",en:"Call customer",de:"Kunde anrufen",hr:"Nazovi klijenta",es:"Llamar al cliente"},
+    "task.callDesc":{ru:"Открыл КП дважды сегодня — тёплый контакт",en:"Opened the quote twice today — warm lead",de:"Angebot heute 2× geöffnet — warmer Kontakt",hr:"Otvorio ponudu dvaput danas — topao kontakt",es:"Abrió el presupuesto dos veces hoy: contacto caliente"},
+    "task.callGo":{ru:"Звонок",en:"Call",de:"Anruf",hr:"Poziv",es:"Llamar"},
+    "task.meas":{ru:"Договориться о замере",en:"Arrange measurement",de:"Aufmaß vereinbaren",hr:"Dogovori izmjeru",es:"Concertar la medición"},
+    "task.measDesc":{ru:"Клиент спрашивал про сроки",en:"Customer asked about timing",de:"Kunde fragte nach Terminen",hr:"Klijent je pitao za rokove",es:"El cliente preguntó por los plazos"},
+    "task.measGo":{ru:"В календарь",en:"To calendar",de:"Zum Kalender",hr:"U kalendar",es:"Al calendario"},
+    "task.waitAppr":{ru:"Ждёт вашего утверждения скидки",en:"Awaiting your discount approval",de:"Wartet auf Ihre Rabatt-Freigabe",hr:"Čeka vaše odobrenje popusta",es:"Pendiente de su aprobación del descuento"},
+    "task.waitApprD":{ru:"Скидка 22% выше лимита 15%",en:"Discount 22% above the 15% limit",de:"Rabatt 22% über Limit 15%",hr:"Popust 22% iznad limita 15%",es:"Descuento del 22 % por encima del límite del 15 %"},
+    "task.openGo":{ru:"Открыть",en:"Open",de:"Öffnen",hr:"Otvori",es:"Abrir"},
+    "task.followup":{ru:"Напомнить о КП",en:"Follow up on the quote",de:"Ans Angebot erinnern",hr:"Podsjeti na ponudu",es:"Hacer seguimiento del presupuesto"},
+    "task.followupD":{ru:"Отправлено 1 день назад, без ответа",en:"Sent 1 day ago, no reply",de:"Vor 1 Tag gesendet, keine Antwort",hr:"Poslano prije 1 dan, bez odgovora",es:"Enviado hace 1 día, sin respuesta"},
+    "task.msgGo":{ru:"Написать",en:"Message",de:"Schreiben",hr:"Poruka",es:"Mensaje"},
+    "task.firstCall":{ru:"Первый звонок по заявке",en:"First call on the inquiry",de:"Erstanruf zur Anfrage",hr:"Prvi poziv po upitu",es:"Primera llamada por la consulta"},
+    "task.firstCallD":{ru:"Новая заявка с сайта",en:"New inquiry from the site",de:"Neue Anfrage über die Website",hr:"Novi upit sa stranice",es:"Nueva consulta desde la web"},
+    "task.add":{ru:"Добавить задачу…",en:"Add task…",de:"Aufgabe hinzufügen…",hr:"Dodaj zadatak…",es:"Añadir tarea…"},
+    "tab.overview":{ru:"Обзор",en:"Overview",de:"Übersicht",hr:"Pregled",es:"Resumen"},
+    "tab.quote":{ru:"КП",en:"Quote",de:"Angebot",hr:"Ponuda",es:"Presupuesto"},
+    "tab.messages":{ru:"Сообщения",en:"Messages",de:"Nachrichten",hr:"Poruke",es:"Mensajes"},
+    "tab.activity":{ru:"Активность",en:"Activity",de:"Aktivität",hr:"Aktivnost",es:"Actividad"},
+    "tab.notes":{ru:"Заметки",en:"Notes",de:"Notizen",hr:"Bilješke",es:"Notas"},
+    "tab.files":{ru:"Файлы",en:"Files",de:"Dateien",hr:"Datoteke",es:"Archivos"},
+    "ov.contact":{ru:"Контакт",en:"Contact",de:"Kontakt",hr:"Kontakt",es:"Contacto"},
+    "ov.address":{ru:"Адрес объекта",en:"Site address",de:"Objektadresse",hr:"Adresa objekta",es:"Dirección de la obra"},
+    "ov.source":{ru:"Источник",en:"Source",de:"Quelle",hr:"Izvor",es:"Origen"},
+    "ov.discGroup":{ru:"Группа скидок",en:"Discount group",de:"Rabattgruppe",hr:"Grupa popusta",es:"Grupo de descuento"},
+    "ov.next":{ru:"Следующий шаг",en:"Next step",de:"Nächster Schritt",hr:"Sljedeći korak",es:"Siguiente paso"},
+    "ov.recent":{ru:"Недавняя активность",en:"Recent activity",de:"Letzte Aktivität",hr:"Nedavna aktivnost",es:"Actividad reciente"},
+    "q.upto":{ru:"до",en:"up to",de:"bis",hr:"do",es:"hasta"},
+    "next.callToday":{ru:"Позвонить сегодня",en:"Call today",de:"Heute anrufen",hr:"Nazovi danas",es:"Llamar hoy"},
+    "next.appr":{ru:"Утвердить/отклонить скидку",en:"Approve or reject discount",de:"Rabatt freigeben/ablehnen",hr:"Odobri ili odbij popust",es:"Aprobar o rechazar el descuento"},
+    "next.remind":{ru:"Напоминание завтра",en:"Reminder tomorrow",de:"Erinnerung morgen",hr:"Podsjetnik sutra",es:"Recordatorio mañana"},
+    "feed.hot":{ru:"КП стало HOT",en:"Quote went HOT",de:"Angebot ist HOT",hr:"Ponuda postala HOT",es:"El presupuesto se puso CALIENTE"},
+    "feed.system":{ru:"система · 14:22",en:"system · 14:22",de:"System · 14:22",hr:"sustav · 14:22",es:"sistema · 14:22"},
+    "feed.opened":{ru:"Клиент открыл",en:"Customer opened",de:"Kunde öffnete",hr:"Klijent otvorio",es:"El cliente abrió"},
+    "feed.today":{ru:"сегодня · 14:19",en:"today · 14:19",de:"heute · 14:19",hr:"danas · 14:19",es:"hoy · 14:19"},
+    "feed.stage":{ru:"Стадия",en:"Stage",de:"Stufe",hr:"Faza",es:"Fase"},
+    "feed.yesterday":{ru:"вчера",en:"yesterday",de:"gestern",hr:"jučer",es:"ayer"},
+    "feed.created":{ru:"Создан расчёт",en:"Quote created",de:"Angebot erstellt",hr:"Ponuda stvorena",es:"Presupuesto creado"},
+    "q.render":{ru:"3D / рендер перголы",en:"3D / pergola render",de:"3D / Pergola-Render",hr:"3D / prikaz pergole",es:"Imagen 3D de la pérgola"},
+    "q.net":{ru:"нетто",en:"net",de:"netto",hr:"neto",es:"neto"},
+    "q.vat":{ru:"с НДС",en:"incl. VAT",de:"inkl. MwSt",hr:"s PDV-om",es:"IVA incl."},
+    "q.model":{ru:"Модель",en:"Model",de:"Modell",hr:"Model",es:"Modelo"},
+    "q.mount":{ru:"Крепление",en:"Mounting",de:"Montage",hr:"Montaža",es:"Montaje"},
+    "q.freestanding":{ru:"Отдельностоящая",en:"Freestanding",de:"Freistehend",hr:"Samostojeća",es:"Independiente"},
+    "q.attached":{ru:"Пристенная",en:"Wall-mounted",de:"Wandmontage",hr:"Zidna montaža",es:"Adosada a la pared"},
+    "q.ral":{ru:"Цвет RAL",en:"RAL colour",de:"RAL-Farbe",hr:"RAL boja",es:"Color RAL"},
+    "q.options":{ru:"Опции",en:"Options",de:"Optionen",hr:"Opcije",es:"Opciones"},
+    "q.version":{ru:"Версия",en:"Version",de:"Version",hr:"Verzija",es:"Versión"},
+    "q.sent":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano",es:"Enviado"},
+    "q.viewed":{ru:"Просмотрено",en:"Viewed",de:"Angesehen",hr:"Pregledano",es:"Visto"},
+    "q.notViewed":{ru:"не открыт",en:"not opened",de:"nicht geöffnet",hr:"nije otvoreno",es:"sin abrir"},
+    "q.valid":{ru:"Действует",en:"Valid",de:"Gültig",hr:"Vrijedi",es:"Válido"},
+    "q.until":{ru:"до",en:"until",de:"bis",hr:"do",es:"hasta"},
+    "q.discount":{ru:"Скидка",en:"Discount",de:"Rabatt",hr:"Popust",es:"Descuento"},
+    "q.open":{ru:"Открыть в конфигураторе",en:"Open in configurator",de:"Im Konfigurator öffnen",hr:"Otvori u konfiguratoru",es:"Abrir en el configurador"},
+    "q.share":{ru:"Поделиться",en:"Share",de:"Teilen",hr:"Podijeli",es:"Compartir"},
+    "q.versions":{ru:"Версии",en:"Versions",de:"Versionen",hr:"Verzije",es:"Versiones"},
+    "q.noDisc":{ru:"без скидки",en:"no discount",de:"ohne Rabatt",hr:"bez popusta",es:"sin descuento"},
+    "src.metaAt":{ru:"Meta · «pergola-at»",en:"Meta · «pergola-at»",de:"Meta · «pergola-at»",hr:"Meta · «pergola-at»",es:"Meta · «pergola-at»"},
+    "src.metaReels":{ru:"Meta · «reels»",en:"Meta · «reels»",de:"Meta · «reels»",hr:"Meta · «reels»",es:"Meta · «reels»"},
+    "src.referral":{ru:"Рекомендация",en:"Referral",de:"Empfehlung",hr:"Preporuka",es:"Recomendación"},
+    "src.site":{ru:"Сайт",en:"Website",de:"Website",hr:"Stranica",es:"Sitio web"},
+    "board.title":{ru:"Доска",en:"Board",de:"Board",hr:"Ploča",es:"Tablero"},
+    "board.requests":{ru:"Запросы",en:"Requests",de:"Anfragen",hr:"Upiti",es:"Solicitudes"},
+    "board.orders":{ru:"Заказы",en:"Orders",de:"Aufträge",hr:"Narudžbe",es:"Pedidos"},
+    "board.scope":{ru:"Я / Команда / Все ▾",en:"Me / Team / All ▾",de:"Ich / Team / Alle ▾",hr:"Ja / Tim / Svi ▾",es:"Yo / Equipo / Todos ▾"},
+    "board.rotting":{ru:"⚑ Протухают",en:"⚑ Rotting",de:"⚑ Überfällig",hr:"⚑ Zastarijevaju",es:"⚑ Estancados"},
+    "board.byStage":{ru:"Все · по стадиям",en:"All · by stage",de:"Alle · nach Stufe",hr:"Svi · po fazama",es:"Todos · por fase"},
+    "admin.title":{ru:"Пульт суперадмина",en:"Superadmin console",de:"Superadmin-Konsole",hr:"Superadmin konzola",es:"Consola del superadministrador"},
+    "admin.sub":{ru:"Все пользователи и обе воронки. Переключатель «Все / пользователь» применяется ко всем экранам.",en:"All users and both pipelines. The «All / user» switch applies across all screens.",de:"Alle Benutzer und beide Pipelines. Der «Alle / Benutzer»-Schalter gilt überall.",hr:"Svi korisnici i obje faze toka. Prekidač «Svi / korisnik» primjenjuje se na sve zaslone.",es:"Todos los usuarios y ambos embudos. El selector «Todos / usuario» se aplica a todas las pantallas."},
+    "kpi.pipeline":{ru:"Открытый пайплайн",en:"Open pipeline",de:"Offene Pipeline",hr:"Otvoreni tok",es:"Embudo abierto"},
+    "kpi.winrate":{ru:"Win rate",en:"Win rate",de:"Win-Rate",hr:"Win rate",es:"Tasa de éxito"},
+    "kpi.avg":{ru:"Средний чек",en:"Avg deal",de:"Ø Auftrag",hr:"Prosječan posao",es:"Operación media"},
+    "kpi.eng":{ru:"Engagement (откр÷отпр)",en:"Engagement (open÷sent)",de:"Engagement (geöffnet÷gesendet)",hr:"Angažman (otvoreno÷poslano)",es:"Interacción (abiertos÷enviados)"},
+    "kpi.d1":{ru:"▲ 12% к мес.",en:"▲ 12% MoM",de:"▲ 12% z. Vmt.",hr:"▲ 12% m/m",es:"▲ 12 % al mes"},
+    "kpi.d2":{ru:"▲ 4 пп",en:"▲ 4 pp",de:"▲ 4 PP",hr:"▲ 4 pb",es:"▲ 4 pp"},
+    "kpi.d4":{ru:"▲ 6 пп",en:"▲ 6 pp",de:"▲ 6 PP",hr:"▲ 6 pb",es:"▲ 6 pp"},
+    "admin.queue":{ru:"Очередь на утверждение",en:"Approval queue",de:"Freigabe-Warteschlange",hr:"Red za odobrenje",es:"Cola de aprobación"},
+    "admin.waiting":{ru:"2 ждут",en:"2 waiting",de:"2 offen",hr:"2 čekaju",es:"2 en espera"},
+    "admin.r1":{ru:"Скидка 22% > лимит 15%",en:"Discount 22% > limit 15%",de:"Rabatt 22% > Limit 15%",hr:"Popust 22% > limit 15%",es:"Descuento 22 % > límite 15 %"},
+    "admin.sellerMarko":{ru:"менеджер: Marko",en:"manager: Marko",de:"Vertriebsmitarbeiter: Marko",hr:"menadžer: Marko",es:"comercial: Marko"},
+    "admin.r2":{ru:"Сумма > €10k",en:"Amount > €10k",de:"Betrag > €10k",hr:"Iznos > €10k",es:"Importe > 10 000 €"},
+    "admin.archEva":{ru:"архитектор: Eva",en:"architect: Eva",de:"Architekt: Eva",hr:"arhitekt: Eva",es:"arquitecto: Eva"},
+    "admin.reject":{ru:"Отклонить",en:"Reject",de:"Ablehnen",hr:"Odbij",es:"Rechazar"},
+    "admin.approve":{ru:"Утвердить",en:"Approve",de:"Freigeben",hr:"Odobri",es:"Aprobar"},
+    "admin.users":{ru:"Пользователи",en:"Users",de:"Benutzer",hr:"Korisnici",es:"Usuarios"},
+    "admin.usersHint":{ru:"клик по строке — фильтр досок по пользователю",en:"click a row to filter boards by user",de:"Zeile klicken — Boards nach Benutzer filtern",hr:"kliknite redak za filtriranje ploča po korisniku",es:"pulse una fila para filtrar los tableros por usuario"},
+    "th.user":{ru:"Пользователь",en:"User",de:"Benutzer",hr:"Korisnik",es:"Usuario"},
+    "th.role":{ru:"Роль",en:"Role",de:"Rolle",hr:"Uloga",es:"Rol"},
+    "th.group":{ru:"Группа",en:"Group",de:"Gruppe",hr:"Grupa",es:"Grupo"},
+    "th.deals":{ru:"Сделок",en:"Deals",de:"Deals",hr:"Poslovi",es:"Operaciones"},
+    "th.pipeline":{ru:"Пайплайн",en:"Pipeline",de:"Pipeline",hr:"Tok",es:"Embudo"},
+    "th.rotting":{ru:"Протух.",en:"Rotting",de:"Überf.",hr:"Zastar.",es:"Estancadas"},
+    "th.seen":{ru:"Был",en:"Seen",de:"Zuletzt",hr:"Zadnje",es:"Visto"},
+    "t.2h":{ru:"2ч",en:"2h",de:"2 Std",hr:"2 h",es:"2 h"},
+    "t.1d":{ru:"1д",en:"1d",de:"1 T",hr:"1 d",es:"1 d"},
+    "t.10m":{ru:"10м",en:"10m",de:"10 Min",hr:"10 min",es:"10 min"},
+    "t.overdue":{ru:"просроч.",en:"overdue",de:"überf.",hr:"kasni",es:"vencido"},
+    "t.3d":{ru:"3д",en:"3d",de:"3 T",hr:"3 d",es:"3 d"},
+    "role.manager":{ru:"менеджер",en:"manager",de:"Vertriebsmitarbeiter",hr:"menadžer",es:"comercial"},
+    "role.dealer":{ru:"дилер",en:"dealer",de:"Händler",hr:"diler",es:"distribuidor"},
+    "role.architect":{ru:"архитектор",en:"architect",de:"Architekt",hr:"arhitekt",es:"arquitecto"},
+    "grp.agent":{ru:"агент",en:"agent",de:"Agent",hr:"agent",es:"agente"},
+    "grp.dealer":{ru:"дилер",en:"dealer",de:"Händler",hr:"diler",es:"distribuidor"},
+    "grp.architect":{ru:"архитектор",en:"architect",de:"Architekt",hr:"arhitekt",es:"arquitecto"},
+    "set.users":{ru:"Пользователи",en:"Users",de:"Benutzer",hr:"Korisnici",es:"Usuarios"},
+    "set.roles":{ru:"Роли и доступ",en:"Roles & access",de:"Rollen & Zugriff",hr:"Uloge i pristup",es:"Roles y acceso"},
+    "set.disc":{ru:"Группы скидок",en:"Discount groups",de:"Rabattgruppen",hr:"Grupe popusta",es:"Grupos de descuento"},
+    "set.pipe":{ru:"Воронки и стадии",en:"Pipelines & stages",de:"Pipelines & Stufen",hr:"Tokovi i faze",es:"Embudos y fases"},
+    "set.lang":{ru:"Язык",en:"Language",de:"Sprache",hr:"Jezik",es:"Idioma"},
+    "set.langTitle":{ru:"Язык интерфейса",en:"Interface language",de:"Oberflächensprache",hr:"Jezik sučelja",es:"Idioma de la interfaz"},
+    "set.langHint":{ru:"Выберите язык интерфейса. Можно сменить в любой момент — выбор сохранится.",en:"Choose the interface language. You can change it anytime — your choice is saved.",de:"Wählen Sie die Oberflächensprache. Jederzeit änderbar — Ihre Wahl wird gespeichert.",hr:"Odaberite jezik sučelja. Možete ga promijeniti u bilo kojem trenutku — izbor se sprema.",es:"Elija el idioma de la interfaz. Puede cambiarlo en cualquier momento: su elección se guarda."},
+    "set.create":{ru:"Создать аккаунт",en:"Create account",de:"Konto erstellen",hr:"Stvori račun",es:"Crear cuenta"},
+    "set.pass":{ru:"Пароль",en:"Password",de:"Passwort",hr:"Lozinka",es:"Contraseña"},
+    "set.role":{ru:"Роль",en:"Role",de:"Rolle",hr:"Uloga",es:"Rol"},
+    "set.group":{ru:"Группа скидок",en:"Discount group",de:"Rabattgruppe",hr:"Grupa popusta",es:"Grupo de descuento"},
+    "set.genPh":{ru:"сгенерировать",en:"generate",de:"generieren",hr:"generiraj",es:"generar"},
+    "set.rolePh":{ru:"менеджер / архитектор / дилер",en:"manager / architect / dealer",de:"Vertriebsmitarbeiter / Architekt / Händler",hr:"menadžer / arhitekt / diler",es:"comercial / arquitecto / distribuidor"},
+    "set.groupPh":{ru:"агент",en:"agent",de:"Agent",hr:"agent",es:"agente"},
+    "set.createBtn":{ru:"Создать и выдать логин",en:"Create and issue login",de:"Erstellen & Login vergeben",hr:"Stvori i dodijeli prijavu",es:"Crear y emitir acceso"},
+    "th.name":{ru:"Имя",en:"Name",de:"Name",hr:"Ime",es:"Nombre"},
+    "th.personal":{ru:"Личный %",en:"Personal %",de:"Persönl. %",hr:"Osobni %",es:"% personal"},
+    "th.status":{ru:"Статус",en:"Status",de:"Status",hr:"Status",es:"Estado"},
+    "set.roleManager":{ru:"Роль: Менеджер",en:"Role: Manager",de:"Rolle: Vertriebsmitarbeiter",hr:"Uloga: Menadžer",es:"Rol: Comercial"},
+    "ds.cando":{ru:"Может делать",en:"Can do",de:"Kann tun",hr:"Može raditi",es:"Puede hacer"},
+    "ds.cansee":{ru:"Может видеть",en:"Can see",de:"Kann sehen",hr:"Može vidjeti",es:"Puede ver"},
+    "ds.d1":{ru:"Создавать расчёты и КП",en:"Create quotes",de:"Kalkulationen erstellen",hr:"Stvarati ponude",es:"Crear presupuestos"},
+    "ds.d2":{ru:"Скидка в пределах группы",en:"Discount within group",de:"Rabatt in Gruppe",hr:"Popust unutar grupe",es:"Descuento dentro del grupo"},
+    "ds.d3":{ru:"Скидка выше лимита (→ утверждение)",en:"Discount above limit (→ approval)",de:"Rabatt über Limit (→ Freigabe)",hr:"Popust iznad limita (→ odobrenje)",es:"Descuento por encima del límite (→ aprobación)"},
+    "ds.d4":{ru:"Двигать стадии (правка → утверждение)",en:"Move stages (edit → approval)",de:"Stufen bewegen (→ Freigabe)",hr:"Pomicati faze (uređivanje → odobrenje)",es:"Mover fases (edición → aprobación)"},
+    "ds.d5":{ru:"Видеть маржу",en:"See margin",de:"Marge sehen",hr:"Vidjeti maržu",es:"Ver el margen"},
+    "ds.s1":{ru:"Только свои и переданные",en:"Own and assigned only",de:"Nur eigene & zugewiesene",hr:"Samo svoje i dodijeljene",es:"Solo lo propio y lo asignado"},
+    "ds.s2":{ru:"Свою компанию / дилер-группу",en:"Own company / dealer group",de:"Eigene Firma / Händlergruppe",hr:"Vlastitu tvrtku / diler-grupu",es:"Su empresa / grupo de distribuidores"},
+    "ds.s3":{ru:"Все записи",en:"All records",de:"Alle Datensätze",hr:"Sve zapise",es:"Todos los registros"},
+    "set.discTitle":{ru:"Группы скидок (%)",en:"Discount groups (%)",de:"Rabattgruppen (%)",hr:"Grupe popusta (%)",es:"Grupos de descuento (%)"},
+    "th.groupName":{ru:"Группа",en:"Group",de:"Gruppe",hr:"Grupa",es:"Grupo"},
+    "th.base":{ru:"База %",en:"Base %",de:"Basis %",hr:"Osnovni %",es:"% base"},
+    "th.maxman":{ru:"Макс. ручная %",en:"Max manual %",de:"Max. manuell %",hr:"Maks. ručni %",es:"% manual máx."},
+    "th.price":{ru:"Прайс",en:"Price list",de:"Preisliste",hr:"Cjenik",es:"Lista de precios"},
+    "th.members":{ru:"Участников",en:"Members",de:"Mitglieder",hr:"Članovi",es:"Miembros"},
+    "grp.architectsPl":{ru:"Архитекторы",en:"Architects",de:"Architekten",hr:"Arhitekti",es:"Arquitectos"},
+    "grp.agentsPl":{ru:"Агенты",en:"Agents",de:"Agenten",hr:"Agenti",es:"Agentes"},
+    "grp.dealersPl":{ru:"Дилеры",en:"Dealers",de:"Händler",hr:"Dileri",es:"Distribuidores"},
+    "grp.shared":{ru:"общий",en:"shared",de:"gemeinsam",hr:"zajednički",es:"común"},
+    "set.discNote":{ru:"Правка % показывает живой пример: «Пергола 4×3 м €6 900 → €5 865». Выше лимита — уходит на утверждение.",en:"Editing % shows a live example: «Pergola 4×3 m €6,900 → €5,865». Above the limit goes to approval.",de:"Beim Ändern des % erscheint ein Beispiel: «Pergola 4×3 m €6.900 → €5.865». Über dem Limit → Freigabe.",hr:"Uređivanje % prikazuje živi primjer: «Pergola 4×3 m €6.900 → €5.865». Iznad limita ide na odobrenje.",es:"Al editar el % se muestra un ejemplo en vivo: «Pérgola 4×3 m 6 900 € → 5 865 €». Por encima del límite pasa a aprobación."},
+    "set.pipeTitle":{ru:"Воронка «Запросы» — стадии",en:"Pipeline «Requests» — stages",de:"Pipeline «Anfragen» — Stufen",hr:"Tok «Upiti» — faze",es:"Embudo «Solicitudes»: fases"},
+    "th.stage":{ru:"Стадия",en:"Stage",de:"Stufe",hr:"Faza",es:"Fase"},
+    "th.cold":{ru:"Остывает, дн",en:"Cold, d",de:"Kalt, T",hr:"Hladi se, d",es:"Frío, d"},
+    "th.rot":{ru:"Протухает, дн",en:"Rotting, d",de:"Überf., T",hr:"Zastarijeva, d",es:"Estancado, d"},
+    "th.appr":{ru:"Утверждение",en:"Approval",de:"Freigabe",hr:"Odobrenje",es:"Aprobación"},
+    "set.discLimit":{ru:"скидка > лимит",en:"discount > limit",de:"Rabatt > Limit",hr:"popust > limit",es:"descuento > límite"},
+    "empty.quotes":{ru:"Список КП (Активные / Черновики / Архив)",en:"Quotes list (Active / Drafts / Archived)",de:"Angebote (Aktiv / Entwürfe / Archiv)",hr:"Popis ponuda (Aktivne / Nacrti / Arhiva)",es:"Lista de presupuestos (Activos / Borradores / Archivo)"},
+    "empty.quotesSub":{ru:"поиск, фильтры, массовые действия, экспорт",en:"search, filters, bulk actions, export",de:"Suche, Filter, Massenaktionen, Export",hr:"pretraga, filtri, skupne radnje, izvoz",es:"búsqueda, filtros, acciones masivas, exportación"},
+    "empty.custSub":{ru:"карточки контактов и компаний, GDPR-поля",en:"contact and company records, GDPR fields",de:"Kontakt- und Firmenkarten, DSGVO-Felder",hr:"zapisi kontakata i tvrtki, GDPR polja",es:"fichas de contactos y empresas, campos RGPD"},
+    "empty.apprSub":{ru:"см. Пульт суперадмина → блок «На утверждение»",en:"see Superadmin console → approvals block",de:"siehe Superadmin-Konsole → Freigaben",hr:"vidi Superadmin konzolu → blok odobrenja",es:"véase Consola del superadministrador → bloque de aprobaciones"},
+    "status.opened3":{ru:"Открыл КП 3×",en:"Opened quote 3×",de:"Angebot 3× geöffnet",hr:"Otvorio ponudu 3×",es:"Presupuesto abierto 3 veces"},
+    "status.awaitDisc":{ru:"Ждёт утв. скидки",en:"Awaiting discount approval",de:"Rabatt-Freigabe offen",hr:"Čeka odobrenje popusta",es:"Pendiente de aprobación del descuento"},
+    "status.sent":{ru:"Отправлено КП",en:"Quote sent",de:"Angebot gesendet",hr:"Ponuda poslana",es:"Presupuesto enviado"},
+    "status.newInq":{ru:"Новая заявка",en:"New inquiry",de:"Neue Anfrage",hr:"Novi upit",es:"Nueva consulta"},
+    "cardst.call":{ru:"Звонок",en:"Call",de:"Anruf",hr:"Poziv",es:"Llamada"},
+    "cardst.sent":{ru:"Отправлено",en:"Sent",de:"Gesendet",hr:"Poslano",es:"Enviado"},
+    "cardst.disc":{ru:"Утв. скидки",en:"Disc. approval",de:"Rabatt-Freig.",hr:"Odobr. popusta",es:"Aprob. desc."},
+    "card.winOrder":{ru:"Win → заказ",en:"Win → order",de:"Win → Auftrag",hr:"Win → narudžba",es:"Ganado → pedido"},
+    "card.loseReason":{ru:"Lose + причина",en:"Lose + reason",de:"Lose + Grund",hr:"Lose + razlog",es:"Perdido + motivo"},
+    "card.daysIn":{ru:"дн в стадии",en:"d in stage",de:"T in Stufe",hr:"d u fazi",es:"d en la fase"},
+    "card.lock":{ru:"🔒 на утв.",en:"🔒 approval",de:"🔒 Freigabe",hr:"🔒 odobrenje",es:"🔒 aprobación"},
+    "ord.order":{ru:"Заказ",en:"Order",de:"Auftrag",hr:"Narudžba",es:"Pedido"},
+    "ords.new":{ru:"новый заказ",en:"new order",de:"neuer Auftrag",hr:"nova narudžba",es:"pedido nuevo"},
+    "ords.meas":{ru:"замер 04.11",en:"measure 04.11",de:"Aufmaß 04.11",hr:"izmjera 04.11",es:"medición 04.11"},
+    "ords.invoiced":{ru:"счёт выставлен",en:"invoiced",de:"Rechnung gestellt",hr:"račun izdan",es:"facturado"},
+    "ords.install":{ru:"монтаж 06.11",en:"install 06.11",de:"Montage 06.11",hr:"montaža 06.11",es:"montaje 06.11"},
+    "ords.done":{ru:"сдан",en:"handed over",de:"übergeben",hr:"predano",es:"entregado"},
+    "os.inbox":{ru:"Входящие",en:"Inbox",de:"Eingang",hr:"Ulazni",es:"Entrada"},
+    "os.measurement":{ru:"Замер",en:"Measurement",de:"Aufmaß",hr:"Izmjera",es:"Medición"},
+    "os.payment":{ru:"Ожидание оплаты",en:"Awaiting payment",de:"Zahlung offen",hr:"Čeka se plaćanje",es:"Pendiente de pago"},
+    "os.delivery":{ru:"Поставка",en:"Delivery",de:"Lieferung",hr:"Dostava",es:"Entrega"},
+    "os.instock":{ru:"Готово на складе",en:"In stock",de:"Im Lager",hr:"Na skladištu",es:"En almacén"},
+    "os.installation":{ru:"Монтаж",en:"Installation",de:"Montage",hr:"Montaža",es:"Montaje"},
+    "os.done":{ru:"Выполнено",en:"Done",de:"Erledigt",hr:"Završeno",es:"Terminado"}
   };
+  /* every language the interface offers: [code, native name]. Add a language here and its texts in T and in crm-i18n.js;
+     anything not translated yet falls back to English, then to Russian. */
+  var LANGS=[["ru","Русский"],["en","English"],["de","Deutsch"],["hr","Hrvatski"],["es","Español"]];
+  var langOK=function(c){return LANGS.some(function(x){return x[0]===c;});};
   var lang="ru";
-  function tr(k){var m=T[k];return m&&m[lang]!=null?m[lang]:(k||"");}
+  function cfgLang(){return ["ru","en","de","hr"].indexOf(lang)>=0?lang:"en";}
+  function tr(k){var m=T[k];if(!m)return k||"";return m[lang]!=null?m[lang]:(m.en!=null?m.en:(m.ru!=null?m.ru:(k||"")));}
   window.__t=tr;
+  T["top.searchPh"]={es:"Buscar: nombre, teléfono, correo, n.º de presupuesto…",ru:"Поиск: имя, телефон, e-mail, №КП…",en:"Search: name, phone, e-mail, quote no.…",de:"Suche: Name, Telefon, E-Mail, Angebots-Nr.…",hr:"Pretraga: ime, telefon, e-mail, br. ponude…"};
+  T["lang.title"]={es:"Idioma",ru:"Язык",en:"Language",de:"Sprache",hr:"Jezik"};
+  T["tb.today"]={es:"Hoy",ru:"Сегодня",en:"Today",de:"Heute",hr:"Danas"};
+  T["tb.leads"]={es:"Leads",ru:"Лиды",en:"Leads",de:"Leads",hr:"Upiti"};
+  T["tb.new"]={es:"Nuevo lead",ru:"Новый лид",en:"New lead",de:"Neuer Lead",hr:"Novi upit"};
+  T["tb.customers"]={es:"Clientes",ru:"Клиенты",en:"Customers",de:"Kunden",hr:"Klijenti"};
+  T["tb.more"]={es:"Más",ru:"Ещё",en:"More",de:"Mehr",hr:"Više"};
+  T["tb.nav"]={es:"Navegación rápida",ru:"Быстрая навигация",en:"Quick navigation",de:"Schnellnavigation",hr:"Brza navigacija"};
 
   var STAGE_KEYS=["st.new","st.processing","st.proposal","st.negotiation","st.winlose"];
 
@@ -848,26 +1044,45 @@
         vlist:[{v:"v1",cur:1,dK:"q.noDisc",s:"€4 378"}]}}
   ];
   var selIdx=0;
+  /* hooks for the live layer (crm-live.js); in demo mode (no backend) nothing sets them and the demo data below is used */
+  var CRM=window.CRM={tr:tr,esc:esc,$:$,$$:$$,
+    get deals(){return DEALS;},
+    setData:function(deals,req,ord,sel){DEALS=deals;if(req)REQ=req;if(ord)ORD=ord;selIdx=sel>=0?sel:0;},
+    lang:function(){return lang;},cfgLang:function(){return cfgLang();},
+    select:function(i){selectDeal(i);},
+    open:function(i){window.openDeal(i);},
+    rerender:function(){renderRows();renderBoards();renderRecord(DEALS[selIdx]);},
+    rerenderRecord:function(){renderRecord(DEALS[selIdx]);},
+    selIdx:function(){return selIdx;},
+    show:function(id){show(id);}};
 
   /* ===== today list ===== */
   function renderRows(){
     var rows=$("#rows"); rows.innerHTML="";
+    var shown=0;
     DEALS.forEach(function(d,i){
+      if(CRM.filter&&!CRM.filter(d)) return;
+      shown++;
       var el=document.createElement("div");
-      el.className="row"+(i===selIdx?" sel":"");
-      el.innerHTML='<span class="av">'+d.name.replace("Клиент ","")+'</span><div class="mid">'
+      el.className="row"+(i===selIdx?" sel":"");el.dataset.i=i;el.tabIndex=0;
+      el.innerHTML='<span class="av">'+esc(d.av||d.name.replace("Клиент ",""))+'</span><div class="mid">'
         +'<div class="r1"><span class="nm">'+esc(d.name)+'</span><span class="sum tab-num">'+d.q.net+'</span></div>'
-        +'<div class="r2"><span class="score '+d.band+'">'+d.score+'</span>'+(d.hot?'<span class="hotchip">🔥</span>':'')+'<span class="p">'+esc(d.product)+' · '+d.id+'</span></div>'
-        +'<div class="r3"><span class="dot '+d.dot+'"></span><span class="st">'+tr(d.statusK)+'</span><span class="time">'+tr(d.timeK)+'</span></div>'
+        +'<div class="r2"><span class="score '+d.band+'">'+d.score+'</span>'+(d.hot?'<span class="hotchip">🔥</span>':'')+'<span class="p">'+esc(d.product)+' · '+esc(d.id)+'</span></div>'
+        +'<div class="r3"><span class="dot '+d.dot+'"></span><span class="st">'+esc(tr(d.statusK))+'</span><span class="time">'+esc(tr(d.timeK))+'</span></div>'
         +'</div>';
       el.addEventListener("click",function(){ selectDeal(i); });
       rows.appendChild(el);
     });
+    if(!shown&&CRM.emptyList) rows.innerHTML=CRM.emptyList();
+    else if(CRM.rowsFooter) rows.insertAdjacentHTML("beforeend",CRM.rowsFooter());
+    if(CRM.afterRows) CRM.afterRows();
   }
 
   /* ===== record ===== */
   function renderRecord(d){
     var wrap=$("#recordWrap"); if(!wrap) return;
+    if(!d){ wrap.innerHTML=CRM.emptyRecord?CRM.emptyRecord():""; return; }
+    if(d.live&&CRM.renderLive){ CRM.renderLive(d,wrap); return; }
     var sIdx=d.stage;
     var stages=STAGE_KEYS.map(function(k,i){
       var cls=i<sIdx?"cv done":(i===sIdx?"cv now":"cv");
@@ -943,7 +1158,7 @@
 
   function selectDeal(i){
     selIdx=i;
-    $$(".row").forEach(function(x,j){x.classList.toggle("sel",j===i);});
+    $$(".row").forEach(function(x){x.classList.toggle("sel",+x.dataset.i===i);});
     renderRecord(DEALS[i]);
     if(window.innerWidth<=1000) $("#split").classList.add("show-rec");
   }
@@ -968,9 +1183,10 @@
   ];
   function card(c){
     if(c.tagK) return '<div class="kc"><span class="tag">'+tr(c.tagK)+'</span></div>';
-    var nm=c.nOrd?(tr("ord.order")+" "+c.nOrd):esc(c.n);
-    var st=c.stK?tr(c.stK):"";
+    var nm=c.nOrd?(tr("ord.order")+" "+esc(c.nOrd)):esc(c.n);
+    var st=c.stK?esc(tr(c.stK)):"";
     var click=(c.di!=null)?' click" onclick="openDeal('+c.di+')':'';
+    if(c.oid) click=' click" data-oid="'+esc(c.oid);
     return '<div class="kc'+(c.rot?' rot':(c.cold?' cold':''))+click+'">'
       +'<div class="r1"><span class="nm">'+nm+'</span>'+(c.sc!=null?'<span class="score '+(c.hot?'hi':(c.sc>=20?'mid':''))+'">'+c.sc+'</span>':'')+'</div>'
       +'<div class="r2"><span class="p">'+st+'</span><span class="sum tab-num">'+c.sum+'</span></div>'
@@ -979,8 +1195,8 @@
   }
   function board(data){
     return '<div class="kanban">'+data.map(function(col){
-      return '<div class="col"><div class="ch"><span class="nm">'+tr(col.tK)+'</span><span class="mt">'+col.cards.filter(function(x){return !x.tagK;}).length+'</span></div>'
-        +'<div class="sum tab-num">'+(col.sum||'—')+'</div><div class="cards">'+col.cards.map(card).join('')+'</div></div>';
+      return '<div class="col"><div class="ch"><span class="nm">'+tr(col.tK)+'</span><span class="mt">'+(col.total!=null?col.total:col.cards.filter(function(x){return !x.tagK;}).length)+'</span></div>'
+        +'<div class="sum tab-num">'+(col.sum||'—')+'</div><div class="cards">'+col.cards.map(card).join('')+(col.more>0&&CRM.moreLabel?'<button type="button" class="btn sm ghost colmore" data-more="'+col.key+'">'+CRM.moreLabel(col.more)+'</button>':'')+'</div></div>';
     }).join('')+'</div>';
   }
   function renderBoards(){
@@ -995,18 +1211,21 @@
 
   function applyLang(l){
     lang=l;
-    var _cf=$("#cfgFrame"); if(_cf && _cf.getAttribute("src") && _cf.getAttribute("data-lang")!==l){ _cf.setAttribute("data-lang",l); _cf.setAttribute("src","configurator.html?lang="+l); }
+    var _cf=$("#cfgFrame"); if(_cf && _cf.getAttribute("src") && _cf.getAttribute("data-lang")!==l){ _cf.setAttribute("data-lang",l); _cf.setAttribute("src","configurator.html?lang="+cfgLang()); }
     $$("[data-i18n]").forEach(function(el){var m=T[el.getAttribute("data-i18n")]; if(m&&m[l]!=null) el.textContent=m[l];});
     $$("[data-i18n-ph]").forEach(function(el){var m=T[el.getAttribute("data-i18n-ph")]; if(m&&m[l]!=null) el.setAttribute("placeholder",m[l]);});
     document.documentElement.lang=l;
     var _ll=$("#langLbl"); if(_ll)_ll.textContent=l.toUpperCase();
-    $$("#langMenu button").forEach(function(b){b.setAttribute("aria-current",b.dataset.l===l?"true":"false");});
+    var _gl=$("#gLangLbl"); if(_gl)_gl.textContent=l.toUpperCase();
+    $$("#langMenu button, #langMenuTop button, #gLangMenu button").forEach(function(b){b.setAttribute("aria-current",b.dataset.l===l?"true":"false");});
+    $$("[data-i18n-aria]").forEach(function(el){el.setAttribute("aria-label",tr(el.getAttribute("data-i18n-aria")));});
+    if(CRM.onLang) CRM.onLang(l);
     renderRows(); renderBoards(); renderRecord(DEALS[selIdx]);
     try{localStorage.setItem("dbp_lang",l);}catch(e){}
   }
 
   function cfgHide(){try{var doc=$("#cfgFrame").contentDocument;if(doc&&!doc.getElementById("__emb")){var st=doc.createElement("style");st.id="__emb";st.textContent=".f-lang,.f-pro{display:none!important}";(doc.head||doc.documentElement).appendChild(st);}}catch(e){}}
-  function loadCfg(){var f=$("#cfgFrame");if(!f)return;if(f.getAttribute("data-lang")!==lang){f.setAttribute("data-lang",lang);f.setAttribute("src","configurator.html?lang="+lang);}}
+  function loadCfg(){var f=$("#cfgFrame");if(!f)return;if(f.getAttribute("data-lang")!==lang){f.setAttribute("data-lang",lang);f.setAttribute("src","configurator.html?lang="+cfgLang());}}
   $("#cfgFrame")&&$("#cfgFrame").addEventListener("load",cfgHide);
   var links=$$(".rail a"), screens=$$(".screen");
   function show(id){
@@ -1015,6 +1234,7 @@
     if(location.hash.replace("#","")!==id) history.replaceState(null,"","#"+id);
     $("#rail").classList.remove("open");$("#scrim").classList.remove("on");
     if(id==="configurator"){loadCfg();}
+    if(CRM.onShow) CRM.onShow(id);
     $(".content").scrollTop=0;
   }
   window.show=show;
@@ -1037,15 +1257,26 @@
   });
   $("#scrim").addEventListener("click",function(){$("#rail").classList.remove("open");$("#scrim").classList.remove("on");});
 
-  $$("#langMenu button").forEach(function(b){b.addEventListener("click",function(){applyLang(b.dataset.l);});});
+  /* the same list in three places: login screen, top bar, Settings */
+  function langItems(){return LANGS.map(function(x){return '<button type="button" role="menuitem" data-l="'+x[0]+'"><b>'+x[0].toUpperCase()+'</b> '+x[1]+'</button>';}).join("");}
+  ["gLangMenu","langMenuTop","langMenu"].forEach(function(id){var m=document.getElementById(id);if(m)m.innerHTML=langItems();});
+  $$("#langMenu button, #langMenuTop button").forEach(function(b){b.addEventListener("click",function(){applyLang(b.dataset.l);closeTopLang();});});
+  var topBtn=$("#langBtn"),topMenu=$("#langMenuTop");
+  function closeTopLang(){if(topMenu){topMenu.classList.remove("open");topBtn.setAttribute("aria-expanded","false");}}
+  if(topBtn){
+    topBtn.addEventListener("click",function(e){e.stopPropagation();var o=topMenu.classList.toggle("open");topBtn.setAttribute("aria-expanded",o?"true":"false");});
+    document.addEventListener("click",closeTopLang);
+    document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTopLang();});
+  }
 
   var saved="ru"; try{saved=localStorage.getItem("dbp_lang")||"ru";}catch(e){}
-  if(["ru","en","de","hr"].indexOf(saved)<0) saved="ru";
+  if(!langOK(saved)) saved="ru";
   applyLang(saved);
   window.__setLang=applyLang;window.__lang=function(){return lang;};
 })();
 </script>
-<script>/*THREE_MIN*/</script>
+<script>/*CRM_I18N*/</script>
+<script>/*CRM_LIVE*/</script>
 <script>
 (function(){
   var $=function(id){return document.getElementById(id);};
@@ -1057,25 +1288,14 @@
   var glb=$("gLangBtn"),glm=$("gLangMenu");
   function markGL(){var cur=(window.__lang?window.__lang():"ru");var lbl=$("gLangLbl");if(lbl)lbl.textContent=cur.toUpperCase();if(glm)[].forEach.call(glm.children,function(b){b.setAttribute("aria-current",b.dataset.l===cur?"true":"false");});}
   if(glb&&glm){glb.addEventListener("click",function(e){e.stopPropagation();glm.classList.toggle("open");});[].forEach.call(glm.children,function(b){b.addEventListener("click",function(){if(window.__setLang)window.__setLang(b.dataset.l);markGL();glm.classList.remove("open");});});document.addEventListener("click",function(){glm.classList.remove("open");});markGL();}
-  $("gForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gStatus");if(!$("gEmail").value.trim()||!$("gPass").value){s.textContent=t("gate.needBoth");s.className="gstatus warn";return;}s.textContent="";opening=true;setTimeout(function(){document.body.classList.add("authed");},550);});
-  $("gReqForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gReqStatus");var need=["gReqCompany","gReqFirst","gReqLast","gReqLocation","gReqEmail"].some(function(id){return !$(id).value.trim();});if(need){s.textContent=t("gate.needAll");s.className="gstatus warn";return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("gReqEmail").value.trim())){s.textContent=t("gate.badMail");s.className="gstatus warn";$("gReqEmail").focus();return;}s.textContent="";s.className="gstatus";$("gModal").hidden=false;});
+  $("gForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gStatus");if(!$("gEmail").value.trim()||!$("gPass").value){s.textContent=t("gate.needBoth");s.className="gstatus warn";return;}s.textContent="";if(window.CRM&&CRM.login){CRM.login($("gEmail").value.trim(),$("gPass").value,s,function(){opening=true;$("gscene").classList.add("open");setTimeout(function(){document.body.classList.add("authed");},550);});return;}opening=true;$("gscene").classList.add("open");setTimeout(function(){document.body.classList.add("authed");},550);});
+  $("gReqForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gReqStatus");var need=["gReqCompany","gReqFirst","gReqLast","gReqLocation","gReqEmail"].some(function(id){return !$(id).value.trim();});if(need){s.textContent=t("gate.needAll");s.className="gstatus warn";return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("gReqEmail").value.trim())){s.textContent=t("gate.badMail");s.className="gstatus warn";$("gReqEmail").focus();return;}s.textContent="";s.className="gstatus";if(window.CRM&&CRM.requestAccess){CRM.requestAccess({company:$("gReqCompany").value.trim(),first_name:$("gReqFirst").value.trim(),last_name:$("gReqLast").value.trim(),location:$("gReqLocation").value.trim(),email:$("gReqEmail").value.trim()},s,function(){$("gModal").hidden=false;});return;}$("gModal").hidden=false;});
   function gCloseModal(){$("gModal").hidden=true;$("gReqForm").reset();$("gReqView").hidden=true;$("gLogin").hidden=false;}
   $("gModalOk")&&$("gModalOk").addEventListener("click",gCloseModal);
   $("gModal")&&$("gModal").addEventListener("click",function(e){if(e.target===$("gModal"))gCloseModal();});
   // DEMO: generates a sample invite link. In the live cabinet this calls the create-invite Edge Function.
   var invGen=$("invGen"); if(invGen){invGen.addEventListener("click",function(){var tok=(window.crypto&&crypto.randomUUID?crypto.randomUUID():String(Math.random())+String(Math.random())).replace(/-/g,"");var base=location.origin+location.pathname.replace(/[^/]*$/,"");$("invLink").value=base+"join.html?token="+tok;$("invOut").hidden=false;});}
   var invCopy=$("invCopy"); if(invCopy){invCopy.addEventListener("click",function(){var i=$("invLink");i.select();try{document.execCommand("copy");}catch(e){}if(navigator.clipboard)navigator.clipboard.writeText(i.value);invCopy.textContent=t("inv.copied");setTimeout(function(){invCopy.textContent=t("inv.copy");},1500);});}
-  var canvas=$("gscene"),reduce=matchMedia("(prefers-reduced-motion:reduce)").matches,isMobile=Math.min(innerWidth,innerHeight)<560;
-  var renderer,scene,camera,root,lamellae=[],raf,sprite,baseYaw=0;
-  function mk(){var c=document.createElement("canvas");c.width=c.height=64;var g=c.getContext("2d"),rg=g.createRadialGradient(32,32,0,32,32,32);rg.addColorStop(0,"rgba(255,255,255,1)");rg.addColorStop(.25,"rgba(255,255,255,.85)");rg.addColorStop(.55,"rgba(255,255,255,.22)");rg.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=rg;g.fillRect(0,0,64,64);var tx=new THREE.Texture(c);tx.needsUpdate=true;return tx;}
-  function ap(p,c,s){var geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute(p,3));geo.setAttribute("color",new THREE.Float32BufferAttribute(c,3));return new THREE.Points(geo,new THREE.PointsMaterial({size:s,map:sprite,vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}));}
-  function build(){renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,isMobile?1.5:2));renderer.setClearColor(0,0);scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(42,1,.1,100);root=new THREE.Group();scene.add(root);var W=4.3,D=3,H=2,cW=new THREE.Color(0xffc980),cH=new THREE.Color(0xff8a4d),cC=new THREE.Color(0x5f8bff),cS=new THREE.Color(0x8aa0bd);var N=isMobile?7:9,A=isMobile?26:34;for(var i=0;i<N;i++){var z=-D/2+D*(i/(N-1)),fr=i/(N-1),P=[],C=[];for(var x=0;x<A;x++)for(var r=0;r<3;r++){P.push(-W/2+W*(x/(A-1))+(Math.random()-.5)*.03,(Math.random()-.5)*.02,(r-1)*.12+(Math.random()-.5)*.03);var b=cW.clone().lerp(cC,fr);if(Math.random()<.14)b.lerp(cH,.5);var k=1.2+Math.random()*.6;C.push(b.r*k,b.g*k,b.b*k);}var sl=ap(P,C,.08);sl.position.set(0,H,z);root.add(sl);lamellae.push(sl);}var fp=[],fc=[];function sp(x,y,z){fp.push(x,y,z);var b=1+Math.random()*.45;fc.push(cS.r*b,cS.g*b,cS.b*b);}[[-W/2,-D/2],[W/2,-D/2],[-W/2,D/2],[W/2,D/2]].forEach(function(c){var ST=isMobile?40:54,PW=.12;for(var k=0;k<ST;k++){var yy=H*(k/(ST-1));for(var n=0;n<7;n++)sp(c[0]+(Math.random()-.5)*PW,yy,c[1]+(Math.random()-.5)*PW);}});for(var k2=0;k2<120;k2++){var xx=-W/2+W*(k2/119);sp(xx,H,-D/2);sp(xx,H,D/2);}for(var m=0;m<90;m++){var zz=-D/2+D*(m/89);sp(-W/2,H,zz);sp(W/2,H,zz);}root.add(ap(fp,fc,.06));var s2=[],c2=[],sn=isMobile?700:1300;for(var q=0;q<sn;q++){var rr=9+Math.random()*16,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);s2.push(rr*Math.sin(ph)*Math.cos(th),Math.abs(rr*Math.cos(ph))*.6+1,rr*Math.sin(ph)*Math.sin(th));var w=.5+Math.random()*.5;c2.push(w,w,w*1.05);}var st=ap(s2,c2,.055);scene.add(st);build._st=st;root.position.y=-.75;resize();}
-  function resize(){var w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;var por=h>w;baseYaw=por?0.6:0;camera.position.set(por?0.5:0,por?2.7:1.2,por?5.6:5.5);camera.lookAt(0,por?0.35:.8,0);camera.updateProjectionMatrix();}
-  addEventListener("resize",function(){if(renderer)resize();});
-  var t0=performance.now();
-  function frame(now){var tt=(now-t0)/1000;root.rotation.y=(reduce?0:Math.sin(tt*.05)*.12)+baseYaw;root.rotation.x=-.02;for(var i=0;i<lamellae.length;i++){var fr=i/(lamellae.length-1),tg;if(opening)tg=1.32;else if(reduce)tg=.42;else tg=.42+Math.sin(tt*.6+fr*2.2)*.5;lamellae[i].rotation.x+=(tg-lamellae[i].rotation.x)*.06;}if(build._st&&!reduce)build._st.rotation.y=tt*.006;renderer.render(scene,camera);raf=requestAnimationFrame(frame);}
-  if(window.THREE){sprite=mk();try{build();raf=requestAnimationFrame(frame);}catch(e){canvas.style.display="none";}}else{canvas.style.display="none";}
-  document.addEventListener("visibilitychange",function(){if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=null;}else if(!raf&&renderer){t0=performance.now();raf=requestAnimationFrame(frame);}});
 })();
 </script>
 

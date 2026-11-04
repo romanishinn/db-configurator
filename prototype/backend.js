@@ -95,7 +95,11 @@
     });
     setTimeout(() => f.email.focus(), 0);
   }
-  const toCabinet = () => { location.href = BACKEND.cabinet; };
+  // inside the CRM (this page is its configurator frame) "back" tells the CRM; standalone it opens the CRM page
+  const toCabinet = () => {
+    if (window.parent !== window) { try { window.parent.postMessage({ type: 'db-crm-back' }, location.origin); } catch (e) {} return; }
+    location.href = BACKEND.cabinet;
+  };
 
   /* ---------- modeling: a top bar to save the built pergola as a quote to a lead ---------- */
   function modelBar() {

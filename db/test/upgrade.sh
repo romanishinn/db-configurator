@@ -65,9 +65,7 @@ do $$ begin
 end $$;
 select 'upgrade checks passed' as result;
 SQL
+# later migrations (after 0009), each in its own transaction as db/migrate.sh does
+for f in $(ls migrations/*.sql | sed -n '/0009_manager_role/,$p' | tail -n +2); do $P -1 -f "$f" >/dev/null; done
 $P -c 'truncate public.leads, public.profiles, public.lead_events, public.notifications cascade; delete from auth.users' >/dev/null
-for f in migrations/*.sql; do
-  case "$f" in migrations/000[1-9]_*) continue;; esac
-  $P -1 -f "$f" >/dev/null
-done
 $P -f test/access.sql

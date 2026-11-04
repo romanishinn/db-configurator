@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,6 +21,7 @@ jobs:
         run: sh tools/harness/redlines.sh
         env:
           REDLINE_TERMS: ${{ secrets.REDLINE_TERMS }}
+          REDLINE_HISTORY: '1'
           REDLINE_BASE: ${{ github.event.pull_request.base.sha || github.event.before || 'origin/main' }}
       - run: pnpm -r typecheck
       - run: pnpm -r test

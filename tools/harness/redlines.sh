@@ -15,7 +15,7 @@ loc() { cut -d: -f1,2 | sort -u | tr '\n' ' '; }   # file:line only, never the m
 
 # 1. secrets. The publishable "sb_publishable_" key is public by design; localhost test URLs are fine.
 # -o prints only the match, so the localhost exception cannot hide a real secret sitting on the same line
-hits=$($G -o -E -e 'sb_secret_|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|service_role[^a-z_]*[:=] *["'\'']eyJ|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}|postgres(ql)?://[^ :/@]+:[^ @$]{4,}@[^ /:"'\'']*' -- . "$SELF" | grep -Ev '@(localhost|127\.0\.0\.1)$' | loc)
+hits=$($G -o -E -e 'sb_secret_|sbp_[A-Za-z0-9]{20,}|phx_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|service_role[^a-z_]*[:=] *["'\'']eyJ|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}|postgres(ql)?://[^ :/@]+:[^ @$]{4,}@[^ /:"'\'']*' -- . "$SELF" | grep -Ev '@(localhost|127\.0\.0\.1)$' | loc)
 [ -n "$hits" ] && say "возможный секрет в: $hits"
 
 # 2. forbidden names
@@ -52,7 +52,7 @@ bad=$(git ls-files -co --exclude-standard | grep -Ei '(^|/)handoff[^/]*\.md$|\.(
 
 # 5. history (REDLINE_HISTORY=1): the repository is public, so old commits count too. Prints commit hashes only.
 if [ "${REDLINE_HISTORY:-}" = 1 ]; then
-  h=$(git log --all -E -G'sb_secret_|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}' --format=%h -- . ':(exclude)tools/harness/redlines.sh' | tr '\n' ' ')
+  h=$(git log --all -E -G'sb_secret_|sbp_[A-Za-z0-9]{20,}|phx_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}' --format=%h -- . ':(exclude)tools/harness/redlines.sh' | tr '\n' ' ')
   [ -n "$h" ] && say "возможный секрет в истории, коммиты: $h"
   if [ -n "$terms" ]; then
     f=$(printf '%s\n' "$terms" | while IFS= read -r t; do git log --all -i -F -S"$t" --format=%h -- . ':(exclude)tools/harness/redlines.sh' | tr '\n' ' '; done)

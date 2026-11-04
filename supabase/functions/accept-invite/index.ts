@@ -52,12 +52,22 @@ Deno.serve(async (req) => {
   if (!url || !serviceKey) return json({ error: "server_misconfigured" }, 500, h);
   const sb = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-  // 1) validate the invite: exists, not used, not expired
+  // 1) take the invite in ONE statement: of several parallel requests with the same token only one gets it
+  const nowIso = new Date().toISOString();
   const { data: inv } = await sb.from("invites")
-    .select("id, role, discount_group_id, used_at, expires_at").eq("token", token).single();
-  if (!inv) return json({ error: "invite_invalid" }, 400, h);
-  if (inv.used_at) return json({ error: "invite_used" }, 400, h);
-  if (new Date(inv.expires_at).getTime() < Date.now()) return json({ error: "invite_expired" }, 400, h);
+    .update({ used_at: nowIso })
+    .eq("token", token).is("used_at", null).gt("expires_at", nowIso)
+    .select("id, role, discount_group_id, org_id, email").maybeSingle();
+  if (!inv) {
+    // say why: unknown, already used or expired
+    const { data: old } = await sb.from("invites").select("used_at, expires_at").eq("token", token).maybeSingle();
+    if (!old) return json({ error: "invite_invalid" }, 400, h);
+    if (old.used_at) return json({ error: "invite_used" }, 400, h);
+    return json({ error: "invite_expired" }, 400, h);
+  }
+  const release = async () => { await sb.from("invites").update({ used_at: null, used_by: null }).eq("id", inv.id); };
+  // an invite made for one e-mail address is for that address only
+  if (inv.email && inv.email.toLowerCase() !== email) { await release(); return json({ error: "invite_email_mismatch" }, 403, h); }
 
   // the discount cap for the chosen group (becomes the person's personal limit)
   let discountLimit = 0;
@@ -72,20 +82,21 @@ Deno.serve(async (req) => {
     user_metadata: { full_name: `${firstName} ${lastName}`, location },
   });
   if (cErr || !created?.user) {
+    await release();   // nothing was created: the invite stays usable
     const msg = cErr?.message || "create_failed";
     const status = /already been registered|already exists/i.test(msg) ? 409 : 500;
     return json({ error: "create_failed", message: msg }, status, h);
   }
   const uid = created.user.id;
 
-  // 3) the auth_user_created trigger made a client profile — promote it to the invited role
+  // 3) the auth_user_created trigger made a client profile — promote it to the invited role (and company, if the invite names one)
   const { error: pErr } = await sb.from("profiles")
-    .update({ role: inv.role, discount_limit: discountLimit, full_name: `${firstName} ${lastName}`, active: true })
+    .update({ role: inv.role, discount_limit: discountLimit, full_name: `${firstName} ${lastName}`, active: true, ...(inv.org_id ? { org_id: inv.org_id } : {}) })
     .eq("id", uid);
   if (pErr) return json({ error: "profile_failed", message: pErr.message }, 500, h);
 
-  // 4) burn the invite
-  await sb.from("invites").update({ used_at: new Date().toISOString(), used_by: uid, email }).eq("id", inv.id);
+  // 4) the invite is already burnt (step 1); record who used it
+  await sb.from("invites").update({ used_by: uid, email }).eq("id", inv.id);
 
   return json({ ok: true, email, role: inv.role }, 200, h);
 });

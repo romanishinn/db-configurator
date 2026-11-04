@@ -390,16 +390,38 @@ body:has(#bk-modelbar) .app { margin-top: 46px; }
 .f-cat-h { font-family: var(--f-display); font-size: 19px; margin: 4px 0 2px; letter-spacing: -0.01em; }
 .f-prods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 @media (max-width: 560px) { .f-prods { grid-template-columns: 1fr; } }
-.f-prod { display: grid; gap: 5px; align-content: start; text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 16px; cursor: pointer; transition: border-color .12s, transform .12s, box-shadow .12s; }
+.f-prod { display: grid; gap: 5px; align-content: start; text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 16px; cursor: pointer; transition: border-color .15s, transform .22s cubic-bezier(.22, .8, .3, 1), box-shadow .25s; }
 .f-prod:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.14); }
+.f-prod:not(.locked):active { transform: translateY(0) scale(.985); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
 /* illustration banner: a clear picture of the model instead of an abstract glyph */
-.f-prod-art { display: block; margin-bottom: 8px; padding: 8px 12px; border-radius: 10px; background: linear-gradient(155deg, rgba(168,119,20,.14), rgba(168,119,20,.03)); }
+.f-prod-art { display: block; margin-bottom: 8px; padding: 10px 12px 4px; border-radius: 10px; overflow: hidden; background: linear-gradient(155deg, rgba(168,119,20,.14), rgba(168,119,20,.03)); }
 .f-prod-svg { display: block; width: 100%; height: auto; }
-.art-frame, .art-beam, .art-ground, .art-car, .art-wheel { stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
-.art-ground { opacity: .5; }
-.art-slat { fill: var(--accent); opacity: .92; }
-.art-sun { stroke: var(--accent); stroke-width: 2; fill: none; opacity: .85; }
-.art-open { stroke: var(--accent); stroke-width: 2; opacity: .55; }
+/* model illustrations: one frame, one floor and one shadow for all models; colours come from the theme */
+.art-shadow { fill: var(--ink); opacity: .1; }
+.art-shadow.dark { opacity: .2; }
+.art-ground { stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; opacity: .5; fill: none; }
+.art-tile { stroke: var(--muted); stroke-width: 1; stroke-linecap: round; opacity: .28; fill: none; }
+.art-post { fill: var(--ink); opacity: .82; } .art-post.back { opacity: .3; }
+.art-beam { fill: var(--ink); opacity: .9; } .art-beam.back { opacity: .34; }
+.art-hi { fill: #fff; opacity: .3; }
+.art-roof { fill: var(--muted); fill-opacity: .3; stroke: var(--ink); stroke-opacity: .42; stroke-width: 1.2; stroke-linejoin: round; }
+.art-sun { fill: var(--accent); stroke: none; }
+.art-slat { opacity: .96; transform-box: fill-box; transform-origin: 50% 50%; }
+.louv .art-slat { transform: rotate(26deg); }
+.art-open { stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; opacity: .55; }
+.art-car { fill: var(--muted); fill-opacity: .42; stroke: var(--ink); stroke-opacity: .75; stroke-width: 1.6; stroke-linejoin: round; }
+.art-win { fill: var(--panel); opacity: .92; }
+.art-line { stroke: var(--ink); stroke-opacity: .4; stroke-width: 1.2; stroke-linecap: round; }
+.art-tire { fill: var(--ink); opacity: .92; } .art-hub { fill: var(--panel); }
+.art-lamp { fill: var(--accent); } .art-lamp.dim { opacity: .55; }
+@media (prefers-reduced-motion: no-preference) {
+  .art-slat { transition: transform .7s cubic-bezier(.22, .8, .3, 1); }
+  .art-open { transition: opacity .45s; }
+  .f-prod:not(.locked):hover .louv .art-slat, .f-prod:not(.locked):focus-visible .louv .art-slat { transform: rotate(58deg); }
+  .slid .art-slat { transform: translateX(0); }
+  .f-prod:not(.locked):hover .slid .art-slat, .f-prod:not(.locked):focus-visible .slid .art-slat { transform: translateX(calc(var(--i) * 13.8px)) scaleX(3.1); }
+  .f-prod:not(.locked):hover .slid .art-open, .f-prod:not(.locked):focus-visible .slid .art-open { opacity: 0; }
+}
 .f-prod-ic { font-size: 28px; line-height: 1; color: var(--accent); }
 .f-prod b { font-size: 16px; letter-spacing: -0.01em; }
 .f-prod-tag { color: var(--accent); font-size: 12px; font-weight: 600; }
@@ -479,10 +501,11 @@ body:has(#bk-modelbar) .app { margin-top: 46px; }
 
 /* locked / coming-soon product card — greyed with a padlock, not selectable */
 .f-prod { position: relative; }
-.f-prod.locked { cursor: not-allowed; opacity: .6; filter: grayscale(1); }
+.f-prod.locked { cursor: not-allowed; opacity: .7; filter: grayscale(1); }
 .f-prod.locked:hover { border-color: var(--line); transform: none; }
 .f-prod.locked .f-prod-ic { color: var(--muted); }
-.f-prod-lock { position: absolute; top: 10px; right: 10px; font-size: 15px; line-height: 1; filter: grayscale(1); opacity: .9; }
+.f-prod-lock { position: absolute; top: 16px; right: 16px; z-index: 2; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--panel); color: var(--muted); box-shadow: 0 1px 6px rgba(0,0,0,.18), inset 0 0 0 1px var(--line); }
+.f-prod-lock svg { width: 13px; height: 13px; display: block; }
 
 /* Catalog screen: products only — the 3D stage and toolbar stay hidden
    until a model is chosen, then the full configurator appears. */
@@ -558,7 +581,7 @@ body.cust.cat-only .f-lead { font-size: 14px; color: var(--muted); }
 
 /* product illustration banner: warm gold wash matching the accent */
 .f-prod-art { background: linear-gradient(155deg, rgba(168,119,20,.12), rgba(168,119,20,.02)); }
-.f-prod-feats i { background: var(--accent-soft); border-color: #ead9b4; color: #6a5420; }
+.f-prod-feats i { background: var(--accent-soft); border-color: #ead9b4; color: #6a5420; border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); color: color-mix(in srgb, var(--accent) 55%, var(--ink)); }
 .f-prod-tag { color: var(--accent); }
 .f-prod-pr .from { font-weight: 400; }
 

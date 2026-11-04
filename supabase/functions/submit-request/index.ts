@@ -80,12 +80,16 @@ Deno.serve(async (req) => {
     (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
   const form = new URLSearchParams({ secret, response: token });
   if (ip) form.set("remoteip", ip);
-  let outcome: { success?: boolean } = {};
+  let outcome: { success?: boolean; hostname?: string } = {};
   try {
     const vr = await fetch(SITEVERIFY, { method: "POST", body: form });
     outcome = await vr.json();
   } catch { return fail("server_error", 502, h); }  // Cloudflare unreachable: the page offers "retry"
   if (!outcome.success) return fail("turnstile_failed", 403, h);
+  // the token must have been issued on one of our sites (a token from another site that uses the same widget is refused);
+  // when the site moves to another address, set TURNSTILE_HOSTNAMES (comma separated) next to the secret
+  const okHosts = (Deno.env.get("TURNSTILE_HOSTNAMES") ?? "romanishinn.github.io").split(",").map((x) => x.trim()).filter(Boolean);
+  if (outcome.hostname && !okHosts.includes(outcome.hostname)) return fail("turnstile_failed", 403, h);
 
   // 2) create the lead + quote, server-side, as service_role
   const url = Deno.env.get("SUPABASE_URL");
