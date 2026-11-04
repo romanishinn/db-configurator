@@ -457,7 +457,8 @@
     const steps = stepNames.map((t, i) => {
       const cls = l.stage === 'won' ? 'cv done' : i < idx ? 'cv done' : i === idx ? 'cv now' : 'cv';
       const small = i === idx ? '<small>' + (l.stage === 'lost' ? _('Отказ · ') : l.stage === 'won' ? _('Заказ · ') : (STAGE_RU[l.stage] !== stepNames[i] ? STAGE_RU[l.stage] + ' · ' : '')) + d.curDays + _(' дн</small>') : '';
-      return '<div class="' + cls + '"><span>' + t + '</span>' + small + '</div>';
+      // an open lead: tap a stage to move the lead there (back or forward)
+      return open ? '<button type="button" class="' + cls + '" data-act="goto" data-i="' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><span>' + t + '</span>' + small + '</button>' : '<div class="' + cls + '"><span>' + t + '</span>' + small + '</div>';
     }).join('');
     let own = '';
     if (open) own = !l.assigned_to ? (sees() ? _('<button class="btn sm" data-act="take">Взять себе</button>') : '') : (mine || sees() ? _('<button class="btn sm" data-act="transfer">Передать</button>') : '');
@@ -596,6 +597,13 @@
       const go = () => act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to]);
       if (to === 'won') return dialog({ title: _('Оформить заказ?'), sub: _('Лид станет клиентом, а в «Заказах» появится карточка.'), foot: [{ label: _('Нет'), run: (c) => c() }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await go(); c(); } }] });
       return go();
+    }
+    if (act0 === 'goto') {
+      const i = +a.dataset.i;
+      if (!isOpen(l) || i === STAGE_IDX[l.stage]) return;
+      if (i === 4) return dialog({ title: _('Итог сделки'), sub: _('Выберите, чем закончилась сделка.'), foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отказ'), run: (c) => { c(); loseDialog(l); } }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await act(async () => { await run(sb.from('leads').update({ stage: 'won' }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU.won); c(); } }] });
+      const to = ['new', 'contacted', 'quote_issued', 'negotiation'][i];
+      return act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to]);
     }
     if (act0 === 'setnext') return nextDialog(l);
     if (act0 === 'done') return act(async () => {
