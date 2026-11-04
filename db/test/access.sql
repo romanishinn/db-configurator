@@ -215,7 +215,7 @@ insert into public.projects (id, title, district, country, options, photos, publ
   ('00000000-0000-0000-0000-0000000000c1', 'Villa mit Glasdach, Wien 13.', 'Wien 13', 'AT', '{bioklimatisch,glas}', '{a/1.jpg}', false, true),
   ('00000000-0000-0000-0000-0000000000c2', 'Entwurf', 'Linz', 'AT', '{zip}', '{}', false, false);
 -- 0010: publishing needs a recorded consent, so the published fixture gets one first
-insert into public.project_private (project_id, consent_at, consent_channel, consent_version) values ('00000000-0000-0000-0000-0000000000c1', now(), 'paper', 'v0');
+insert into public.project_private (project_id, consent_at, consent_channel, consent_version, consent_district) values ('00000000-0000-0000-0000-0000000000c1', now(), 'paper', 'v0', true);
 update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000c1';
 -- the public sees published projects only
 select pg_temp.as_anon();
@@ -371,9 +371,9 @@ select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n
 select pg_temp.as_user(:'graz1');
 select public.submit_project(:'o_ok', 'Foto vom Montag', true) as pj \gset
 select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_ok'), 'ALREADY_SUBMITTED'), 'one active project per order');
-select pg_temp.check((select title from public.projects where id = :'pj') = 'Bioklimatische Pergola, 8010, ' || to_char(now() at time zone 'Europe/Vienna', 'YYYY')
+select pg_temp.check((select title from public.projects where id = :'pj') = 'Bioklimatische Pergola, ' || to_char(now() at time zone 'Europe/Vienna', 'YYYY')
   and (select country || district || published::text || cardinality(photos) from public.projects where id = :'pj') = 'AT8010false0'
-  and (select installed_on from public.projects where id = :'pj') = (now() at time zone 'Europe/Vienna')::date, 'the request is a draft filled from the order');
+  and (select installed_on from public.projects where id = :'pj') = (now() at time zone 'Europe/Vienna')::date, 'the request is a draft filled from the order, the title carries no district');
 select pg_temp.check((select count(*) from public.project_private where project_id = :'pj' and submitted_by = :'graz1' and order_id = :'o_ok' and dealer_note = 'Foto vom Montag') = 1, 'the sender and the order are recorded');
 select pg_temp.check((select count(*) from public.projects where id = :'pj') = 1 and (select count(*) from public.project_private) = 1, 'a dealer sees his own request');
 select pg_temp.as_user(:'graz2');
@@ -395,9 +395,9 @@ select pg_temp.check(pg_temp.fails($$insert into public.projects (title, distric
 update public.projects set title = 'hacked' where id = :'pj';
 delete from public.projects where id = :'pj';
 select pg_temp.check((select title from public.projects where id = :'pj') <> 'hacked', 'a dealer cannot update or delete his request in projects');
-select pg_temp.check(pg_temp.fails(format($q$insert into public.project_private (project_id, submitted_by) values (%L, %L)$q$, '00000000-0000-0000-0000-0000000000c2', :'graz1'), 'row-level'), 'a dealer cannot insert into project_private');
-update public.project_private set consent_at = now(), dealer_note = 'x' where project_id = :'pj';
-select pg_temp.check((select consent_at is null and dealer_note = 'Foto vom Montag' from public.project_private where project_id = :'pj'), 'a dealer cannot grant consent to himself');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.project_private (project_id, submitted_by) values (%L, %L)$q$, '00000000-0000-0000-0000-0000000000c2', :'graz1'), 'permission denied'), 'a dealer cannot insert into project_private');
+select pg_temp.check(pg_temp.fails(format($q$update public.project_private set consent_at = now() where project_id = %L$q$, :'pj'), 'permission denied'), 'a dealer cannot grant consent to himself');
+select pg_temp.check(pg_temp.fails(format($q$update public.project_private set dealer_note = 'x' where project_id = %L$q$, :'pj'), 'permission denied'), 'a dealer cannot edit project_private');
 select pg_temp.check(pg_temp.fails($$delete from public.project_private$$, 'permission denied'), 'a dealer cannot delete from project_private');
 
 -- photos: attach_photos
@@ -488,5 +488,86 @@ select public.record_consent('00000000-0000-0000-0000-0000000000c5', 'paper', 'v
 update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000c5';
 select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c5') and (select submitted_by is null from public.project_private where project_id = '00000000-0000-0000-0000-0000000000c5'), 'record_consent creates the private row of an office project');
 select pg_temp.check(pg_temp.fails(format($q$select public.complete_installation(%L)$q$, '00000000-0000-0000-0000-000000000099'), 'ORDER_NOT_FOUND'), 'completing a missing order is refused');
+
+-- ---------- 15b. review round: office window on orders, confirmation by the office, photos, district, direct writes ----------
+select pg_temp.as_root();
+insert into public.orders (id, lead_id, stage) values ('00000000-0000-0000-0000-0000000000e6', '00000000-0000-0000-0000-0000000000d1', 'done');  -- 'done' confirmed by a superdealer only
+insert into public.orders (id, lead_id) values ('00000000-0000-0000-0000-0000000000e7', '00000000-0000-0000-0000-0000000000d1');             -- the dealer sets 'done' himself
+\set o_sd '00000000-0000-0000-0000-0000000000e6'
+\set o_dl '00000000-0000-0000-0000-0000000000e7'
+insert into public.lead_events (lead_id, order_id, by, kind, order_from, order_to)
+  values ('00000000-0000-0000-0000-0000000000d1', :'o_sd', :'superdealer', 'stage', 'inbox', 'done');
+select pg_temp.as_user(:'graz1');
+update public.orders set stage = 'done' where id = :'o_dl';
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_sd'), 'NOT_INSTALLED'), 'a superdealer''s done does not count as the office''s confirmation');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_dl'), 'NOT_INSTALLED'), 'a done set by the dealer does not count');
+select pg_temp.check(pg_temp.fails($$select * from public.list_orders_for_installation()$$, 'FORBIDDEN'), 'a dealer cannot list orders for installation');
+select pg_temp.as_user(:'superdealer');
+select pg_temp.check(pg_temp.fails($$select * from public.list_orders_for_installation()$$, 'FORBIDDEN'), 'a superdealer cannot list orders for installation');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads) = (select count(*) from public.leads where created_by = :'manager' or assigned_to = :'manager'), 'the manager still sees no foreign leads');
+select pg_temp.check((select count(*) from public.list_orders_for_installation() where order_id in (:'o_inbox', :'o_self', :'o_sd', :'o_dl')) = 4
+  and (select needs_confirmation from public.list_orders_for_installation() where order_id = :'o_inbox') is false
+  and (select bool_and(needs_confirmation) from public.list_orders_for_installation() where order_id in (:'o_self', :'o_sd', :'o_dl'))
+  and (select contact_name || postcode from public.list_orders_for_installation() where order_id = :'o_inbox') = 'Order G18010',
+  'the manager lists a dealer''s open orders and those whose done lacks the office''s confirmation');
+select pg_temp.check((select count(*) from public.list_orders_for_installation() where order_id in (:'o_ok', :'o_light', :'o_foreign')) = 0, 'orders confirmed by the office are not listed');
+select pg_temp.check(pg_temp.fails(format($q$select count(*) from public.orders where id = %L$q$, :'o_dl'), 'never') is false and (select count(*) from public.orders) = 0, 'the listing gives the manager no access to the orders table');
+select public.complete_installation(:'o_dl');
+select public.complete_installation(:'o_dl');
+select public.complete_installation(:'o_sd');
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.lead_events where order_id = :'o_dl' and order_to = 'done' and by = :'manager' and comment = 'installation confirmed by the office') = 1, 'confirming a done order adds one event, the second call adds none');
+select pg_temp.check((select stage from public.orders where id = :'o_dl') = 'done', 'confirming does not change the stage');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.list_orders_for_installation() where order_id in (:'o_dl', :'o_sd')) = 0, 'confirmed orders leave the listing');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.list_orders_for_installation() where order_id = :'o_inbox') = 1, 'the superadmin lists orders too');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select * from public.list_orders_for_installation()$$, 'permission denied'), 'the public cannot list orders for installation');
+
+-- the dealer's done, then the confirmation: the request passes; blank note becomes null; no district in the title
+select pg_temp.as_user(:'graz1');
+select public.submit_project(:'o_dl', '   ', true) as pj7 \gset
+select public.submit_project(:'o_sd', 'ok', true) as pj6 \gset
+select pg_temp.check((select dealer_note is null from public.project_private where project_id = :'pj7') and (select title not like '%8010%' from public.projects where id = :'pj7'), 'a blank note is stored as null');
+-- photos: one list, only once, never empty
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, '{}')$q$, :'pj6'), 'TOO_FEW_PHOTOS'), 'an empty photo list is refused');
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, null)$q$, :'pj6'), 'TOO_FEW_PHOTOS'), 'a null photo list is refused');
+select format('%s/%s.jpg', :'pj6', gen_random_uuid()) as ph6, format('%s/%s.jpg', :'pj7', gen_random_uuid()) as ph7, format('%s/%s.jpg', :'pj6', gen_random_uuid()) as ph6b \gset
+select public.attach_photos(:'pj6', array[:'ph6']);
+select public.attach_photos(:'pj7', array[:'ph7']);
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, array[%L])$q$, :'pj6', :'ph6b'), 'PROJECT_HAS_PHOTOS'), 'photos are accepted only while the list is empty');
+select pg_temp.check((select photos from public.projects where id = :'pj6') = array[:'ph6'], 'the first list stays');
+-- the district rule, both directions
+select pg_temp.as_user(:'manager');
+select public.record_consent(:'pj6', 'call', 'v1', false, false);
+select public.record_consent(:'pj7', 'call', 'v1', true, true);
+select pg_temp.check(pg_temp.fails(format($q$update public.projects set published = true, title = 'Pergola 8010', district = '8010' where id = %L$q$, :'pj6'), 'DISTRICT_NOT_ALLOWED'), 'without the district consent the district may not be in the title');
+select pg_temp.check(pg_temp.fails(format($q$update public.projects set published = true, title = 'Pergola graz', district = 'GRAZ' where id = %L$q$, :'pj6'), 'DISTRICT_NOT_ALLOWED'), 'the district check ignores case');
+update public.projects set published = true, title = 'Pergola, Steiermark', district = 'Graz' where id = :'pj6';
+select pg_temp.check((select published from public.projects where id = :'pj6'), 'without the district consent a title without the district is published');
+update public.projects set published = true, title = 'Pergola 8010' where id = :'pj7';
+select pg_temp.check((select published from public.projects where id = :'pj7'), 'with the district consent the district may be in the title');
+-- project_private is written by the functions only
+select pg_temp.check(pg_temp.fails(format($q$update public.project_private set rejected_reason = null where project_id = %L$q$, :'pjl'), 'permission denied'), 'a manager cannot clear a rejection directly');
+select pg_temp.check(pg_temp.fails(format($q$update public.project_private set consent_at = now() where project_id = %L$q$, :'pjl'), 'permission denied'), 'a manager cannot set a consent directly');
+select pg_temp.check(pg_temp.fails($$insert into public.project_private (project_id) values ('00000000-0000-0000-0000-0000000000c5')$$, 'permission denied'), 'a manager cannot insert into project_private directly');
+select pg_temp.as_user(:'admin');
+select pg_temp.check(pg_temp.fails(format($q$update public.project_private set consent_at = now() where project_id = %L$q$, :'pjl'), 'permission denied'), 'not even the superadmin writes project_private directly');
+-- a withdrawal must not collide with the same order sent again
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format($q$select public.unpublish_project(%L, null)$q$, :'pjl'), 'ALREADY_SUBMITTED'), 'unpublishing a rejected request while the order is sent again is refused cleanly');
+-- the unique index itself (as owner, bypassing every function)
+select pg_temp.as_root();
+insert into public.projects (id, title, district, country) values ('00000000-0000-0000-0000-0000000000c9', '', '', 'AT');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.project_private (project_id, order_id) values ('00000000-0000-0000-0000-0000000000c9', %L)$q$, :'o_ok'), 'project_private_one_active_per_order'), 'the database itself allows one active project per order');
+-- nobody but logged-in users reaches the functions
+select pg_temp.check(not has_function_privilege('anon', f, 'execute'), 'anon cannot execute ' || f)
+  from unnest(array['public.submit_project(uuid,text,boolean)', 'public.attach_photos(uuid,text[])', 'public.reject_project(uuid,text,text)',
+    'public.unpublish_project(uuid,text)', 'public.record_consent(uuid,text,text,boolean,boolean)', 'public.complete_installation(uuid)',
+    'public.list_orders_for_installation()', 'public.notify_managers(text,uuid,text)', 'public.order_installed_by_office(uuid)']) f;
+select pg_temp.check(not has_function_privilege('authenticated', f, 'execute'), 'authenticated cannot execute ' || f)
+  from unnest(array['public.notify_managers(text,uuid,text)', 'public.order_installed_by_office(uuid)']) f;
 
 select 'access tests passed' as result;
