@@ -12,9 +12,12 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   - refusal (`lost`) needs a reason; every stage change, assignment, transfer, comment and quote is in the history;
   - quote number `DDMMYY-N` from the server, price valid 14 days, prices frozen (a change is a new quote);
   - a client keeps at most 3 quotes; discount only on pergola / sides / text positions and within the personal limit;
-  - superdealer may only make managers; nobody raises his own role or limit;
+  - only the superadmin sets the manager role (managers register themselves); nobody raises his own role or limit;
   - in-app notifications: superadmins on every new request, the assignee on assignment / transfer.
-- `db/test/access.sql`: 37 checks of the above, run by `sh db/test/run.sh` (local Postgres) and in the "Database" workflow.
+- `db/test/access.sql`: checks of the above, run by `sh db/test/run.sh` (local Postgres) and in the "Database" workflow.
+- Storage `project-photos`: a manager has only INSERT and SELECT (no UPDATE/DELETE: rename and upsert would bypass the delete
+  ban); UPDATE/DELETE are the superadmin's. A photo a manager removes from a project stays as a file in the public bucket
+  and opens by its old link; the superadmin cleans up. Known limitation until the decision on dealers submitting projects.
 - `db/migrate.sh` + workflow `.github/workflows/db.yml`: tests on every change, then applies new migrations to Supabase
   (only when the `SUPABASE_DB_URL` secret exists; tracked in `ops.migrations`).
 - `prototype/backend.js` (inactive while `BACKEND.url` is empty): Pro opens only after login (e-mail + password, reset link);
