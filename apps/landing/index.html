@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- noindex until the [EINSETZEN] / [ZU BESTÄTIGEN] marks are resolved with real data and the owner has confirmed the public promises -->
-<meta name="robots" content="noindex">
+<!-- open for search engines and AI crawlers (owner, 04.11). The yellow EINSETZEN / ZU BESTÄTIGEN marks are still on the page: resolve them before this goes to main. -->
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"D&B Pergolen","description":"Bioklimatische und verschiebbare Pergolen: konfigurieren, Richtpreis, Montage durch eigene Teams.","telephone":"+436767202149","address":{"@type":"PostalAddress","streetAddress":"Schönburgstraße 30","postalCode":"1040","addressLocality":"Wien","addressCountry":"AT"}}</script>
 <title>Pergola konfigurieren: bioklimatisch &amp; verschiebbar | D&amp;B Pergolen</title>
 <meta name="description" content="Bioklimatische und verschiebbare Pergolen für Ihre Terrasse. Konfigurieren Sie Ihre Pergola in Bewegung, mit Richtpreis. Montage durch eigene Teams [zu bestätigen].">
 <style>
@@ -247,8 +248,8 @@ html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
           <h3>Wien</h3>
           <p>Beratung, Konfiguration, Angebot und Betreuung Ihres Projekts in Österreich. <i class="todo">ZU BESTÄTIGEN: Aufgabenverteilung</i></p>
           <ul>
-            <li>Adresse: <i class="todo">EINSETZEN: Adresse Wien</i></li>
-            <li>Telefon: <i class="todo">EINSETZEN: Telefon Wien</i></li>
+            <li>Adresse: Schönburgstraße 30, 1040 Wien</li>
+            <li>Telefon: <a href="tel:+436767202149">0676 7202149</a></li>
             <li>Schauraum: Sehen Sie eine Pergola vor Ort. <i class="todo">ZU BESTÄTIGEN</i> Öffnungszeiten: <i class="todo">EINSETZEN</i></li>
           </ul>
           <a href="#anfrage" class="btn btn-ghost" style="align-self:flex-start;margin-top:.4rem">Termin im Schauraum vereinbaren</a><span class="small"><i class="todo">ZU BESTÄTIGEN: Schauraum</i></span>
@@ -258,8 +259,7 @@ html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
           <h3>Zagreb</h3>
           <p>Unterstützung für Projekte und Montage in Kroatien. <i class="todo">ZU BESTÄTIGEN: Aufgaben der Filiale; Montageteam mit 26 Monteuren</i></p>
           <ul>
-            <li>Adresse: <i class="todo">EINSETZEN: Adresse Zagreb</i></li>
-            <li>Telefon: <i class="todo">EINSETZEN: Telefon Zagreb</i></li>
+            <li>Kontaktdaten folgen in Kürze.</li>
           </ul>
         </article>
       </div>
@@ -382,8 +382,8 @@ html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
           <p style="color:var(--ink-2);margin-top:.8rem">Hinterlassen Sie uns Ihre Daten, wir melden uns bei Ihnen. Zusage: innerhalb von 2 Stunden <i class="todo">ZU BESTÄTIGEN</i>.</p>
           <p style="color:var(--ink-2);margin-top:.8rem">Lieber gleich Ihre Pergola zusammenstellen? <a href="index.html?lang=de">Zum Konfigurator</a>, dort können Sie Ihre Konfiguration direkt mit der Anfrage senden.</p>
           <div style="margin-top:1.4rem;display:flex;flex-direction:column;gap:.7rem">
-            <div class="contact-line">Wien: <b><i class="todo">EINSETZEN: Adresse und Telefon</i></b></div>
-            <div class="contact-line">Zagreb: <b><i class="todo">EINSETZEN: Adresse und Telefon</i></b></div>
+            <div class="contact-line">Wien: <b>Schönburgstraße 30, 1040 Wien</b></div>
+            <div class="contact-line">Telefon: <b><a href="tel:+436767202149">0676 7202149</a></b></div>
             <div class="contact-line">E-Mail: <b><i class="todo">EINSETZEN: E-Mail</i></b></div>
           </div>
         </div>
@@ -408,7 +408,7 @@ html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
   <div class="wrap">
     <div class="foot-grid">
       <span class="brand"><svg class="mk" viewBox="0 0 120 90" aria-hidden="true" style="color:#c79a4e"><use href="#perg"/></svg>D&amp;B Pergolen · Wien · Zagreb</span>
-      <div style="font-size:.9rem;max-width:34ch"><i class="todo">EINSETZEN: Adresse · Telefon · E-Mail</i><br><i class="todo">Impressum</i> · <i class="todo">Datenschutz</i></div>
+      <div style="font-size:.9rem;max-width:34ch">Schönburgstraße 30, 1040 Wien · <a href="tel:+436767202149">0676 7202149</a> · <i class="todo">EINSETZEN: E-Mail</i><br><i class="todo">Impressum</i> · <i class="todo">Datenschutz</i></div>
     </div>
     <p class="fine"><i class="todo">EINSETZEN: Firmenname, UID, Firmenbuchnummer, Firmenbuchgericht</i><br>Preise für Privatkunden inkl. 20&nbsp;% USt. <i class="todo">ZU BESTÄTIGEN</i> Preise im Konfigurator sind Richtpreise; verbindlich nach Aufmaß <i class="todo">ZU BESTÄTIGEN</i>. © 2026 <i class="todo">EINSETZEN: Firmenname</i></p>
   </div>
@@ -464,7 +464,7 @@ html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
     var contact={name:name,address:ort,postcode:(ort.match(/\b\d{4}\b/)||[''])[0],note:f.msg.value.trim()};
     if(isMail)contact.email=k;else contact.phone=k;
     btn.disabled=true;btn.textContent='Wird gesendet …';
-    var fail=function(){btn.disabled=false;btn.textContent='Rückruf anfordern';show('Das hat leider nicht geklappt. Bitte versuchen Sie es noch einmal oder rufen Sie uns an (Telefonnummer: [EINSETZEN]).');};
+    var fail=function(){btn.disabled=false;btn.textContent='Rückruf anfordern';show('Das hat leider nicht geklappt. Bitte versuchen Sie es noch einmal oder rufen Sie uns an: 0676 7202149.');};
     (noBackend?Promise.resolve('preview'):token()).then(function(tok){
       if(!tok)throw new Error('turnstile');
       if(noBackend)return {ok:true};
