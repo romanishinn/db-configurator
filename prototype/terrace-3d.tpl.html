@@ -486,7 +486,7 @@ const lawnGeo = new THREE.PlaneGeometry(200, 200, 50, 50);
 { const pos = lawnGeo.attributes.position, col = new Float32Array(pos.count * 3), c = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i), n = 0.5 + 0.25 * Math.sin(x * 0.9 + y * 0.35) + 0.25 * Math.sin(y * 1.3 - x * 0.45 + 2); // 0..1
-    c.setRGB(0.30 + 0.07 * n, 0.50 + 0.10 * n, 0.22 + 0.05 * n); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    c.setRGB(0.12 + 0.04 * n, 0.28 + 0.07 * n, 0.09 + 0.03 * n); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
   }
   lawnGeo.setAttribute('color', new THREE.BufferAttribute(col, 3)); }
 const ground = new THREE.Mesh(lawnGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1 }));
@@ -1450,8 +1450,10 @@ function refit() { scheduleSettle(); }
 /** Camera moves. setView(kind) is instant (old callers, the PDF picture); setView(kind, {smooth:true}) glides ~0.5 s;
  *  window.__camInstant = true makes every move instant (snapshots, tests). */
 let camReady = false, camTr = null, settleT = 0;
-function stopInertia() { // OrbitControls damping keeps a leftover rotation/pan after a programmatic move and the view "drifts": drop it
+function stopInertia() { // OrbitControls damping keeps a leftover rotation/pan after a programmatic move and the view "drifts": drop it, keep the pose
+  const p = camera.position.clone(), t = controls.target.clone();
   controls.enableDamping = false; controls.update(); controls.enableDamping = true;
+  camera.position.copy(p); controls.target.copy(t); camera.lookAt(t);
 }
 function endTr() {
   if (!camTr) return;
@@ -1464,6 +1466,7 @@ function glideTo(pos, tgt, maxPolar, maxDist, ms) {
   if (instant || (camera.position.distanceTo(pos) < 1e-3 && controls.target.distanceTo(tgt) < 1e-3)) {
     controls.maxPolarAngle = maxPolar; controls.maxDistance = maxDist; camera.position.copy(pos); controls.target.copy(tgt); controls.update(); return;
   }
+  stopInertia();
   camTr = { p0: camera.position.clone(), t0: controls.target.clone(), pos: pos.clone(), tgt: tgt.clone(), maxPolar, maxDist, s: performance.now(), ms: ms || 500 };
   controls.minDistance = 0; controls.maxPolarAngle = Math.PI; controls.maxDistance = 1000; // free limits while gliding; the final ones are set at the end
 }
@@ -1474,14 +1477,16 @@ function stepTr(now) {
   camera.position.lerpVectors(t.p0, t.pos, e); controls.target.lerpVectors(t.t0, t.tgt, e); camera.lookAt(controls.target);
 }
 /** do the pergola and its dimension labels fit the frame with the margin m (1 = frame edge)? */
-function fitsFrame(kind, m) {
+function fitsFrame(kind, m, minFill) {
   if (!state.options.length) return true;
   const { W, D } = bounds(), pts = [];
   if (kind === 'under') { for (const x of [-0.1, W + 0.1]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z)); for (const x of [0, W]) pts.push(new THREE.Vector3(x, 0.3, D)); }
-  else if (kind === 'inside') { for (const x of [0, W]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z)); }
+  else if (kind === 'box' || kind === 'inside') { for (const x of [0, W]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z)); }
   else for (const x of [-0.9, W + 0.3]) for (const y of [0, H + 0.25]) for (const z of [-0.2, D + 1.35]) pts.push(new THREE.Vector3(x, y, z));
   camera.updateMatrixWorld();
-  return pts.every((p) => { const v = p.clone().project(camera); return v.z <= 1 && Math.abs(v.x) <= m && Math.abs(v.y) <= m; });
+  let mx = 0;
+  const inside = pts.every((p) => { const v = p.clone().project(camera); mx = Math.max(mx, Math.abs(v.x), Math.abs(v.y)); return v.z <= 1 && Math.abs(v.x) <= m && Math.abs(v.y) <= m; });
+  return inside && mx >= (minFill || 0); // minFill: the object must not be lost far away either (e.g. a frame that was 0 px wide)
 }
 /** after changes settle: nothing moves while the object is in frame; a view the user turned only backs away; otherwise a soft re-fit */
 function scheduleSettle() { clearTimeout(settleT); settleT = setTimeout(settleCamera, camReady ? 300 : 0); }
@@ -1489,12 +1494,11 @@ function settleCamera() {
   if (PHOTO.pts || !state.options.length) return;
   if (!camReady) { setView(lastView); return; }
   if (camTr) { const g = camTr; camTr = null; controls.minDistance = 3; controls.maxPolarAngle = g.maxPolar; controls.maxDistance = g.maxDist; } // restart from where it is
-  stopInertia();
-  if (fitsFrame(lastView, 0.95)) return;
+  if (fitsFrame(userMoved ? 'box' : lastView, 0.95, userMoved ? 0 : 0.3)) return;
   if (!userMoved) { setView(lastView, { smooth: true }); return; }
   const tgt = controls.target.clone(), off = camera.position.clone().sub(tgt), keep = camera.position.clone();
   let k = 1;
-  for (let i = 0; i < 30 && !fitsFrame(lastView, 0.86); i++) { k *= 1.06; camera.position.copy(tgt).addScaledVector(off, k); camera.updateMatrixWorld(); }
+  for (let i = 0; i < 30 && !fitsFrame('box', 0.86); i++) { k *= 1.06; camera.position.copy(tgt).addScaledVector(off, k); camera.updateMatrixWorld(); }
   const to = camera.position.clone(); camera.position.copy(keep); camera.updateMatrixWorld();
   if (k > 1) glideTo(to, tgt, controls.maxPolarAngle, Math.max(controls.maxDistance, off.length() * k * 2.5), 500);
 }
