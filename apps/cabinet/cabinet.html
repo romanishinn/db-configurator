@@ -320,7 +320,7 @@ function visibleLeads(){
   if(t==='site')return leads.filter(isSiteFree);
   if(t==='free')return leads.filter(l=>!l.assigned_to);
   if(t==='stale')return leads.filter(l=>l.stale);
-  if(t==='given')return leads.filter(l=>l.created_by&&l.created_by!==me.id);
+  if(t==='given')return leads.filter(l=>l.created_by!==me.id&&!isSiteFree(l)); // assigned site requests count as given by D&B too
   if(t==='mine')return leads.filter(l=>l.created_by===me.id);
   return leads;
 }

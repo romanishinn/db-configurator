@@ -525,16 +525,16 @@ function fadeFence(dt) { // a side fades out while the camera stands outside of 
 }
 /** day / evening look of the surroundings; envK 0 = day, 1 = evening, eased in the loop so the night does not switch on abruptly */
 let envK = 0, envGoalInit = false, envT = 0;
-const BG_DAY = new THREE.Color(0xc5d1d9), BG_NIGHT = new THREE.Color(0x1b2530), GR_NIGHT = new THREE.Color(0x56606a), bgTmp = new THREE.Color();
+const BG_DAY = new THREE.Color(0xc5d1d9), BG_NIGHT = new THREE.Color(0x1b2530), GR_NIGHT = new THREE.Color(0x56606a), bgTmp = new THREE.Color(), bgPhoto = new THREE.Color(), TILE_NIGHT = new THREE.Color(0x14181c);
 const envFog = new THREE.Fog(0x1b2530, 200, 400);
 function applyEnv() {
   const k = envK;
   bgTmp.copy(BG_DAY).lerp(BG_NIGHT, k);
-  scene.background = PHOTO.url ? null : bgTmp.clone();
+  scene.background = PHOTO.url ? null : bgPhoto.copy(bgTmp);
   hemi.intensity = 0.85 + (0.25 - 0.85) * k; sun.intensity = 0.95 + (0.12 - 0.95) * k;
   groundMat.color.setRGB(1, 1, 1).lerp(GR_NIGHT, k);
   for (const f of fenceSides) f.mesh.material.color.copy(FENCE_DAY).lerp(FENCE_NIGHT, k);
-  if (M.tileLine) M.tileLine.color.setRGB(0.46, 0.42, 0.36).lerp(new THREE.Color(0x14181c), k);
+  if (M.tileLine) M.tileLine.color.setRGB(0.46, 0.42, 0.36).lerp(TILE_NIGHT, k);
   // light haze only in the evening, eased in (near/far come in from far away)
   // fog distances are relative to the viewing distance: the pergola itself stays clear
   if (k > 0.01 && !PHOTO.url) { envFog.color.copy(bgTmp); const dd = Math.max(8, camera.position.distanceTo(controls.target)); envFog.near = dd * (20 + (1.6 - 20) * k); envFog.far = dd * (40 + (6 - 40) * k); scene.fog = envFog; } else scene.fog = null;
@@ -1461,6 +1461,8 @@ function endTr() {
   controls.minDistance = 3; controls.maxPolarAngle = t.maxPolar; controls.maxDistance = t.maxDist;
   camera.position.copy(t.pos); controls.target.copy(t.tgt); controls.update();
 }
+/** the user grabbed the camera mid-glide: stop where it is (final limits back, pose untouched) */
+function stopTr() { if (!camTr) return; const g = camTr; camTr = null; controls.minDistance = 3; controls.maxPolarAngle = g.maxPolar; controls.maxDistance = g.maxDist; }
 function glideTo(pos, tgt, maxPolar, maxDist, ms) {
   const instant = !camReady || window.__camInstant;
   if (instant || (camera.position.distanceTo(pos) < 1e-3 && controls.target.distanceTo(tgt) < 1e-3)) {
@@ -1577,7 +1579,7 @@ function insideView() {
   controls.maxDistance = D + 4;
   controls.update();
 }
-controls.addEventListener('start', () => { endTr(); userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
+controls.addEventListener('start', () => { stopTr(); userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
 const labels = $('labels');
 let labelDefs = [];
 function renderLabels(opt) {

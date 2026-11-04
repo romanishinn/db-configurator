@@ -252,6 +252,12 @@
   function svcList() { const base = q().total, out = []; if (!(base > 0)) return out; if (svcOn('install')) out.push({ k: 'install', a: Math.floor(base * svcRate('install') / 10) * 10 }); if (svcOn('deliv')) out.push({ k: 'deliv', a: Math.floor(base * svcRate('deliv') / 10) * 10 }); return out; }
   function svcTotal() { return svcList().reduce((s, x) => s + x.a, 0); }
   function grandNet() { return q().total + svcTotal(); }
+  // request payload: the net sum the customer sees (with installation / delivery), the services as lines of their own
+  function requestLines() { return [...q().lines, ...svcList().map((x) => ({ k: 'svc_' + x.k, a: x.a }))]; }
+  // the stored number belongs to the configuration that was sent; after a change the offer gets a local number again
+  let dbSig = '';
+  const sigNow = () => JSON.stringify([snapshot(), svcOn('install'), svcOn('deliv')]);
+  const dbNoNow = () => (dbNo && dbSig === sigNow() ? dbNo : '');
   function notInclNote(t) { const m = []; if (!svcOn('deliv')) m.push(t.deliveryLc); if (!svcOn('install')) m.push(t.montLc); return t.qExclPre + [...m, t.qExclBase].join(', ') + '.'; }
 
   /* ---------- rendering ---------- */
@@ -363,8 +369,8 @@
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
     const to = step < 3 ? nextStep() : 3;
     const noBE = !window.Backend; // without the database there is no request form: the offer step ends with the PDF
-    const nextLabel = step === 3 ? (noBE ? 'PDF' : sending ? esc(t.sending) : esc(t.send)) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
-    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" ${step === 3 ? (noBE ? 'data-act="print"' : 'data-go="form"') : 'data-go="1"'} ${ok && !sending ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
+    const nextLabel = step === 3 ? (noBE ? 'PDF' : sending ? esc(t.sending) : sentOk ? esc(t.sentB(reqNo)) : esc(t.send)) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
+    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" ${step === 3 ? (noBE ? 'data-act="print"' : 'data-go="form"') : 'data-go="1"'} ${ok && !sending && !(step === 3 && sentOk && !noBE) ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
   }
 
   /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
@@ -711,7 +717,7 @@
 
 
   /* ---------- the visitor's path on the site (goes with the request, nothing is sent anywhere else) ----------
-   * Kept in the browser only; the customer sees this block in the e-mail before sending it.
+   * Kept in the browser only; it is sent with the request and stored in the CRM, never shown to the customer.
    * ASSUMPTION: "active" time = page visible and a tap, key or scroll in the last 60 s; interest points below are a first guess. */
   /* ---------- visitor analytics (PostHog) ----------
    * Loaded only in the customer view and only after the visitor accepted the banner (consent kept in Store 'db.consent').
@@ -723,6 +729,7 @@
     const AT = {
       de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', yes: 'Einverstanden', no: 'Ablehnen' },
       en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', yes: 'Accept', no: 'Decline' },
+      hr: { t: 'Smijemo li anonimno analizirati kako koristite konfigurator kako bismo ga poboljšali? Unosi poput imena ili telefona nikada se ne bilježe.', yes: 'Prihvaćam', no: 'Odbij' },
       ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', yes: 'Согласен', no: 'Отказаться' },
     };
     function load() {
@@ -898,12 +905,15 @@
     let r; try { r = await window.Backend.submitRequest(contact, journeyText()); } catch (e) { r = { ok: false, error: 'network' }; }
     sending = false;
     if (r && r.ok) {
-      sentOk = true; reqNo = r.number; dbNo = r.number; logEv('заявка № ' + r.number);
+      sentOk = true; reqNo = r.number; dbNo = r.number; dbSig = sigNow(); logEv('заявка № ' + r.number);
       A.track('request_sent', { total_gross: Math.round(gross(grandNet())), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
     } else {
       reqErr = (r && r.error) || 'server_error'; logEv('ошибка отправки: ' + reqErr);
       A.track('request_failed', { code: reqErr });
-      if (reqErr === 'contact_required' || reqErr === 'invalid_payload') { formErr = { name: form.name.trim() ? '' : t.required, email: t.badEmail }; if (!formErr.name) delete formErr.name; }
+      if (reqErr === 'contact_required' || reqErr === 'invalid_payload') { // mark the field that fails the same check as the form's
+        if (!form.name.trim()) formErr.name = t.required;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
+      }
     }
     render();
   }
@@ -974,7 +984,7 @@
     // top left: the customer from the request form (empty lines to fill in by hand when nothing is typed yet)
     const cl = [form.name, form.phone, form.email].map((x) => String(x || '').trim());
     const client = `<div class="client"><div class="lb">${t.qClient}</div>${cl.some(Boolean) ? `${cl[0] ? `<b>${esc(cl[0])}</b>` : ''}${cl[1] ? `<div>${esc(cl[1])}</div>` : ''}${cl[2] ? `<div>${esc(cl[2])}</div>` : ''}` : '<div class="ln"></div><div class="ln"></div><div class="ln"></div>'}</div>`;
-    const no = quoteNum || dbNo || nextQuoteNo(false); // after a stored request the offer carries the database number
+    const no = quoteNum || dbNoNow() || nextQuoteNo(false); // after a stored request the offer carries the database number
     return `<div class="q"><div class="hdr">${client}<div class="meta">${logoImg}<h1>${t.qTitle}</h1>${t.qNo} ${no} · ${t.qDate} ${date}${BR.name ? `<div class="brand">${esc(BR.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
       <h2>${t.qConfig}</h2><table class="facts"><tbody>${facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
@@ -1000,8 +1010,8 @@
   let titleBefore = null;
   function pdfTitle() { if (titleBefore === null) titleBefore = document.title; document.title = 'Quotation ' + quoteNum; }
   function printQuote() {
-    quoteNum = dbNo || nextQuoteNo(true); // the request number once stored; else every generated PDF gets its own local number
-    pdfTitle(); A.track('pdf_generated', { quote_no: quoteNum, total_gross: Math.round(gross(q().total)) });
+    quoteNum = dbNoNow() || nextQuoteNo(true); // the request number once stored; else every generated PDF gets its own local number
+    pdfTitle(); A.track('pdf_generated', { quote_no: quoteNum, total_gross: Math.round(gross(grandNet())) });
     $('quote').innerHTML = buildQuote(); fitQuote();
     document.body.classList.add('printing');
     setTimeout(() => window.print(), 60);
@@ -1011,7 +1021,7 @@
   window.addEventListener('beforeprint', () => {
     if (!isCust() || !curOpt()) return;
     // printed from the browser menu: this PDF needs its own number too (the button has already taken one)
-    if (!quoteNum) { quoteNum = dbNo || nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
+    if (!quoteNum) { quoteNum = dbNoNow() || nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
     pdfTitle();
     document.body.classList.add('printing');
   });
@@ -1427,6 +1437,6 @@
     if (saved && JSON.stringify(saved) !== JSON.stringify(snapshot())) resumeOffer = saved;
   }
   // what the partner login (backend.js) needs from the configurator
-  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 3) render(); } catch (e) { /* not ready */ } } };
+  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, requestTotal: () => grandNet(), requestLines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 3) render(); } catch (e) { /* not ready */ } } };
   setMode(mode);
 })();

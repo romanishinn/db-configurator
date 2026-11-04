@@ -174,7 +174,7 @@
   // too_many_requests, contact_required, invalid_payload, server_error) or 'network' (no connection / not JSON).
   async function submitRequest(contact, journey) {
     const A = window.DBApp; if (!A) return { ok: false, number: null, error: 'server_error' };
-    const quote = { catalog: A.catalog, config: A.snapshot(), lines: A.lines(), total_net: Math.round(A.totalNet() * 100) / 100 };
+    const quote = { catalog: A.catalog, config: A.snapshot(), lines: A.requestLines ? A.requestLines() : A.lines(), total_net: Math.round((A.requestTotal ? A.requestTotal() : A.totalNet()) * 100) / 100 }; // what the customer sees (net, with services)
     const token = await turnstileToken();
     if (!token) return { ok: false, number: null, error: 'turnstile_missing' }; // blocker or timeout: tell the visitor, never lose it silently
     try {

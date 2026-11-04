@@ -59,7 +59,7 @@ export function buildT(CATALOGUE) {
       required: 'Bitte ausfüllen', badEmail: 'Bitte eine gültige E-Mail-Adresse eingeben',
       // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
       privacy: 'Mit dem Absenden übermitteln Sie Ihre Kontaktdaten, die Konfiguration und Ihren Weg durch die Seite. Wir nutzen das nur für Ihr Angebot und die Kontaktaufnahme.',
-      sending: 'Wird gesendet …', sentT: (n) => `Anfrage Nr. ${n} eingegangen`, sent: 'Wir melden uns persönlich bei Ihnen. Das Angebot speichern Sie unten als PDF.', retry: 'Erneut versuchen',
+      sending: 'Wird gesendet …', sentB: (n) => `Gesendet Nr. ${n}`, sentT: (n) => `Anfrage Nr. ${n} eingegangen`, sent: 'Wir melden uns persönlich bei Ihnen. Das Angebot speichern Sie unten als PDF.', retry: 'Erneut versuchen',
       errs: { server_error: 'Das hat nicht geklappt. Bitte versuchen Sie es erneut.', network: 'Keine Verbindung. Bitte prüfen Sie Ihr Netz und versuchen Sie es erneut.', turnstile_missing: 'Die Sicherheitsprüfung wurde nicht geladen (Werbeblocker?). Bitte erneut versuchen.', turnstile_failed: 'Die Sicherheitsprüfung ist fehlgeschlagen. Bitte erneut versuchen.', too_many_requests: 'Zu viele Anfragen. Bitte rufen Sie uns an.', contact_required: 'Bitte Name und gültige E-Mail-Adresse eingeben.', invalid_payload: 'Bitte prüfen Sie Ihre Angaben.' },
       faqT: 'Häufige Fragen',
       faq: [
@@ -141,7 +141,7 @@ export function buildT(CATALOGUE) {
       required: 'Please fill in', badEmail: 'Please enter a valid e-mail address',
       // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
       privacy: 'By sending, you share your contact details, the configuration and how you moved through the site. We use it only for your quote and to get in touch.',
-      sending: 'Sending …', sentT: (n) => `Request no. ${n} received`, sent: 'We will get back to you personally. Save the quote as a PDF below.', retry: 'Try again',
+      sending: 'Sending …', sentB: (n) => `Sent no. ${n}`, sentT: (n) => `Request no. ${n} received`, sent: 'We will get back to you personally. Save the quote as a PDF below.', retry: 'Try again',
       errs: { server_error: 'That did not work. Please try again.', network: 'No connection. Check your network and try again.', turnstile_missing: 'The security check did not load (ad blocker?). Please try again.', turnstile_failed: 'The security check failed. Please try again.', too_many_requests: 'Too many requests. Please call us.', contact_required: 'Please enter your name and a valid e-mail address.', invalid_payload: 'Please check your details.' },
       faqT: 'Questions',
       faq: [
@@ -222,7 +222,7 @@ export function buildT(CATALOGUE) {
       required: 'Заполните, пожалуйста', badEmail: 'Введите правильный e-mail',
       // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
       privacy: 'Отправляя запрос, вы передаёте контакты, конфигурацию и ход выбора на сайте. Мы используем это только для расчёта и связи.',
-      sending: 'Отправляем …', sentT: (n) => `Заявка № ${n} принята`, sent: 'Мы свяжемся с вами лично. Сохраните предложение в PDF ниже.', retry: 'Повторить',
+      sending: 'Отправляем …', sentB: (n) => `Отправлено № ${n}`, sentT: (n) => `Заявка № ${n} принята`, sent: 'Мы свяжемся с вами лично. Сохраните предложение в PDF ниже.', retry: 'Повторить',
       errs: { server_error: 'Не получилось. Попробуйте ещё раз.', network: 'Нет связи. Проверьте интернет и повторите.', turnstile_missing: 'Проверка безопасности не загрузилась (блокировщик?). Повторите.', turnstile_failed: 'Проверка безопасности не пройдена. Повторите.', too_many_requests: 'Слишком много заявок. Позвоните нам.', contact_required: 'Укажите имя и верный e-mail.', invalid_payload: 'Проверьте введённые данные.' },
       faqT: 'Частые вопросы',
       faq: [
@@ -308,7 +308,7 @@ export function buildT(CATALOGUE) {
       required: 'Molimo ispunite', badEmail: 'Molimo unesite ispravnu e-mail adresu',
       // [ПРОВЕРИТЬ ЮРИСТОМ] shown only with the database on (the request form exists only then)
       privacy: 'Slanjem upita šaljete kontakt, konfiguraciju i svoj put kroz stranicu. Koristimo to samo za ponudu i javljanje vama.',
-      sending: 'Šaljem …', sentT: (n) => `Upit br. ${n} primljen`, sent: 'Javit ćemo vam se osobno. Ponudu spremite kao PDF ispod.', retry: 'Pokušaj ponovno',
+      sending: 'Šaljem …', sentB: (n) => `Poslano br. ${n}`, sentT: (n) => `Upit br. ${n} primljen`, sent: 'Javit ćemo vam se osobno. Ponudu spremite kao PDF ispod.', retry: 'Pokušaj ponovno',
       errs: { server_error: 'Nije uspjelo. Pokušajte ponovno.', network: 'Nema veze. Provjerite mrežu i pokušajte ponovno.', turnstile_missing: 'Sigurnosna provjera nije učitana (blokator oglasa?). Pokušajte ponovno.', turnstile_failed: 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.', too_many_requests: 'Previše upita. Molimo nazovite nas.', contact_required: 'Unesite ime i ispravan e-mail.', invalid_payload: 'Provjerite svoje podatke.' },
       faqT: 'Česta pitanja',
       faq: [
