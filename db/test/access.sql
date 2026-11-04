@@ -209,4 +209,25 @@ select pg_temp.check((select count(*) from public.invites where role = 'dealer')
 -- an invite is only for dealer or architect
 select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('client')$$, 'invites_role_check'), 'an invite role must be dealer or architect');
 
+
+-- ---------- 13. CRM: customers view (0008) and the "next action" text ----------
+select pg_temp.check(public.norm_phone('+43 660 112 020') = public.norm_phone('0660 112 020') and public.norm_phone('0043 660 112 020') = '660112020', 'phone formats of one number match');
+select pg_temp.check(public.norm_phone('') is null and public.norm_phone(null) is null, 'an empty phone has no key');
+select pg_temp.as_user(:'seller');
+insert into public.leads (created_by, source, contact_name, phone, next_action, next_action_at) values
+  (:'seller', 'seller', 'Eva Berger', '+43 660 112 020', 'Позвонить', current_date),
+  (:'seller', 'seller', 'Eva B.', '0660 112 020', null, null),
+  (:'seller', 'seller', 'Tom', null, null, null);
+select pg_temp.check((select leads from public.customers where key = '660112020') = 2, 'one person with two phone formats is one customer with 2 leads');
+select pg_temp.check((select name from public.customers where key = '660112020') in ('Eva Berger', 'Eva B.'), 'the customer has a name');
+select pg_temp.check((select count(*) from public.customers where name = 'Tom') = 0, 'a lead without phone and e-mail is not a customer');
+update public.leads set next_action = 'Отправить КП' where contact_name = 'Eva Berger';
+select pg_temp.check((select next_action from public.leads where contact_name = 'Eva Berger') = 'Отправить КП', 'the owner can edit next_action');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.customers where key = '660112020') = 0, 'a dealer does not see a seller''s customer');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.customers where key = '660112020') = 1, 'superadmin sees the customer');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select * from public.customers$$, 'permission denied'), 'the public site cannot read customers');
+
 select 'access tests passed' as result;

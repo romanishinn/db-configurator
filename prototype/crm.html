@@ -84,7 +84,71 @@
   .tag.warn{color:var(--warn);border-color:rgba(232,182,95,.4);background:var(--warnbg)}
   .tag.bad{color:var(--bad);border-color:rgba(232,116,95,.4);background:var(--badbg)}
 
-  .split{display:grid;grid-template-columns:378px 1fr;height:calc(100vh - 52px)}
+  .split{display:grid;grid-template-columns:378px 1fr;height:calc(100vh - 52px);height:calc(100dvh - 52px)}
+
+  /* ===== live CRM layer: search, dialogs, forms, tables, toasts ===== */
+  .srch input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;color:var(--fg);font:inherit;font-size:13.5px}
+  .srch input::placeholder{color:var(--muted)}
+  .srch:focus-within{border-color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rail a{outline-offset:-2px}
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl td{padding:11px 12px;border-bottom:1px solid var(--line2);font-size:13px}
+  .tbl tr.click{cursor:pointer} .tbl tr.click:hover td{background:var(--panel2)}
+  .tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+  .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .bar .inp{max-width:300px}
+  .bar .sp{flex:1}
+  .seg2{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg2 button{background:var(--panel);color:var(--muted);border:0;padding:7px 12px;cursor:pointer;font-size:12.5px}
+  .seg2 button.on{background:var(--panel3);color:var(--fg)}
+  .dlgback{position:fixed;inset:0;background:rgba(4,6,10,.66);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:max(16px,4vh) 12px;overflow:auto}
+  .dlg{width:100%;max-width:520px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)}
+  .dlg h3{margin:0;font-size:15px;padding:16px 18px 6px}
+  .dlg .sub{padding:0 18px 4px;color:var(--muted);font-size:12.5px}
+  .dlg .body{padding:10px 18px 4px;display:flex;flex-direction:column;gap:12px}
+  .dlg .foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:14px 18px 16px}
+  .fld label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .fld .inp,.fld textarea,.fld select{width:100%;min-height:38px;font-size:14px}
+  .fld textarea{height:auto;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--fg);font:inherit;resize:vertical;min-height:70px}
+  .fld .inp:focus,.fld textarea:focus,.fld select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+  .fld .err{color:var(--bad);font-size:12px;margin-top:4px}
+  .chips2{display:flex;gap:6px;flex-wrap:wrap}
+  .chips2 button{border:1px solid var(--line);background:var(--panel2);color:var(--fg2);border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}
+  .chips2 button.on{border-color:var(--accent);background:rgba(240,182,103,.12);color:var(--fg)}
+  .dup{border:1px solid rgba(232,182,95,.5);background:var(--warnbg);border-radius:10px;padding:10px 12px;font-size:12.5px;display:flex;flex-direction:column;gap:7px}
+  .dup .a{display:flex;gap:8px;flex-wrap:wrap}
+  .toasts{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast2{background:var(--panel3);border:1px solid var(--line);color:var(--fg);padding:10px 14px;border-radius:10px;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.7);pointer-events:auto}
+  .toast2.bad{border-color:rgba(232,116,95,.6)}
+  .contact{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}
+  .contact a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);color:var(--fg);text-decoration:none;border-radius:9px;padding:7px 11px;font-size:13px}
+  .contact a:hover{border-color:var(--accent)}
+  .brief{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:9px}
+  .brief .lb{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  .brief .msg{white-space:pre-wrap;word-break:break-word}
+  .src{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg2)}
+  .src.meta{color:#8fb3ff;border-color:rgba(111,155,255,.45);background:rgba(111,155,255,.12)}
+  .src.google{color:#ffd37a;border-color:rgba(232,182,95,.45);background:var(--warnbg)}
+  .src.web{color:var(--ok);border-color:rgba(94,201,138,.4);background:var(--okbg)}
+  details.jr{border:1px solid var(--line2);border-radius:9px;padding:8px 11px;background:var(--panel2)}
+  details.jr summary{cursor:pointer;color:var(--fg2);font-size:12.5px}
+  details.jr pre{white-space:pre-wrap;word-break:break-word;margin:8px 0 0;font:inherit;font-size:12.5px;color:var(--fg2)}
+  .late{color:var(--bad)!important}
+  .task .go{cursor:pointer;border:0;background:transparent;font:inherit;padding:6px 8px}
+  .ntf{position:absolute;right:0;top:44px;width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 50px -18px #000;z-index:60;max-height:70vh;overflow:auto}
+  .ntf .it{padding:10px 12px;border-bottom:1px solid var(--line2);font-size:12.5px;cursor:pointer}
+  .ntf .it.un{background:rgba(240,182,103,.07)}
+  .ntf .it small{display:block;color:var(--faint);margin-top:2px}
+  .demo-flag{background:var(--warnbg);color:var(--warn);border:1px solid rgba(232,182,95,.4);border-radius:6px;font-size:10.5px;padding:2px 7px;letter-spacing:.06em}
+  .kc.click{cursor:pointer}
+  button.cchip{background:transparent;color:var(--muted);font:inherit;font-size:12.5px;min-height:32px}
+  button.cchip.on{color:var(--fg);background:rgba(240,182,103,.08)}
+  .row .r2 .score,.row .r2 .hotchip{flex:none}
+  @media (pointer:coarse){.btn,.iconbtn,.cchip,.chips2 button,.seg2 button,.contact a{min-height:44px}.iconbtn{min-width:44px}.rail a{min-height:44px}}
+  @media(max-width:680px){.dlgback{padding:0}.dlg{max-width:none;min-height:100%;border-radius:0}.bar .inp{max-width:none;flex:1 1 100%}}
   @media(max-width:1000px){.split{grid-template-columns:1fr}.split .record{display:none}.split.show-rec .list{display:none}.split.show-rec .record{display:flex}}
   .list{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
   .list .lh{padding:14px 14px 10px;border-bottom:1px solid var(--line2)}
@@ -362,7 +426,7 @@
 <div class="app">
   <aside class="rail" id="rail">
     <div class="brand"><span class="dot"></span>D&amp;B<span>&nbsp;PERGOLA</span></div>
-    <nav>
+    <nav id="mainNav">
       <a data-s="today" class="on"><span class="ic">◎</span><span data-i18n="nav.today">Сегодня</span></a>
       <a data-s="leads"><span class="ic">▦</span><span data-i18n="nav.leads">Лиды · доска</span></a>
       <a data-s="orders"><span class="ic">▣</span><span data-i18n="nav.orders">Заказы · доска</span></a>
@@ -380,11 +444,11 @@
 
   <div class="main">
     <div class="topbar">
-      <button class="iconbtn menubtn" id="menubtn">☰</button>
-      <div class="srch"><span class="q" data-i18n="top.search">⌕ Поиск сделок, клиентов, №КП…</span><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></div>
+      <button class="iconbtn menubtn" id="menubtn" aria-label="Меню">☰</button>
+      <label class="srch"><span class="q0" aria-hidden="true">⌕</span><input id="gsearch" type="search" autocomplete="off" placeholder="Поиск: имя, телефон, e-mail, №КП…" data-i18n-ph="top.searchPh" aria-label="Поиск"><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></label>
       <div class="sp"></div>
       <button class="btn primary sm newbtn" id="newCalcBtn">＋<span class="lbl" data-i18n="top.newCalc"> Новый расчёт</span></button>
-      <button class="iconbtn">🔔<span class="d"></span></button>
+      <button class="iconbtn" id="bellBtn" aria-label="Уведомления"><span aria-hidden="true">🔔</span><span class="d" id="bellDot" hidden></span></button>
     </div>
 
     <div class="content">
@@ -507,7 +571,6 @@
                     <label><span class="sw on"></span> <span data-i18n="ds.d2">Скидка в пределах группы</span></label>
                     <label><span class="sw"></span> <span data-i18n="ds.d3">Скидка выше лимита (→ утверждение)</span></label>
                     <label><span class="sw on"></span> <span data-i18n="ds.d4">Двигать стадии (правка → утверждение)</span></label>
-                    <label><span class="sw"></span> <span data-i18n="ds.d5">Видеть маржу</span></label>
                   </div>
                   <div class="ds"><h4 data-i18n="ds.cansee">Может видеть</h4>
                     <label><span class="sw on"></span> <span data-i18n="ds.s1">Только свои и переданные</span></label>
@@ -532,7 +595,19 @@
             </div>
           </div>
           <div class="setpane" data-set="pipe" hidden>
-            <div class="setpane" data-set="lang" hidden>
+            <div class="panel"><div class="ph"><h3 data-i18n="set.pipeTitle">Воронка «Запросы» — стадии</h3></div>
+              <table>
+                <thead><tr><th data-i18n="th.stage">Стадия</th><th class="num" data-i18n="th.cold">Остывает, дн</th><th class="num" data-i18n="th.rot">Протухает, дн</th><th data-i18n="th.appr">Утверждение</th></tr></thead>
+                <tbody>
+                  <tr><td data-i18n="st.new">Новый</td><td class="num">3</td><td class="num">7</td><td>—</td></tr>
+                  <tr><td data-i18n="st.processing">В обработке</td><td class="num">3</td><td class="num">5</td><td>—</td></tr>
+                  <tr><td data-i18n="st.proposal">Предложение</td><td class="num">4</td><td class="num">7</td><td>—</td></tr>
+                  <tr><td data-i18n="st.negotiation">Переговоры</td><td class="num">3</td><td class="num">5</td><td><span class="tag warn" data-i18n="set.discLimit">скидка > лимит</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+<div class="setpane" data-set="lang" hidden>
             <div class="panel"><div class="ph"><h3 data-i18n="set.langTitle">Язык интерфейса</h3></div>
               <div style="padding:14px 15px">
                 <p class="muted" style="margin:0 0 12px;font-size:12.5px" data-i18n="set.langHint">Выберите язык интерфейса. Можно сменить в любой момент — выбор сохранится.</p>
@@ -543,18 +618,6 @@
                   <button data-l="hr"><b>HR</b> Hrvatski</button>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="panel"><div class="ph"><h3 data-i18n="set.pipeTitle">Воронка «Запросы» — стадии</h3></div>
-              <table>
-                <thead><tr><th data-i18n="th.stage">Стадия</th><th class="num" data-i18n="th.cold">Остывает, дн</th><th class="num" data-i18n="th.rot">Протухает, дн</th><th data-i18n="th.appr">Утверждение</th></tr></thead>
-                <tbody>
-                  <tr><td data-i18n="st.new">Новый</td><td class="num">3</td><td class="num">7</td><td>—</td></tr>
-                  <tr><td data-i18n="st.processing">В обработке</td><td class="num">3</td><td class="num">5</td><td>—</td></tr>
-                  <tr><td data-i18n="st.proposal">Предложение</td><td class="num">4</td><td class="num">7</td><td>—</td></tr>
-                  <tr><td data-i18n="st.negotiation">Переговоры</td><td class="num">3</td><td class="num">5</td><td><span class="tag warn" data-i18n="set.discLimit">скидка > лимит</span></td></tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
@@ -575,7 +638,7 @@
 (function(){
   var $=function(s,r){return (r||document).querySelector(s);};
   var $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s));};
-  var esc=function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");};
+  var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");};
 
   var T={
     "nav.today":{ru:"Сегодня",en:"Today",de:"Heute",hr:"Danas"},
@@ -848,14 +911,28 @@
         vlist:[{v:"v1",cur:1,dK:"q.noDisc",s:"€4 378"}]}}
   ];
   var selIdx=0;
+  /* hooks for the live layer (crm-live.js); in demo mode (no backend) nothing sets them and the demo data below is used */
+  var CRM=window.CRM={tr:tr,esc:esc,$:$,$$:$$,
+    get deals(){return DEALS;},
+    setData:function(deals,req,ord,sel){DEALS=deals;if(req)REQ=req;if(ord)ORD=ord;selIdx=sel>=0?sel:0;},
+    lang:function(){return lang;},
+    select:function(i){selectDeal(i);},
+    open:function(i){window.openDeal(i);},
+    rerender:function(){renderRows();renderBoards();renderRecord(DEALS[selIdx]);},
+    rerenderRecord:function(){renderRecord(DEALS[selIdx]);},
+    selIdx:function(){return selIdx;},
+    show:function(id){show(id);}};
 
   /* ===== today list ===== */
   function renderRows(){
     var rows=$("#rows"); rows.innerHTML="";
+    var shown=0;
     DEALS.forEach(function(d,i){
+      if(CRM.filter&&!CRM.filter(d)) return;
+      shown++;
       var el=document.createElement("div");
-      el.className="row"+(i===selIdx?" sel":"");
-      el.innerHTML='<span class="av">'+d.name.replace("Клиент ","")+'</span><div class="mid">'
+      el.className="row"+(i===selIdx?" sel":"");el.dataset.i=i;el.tabIndex=0;
+      el.innerHTML='<span class="av">'+esc(d.av||d.name.replace("Клиент ",""))+'</span><div class="mid">'
         +'<div class="r1"><span class="nm">'+esc(d.name)+'</span><span class="sum tab-num">'+d.q.net+'</span></div>'
         +'<div class="r2"><span class="score '+d.band+'">'+d.score+'</span>'+(d.hot?'<span class="hotchip">🔥</span>':'')+'<span class="p">'+esc(d.product)+' · '+d.id+'</span></div>'
         +'<div class="r3"><span class="dot '+d.dot+'"></span><span class="st">'+tr(d.statusK)+'</span><span class="time">'+tr(d.timeK)+'</span></div>'
@@ -863,11 +940,14 @@
       el.addEventListener("click",function(){ selectDeal(i); });
       rows.appendChild(el);
     });
+    if(!shown&&CRM.emptyList) rows.innerHTML=CRM.emptyList();
   }
 
   /* ===== record ===== */
   function renderRecord(d){
     var wrap=$("#recordWrap"); if(!wrap) return;
+    if(!d){ wrap.innerHTML=CRM.emptyRecord?CRM.emptyRecord():""; return; }
+    if(d.live&&CRM.renderLive){ CRM.renderLive(d,wrap); return; }
     var sIdx=d.stage;
     var stages=STAGE_KEYS.map(function(k,i){
       var cls=i<sIdx?"cv done":(i===sIdx?"cv now":"cv");
@@ -943,7 +1023,7 @@
 
   function selectDeal(i){
     selIdx=i;
-    $$(".row").forEach(function(x,j){x.classList.toggle("sel",j===i);});
+    $$(".row").forEach(function(x){x.classList.toggle("sel",+x.dataset.i===i);});
     renderRecord(DEALS[i]);
     if(window.innerWidth<=1000) $("#split").classList.add("show-rec");
   }
@@ -971,6 +1051,7 @@
     var nm=c.nOrd?(tr("ord.order")+" "+c.nOrd):esc(c.n);
     var st=c.stK?tr(c.stK):"";
     var click=(c.di!=null)?' click" onclick="openDeal('+c.di+')':'';
+    if(c.oid) click=' click" data-oid="'+esc(c.oid);
     return '<div class="kc'+(c.rot?' rot':(c.cold?' cold':''))+click+'">'
       +'<div class="r1"><span class="nm">'+nm+'</span>'+(c.sc!=null?'<span class="score '+(c.hot?'hi':(c.sc>=20?'mid':''))+'">'+c.sc+'</span>':'')+'</div>'
       +'<div class="r2"><span class="p">'+st+'</span><span class="sum tab-num">'+c.sum+'</span></div>'
@@ -1015,6 +1096,7 @@
     if(location.hash.replace("#","")!==id) history.replaceState(null,"","#"+id);
     $("#rail").classList.remove("open");$("#scrim").classList.remove("on");
     if(id==="configurator"){loadCfg();}
+    if(CRM.onShow) CRM.onShow(id);
     $(".content").scrollTop=0;
   }
   window.show=show;
@@ -1045,6 +1127,7 @@
   window.__setLang=applyLang;window.__lang=function(){return lang;};
 })();
 </script>
+<script>/*CRM_LIVE*/</script>
 <script>/*THREE_MIN*/</script>
 <script>
 (function(){
@@ -1057,8 +1140,8 @@
   var glb=$("gLangBtn"),glm=$("gLangMenu");
   function markGL(){var cur=(window.__lang?window.__lang():"ru");var lbl=$("gLangLbl");if(lbl)lbl.textContent=cur.toUpperCase();if(glm)[].forEach.call(glm.children,function(b){b.setAttribute("aria-current",b.dataset.l===cur?"true":"false");});}
   if(glb&&glm){glb.addEventListener("click",function(e){e.stopPropagation();glm.classList.toggle("open");});[].forEach.call(glm.children,function(b){b.addEventListener("click",function(){if(window.__setLang)window.__setLang(b.dataset.l);markGL();glm.classList.remove("open");});});document.addEventListener("click",function(){glm.classList.remove("open");});markGL();}
-  $("gForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gStatus");if(!$("gEmail").value.trim()||!$("gPass").value){s.textContent=t("gate.needBoth");s.className="gstatus warn";return;}s.textContent="";opening=true;setTimeout(function(){document.body.classList.add("authed");},550);});
-  $("gReqForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gReqStatus");var need=["gReqCompany","gReqFirst","gReqLast","gReqLocation","gReqEmail"].some(function(id){return !$(id).value.trim();});if(need){s.textContent=t("gate.needAll");s.className="gstatus warn";return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("gReqEmail").value.trim())){s.textContent=t("gate.badMail");s.className="gstatus warn";$("gReqEmail").focus();return;}s.textContent="";s.className="gstatus";$("gModal").hidden=false;});
+  $("gForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gStatus");if(!$("gEmail").value.trim()||!$("gPass").value){s.textContent=t("gate.needBoth");s.className="gstatus warn";return;}s.textContent="";if(window.CRM&&CRM.login){CRM.login($("gEmail").value.trim(),$("gPass").value,s,function(){opening=true;setTimeout(function(){document.body.classList.add("authed");},550);});return;}opening=true;setTimeout(function(){document.body.classList.add("authed");},550);});
+  $("gReqForm").addEventListener("submit",function(e){e.preventDefault();var s=$("gReqStatus");var need=["gReqCompany","gReqFirst","gReqLast","gReqLocation","gReqEmail"].some(function(id){return !$(id).value.trim();});if(need){s.textContent=t("gate.needAll");s.className="gstatus warn";return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("gReqEmail").value.trim())){s.textContent=t("gate.badMail");s.className="gstatus warn";$("gReqEmail").focus();return;}s.textContent="";s.className="gstatus";if(window.CRM&&CRM.requestAccess){CRM.requestAccess({company:$("gReqCompany").value.trim(),first_name:$("gReqFirst").value.trim(),last_name:$("gReqLast").value.trim(),location:$("gReqLocation").value.trim(),email:$("gReqEmail").value.trim()},s,function(){$("gModal").hidden=false;});return;}$("gModal").hidden=false;});
   function gCloseModal(){$("gModal").hidden=true;$("gReqForm").reset();$("gReqView").hidden=true;$("gLogin").hidden=false;}
   $("gModalOk")&&$("gModalOk").addEventListener("click",gCloseModal);
   $("gModal")&&$("gModal").addEventListener("click",function(e){if(e.target===$("gModal"))gCloseModal();});
