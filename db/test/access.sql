@@ -135,15 +135,15 @@ select pg_temp.check((select valid_until from public.quotes where owner = :'graz
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.quotes where owner = :'graz1') = 0, 'a dealer never sees another dealer''s quotes');
 
--- ---------- 7. roles: superdealer may only make managers ----------
+-- ---------- 7. roles: the manager role is set by the superadmin only ----------
 select pg_temp.as_user(:'superdealer');
-select public.set_user_role(:'newbie', 'manager');
+select pg_temp.fails(format($q$select public.set_user_role(%L, 'manager')$q$, :'newbie'), 'FORBIDDEN') as ok0 \gset
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'dealer')$q$, :'newbie'), 'FORBIDDEN') as ok1 \gset
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'manager', null, 50)$q$, :'newbie'), 'FORBIDDEN') as ok2 \gset
 select pg_temp.as_user(:'graz1');
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'superadmin')$q$, :'graz1'), 'FORBIDDEN') as ok3 \gset
 select pg_temp.fails(format($q$update public.profiles set discount_limit = 100 where id = %L$q$, :'graz1'), 'permission denied') as ok4 \gset
-select pg_temp.check(:'ok1' and :'ok2', 'a superdealer can make managers but not dealers or discount limits');
+select pg_temp.check(:'ok0' and :'ok1' and :'ok2', 'a superdealer can make neither managers nor dealers nor discount limits');
 select pg_temp.check(:'ok3' and :'ok4', 'nobody raises his own role or limit');
 
 -- ---------- 8. the board: 7 days without movement are flagged ----------
@@ -267,11 +267,14 @@ select pg_temp.as_user(:'superdealer');
 select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'a superdealer cannot upload a photo');
 select pg_temp.as_user(:'manager');
 insert into storage.objects (bucket_id, name) values ('project-photos', 'm/1.jpg');
+select pg_temp.check((select count(*) from storage.objects where name = 'm/1.jpg') = 1, 'a manager can upload and see a photo');
 update storage.objects set name = 'm/2.jpg' where name = 'm/1.jpg';
-select pg_temp.check((select count(*) from storage.objects where name = 'm/2.jpg') = 1, 'a manager can upload and replace a photo');
+select pg_temp.check((select count(*) from storage.objects where name = 'm/2.jpg') = 0, 'a manager cannot rename a photo');
+update storage.objects set owner = :'manager' where name = 'm/1.jpg';  -- upsert is an UPDATE
+select pg_temp.check((select count(*) from storage.objects where owner is not null) = 0, 'a manager cannot overwrite a photo');
 select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('other-bucket', 'x.jpg')$$, 'row-level'), 'a manager cannot write to another bucket');
 delete from storage.objects;
-select pg_temp.check((select count(*) from storage.objects where name = 'm/2.jpg') = 1, 'a manager cannot delete a photo');
+select pg_temp.check((select count(*) from storage.objects where name = 'm/1.jpg') = 1, 'a manager cannot delete a photo');
 select pg_temp.as_user(:'admin');
 insert into storage.objects (bucket_id, name) values ('project-photos', 'c/1.jpg');
 select pg_temp.check((select count(*) from storage.objects where bucket_id = 'project-photos') = 2, 'superadmin can upload a photo');
@@ -301,8 +304,13 @@ select public.transfer_lead((select id from public.leads where contact_name = 'O
 select pg_temp.check((select assigned_to from public.leads where contact_name = 'Old tab') = :'graz1', 'a manager can pass a lead to a dealer');
 select pg_temp.as_user(:'superdealer');
 select public.set_user_role(:'newbie', 'client');
+select pg_temp.as_user(:'admin');
 select public.set_user_role(:'newbie', 'manager');
 select pg_temp.as_root();
-select pg_temp.check((select role from public.profiles where id = :'newbie') = 'manager', 'a superdealer can make someone a manager');
+select pg_temp.check((select role from public.profiles where id = :'newbie') = 'manager', 'the superadmin can make someone a manager');
+select pg_temp.as_user(:'superdealer');
+select pg_temp.fails(format($q$select public.set_user_role(%L, 'client')$q$, :'newbie'), 'FORBIDDEN') as ok \gset
+select pg_temp.as_root();
+select pg_temp.check(:'ok' and (select role from public.profiles where id = :'newbie') = 'manager', 'a superdealer cannot change a manager''s role');
 
 select 'access tests passed' as result;

@@ -228,7 +228,7 @@
         photos: paths, reference_available: $('reference_available').checked, published: $('published').checked };
       return sb.from('projects').upsert(row).then(function (r) {
         if (r.error) throw r.error;
-        if (editing.removed.length && myRole === 'superadmin') return sb.storage.from(BUCKET).remove(editing.removed).catch(function () {}); // superadmin only; a manager just unlinks. after the row no longer points to them
+        if (editing.removed.length && myRole === 'superadmin') return sb.storage.from(BUCKET).remove(editing.removed); // superadmin only; a manager just unlinks. after the row no longer points to them
       });
     }).then(function () { return closeForm(); })
       .catch(function (err) { say('msg', humanError(err)); })

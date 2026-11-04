@@ -234,7 +234,7 @@ function loginGate(msg){
     <div class="msg">${esc(msg||'')}</div>
     <button type="submit" class="go">Войти</button>
     <div class="row"><button type="button" data-reset="1">Забыли пароль?</button><a class="btn" href="${CFG.site}" style="border:0;background:none;color:var(--accent);padding:0">← На сайт</a></div>
-    <p class="note">Доступ для дилеров и продавцов выдаёт D&B Solutions по запросу на e-mail.</p></form>`;
+    <p class="note">Доступ для дилеров и менеджеров выдаёт D&B Solutions по запросу на e-mail.</p></form>`;
   const f=d.querySelector('form'),m=d.querySelector('.msg');
   f.onsubmit=async e=>{e.preventDefault();m.textContent='…';
     const {error}=await sb.auth.signInWithPassword({email:f.email.value.trim(),password:f.password.value});

@@ -26,7 +26,19 @@ insert into public.leads (id, created_by, source, contact_name, phone) values ('
 insert into public.orders (lead_id, seller_id) values ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000e1');
 SQL
 [ -z "${UPGRADE_HOOK:-}" ] || $P -c "$UPGRADE_HOOK" >/dev/null
-$P -1 -f migrations/0009_manager_role.sql >/dev/null
+if ! $P -1 -f migrations/0009_manager_role.sql >/dev/null 2>&1; then
+  [ -n "${UPGRADE_HOOK:-}" ] || { echo 'FAILED: 0009 did not apply'; exit 1; }
+  # a failed migration must leave the old state untouched (one transaction)
+  $P >/dev/null <<'SQL'
+do $$ begin
+  if not exists (select 1 from pg_enum where enumtypid = 'public.app_role'::regtype and enumlabel = 'seller') then raise exception 'FAILED: label seller gone after a failed 0009'; end if;
+  if exists (select 1 from pg_enum where enumtypid = 'public.app_role'::regtype and enumlabel = 'manager') then raise exception 'FAILED: label manager left after a failed 0009'; end if;
+  if to_regprocedure('public.can_edit_projects()') is not null then raise exception 'FAILED: can_edit_projects left after a failed 0009'; end if;
+  if (select source from public.leads where id = '00000000-0000-0000-0000-0000000000f1') <> 'seller' then raise exception 'FAILED: leads.source changed after a failed 0009'; end if;
+end $$;
+SQL
+  echo 'failed 0009 left the old state intact'; exit 0
+fi
 # stage 2: the old data moved over and the actions work
 $P <<'SQL'
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000e2', false) \gset
@@ -39,10 +51,16 @@ do $$ begin
   if (select assigned_to from public.leads where contact_name = 'New') is distinct from '00000000-0000-0000-0000-0000000000e1' then raise exception 'FAILED: manager lead not self-assigned or old source not converted'; end if;
   set local role authenticated;
   perform public.assign_lead('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000e1');
-  perform public.set_user_role('00000000-0000-0000-0000-0000000000e1', 'manager');
+  begin  -- the superadmin is no manager: setting a manager role works for him
+    perform public.set_user_role('00000000-0000-0000-0000-0000000000e1', 'manager');
+  end;
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000e1', true);
-  perform public.transfer_lead('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000e2', 'x');
-exception when sqlstate 'P0001' then if sqlerrm <> 'BAD_ASSIGNEE' then raise; end if; -- transfer to a superadmin is refused: expected
+  begin
+    perform public.transfer_lead('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000e2', 'x');
+    raise exception 'FAILED: transfer to a superadmin was allowed';
+  exception when sqlstate 'P0001' then
+    if sqlerrm <> 'BAD_ASSIGNEE' then raise; end if;  -- expected refusal, and only this one
+  end;
 end $$;
 select 'upgrade checks passed' as result;
 SQL
