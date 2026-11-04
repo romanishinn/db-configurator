@@ -35,7 +35,8 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   cover = first photo, publish switch. Adding a project needs no deploy.
 - `apps/landing/index.html` → `landing.html`: German B2C landing. Reads the published projects over the REST API with the public key;
   when the database is off, unreachable or has no published project, the static placeholder cards stay. `noindex` until the placeholders
-  (photos, address, phone) are replaced with real data. The request form there is still a preview (not yet wired to `submit_request`).
+  (photos, address, phone) are replaced with real data. The page shows missing data and unconfirmed promises as yellow `EINSETZEN` / `ZU BESTÄTIGEN` marks. With no published project it shows an empty state, never invented examples.
+  The callback form posts to the `submit-request` Edge Function (Turnstile, then `submit_request`) and creates a lead without a quote (migration 0012); utm / click ids / referrer are stored with the lead.
 
 ## Switching it on (D&B)
 1. supabase.com → New project, region **Frankfurt (eu-central-1)**, free plan.

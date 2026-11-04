@@ -56,6 +56,9 @@ select public.submit_request('{"name":"Karl","phone":"+43 660 2"}', '{"catalog":
 select pg_temp.check(:'n1' = to_char((now() at time zone 'Europe/Vienna')::date, 'DDMMYY') || '-1', 'first number of the day ends in -1');
 select pg_temp.check(:'n2' like '%-2', 'numbers count up for everybody');
 select pg_temp.check(pg_temp.fails($q$select public.submit_request('{}', '{"catalog":"c","config":{},"total_net":1}')$q$, 'CONTACT_REQUIRED'), 'a request needs a phone or an e-mail');
+-- (0012) a callback request from the landing page: no configuration, so a lead without a quote and no quote number
+select pg_temp.check(public.submit_request('{"name":"Rückruf Test","phone":"+43 660 99"}', '{}', '{"utm_source":"landing"}', 'Rückruf-Anfrage (Landingpage)') is null, 'a request without a configuration returns no quote number');
+select pg_temp.check(pg_temp.fails($q$select public.submit_request('{}', '{}')$q$, 'CONTACT_REQUIRED'), 'a callback request still needs a phone or an e-mail');
 -- the public site itself (anon) can neither read leads nor reach the request RPC directly
 select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($q$select * from public.leads$q$, 'permission denied'), 'the public site cannot read leads');
@@ -63,8 +66,11 @@ select pg_temp.check(pg_temp.fails($q$select public.submit_request('{"phone":"+4
 
 -- ---------- 2. superadmin sees everything and was notified ----------
 select pg_temp.as_user(:'admin');
-select pg_temp.check((select count(*) from public.leads) = 2, 'superadmin sees all leads');
-select pg_temp.check((select count(*) from public.notifications where kind = 'lead_new') = 2, 'superadmin got a notification per request');
+select pg_temp.check((select count(*) from public.leads) = 3, 'superadmin sees all leads');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Rückruf Test' and journey like 'Rückruf%') = 1, 'the callback request became a lead');
+select pg_temp.check((select count(*) from public.quotes q join public.leads l on l.id = q.lead_id where l.contact_name = 'Rückruf Test') = 0, 'the callback request has no quote');
+
+select pg_temp.check((select count(*) from public.notifications where kind = 'lead_new') = 3, 'superadmin got a notification per request');
 select pg_temp.check((select count(*) from public.quotes) = 2, 'superadmin sees all quotes');
 select id as lead_maria from public.leads where contact_name = 'Maria Huber' \gset
 select id as lead_karl from public.leads where contact_name = 'Karl' \gset
@@ -108,7 +114,7 @@ select public.transfer_lead(:'lead_anna', :'linz', 'Kundin will Beratung in Linz
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.leads) = 1, 'the dealer now sees the passed lead');
 select pg_temp.as_user(:'superdealer');
-select pg_temp.check((select count(*) from public.leads) = 3, 'the superdealer sees everything');
+select pg_temp.check((select count(*) from public.leads) = 4, 'the superdealer sees everything');
 
 -- ---------- 6. quotes: client limit 3, discounts within the personal limit, prices frozen ----------
 select pg_temp.as_user(:'client');

@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- noindex until the placeholders (photos, address, phone, projects) are replaced with real data -->
+<!-- noindex until the [EINSETZEN] / [ZU BESTÄTIGEN] marks are resolved with real data and the owner has confirmed the public promises -->
 <meta name="robots" content="noindex">
-<title>D&B Pergolen</title>
+<title>Pergola Wien: bioklimatisch &amp; verschiebbar | D&amp;B Pergolen</title>
+<meta name="description" content="Bioklimatische und verschiebbare Pergolen für Ihre Terrasse in Wien. Konfigurieren Sie Ihre Pergola in Bewegung, mit Richtpreis. Montage durch eigene Teams.">
 <style>
 /* Layout: single-column editorial flow, architectural; anthracite structure, warm paper, brass evening-light accent */
 :root{
@@ -26,6 +27,7 @@
   --card:#202024; --ok:#8fb07a; color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--anthracite)}
@@ -151,155 +153,204 @@ dialog.gal .in{padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap
 dialog.gal img{width:100%;height:auto;border-radius:3px;display:block}
 dialog.gal .top{display:flex;justify-content:space-between;align-items:center;gap:1rem}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* marks for missing data / unconfirmed promises: visible on purpose, must be gone before indexing */
+.todo{background:#fff3c4;color:#5a4300;border-radius:2px;padding:0 .3em;font-size:.82em;font-weight:600;white-space:normal}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .todo{background:#4a3d12;color:#ffe9a0}}
+/* proof bar */
+.proofbar{background:var(--anthracite);color:#e9e4d9}
+.proofbar .wrap{display:flex;flex-wrap:wrap;gap:.4rem 2rem;align-items:center;justify-content:center;padding-block:.9rem;font-size:.86rem;letter-spacing:.03em}
+.proofbar b{font-family:var(--serif);font-size:1.05rem;color:var(--brass-soft);letter-spacing:.02em}
+/* offices */
+.offices{display:grid;gap:1.1rem;grid-template-columns:1fr}
+@media(min-width:760px){.offices{grid-template-columns:1fr 1fr}}
+.office{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1.4rem 1.3rem;display:flex;flex-direction:column;gap:.55rem;min-width:0}
+.office.main{border-top:3px solid var(--brass)}
+.office h3{font-size:1.25rem}
+.office .tag{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);font-weight:600}
+.office p,.office li{font-size:.94rem;color:var(--ink-2)}
+.office ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.3rem}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:4px;padding:1.6rem;display:flex;flex-direction:column;gap:.9rem;align-items:flex-start}
+.empty p{color:var(--ink-2);max-width:60ch}
+.small{font-size:.85rem;color:var(--ink-2)}
+.chk{flex-direction:row;align-items:flex-start;gap:.6rem;font-weight:400;font-size:.82rem}
+.chk input{width:auto;margin-top:.2rem}
+.err{color:#a3341f;font-size:.9rem}
+.sticky-cta{display:none}
+@media(max-width:640px){
+  .sticky-cta{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;gap:.5rem;padding:.6rem max(12px,env(safe-area-inset-left,0px)) calc(.6rem + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+  .sticky-cta .btn{flex:1;justify-content:center;padding:.75em .5em;font-size:.92rem}
+  body{padding-bottom:4.4rem}
+}
+html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 </head>
 <body>
 
-<!-- pergola line motif, reused in placeholders -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="perg" viewBox="0 0 120 90"><g fill="none" stroke="currentColor" stroke-width="2.4"><rect x="12" y="30" width="96" height="48"/><path d="M12 30 L24 14 H108 L108 30"/><path d="M24 14 V78 M48 30 V78 M72 30 V78 M96 30 V78"/><path d="M12 42 H108 M12 54 H108 M12 66 H108" stroke-width="1.2"/></g></symbol></svg>
 
 <header class="bar">
   <div class="wrap bar-in">
     <span class="brand"><svg class="mk" viewBox="0 0 120 90" aria-hidden="true"><use href="#perg"/></svg>D&amp;B Pergolen</span>
-    <a href="#anfrage" class="btn btn-primary">Angebot anfordern</a>
+    <a href="index.html?lang=de" class="btn btn-primary">Pergola konfigurieren</a>
   </div>
 </header>
 
 <main>
-  <!-- HERO — proof-first -->
+  <!-- 1. HERO -->
   <div class="wrap">
     <section class="hero" style="padding-top:clamp(2.2rem,6vw,4rem)">
       <div>
-        <span class="eyebrow">Bioklimatische Pergolen · Wien &amp; Kroatien</span>
-        <h1>Ihre Terrasse. Das ganze Jahr nutzbar.</h1>
-        <p class="lead">Premium-Pergolen, die wir bei Ihnen in Wien bereits gebaut haben. Angebot in 24 Stunden, Montage durch unser eigenes Team, 10 Jahre Garantie und jährlicher Service.</p>
+        <span class="eyebrow">Bioklimatische und verschiebbare Pergolen · Wien &amp; Zagreb</span>
+        <h1>Ihre Terrasse in Wien. Das ganze Jahr nutzbar.</h1>
+        <p class="lead">Bioklimatische und verschiebbare Pergolen, die Sie vorab in Bewegung sehen: Dach, ZIP-Screens, Glas und Licht. Mit Richtpreis, auf Wunsch mit persönlichem Rückruf. Die Montage übernehmen unsere eigenen Teams.</p>
         <div class="hero-cta">
-          <a href="#projekte" class="btn btn-primary">Projekte in Ihrer Nähe ansehen</a>
-          <a href="#anfrage" class="btn btn-ghost">Angebot anfordern</a>
+          <a href="index.html?lang=de" class="btn btn-primary">Pergola konfigurieren</a>
+          <a href="#anfrage" class="btn btn-ghost">Rückruf anfordern</a>
         </div>
         <div class="trust">
-          <span><b>20+ Jahre</b>Erfahrung</span>
-          <span><b>Echte Projekte</b>in Wien gebaut</span>
-          <span><b>Eigenes Team</b>Monteure, keine Subunternehmer</span>
-          <span><b>10 Jahre</b>Garantie + Service</span>
+          <span><b>Wien &amp; Zagreb</b>Hauptsitz und Filiale</span>
+          <span><b>Eigene Teams</b>Montage ohne Subunternehmer</span>
+          <span><b>Echter Preis</b>im Konfigurator, kein „ab“</span>
+          <span><b>Rückruf in 2 Std.</b><i class="todo">ZU BESTÄTIGEN</i></span>
         </div>
       </div>
-      <div class="ph" role="img" aria-label="Foto eines fertigen Projekts einfügen">
+      <div class="ph" role="img" aria-label="Platzhalter: Foto eines fertigen Projekts">
         <svg aria-hidden="true"><use href="#perg"/></svg>
-        <span class="lab">Echtes Foto: fertige Pergola, Wien</span>
+        <span class="lab">Echtes Foto einsetzen: fertige Pergola</span>
       </div>
     </section>
   </div>
 
-  <!-- PROJECTS / REFERENCES — the conversion asset, kept high on the page -->
+  <!-- 2. PROOF BAR -->
+  <div class="proofbar" aria-label="Standorte">
+    <div class="wrap">
+      <span><b>Wien</b> · Hauptsitz</span>
+      <span><b>Zagreb</b> · Filiale</span>
+      <span>20+ Jahre Erfahrung <i class="todo">ZU BESTÄTIGEN</i></span>
+      <span>Schauraum in Wien <i class="todo">ZU BESTÄTIGEN</i></span>
+    </div>
+  </div>
+
+  <!-- 3. TWO OFFICES -->
+  <section id="standorte">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Standorte</span>
+        <h2>Zwei Standorte, ein Ansprechpartner-Team</h2>
+        <p>Sie erreichen uns in Wien. Von dort planen und betreuen wir Ihr Projekt.</p>
+      </div>
+      <div class="offices">
+        <article class="office main">
+          <span class="tag">Hauptsitz</span>
+          <h3>Wien</h3>
+          <p>Beratung, Konfiguration, Angebot und Betreuung Ihres Projekts in Österreich. <i class="todo">ZU BESTÄTIGEN: Aufgabenverteilung</i></p>
+          <ul>
+            <li>Adresse: <i class="todo">EINSETZEN: Adresse Wien</i></li>
+            <li>Telefon: <i class="todo">EINSETZEN: Telefon Wien</i></li>
+            <li>Schauraum: Sehen Sie eine Pergola vor Ort. <i class="todo">ZU BESTÄTIGEN</i> Öffnungszeiten: <i class="todo">EINSETZEN</i></li>
+          </ul>
+          <a href="#anfrage" class="btn btn-ghost" style="align-self:flex-start;margin-top:.4rem">Termin im Schauraum vereinbaren</a>
+        </article>
+        <article class="office">
+          <span class="tag">Filiale</span>
+          <h3>Zagreb</h3>
+          <p>Unterstützung für Projekte und Montage in Kroatien. <i class="todo">ZU BESTÄTIGEN: Aufgaben der Filiale; Montageteam mit 26 Monteuren</i></p>
+          <ul>
+            <li>Adresse: <i class="todo">EINSETZEN: Adresse Zagreb</i></li>
+            <li>Telefon: <i class="todo">EINSETZEN: Telefon Zagreb</i></li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. PROJECTS (filled from the database; empty state when nothing is published) -->
   <section class="band" id="projekte">
     <div class="wrap">
       <div class="sec-head">
         <span class="eyebrow">Projekte</span>
-        <h2>Pergolen, die wir bereits gebaut haben</h2>
-        <p>Keine Renderings — echte Terrassen in Wien und Kroatien. Viele unserer Kundinnen und Kunden geben gerne telefonisch Auskunft, bevor Sie sich entscheiden.</p>
+        <h2>Projekte, die Sie sich ansehen können</h2>
+        <p>Hier zeigen wir fertige Terrassen mit Ort, Ausstattung und Fotos. Wir veröffentlichen nur Projekte, die wirklich realisiert wurden.</p>
       </div>
-      <div class="grid grid-3" id="projects-grid">
-        <article class="proj">
-          <div class="ph" role="img" aria-label="Projektfoto einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: Projekt Wien 13.</span></div>
-          <div class="body">
-            <h3>Villa mit Glasdach, Wien 13.</h3>
-            <p class="meta">Bioklimatisch · Glas · ZIP-Screens · Beleuchtung · Montage 2026</p>
-            <span class="badge">● Referenz auf Anfrage</span>
-          </div>
-        </article>
-        <article class="proj">
-          <div class="ph" role="img" aria-label="Projektfoto einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: Projekt Wien 19.</span></div>
-          <div class="body">
-            <h3>Terrasse mit ZIP-Screens, Wien 19.</h3>
-            <p class="meta">Bioklimatisch · ZIP-Screens · Beleuchtung · Montage 2026</p>
-            <span class="badge">● Referenz auf Anfrage</span>
-          </div>
-        </article>
-        <article class="proj">
-          <div class="ph" role="img" aria-label="Projektfoto einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: Café-Terrasse</span></div>
-          <div class="body">
-            <h3>Café-Terrasse, Niederösterreich</h3>
-            <p class="meta">Gastronomie · Glas · Heizung · Montage 2026</p>
-            <span class="badge">● Referenz auf Anfrage</span>
-          </div>
-        </article>
+      <div class="grid grid-3" id="projects-grid" hidden></div>
+      <div class="empty" id="projects-empty">
+        <p>Wir stellen hier gerade unsere ersten Projekte zusammen. Möchten Sie schon jetzt ein Beispiel sehen oder mit einer Referenz sprechen? Fordern Sie einen Rückruf an, wir sagen Ihnen, was wir zeigen können.</p>
+        <a href="#anfrage" class="btn btn-primary">Rückruf anfordern</a>
       </div>
-      <p class="ph-note" id="projects-note" style="margin-top:1rem">Platzhalter — mit echten Projektfotos, Orten und (mit Einverständnis) kontaktierbaren Referenzen ersetzen.</p>
+      <p class="small" style="margin-top:1rem">Referenzgespräch mit Eigentümerin oder Eigentümer möglich. Fragen Sie uns danach; wir stellen den Kontakt her, soweit die Eigentümer zugestimmt haben.</p>
     </div>
   </section>
 
-  <!-- SEE IT MOVE -->
+  <!-- 5. CONFIGURATOR TEASER -->
   <section>
     <div class="wrap split">
       <div>
         <span class="eyebrow">Konfigurator</span>
-        <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Sehen Sie Ihre Pergola — in Bewegung</h2>
-        <p style="color:var(--ink-2);margin-top:.8rem">In unserem 3D-Konfigurator sehen Sie Ihre eigene Pergola: wie sich das Lamellendach öffnet, wie die ZIP-Screens laufen, das Glas und das Licht am Abend. Und Sie bekommen einen echten Preis — kein vages „ab“.</p>
-        <div class="hero-cta"><a href="#anfrage" class="btn btn-primary">Konfiguration starten</a></div>
+        <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Sehen Sie Ihre Pergola in Bewegung</h2>
+        <p style="color:var(--ink-2);margin-top:.8rem">Im Konfigurator stellen Sie Ihre Pergola zusammen und sehen, wie sich das Dach bewegt, wie die ZIP-Screens laufen, wie Glas und Licht am Abend wirken. Dazu erhalten Sie einen konkreten Preis, kein „ab“.</p>
+        <p class="small" style="margin-top:.8rem">Der Preis im Konfigurator ist ein Richtpreis. Verbindlich wird er nach dem Aufmaß bei Ihnen vor Ort. Alle Preise für Privatkunden inklusive 20&nbsp;% USt.</p>
+        <div class="hero-cta"><a href="index.html?lang=de" class="btn btn-primary">Pergola konfigurieren</a></div>
       </div>
-      <div class="ph" role="img" aria-label="Screenshot des Konfigurators einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Konfigurator / Video der Bewegung</span></div>
+      <div class="ph" role="img" aria-label="Platzhalter: Konfigurator-Screenshot oder Video"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Screenshot / Video der Bewegung einsetzen</span></div>
     </div>
   </section>
 
-  <!-- HOW IT WORKS — speed -->
+  <!-- 6. HOW IT WORKS -->
   <section class="band">
     <div class="wrap">
       <div class="sec-head">
-        <span class="eyebrow">In vier Schritten</span>
-        <h2>Schnell, klar, mit festen Terminen</h2>
-        <p>In Österreich warten viele wochenlang auf ein Angebot. Bei uns nicht.</p>
+        <span class="eyebrow">So läuft es ab</span>
+        <h2>Vier Schritte, vom Entwurf zur fertigen Terrasse</h2>
       </div>
       <div class="steps">
-        <div class="step"><div class="n"></div><h3>Anfrage</h3><p>Online konfigurieren oder kurz anfragen — wir melden uns.</p></div>
-        <div class="step"><div class="n"></div><h3>Rückruf in 2 Stunden</h3><p>Ein echter Mensch, der Ihre Terrasse versteht.</p></div>
-        <div class="step"><div class="n"></div><h3>Aufmaß &amp; Festpreis in 24 Stunden</h3><p>Vor Ort, mit fixem Liefer- und Montagetermin — sofort.</p></div>
-        <div class="step"><div class="n"></div><h3>Montage durch unser Team</h3><p>Eigene, geschulte Monteure. Keine fremden Subunternehmer.</p></div>
+        <div class="step"><div class="n"></div><h3>Konfigurieren</h3><p>Sie stellen Ihre Pergola online zusammen und erhalten einen Richtpreis.</p></div>
+        <div class="step"><div class="n"></div><h3>Rückruf</h3><p>Wir melden uns bei Ihnen, innerhalb von 2 Stunden <i class="todo">ZU BESTÄTIGEN</i>, und besprechen Ihre Terrasse.</p></div>
+        <div class="step"><div class="n"></div><h3>Aufmaß &amp; Festpreis</h3><p>Wir messen vor Ort auf und erstellen Ihr Angebot, innerhalb von 24 Stunden <i class="todo">ZU BESTÄTIGEN</i>. Mit dem Aufmaß wird aus dem Richtpreis der Festpreis.</p></div>
+        <div class="step"><div class="n"></div><h3>Montage</h3><p>Unsere eigenen Teams montieren Ihre Pergola. Termin: <i class="todo">ZU BESTÄTIGEN: Lieferzeit</i></p></div>
       </div>
     </div>
   </section>
 
-  <!-- WARRANTY & SERVICE -->
+  <!-- 7. WARRANTY -->
   <section>
     <div class="wrap">
       <div class="sec-head">
         <span class="eyebrow">Garantie &amp; Service</span>
-        <h2>Wir bleiben auch nach der Montage</h2>
-        <p>Die Garantie steht fest — und wir sagen sie Ihnen vor dem Kauf, nicht danach.</p>
+        <h2>Garantie und Service</h2>
+        <p>Was wir zusichern, halten wir schriftlich fest, bevor Sie sich entscheiden. <i class="todo">ZU BESTÄTIGEN: Vertragsgrundlage</i></p>
       </div>
       <div class="war">
-        <div class="c"><div class="big">10</div><h3>Jahre auf die Struktur</h3><p>Aluminium und Beschichtung.</p></div>
-        <div class="c"><div class="big">5</div><h3>Jahre auf Motoren &amp; Screens</h3><p>Antriebe, Steuerung, ZIP-Screens.</p></div>
-        <div class="c"><div class="big">1×</div><h3>Service-Besuch pro Jahr</h3><p>Eine feste Ansprechperson prüft alles — das bieten Premium-Marken nicht.</p></div>
+        <div class="c"><div class="big">10</div><h3>Jahre auf die Konstruktion</h3><p><i class="todo">ZU BESTÄTIGEN</i></p></div>
+        <div class="c"><div class="big">5</div><h3>Jahre auf Motoren und Screens</h3><p><i class="todo">ZU BESTÄTIGEN</i></p></div>
+        <div class="c"><div class="big">1×</div><h3>Service-Besuch pro Jahr</h3><p><i class="todo">ZU BESTÄTIGEN</i></p></div>
       </div>
+      <p class="small" style="margin-top:1rem">Garantiebedingungen: <i class="todo">EINSETZEN: Link / Dokument</i></p>
     </div>
   </section>
 
-  <!-- WHY US -->
+  <!-- 8. WHY D&B -->
   <section class="band">
     <div class="wrap split">
-      <div class="ph" role="img" aria-label="Foto Team oder Montage einfügen"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: unser Montageteam</span></div>
+      <div class="ph" role="img" aria-label="Platzhalter: Foto Montageteam"><svg aria-hidden="true"><use href="#perg"/></svg><span class="lab">Foto: unser Montageteam einsetzen</span></div>
       <div>
-        <span class="eyebrow">Warum wir</span>
-        <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Die Qualität der Top-Marken — mit einem Team, das schneller ist und bleibt</h2>
+        <span class="eyebrow">Warum D&amp;B</span>
+        <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Klare Aussagen, eigene Teams</h2>
         <ul>
-          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>20+ Jahre Engineering.</b> Wir kennen die Systeme von innen — auch die der Mitbewerber.</span></li>
-          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Eigene Monteure</b> in Österreich und ein Team von 26 Monteuren in Kroatien.</span></li>
-          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Geschwindigkeit:</b> Rückruf in 2 Stunden, Angebot in 24 — mit festen Terminen.</span></li>
-          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Service, der bleibt:</b> 10 Jahre Garantie und ein Besuch pro Jahr.</span></li>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Sie sehen, was Sie bekommen.</b> Der Konfigurator zeigt Bewegung, Licht und einen echten Preis, bevor Sie anfragen.</span></li>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Eigene Teams.</b> Die Montage machen unsere Monteure, nicht wechselnde Subunternehmer.</span></li>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Klare Aussagen.</b> Richtpreis jetzt, Festpreis nach Aufmaß, Garantie vor dem Kauf. <i class="todo">ZU BESTÄTIGEN</i></span></li>
+          <li><svg aria-hidden="true"><use href="#perg"/></svg><span><b>Erfahrung.</b> 20+ Jahre in der Branche <i class="todo">ZU BESTÄTIGEN</i> und ein Hauptsitz in Wien, an den Sie sich wenden können.</span></li>
         </ul>
         <div class="chips">
-          <span class="chip">Bioklimatisches Lamellendach</span>
-          <span class="chip">Glas</span>
-          <span class="chip">ZIP-Screens</span>
-          <span class="chip">Beleuchtung</span>
-          <span class="chip">Heizung</span>
+          <span class="chip">Bioklimatisches Lamellendach</span><span class="chip">Verschiebbares Dach</span><span class="chip">Glas</span><span class="chip">ZIP-Screens</span><span class="chip">Beleuchtung</span><span class="chip">Heizung</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FAQ -->
+  <!-- 9. FAQ -->
   <section>
     <div class="wrap">
       <div class="sec-head">
@@ -307,37 +358,45 @@ dialog.gal .top{display:flex;justify-content:space-between;align-items:center;ga
         <h2>Was Kundinnen und Kunden wissen wollen</h2>
       </div>
       <div class="faq">
-        <details open><summary>Was kostet eine Pergola?</summary><p>Je nach Größe und Ausstattung (Glas, ZIP-Screens, Beleuchtung) liegen die meisten Projekte zwischen 10.000 und 16.000 €. Im Konfigurator sehen Sie Ihren echten Preis — kein „ab“.</p></details>
-        <details><summary>Wie lange dauert es bis zur Montage?</summary><p>Rückruf in 2 Stunden, Aufmaß und Festpreis in 24 Stunden. Den fixen Liefer- und Montagetermin nennen wir Ihnen direkt vor Ort. <span class="ph-note">[Konkrete Lieferzeit einsetzen]</span></p></details>
-        <details><summary>Was ist mit der Garantie nach ein paar Jahren?</summary><p>10 Jahre auf die Struktur, 5 Jahre auf Motoren und Screens. Zusätzlich kommen wir einmal im Jahr zum Service-Besuch. Das sagen wir Ihnen vor dem Kauf.</p></details>
-        <details><summary>Eigene Marke — ist die Qualität wie bei den großen Namen?</summary><p>Wir bauen mit geprüften Systemen und nennen Ihnen den Hersteller und die Komponenten transparent. <span class="ph-note">[Hersteller / Wind- und Schneelastwerte einsetzen]</span></p></details>
-        <details><summary>Wie verhält sich die Pergola bei Wind und Regen?</summary><p>Das Lamellendach und die ZIP-Screens sind für Wind und Wetter ausgelegt. <span class="ph-note">[Wind-/Schneelast, Sensorik einsetzen]</span></p></details>
+        <details open><summary>Brauche ich eine Genehmigung?</summary><p>Das hängt vom Bundesland und von der Gemeinde ab, und auch von Größe und Bauweise. Wir empfehlen, das vor der Bestellung bei Ihrer Gemeinde bzw. Baubehörde zu klären. Wir können Ihnen dafür Unterlagen zur Pergola bereitstellen, eine Zusage über die Genehmigungsfähigkeit können wir nicht geben.</p></details>
+        <details><summary>Was kostet eine Pergola?</summary><p>Der Preis hängt von Größe und Ausstattung ab (z.&nbsp;B. Glas, ZIP-Screens, Licht). Im Konfigurator sehen Sie einen konkreten Richtpreis inklusive 20&nbsp;% USt. Der Festpreis steht nach dem Aufmaß fest.</p></details>
+        <details><summary>Wie lange dauert es bis zur Montage?</summary><p><i class="todo">ZU BESTÄTIGEN: Lieferzeit in Wochen</i> Den konkreten Termin nennen wir Ihnen mit dem Angebot. Aufmaß und Angebot innerhalb von 24 Stunden nach Ihrem Rückruf <i class="todo">ZU BESTÄTIGEN</i>.</p></details>
+        <details><summary>Wie verhält sich die Pergola bei Wind und Schnee?</summary><p>Dafür gelten die technischen Werte des jeweiligen Modells: <i class="todo">EINSETZEN: Wind-/Schneelast</i>. Sie hängen von Modell, Größe und Aufstellung ab. Wir besprechen sie mit Ihnen vor Ort.</p></details>
+        <details><summary>Was passiert bei Regen?</summary><p>Bei geschlossenem Lamellendach fließt Regenwasser kontrolliert ab. <i class="todo">ZU BESTÄTIGEN: Entwässerung und Regensensor beim Modell</i></p></details>
+        <details><summary>Wie viel Wartung braucht eine Pergola?</summary><p>Wenig. Wir empfehlen einen jährlichen Service-Besuch, der bei uns Teil des Angebots ist. <i class="todo">ZU BESTÄTIGEN</i></p></details>
+        <details><summary>Welche Garantie gibt es?</summary><p>10 Jahre auf die Konstruktion, 5 Jahre auf Motoren und Screens <i class="todo">ZU BESTÄTIGEN</i>. Die genauen Bedingungen erhalten Sie schriftlich vor dem Kauf.</p></details>
+        <details><summary>Was ist im Preis nicht enthalten?</summary><p>Üblicherweise Fundament bzw. Untergrundvorbereitung, Elektroanschluss vor Ort und Behördenwege. <i class="todo">ZU BESTÄTIGEN: Leistungsumfang</i> Im Angebot steht genau, was dabei ist.</p></details>
+        <details><summary>Woher stammen die Komponenten, und wie sicher ist die Qualität?</summary><p>Wir bauen mit geprüften Systemen. Auf Wunsch zeigen wir Ihnen Zertifikate und Datenblätter <i class="todo">ZU BESTÄTIGEN</i>. Zu Material und Verarbeitung beantworten wir Ihre Fragen gern im Gespräch.</p></details>
+        <details><summary>Kann ich mit jemandem sprechen, der schon eine Pergola von Ihnen hat?</summary><p>Wenn ein Projekt auf dieser Seite gezeigt wird, kann die Eigentümerin oder der Eigentümer einem Referenzgespräch zugestimmt haben. Fragen Sie uns; wir vermitteln den Kontakt telefonisch über unser Büro. Wir geben keine Kontaktdaten auf der Website weiter.</p></details>
       </div>
     </div>
   </section>
 
-  <!-- SHOWROOM + FORM -->
+  <!-- 10. REQUEST FORM -->
   <section class="band" id="anfrage">
     <div class="wrap">
       <div class="form-wrap">
         <div>
-          <span class="eyebrow">Schauraum &amp; Kontakt</span>
-          <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Kommen Sie vorbei — oder lassen Sie sich zurückrufen</h2>
-          <p style="color:var(--ink-2);margin-top:.8rem">In unserem Schauraum in Wien sehen und berühren Sie eine echte Pergola. Oder fordern Sie einen Rückruf an — wir melden uns innerhalb von 2 Stunden.</p>
+          <span class="eyebrow">Kontakt</span>
+          <h2 style="font-size:clamp(1.6rem,4vw,2.3rem);margin-top:.5rem">Rückruf anfordern</h2>
+          <p style="color:var(--ink-2);margin-top:.8rem">Hinterlassen Sie uns Ihre Daten, wir melden uns bei Ihnen. Zusage: innerhalb von 2 Stunden <i class="todo">ZU BESTÄTIGEN</i>.</p>
+          <p style="color:var(--ink-2);margin-top:.8rem">Lieber gleich Ihre Pergola zusammenstellen? <a href="index.html?lang=de">Zum Konfigurator</a>, dort können Sie Ihre Konfiguration direkt mit der Anfrage senden.</p>
           <div style="margin-top:1.4rem;display:flex;flex-direction:column;gap:.7rem">
-            <div class="contact-line">Schauraum: <b>[Adresse Wien einsetzen]</b></div>
-            <div class="contact-line">Telefon: <b id="tel">[Telefonnummer]</b> <button class="copy" type="button" data-copy="tel">Kopieren</button></div>
-            <div class="contact-line">E-Mail: <b id="mail">[E-Mail]</b> <button class="copy" type="button" data-copy="mail">Kopieren</button></div>
+            <div class="contact-line">Wien: <b><i class="todo">EINSETZEN: Adresse und Telefon</i></b></div>
+            <div class="contact-line">Zagreb: <b><i class="todo">EINSETZEN: Adresse und Telefon</i></b></div>
+            <div class="contact-line">E-Mail: <b><i class="todo">EINSETZEN: E-Mail</i></b></div>
           </div>
         </div>
-        <div>
+        <div id="form-slot">
           <form id="lead" novalidate>
             <label>Name<input name="name" autocomplete="name" required></label>
-            <label>Ort / PLZ<input name="ort" autocomplete="postal-code" placeholder="z. B. 1130 Wien" required></label>
+            <label>PLZ / Ort<input name="ort" autocomplete="postal-code" placeholder="z. B. 1130 Wien" required></label>
             <label>Telefon oder E-Mail<input name="kontakt" autocomplete="tel" required></label>
-            <label>Nachricht (optional)<textarea name="msg" placeholder="Größe der Terrasse, Wünsche …"></textarea></label>
-            <button class="btn btn-primary" type="submit" style="justify-content:center">Rückruf in 2 Stunden anfordern</button>
-            <p class="ph-note">Formular ist eine Vorschau — an Ihr CRM / Ihre Mailadresse anbinden.</p>
+            <label>Nachricht (optional)<textarea name="msg" placeholder="Was planen Sie? Z. B. Größe der Terrasse, Wünsche"></textarea></label>
+            <label class="chk"><input type="checkbox" name="consent" required><span>Ich stimme zu, dass D&amp;B meine Angaben zur Bearbeitung meiner Anfrage verwendet. Näheres in der Datenschutzerklärung <i class="todo">EINSETZEN: Link</i>.</span></label>
+            <p class="err" id="form-err" role="alert" hidden></p>
+            <button class="btn btn-primary" id="form-btn" type="submit" style="justify-content:center">Rückruf anfordern</button>
+            <p class="small">Keine Werbeanrufe, keine Weitergabe Ihrer Daten an Dritte. <i class="todo">ZU BESTÄTIGEN</i></p>
           </form>
         </div>
       </div>
@@ -348,43 +407,81 @@ dialog.gal .top{display:flex;justify-content:space-between;align-items:center;ga
 <footer>
   <div class="wrap">
     <div class="foot-grid">
-      <span class="brand"><svg class="mk" viewBox="0 0 120 90" aria-hidden="true" style="color:#c79a4e"><use href="#perg"/></svg>D&amp;B Pergolen</span>
-      <div style="font-size:.9rem;max-width:30ch">Echte Projekte, echte Garantie, ein Team vor Ort. Wien &amp; Kroatien.</div>
+      <span class="brand"><svg class="mk" viewBox="0 0 120 90" aria-hidden="true" style="color:#c79a4e"><use href="#perg"/></svg>D&amp;B Pergolen · Wien · Zagreb</span>
+      <div style="font-size:.9rem;max-width:34ch"><i class="todo">EINSETZEN: Adresse · Telefon · E-Mail</i><br><i class="todo">Impressum</i> · <i class="todo">Datenschutz</i></div>
     </div>
-    <p class="fine">© 2026 D&amp;B Pergolen (Arbeitsname) · Platzhalter-Seite nach der Validierungs-Methodik. Projektfotos, Referenzen, Adresse und Kontaktdaten mit echten Daten ersetzen.</p>
+    <p class="fine"><i class="todo">EINSETZEN: Firmenname, UID, Firmenbuchnummer, Firmenbuchgericht</i><br>Preise für Privatkunden inkl. 20&nbsp;% USt. Preise im Konfigurator sind Richtpreise; verbindlich nach Aufmaß. © 2026 <i class="todo">EINSETZEN: Firmenname</i></p>
   </div>
 </footer>
 
+<div class="sticky-cta"><a href="index.html?lang=de" class="btn btn-primary">Konfigurieren</a><a href="#anfrage" class="btn btn-ghost">Rückruf</a></div>
+
 <script>
+// ---- Anfrage: Rückruf-Formular -> Edge Function submit-request (Turnstile prüft den Menschen, dann entsteht ein Lead im CRM) ----
 (function(){
-  var form=document.getElementById('lead');
-  if(form){form.addEventListener('submit',function(e){
-    e.preventDefault();
-    if(!form.reportValidity())return;
-    var card=document.createElement('div');
-    card.className='form-ok';
-    card.setAttribute('role','status');
-    card.innerHTML='<strong>Danke!</strong><br>Ihre Anfrage ist angekommen. In der echten Version meldet sich das Team innerhalb von 2 Stunden. <span class="ph-note">(Vorschau — bitte an CRM anbinden.)</span>';
-    form.replaceWith(card);
-  });}
-  document.querySelectorAll('.copy').forEach(function(b){
-    b.addEventListener('click',function(){
-      var el=document.getElementById(b.dataset.copy);
-      var t=el?el.textContent:'';
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(t).then(function(){b.textContent='Kopiert';setTimeout(function(){b.textContent='Kopieren';},1400);}).catch(select);
-      }else select();
-      function select(){try{var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);}catch(e){}}
+  var BACKEND={url:'https://zypujyrvbegilvtvqras.supabase.co',anonKey:'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9'};
+  var TS={siteKey:'0x4AAAAAAFlRMtBteuJ_-n1B',api:'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'};
+  var form=document.getElementById('lead'),err=document.getElementById('form-err'),btn=document.getElementById('form-btn');
+  if(!form)return;
+  var tsReady=null,widget=null,resolveTok=null;
+  function loadTs(){
+    if(tsReady)return tsReady;
+    tsReady=new Promise(function(res){var s=document.createElement('script');s.src=TS.api;s.async=true;s.defer=true;s.onload=function(){res(true);};s.onerror=function(){res(false);};document.head.appendChild(s);});
+    return tsReady;
+  }
+  function token(){
+    return loadTs().then(function(ok){
+      if(!ok||!window.turnstile)return '';
+      if(widget==null){
+        var host=document.createElement('div');host.id='ts-host';form.appendChild(host);
+        var done=function(t){if(resolveTok){var r=resolveTok;resolveTok=null;r(t);}};
+        try{widget=window.turnstile.render(host,{sitekey:TS.siteKey,execution:'execute',appearance:'interaction-only',callback:done,'error-callback':function(){done('');},'timeout-callback':function(){done('');}});}catch(e){return '';}
+      }
+      return new Promise(function(resolve){
+        resolveTok=resolve;
+        try{window.turnstile.reset(widget);}catch(e){}
+        try{window.turnstile.execute(widget);}catch(e){resolveTok=null;resolve('');}
+        setTimeout(function(){if(resolveTok===resolve){resolveTok=null;resolve('');}},12000);
+      });
     });
+  }
+  function utm(){
+    var o={},q=new URLSearchParams(location.search);
+    ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'].forEach(function(k){if(q.get(k))o[k]=q.get(k).slice(0,200);});
+    if(document.referrer)o.referrer=document.referrer.slice(0,300);
+    return o;
+  }
+  function show(msg){err.textContent=msg;err.hidden=!msg;}
+  form.addEventListener('submit',function(e){
+    e.preventDefault();show('');
+    var f=form.elements,name=f.name.value.trim(),ort=f.ort.value.trim(),k=f.kontakt.value.trim();
+    if(!name){show('Bitte geben Sie einen Namen an.');f.name.focus();return;}
+    if(!k){show('Bitte geben Sie eine Telefonnummer oder E-Mail-Adresse an.');f.kontakt.focus();return;}
+    if(!f.consent.checked){show('Bitte stimmen Sie der Verwendung Ihrer Angaben zu.');f.consent.focus();return;}
+    var isMail=k.indexOf('@')>-1;
+    var contact={name:name,address:ort,postcode:(ort.match(/\b\d{4}\b/)||[''])[0],note:f.msg.value.trim()};
+    if(isMail)contact.email=k;else contact.phone=k;
+    btn.disabled=true;btn.textContent='Wird gesendet …';
+    var fail=function(){btn.disabled=false;btn.textContent='Rückruf anfordern';show('Das hat leider nicht geklappt. Bitte versuchen Sie es noch einmal oder rufen Sie uns an (Telefonnummer folgt).');};
+    token().then(function(tok){
+      if(!tok)throw new Error('turnstile');
+      return fetch(BACKEND.url+'/functions/v1/submit-request',{method:'POST',headers:{'content-type':'application/json',apikey:BACKEND.anonKey,Authorization:'Bearer '+BACKEND.anonKey},
+        body:JSON.stringify({token:tok,contact:contact,quote:{},utm:utm(),journey:'Rückruf-Anfrage (Landingpage)'})});
+    }).then(function(r){
+      if(!r.ok)throw new Error(r.status);
+      var card=document.createElement('div');card.className='form-ok';card.setAttribute('role','status');
+      card.innerHTML='<strong>Danke, Ihre Anfrage ist bei uns eingegangen.</strong><br>Wir melden uns bei Ihnen <i class="todo">ZU BESTÄTIGEN: Zeitangabe</i>.<br><br><a class="btn btn-ghost" href="index.html?lang=de">Pergola konfigurieren</a>';
+      form.replaceWith(card);
+    }).catch(fail);
   });
 })();
 
 // ---- Projekte aus der Datenbank (Tabelle projects, nur veröffentlichte) ----
-// Without BACKEND.url, offline, or with no published project the static placeholder cards above stay as they are.
+// Without published projects (or offline) the empty state stays: no invented examples.
 (function(){
   var BACKEND={url:'https://zypujyrvbegilvtvqras.supabase.co',anonKey:'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9'};
   if(!BACKEND.url||!BACKEND.anonKey||!window.fetch)return;
-  var grid=document.getElementById('projects-grid'),note=document.getElementById('projects-note');
+  var grid=document.getElementById('projects-grid'),empty=document.getElementById('projects-empty');
   if(!grid)return;
   var LABEL={bioklimatisch:'Bioklimatisch',glas:'Glas',zip:'ZIP-Screens',licht:'Beleuchtung',heizung:'Heizung'};
   var photoUrl=function(p){return BACKEND.url+'/storage/v1/object/public/project-photos/'+p.split('/').map(encodeURIComponent).join('/');};
@@ -417,7 +514,7 @@ dialog.gal .top{display:flex;justify-content:space-between;align-items:center;ga
     var body=el('div','body');
     body.appendChild(el('h3',null,p.title));
     body.appendChild(el('p','meta',meta(p)));
-    if(p.reference_available)body.appendChild(el('span','badge','● Referenz auf Anfrage'));
+    if(p.reference_available)body.appendChild(el('span','badge','● Referenzgespräch möglich'));
     a.appendChild(ph);a.appendChild(body);return a;
   }
   var ctl=window.AbortController?new AbortController():null;
@@ -428,11 +525,10 @@ dialog.gal .top{display:flex;justify-content:space-between;align-items:center;ga
     .then(function(rows){
       rows=(rows||[]).filter(function(p){return p&&p.title&&p.photos&&p.photos.length;});
       if(!rows.length)return;
-      grid.textContent='';
       rows.forEach(function(p){grid.appendChild(card(p));});
-      if(note)note.remove();
+      grid.hidden=false;if(empty)empty.hidden=true;
     })
-    .catch(function(){/* keep the static cards */})
+    .catch(function(){/* keep the empty state */})
     .then(function(){clearTimeout(timer);});
 })();
 </script>
