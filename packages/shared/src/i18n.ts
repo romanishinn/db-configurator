@@ -1,7 +1,7 @@
 // Shared i18n primitives used by every app (configurator shell, cabinet/CRM).
 // The big per-screen dictionaries still live with their screens; this is the plumbing.
-export type Lang = 'ru' | 'en' | 'de' | 'hr';
-export const LANGS: Lang[] = ['ru', 'en', 'de', 'hr'];
+export type Lang = 'ru' | 'en' | 'de' | 'hr' | 'es';
+export const LANGS: Lang[] = ['ru', 'en', 'de', 'hr', 'es'];
 export type Dict = Record<Lang, string>;
 
 const KEY = 'dbp_lang';

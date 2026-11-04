@@ -85,7 +85,7 @@ select pg_temp.check((select count(*) from public.leads) = 1, 'a colleague in th
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.quotes) = 0, 'another dealer sees nothing');
 select pg_temp.as_user(:'manager');
-select pg_temp.check((select count(*) from public.leads) = 0, 'a manager sees nothing that is not his');
+select pg_temp.check((select count(*) from public.leads where id <> :'lead_karl') = 0, 'a manager sees nothing that is not his, except new site requests (0012)');
 
 -- ---------- 4. stages: history, required reason for a refusal, assignment cannot be changed directly ----------
 select pg_temp.as_user(:'graz1');
@@ -123,11 +123,11 @@ select pg_temp.check(:'ok', 'a client cannot give himself a discount');
 select pg_temp.check((select count(*) from public.quotes) = 0, 'a new client sees no quotes of others');
 select pg_temp.as_user(:'graz1');
 insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 12000, '{"pergola": 10, "sides": 5}');
-select pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net, discount) values (%L, 'c', '{}', 1, '{"pergola": 12}')$q$, :'graz1'), 'DISCOUNT_LIMIT') as ok1 \gset
+select pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net, discount) values (%L, 'c', '{}', 1, '{"pergola": -1}')$q$, :'graz1'), 'DISCOUNT_LIMIT') as ok1 \gset
 select pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net, discount) values (%L, 'c', '{}', 1, '{"options": 5}')$q$, :'graz1'), 'DISCOUNT_SCOPE') as ok2 \gset
 select pg_temp.fails($q$update public.quotes set total_net = 1$q$, 'permission denied') as ok3 \gset
 select pg_temp.fails(format($q$insert into public.quotes (owner, number, catalog, config, total_net) values (%L, 'X-1', 'c', '{}', 1)$q$, :'graz1'), 'permission denied') as ok4 \gset
-select pg_temp.check(:'ok1', 'discount above the personal limit is refused');
+select pg_temp.check(:'ok1', 'a negative discount is refused');
 select pg_temp.check(:'ok2', 'discount only on pergola, sides and text positions');
 select pg_temp.check(:'ok3', 'prices of a saved quote cannot be changed');
 select pg_temp.check(:'ok4', 'the quote number never comes from the browser');
@@ -214,7 +214,7 @@ select pg_temp.as_root();
 insert into public.projects (id, title, district, country, options, photos, published, reference_available) values
   ('00000000-0000-0000-0000-0000000000c1', 'Villa mit Glasdach, Wien 13.', 'Wien 13', 'AT', '{bioklimatisch,glas}', '{a/1.jpg}', false, true),
   ('00000000-0000-0000-0000-0000000000c2', 'Entwurf', 'Linz', 'AT', '{zip}', '{}', false, false);
--- 0010: publishing needs a recorded consent, so the published fixture gets one first
+-- 0017: publishing needs a recorded consent, so the published fixture gets one first
 insert into public.project_private (project_id, consent_at, consent_channel, consent_version, consent_district) values ('00000000-0000-0000-0000-0000000000c1', now(), 'paper', 'v0', true);
 update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000c1';
 -- the public sees published projects only
@@ -250,7 +250,7 @@ select pg_temp.check(pg_temp.fails($$insert into public.projects (title, distric
 select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'DE')$$, 'projects_country_check'), 'country is AT or HR');
 select pg_temp.check(pg_temp.fails($$update public.projects set title = '  ' where id = '00000000-0000-0000-0000-0000000000c4'$$, 'published_needs_text'), 'a published project needs a title');
 update public.projects set district = '' where id = '00000000-0000-0000-0000-0000000000c4';
-select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c4'), 'a published project needs no district (optional since 0010)');
+select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c4'), 'a published project needs no district (optional since 0017)');
 insert into public.projects (title, district, country) values ('', '', 'AT');  -- a draft (a dealer's request) may start empty
 delete from public.projects where id = '00000000-0000-0000-0000-0000000000c2' or (title = '' and district = '');
 select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin can delete a project');
@@ -328,7 +328,272 @@ select pg_temp.fails(format($q$select public.set_user_role(%L, 'client')$q$, :'n
 select pg_temp.as_root();
 select pg_temp.check(:'ok' and (select role from public.profiles where id = :'newbie') = 'manager', 'a superdealer cannot change a manager''s role');
 
--- ---------- 15. dealer sends a project, the office checks, records the owner's consent and publishes (0010) ----------
+-- ---------- 15. a manager reads new site requests (0012), read only ----------
+-- Karl's request is still unassigned: no creator, no assignee. Maria's went to a dealer in section 3.
+select pg_temp.as_service();
+select public.submit_request('{"name":"Journey Test","email":"j@x.at"}', '{"catalog":"c","config":{},"total_net":5}', '{}', 'Schritt 1: Breite 4000') as n3 \gset
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where source = 'web') = 2, 'a manager sees the two unassigned site requests, not the assigned one');
+select pg_temp.check((select count(*) from public.leads where id = :'lead_maria') = 0, 'a manager does not see a site request after it went to a dealer');
+select pg_temp.check((select journey from public.leads where contact_name = 'Journey Test') = 'Schritt 1: Breite 4000', 'a manager reads the client journey');
+select pg_temp.check((select count(*) from public.quotes where number = :'n3') = 1, 'a manager reads the quote of a site request');
+select pg_temp.check((select count(*) from public.quotes where lead_id = :'lead_maria') = 0, '... but not the quote of an assigned one');
+select pg_temp.check((select count(*) from public.lead_events e join public.leads l on l.id = e.lead_id where l.contact_name = 'Journey Test') >= 1, 'a manager reads the history of a site request');
+select pg_temp.check((select count(*) from public.lead_board where contact_name = 'Journey Test') = 1, 'a manager sees it on the board view');
+-- read only: updates hit no row, no comment, no assignment
+update public.leads set note = 'hacked', contact_name = 'X' where contact_name = 'Journey Test';
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Journey Test' and note is null) = 1, 'a manager cannot edit a site request');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format('select public.comment_lead(%L, %L)', (select id from public.leads where contact_name = 'Journey Test'), 'hi'), 'FORBIDDEN'), 'a manager cannot comment on an unassigned site request');
+select pg_temp.check(pg_temp.fails(format('select public.assign_lead(%L, %L)', (select id from public.leads where contact_name = 'Journey Test'), :'manager'), 'FORBIDDEN'), 'a manager cannot assign a site request to himself');
+select pg_temp.check(pg_temp.fails($q$delete from public.leads$q$, 'permission denied'), 'a manager cannot delete leads');
+-- not a dealer's lead
+select pg_temp.check((select count(*) from public.leads where source = 'dealer') = 0, 'a manager sees no dealer lead');
+-- everybody else
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.leads where contact_name in ('Journey Test', 'Karl')) = 0, 'a dealer does not see unassigned site requests');
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.leads where source = 'web') = 0 and (select count(*) from public.quotes) = 0, 'another dealer does not see them either');
+select pg_temp.as_user(:'client');
+select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.lead_events) = 0, 'a client does not see site requests');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$select journey from public.leads$q$, 'permission denied'), 'anon cannot read the journey');
+select pg_temp.check(pg_temp.fails($q$select * from public.lead_events$q$, 'permission denied'), 'anon cannot read the history');
+select pg_temp.check(pg_temp.fails($q$select public.submit_request('{"email":"a@b.at"}', '{"catalog":"c","config":{},"total_net":1}')$q$, 'permission denied'), 'anon still cannot call submit_request (0012)');
+-- narrowing: only stage 'new' (and still unassigned) is visible
+select pg_temp.as_service();
+select public.submit_request('{"name":"Stage Test","email":"s@x.at"}', '{"catalog":"c","config":{},"total_net":5}') as n4 \gset
+select public.submit_request('{"name":"Assign Test","email":"a@x.at"}', '{"catalog":"c","config":{},"total_net":5}') as n5 \gset
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name in ('Stage Test', 'Assign Test')) = 2, 'a manager sees both fresh site requests');
+select pg_temp.as_root();
+update public.leads set stage = 'contacted' where contact_name = 'Stage Test';
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Stage Test') = 0, 'a site request past stage new is not visible to a manager');
+select pg_temp.check((select count(*) from public.quotes where number = :'n4') = 0, '... nor its quote');
+select pg_temp.as_user(:'admin');
+select public.assign_lead((select id from public.leads where contact_name = 'Assign Test'), :'graz1');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Assign Test') = 0, 'after assign_lead the request leaves the manager''s view');
+
+-- orders: reading a lead gives no write on its orders; quotes cannot be attached to a lead one may only see
+select pg_temp.as_root();
+insert into public.orders (lead_id, paid) select id, false from public.leads where contact_name = 'Journey Test';
+insert into public.orders (lead_id, paid) select id, false from public.leads where contact_name = 'Assign Test';
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.orders o join public.leads l on l.id = o.lead_id where l.contact_name = 'Journey Test') = 1, 'a manager reads the order of a site request');
+update public.orders set paid = true, seller_id = :'manager' where lead_id = (select id from public.leads where contact_name = 'Journey Test');
+select pg_temp.as_root();
+select pg_temp.check((select paid is false and seller_id is null from public.orders where lead_id = (select id from public.leads where contact_name = 'Journey Test')), 'a manager cannot change the order of a site request');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format('insert into public.orders (lead_id) values (%L)', (select id from public.leads where contact_name = 'Journey Test')), 'row-level security'), 'a manager cannot create an order for a site request');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, lead_id, catalog, config, total_net) values (%L, %L, 'c', '{}', 1)$q$, :'manager', (select id from public.leads where contact_name = 'Journey Test')), 'row-level security'), 'a manager cannot attach a quote to a site request');
+-- ... nor re-link an existing own quote to it by UPDATE
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'manager', null, 'c', '{}', 999999);
+select pg_temp.check(pg_temp.fails(format($q$update public.quotes set lead_id = %L where owner = %L and total_net = 999999$q$, (select id from public.leads where contact_name = 'Journey Test'), :'manager'), 'row-level security'), 'a manager cannot re-link a quote to a site request by UPDATE');
+-- dealer leads are not editable either (the assigned dealer's colleague of another org, a manager)
+select pg_temp.as_user(:'linz');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, lead_id, catalog, config, total_net) values (%L, %L, 'c', '{}', 1)$q$, :'linz', :'lead_maria'), 'row-level security'), 'a dealer of another organisation cannot attach a quote to a foreign lead');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'linz', null, 'c', '{}', 3);
+select pg_temp.check(pg_temp.fails(format($q$update public.quotes set lead_id = %L where owner = %L and total_net = 3$q$, :'lead_maria', :'linz'), 'row-level security'), 'a dealer of another organisation cannot re-link a quote to a foreign lead by UPDATE');
+-- unchanged: the assigned dealer, a colleague of his organisation and the superadmin write as before
+select pg_temp.as_user(:'graz1');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'graz1', null, 'c', '{}', 2);
+update public.quotes set lead_id = :'lead_maria' where owner = :'graz1' and lead_id is null and total_net = 2;
+select pg_temp.check((select count(*) from public.quotes where owner = :'graz1' and lead_id = :'lead_maria' and total_net = 2) = 1, 'the assigned dealer re-links his own quote to his lead');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'graz1', :'lead_maria', 'c', '{}', 1);
+insert into public.orders (lead_id) values (:'lead_maria');
+update public.orders set paid = true, seller_id = :'graz1' where lead_id = :'lead_maria';
+select pg_temp.check((select paid from public.orders where lead_id = :'lead_maria'), 'the assigned dealer creates and changes his order and attaches a quote');
+select pg_temp.as_user(:'graz2');
+update public.orders set note = 'colleague' where lead_id = :'lead_maria';
+select pg_temp.as_root();
+select pg_temp.check((select note from public.orders where lead_id = :'lead_maria') = 'colleague', 'a colleague of the same organisation changes the order');
+select pg_temp.as_user(:'admin');
+update public.orders set note = 'admin' where lead_id = (select id from public.leads where contact_name = 'Journey Test');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'admin', (select id from public.leads where contact_name = 'Journey Test'), 'c', '{}', 1);
+select pg_temp.as_root();
+select pg_temp.check((select note from public.orders where lead_id = (select id from public.leads where contact_name = 'Journey Test')) = 'admin', 'the superadmin changes orders and attaches quotes as before');
+-- a manager who is assigned the lead writes as before
+select pg_temp.as_user(:'admin');
+select public.assign_lead((select id from public.leads where contact_name = 'Journey Test'), :'manager');
+select pg_temp.as_user(:'manager');
+update public.orders set paid = true where lead_id = (select id from public.leads where contact_name = 'Journey Test');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'manager', (select id from public.leads where contact_name = 'Journey Test'), 'c', '{}', 1);
+select pg_temp.as_root();
+select pg_temp.check((select paid from public.orders where lead_id = (select id from public.leads where contact_name = 'Journey Test')), 'a manager assigned to the lead changes its order and attaches a quote');
+
+-- the rule is exactly "web, no creator, no assignee, new": neighbouring shapes stay invisible to a manager
+select pg_temp.as_root();
+alter table public.leads disable trigger user;
+insert into public.leads (source, created_by, contact_name, phone) values ('web', :'admin', 'Shape created', '+43 9');
+insert into public.leads (source, contact_name, phone) values ('dealer', 'Shape dealer', '+43 9');
+alter table public.leads enable trigger user;
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name in ('Shape created', 'Shape dealer')) = 0, 'a manager does not see a lead with a creator, or a non-site lead without an assignee');
+
+-- ---------- 16. CRM: customers view (0010) and the "next action" text ----------
+select pg_temp.check(public.norm_phone('+43 660 112 020') = public.norm_phone('0660 112 020') and public.norm_phone('0043 660 112 020') = '660112020', 'phone formats of one number match');
+select pg_temp.check(public.norm_phone('') is null and public.norm_phone(null) is null, 'an empty phone has no key');
+select pg_temp.as_user(:'manager');
+insert into public.leads (created_by, source, contact_name, phone, next_action, next_action_at) values
+  (:'manager', 'manager', 'Eva Berger', '+43 660 112 020', 'Позвонить', current_date),
+  (:'manager', 'manager', 'Eva B.', '0660 112 020', null, null),
+  (:'manager', 'manager', 'Tom', null, null, null);
+select pg_temp.check((select leads from public.customers where key = '660112020') = 2, 'one person with two phone formats is one customer with 2 leads');
+select pg_temp.check((select name from public.customers where key = '660112020') in ('Eva Berger', 'Eva B.'), 'the customer has a name');
+select pg_temp.check((select count(*) from public.customers where name = 'Tom') = 0, 'a lead without phone and e-mail is not a customer');
+update public.leads set next_action = 'Отправить КП' where contact_name = 'Eva Berger';
+select pg_temp.check((select next_action from public.leads where contact_name = 'Eva Berger') = 'Отправить КП', 'the owner can edit next_action');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.customers where key = '660112020') = 0, 'a dealer does not see a manager''s customer');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.customers where key = '660112020') = 1, 'superadmin sees the customer');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select * from public.customers$$, 'permission denied'), 'the public site cannot read customers');
+
+
+-- ---------- 17. a discount above the personal limit goes to approval (0011) ----------
+select pg_temp.as_user(:'graz1');   -- dealer, limit 10
+insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 20000, '{"pergola": 12}') returning id as qa \gset
+insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 21000, '{"pergola": 15}') returning id as qb \gset
+select pg_temp.check((select count(*) from public.quote_approvals where status = 'pending') = 2, 'a discount above the limit is saved and waits for approval');
+select pg_temp.check((select count(*) from public.quote_approvals where quote_id = (select id from public.quotes where owner = :'graz1' and discount = '{"pergola": 10, "sides": 5}')) = 0, 'a discount within the limit needs no approval');
+select pg_temp.fails(format($q$select public.decide_approval(%L, true)$q$, :'qa'), 'FORBIDDEN') as okd \gset
+select pg_temp.check(:'okd', 'a dealer cannot approve his own discount');
+select pg_temp.as_user(:'graz2');   -- colleague of the same company
+select pg_temp.check((select count(*) from public.quote_approvals) = 0, 'a colleague does not see the approval of another''s quote');
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.quote_approvals) = 0, 'another dealer does not see approvals');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.quote_approvals where status = 'pending') = 2, 'superadmin sees the queue');
+select pg_temp.fails(format($q$select public.decide_approval(%L, false)$q$, :'qb'), 'COMMENT_REQUIRED') as okr \gset
+select pg_temp.check(:'okr', 'a rejection needs a comment');
+select public.decide_approval(:'qa', true);
+select public.decide_approval(:'qb', false, 'Слишком большая скидка');
+select pg_temp.check((select status from public.quote_approvals where quote_id = :'qa') = 'approved', 'approved');
+select pg_temp.check((select status from public.quote_approvals where quote_id = :'qb') = 'rejected' and (select decided_by from public.quote_approvals where quote_id = :'qb') = :'admin', 'rejected with the decider recorded');
+select pg_temp.fails(format($q$select public.decide_approval(%L, true)$q$, :'qa'), 'NO_PENDING_APPROVAL') as ok2x \gset
+select pg_temp.check(:'ok2x', 'a decision is final');
+insert into public.quotes (owner, catalog, config, total_net, discount) values (:'admin', 'catalog-2026-07', '{}', 5000, '{"pergola": 40}');
+select pg_temp.check((select count(*) from public.quote_approvals) = 2, 'the superadmin has no limit and no approval');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.notifications where kind = 'approval' and text like 'Скидка отклонена%') = 1, 'the owner is told about the rejection');
+select pg_temp.check((select count(*) from public.quote_approvals) = 2, 'the owner sees the decisions on his quotes');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select public.quote_over_limit(null, '{}')$$, 'permission denied'), 'the limit check is not callable from the public API');
+select pg_temp.check(pg_temp.fails($$select public.decide_approval(null, true)$$, 'permission denied'), 'anonymous cannot decide');
+
+-- ---------- 18. architect: only his own projects and quotes (0011) ----------
+select pg_temp.as_root();
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000000009', 'arch@db.test');
+update public.profiles set role = 'architect', discount_limit = 0 where id = '00000000-0000-0000-0000-000000000009';
+\set arch '00000000-0000-0000-0000-000000000009'
+select pg_temp.as_user(:'arch');
+insert into public.leads (created_by, source, contact_name, phone) values (:'arch', 'office', 'Arch Project', '+43 1 777');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) select :'arch', id, 'catalog-2026-07', '{}', 8000 from public.leads where contact_name = 'Arch Project';
+select pg_temp.check((select count(*) from public.leads) = 1, 'an architect sees only the project he entered');
+select pg_temp.check((select count(*) from public.quotes) = 1, 'an architect sees only his own quotes');
+select pg_temp.check((select count(*) from public.lead_board) = 1 and (select count(*) from public.customers) = 1, 'the board and customers show only his own');
+select pg_temp.check((select count(*) from public.lead_events) >= 1 and (select count(distinct lead_id) from public.lead_events) = 1, 'history only of his own project');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.leads (created_by, source, contact_name) values (%L, 'office', 'Fake')$q$, :'manager'), 'row-level'), 'an architect cannot enter a lead in somebody else''s name');
+update public.leads set note = 'mine' where contact_name = 'Arch Project';
+update public.leads set note = 'hacked' where contact_name = 'Anna';
+select pg_temp.check((select note from public.leads where contact_name = 'Arch Project') = 'mine', 'an architect edits his own project');
+select pg_temp.check(pg_temp.fails(format($q$select public.assign_lead(%L, %L)$q$, (select id from public.leads limit 1), :'arch'), 'FORBIDDEN'), 'an architect cannot assign leads');
+select pg_temp.check((select count(*) from public.orders) = 0 and (select count(*) from public.notifications) = 0, 'an architect sees no orders and no notifications of others');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select note from public.leads where contact_name = 'Anna') is distinct from 'hacked', 'a lead of somebody else is untouched');
+select pg_temp.check((select score from public.lead_board limit 1) is not null, 'the board carries the score');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Arch Project') = 0, 'a manager does not see an architect''s project');
+
+
+-- ---------- 19. paged lead list, counters and statistics (0013): rows follow the caller's rights ----------
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads), 'the superadmin''s list covers every lead');
+select count(*) as total_all from public.leads \gset
+select pg_temp.check((select count(distinct id) from (select * from public.lead_page('all', null, 2, 0) union all select * from public.lead_page('all', null, 2, 2)) x) = least(4, :total_all), 'two pages do not overlap');
+select pg_temp.check((select count(*) from public.lead_page('all', 'Eva', 40, 0)) >= 1, 'search by a part of the name');
+select pg_temp.check((select count(*) from public.lead_page('all', '660112020', 40, 0) where contact_name like 'Eva%') >= 1 and (select count(*) from public.lead_page('all', '0660 112 020', 40, 0) where contact_name like 'Eva%') >= 1, 'search by the digits of a phone in any format');
+select pg_temp.check((select count(*) from public.lead_page('all', '%', 40, 0)) = 0, 'a wildcard typed in the search is not a wildcard');
+select pg_temp.check((select count(*) from public.lead_page('nonsense', null, 40, 0)) = 0, 'an unknown filter returns nothing');
+select pg_temp.check((select count(*) from public.lead_page('open', null, 1000, 0)) <= 100, 'a page is capped at 100 rows');
+select pg_temp.check((select "open" + won + lost from public.lead_counts()) = :total_all, 'the counters add up to all leads');
+select pg_temp.check((select (public.crm_stats() ->> 'open')::int + (public.crm_stats() ->> 'won')::int + (public.crm_stats() ->> 'lost')::int) = :total_all, 'the statistics add up to all leads');
+-- every role gets only what row level security lets it see
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads), 'a dealer''s list equals the leads he sees');
+select pg_temp.check((select "open" + won + lost from public.lead_counts()) = (select count(*) from public.leads), 'a dealer''s counters follow his visibility');
+select pg_temp.check(not exists (select 1 from public.lead_page('all', 'Eva', 40, 0)), 'a dealer cannot find a lead of somebody else by search');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads), 'a manager''s list equals his leads');
+select pg_temp.check((select (public.crm_stats() ->> 'open')::int + (public.crm_stats() ->> 'won')::int + (public.crm_stats() ->> 'lost')::int) = (select count(*) from public.leads), 'a manager''s statistics cover his leads only');
+select pg_temp.as_user(:'arch');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads) and (select count(*) from public.lead_page('all', null, 100, 0)) = 1, 'an architect''s list is his own project only');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select * from public.lead_page('all')$$, 'permission denied'), 'the public site cannot read the list');
+select pg_temp.check(pg_temp.fails($$select * from public.lead_counts()$$, 'permission denied') and pg_temp.fails($$select public.crm_stats()$$, 'permission denied'), 'nor the counters and statistics');
+
+-- ---------- 20. access hardening (0014): deactivated logins, company fields, org_of, discount groups, API grants ----------
+select pg_temp.as_root();
+update public.profiles set active = false where id = :'linz';
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.quotes) = 0, 'a deactivated login sees no leads and quotes');
+select pg_temp.check(pg_temp.fails(format('select public.transfer_lead(%L, %L, %L)', :'lead_anna', :'graz1', 'x'), 'FORBIDDEN'), 'a deactivated login cannot pass a lead on');
+select pg_temp.as_root();
+update public.profiles set active = true where id = :'linz';
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails($q$update public.organizations set kind = 'db' where id = '00000000-0000-0000-0000-0000000000a1'$q$, 'FORBIDDEN'), 'a dealer cannot change the kind of his company');
+select pg_temp.check(pg_temp.fails($q$update public.organizations set discount_group_id = (select id from public.discount_groups limit 1) where id = '00000000-0000-0000-0000-0000000000a1'$q$, 'FORBIDDEN'), 'a dealer cannot change his discount group');
+select pg_temp.check(public.org_of(:'linz') is null, 'org_of does not reveal another company');
+select pg_temp.as_user(:'client');
+select pg_temp.check(public.org_of(:'graz1') is null, 'a client cannot look up anybody''s company');
+select pg_temp.check((select count(*) from public.discount_groups) = 0, 'a client does not see the discount groups');
+select pg_temp.as_root();
+select pg_temp.check(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+  where c.relkind in ('r', 'v') and (has_table_privilege('anon', c.oid, 'truncate') or has_table_privilege('authenticated', c.oid, 'truncate')
+     or (c.relname not in ('pricing_config', 'projects') and has_table_privilege('anon', c.oid, 'select')))), 'the API roles have no grants beyond the intended ones');
+
+
+-- ---------- 21. input limits and negative quote lines (0015) ----------
+select pg_temp.as_service();
+select pg_temp.check(pg_temp.fails($q$select public.submit_request('{"name":"x","phone":"+43 660 9"}', '{"catalog":"c","config":{},"lines":[{"a":-99999}],"total_net":1}')$q$, 'NEGATIVE_LINE'), 'the public site cannot send a quote with a negative line');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_request(jsonb_build_object('name', %L, 'phone', '+43 660 8'), '{"catalog":"c","config":{},"total_net":1}')$q$, repeat('x', 5000)), 'leads_input_limits'), 'a name of 5000 characters is refused');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_request('{"name":"x","phone":"+43 660 7"}', '{"catalog":"c","config":{},"total_net":1}', '{}', %L)$q$, repeat('j', 30000)), 'leads_input_limits'), 'a journey text of 30000 characters is refused');
+select public.submit_request('{"name":"Normal Person","phone":"+43 660 6000"}', '{"catalog":"catalog-2026-07","config":{"width":4000},"lines":[{"t":"S400","a":13891},{"t":"Montage","a":1390}],"total_net":15281}') as nq \gset
+select pg_temp.check(:'nq' is not null, 'a normal request still goes through');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, lines, total_net) values (%L, 'c', '{}', '[{"a":1000},{"a":-900}]', 100)$q$, :'manager'), 'NEGATIVE_LINE'), 'a manager cannot hide a price cut in a negative line');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net) values (%L, 'c', '{}', 9999999)$q$, :'manager'), 'quotes_input_limits'), 'an absurd total is refused');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net) values (%L, 'c', %L, 1)$q$, :'manager', ('{"x":"' || repeat('a', 300000) || '"}')), 'quotes_input_limits'), 'a configuration of 300 KB is refused');
+insert into public.quotes (owner, catalog, config, lines, total_net) values (:'manager', 'catalog-2026-07', '{}', '[{"a":1000},{"a":50}]', 1050);
+select pg_temp.as_user(:'admin');
+insert into public.quotes (owner, catalog, config, lines, total_net) values (:'admin', 'catalog-2026-07', '{}', '[{"a":1000},{"a":-100}]', 900);
+select pg_temp.check(true, 'the superadmin may enter a negative line');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$insert into public.access_requests (company, first_name, last_name, location, email) values ('Co', 'A', 'B', 'Graz', 'not-an-email')$q$, 'access_requests_input_limits'), 'an access request needs a real e-mail');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.access_requests (company, first_name, last_name, location, email) values (%L, 'A', 'B', 'Graz', 'a@b.at')$q$, repeat('c', 600)), 'access_requests_input_limits'), 'an access request with a 600 character company is refused');
+insert into public.access_requests (company, first_name, last_name, location, email) values ('Fine Co', 'A', 'B', 'Graz', 'fine@co.at');
+select pg_temp.as_user(:'admin');
+select pg_temp.check(pg_temp.fails(format($q$select public.comment_lead(%L, %L)$q$, :'lead_anna', repeat('c', 5000)), 'lead_events_comment_limit'), 'a comment of 5000 characters is refused');
+
+
+-- ---------- 22. speed of the access rules (0016): helpers once per statement, same answers ----------
+select pg_temp.as_root();
+select pg_temp.check(not exists (
+  select 1 from pg_policy pol join pg_class r on r.oid = pol.polrelid join pg_namespace n on n.oid = r.relnamespace
+  where n.nspname = 'public' and (coalesce(pg_get_expr(pol.polqual, pol.polrelid), '') || ' ' || coalesce(pg_get_expr(pol.polwithcheck, pol.polrelid), ''))
+        ~ '(?<!SELECT )\m(auth\.uid|sees_all|my_role|my_org|is_superadmin|can_edit_projects)\(\)'), 'no policy calls a helper function once per row');
+select pg_temp.check(not exists (
+  select 1 from pg_policy pol where pg_get_expr(pol.polqual, pol.polrelid) like '%org_of(%'), 'the company check of a dealer is a single array, not org_of() per row');
+select pg_temp.check(public.norm_phone('+43 660 112 020') = '660112020' and public.norm_phone('0660 112 020') = '660112020' and public.norm_phone('12-34') = '1234' and public.norm_phone('') is null and public.norm_phone(null) is null and public.norm_phone('abc') is null, 'norm_phone gives the same keys as before');
+select pg_temp.check((select count(*) from pg_indexes where schemaname = 'public' and indexname in ('quotes_created', 'quotes_lead_created', 'quotes_owner_created', 'notifications_user_at', 'notifications_unread')) = 5, 'the list indexes exist');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select public.my_org_users()$$, 'permission denied'), 'the public site cannot call the company helper');
+
+-- ---------- 23. dealer sends a project, the office checks, records the owner's consent and publishes (0017) ----------
 select pg_temp.as_root();
 insert into public.leads (id, created_by, assigned_to, source, contact_name, phone, postcode) values
   ('00000000-0000-0000-0000-0000000000d1', :'graz1', :'graz1', 'dealer', 'Order G1', '+43 1', '8010'),
@@ -490,7 +755,7 @@ update public.projects set published = true where id = '00000000-0000-0000-0000-
 select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c5') and (select submitted_by is null from public.project_private where project_id = '00000000-0000-0000-0000-0000000000c5'), 'record_consent creates the private row of an office project');
 select pg_temp.check(pg_temp.fails(format($q$select public.complete_installation(%L)$q$, '00000000-0000-0000-0000-000000000099'), 'ORDER_NOT_FOUND'), 'completing a missing order is refused');
 
--- ---------- 15b. review round: office window on orders, confirmation by the office, photos, district, direct writes ----------
+-- ---------- 23b. review round: office window on orders, confirmation by the office, photos, district, direct writes ----------
 select pg_temp.as_root();
 insert into public.orders (id, lead_id, stage) values ('00000000-0000-0000-0000-0000000000e6', '00000000-0000-0000-0000-0000000000d1', 'done');  -- 'done' confirmed by a superdealer only
 insert into public.orders (id, lead_id) values ('00000000-0000-0000-0000-0000000000e7', '00000000-0000-0000-0000-0000000000d1');             -- the dealer sets 'done' himself
@@ -506,14 +771,20 @@ select pg_temp.check(pg_temp.fails($$select * from public.list_orders_for_instal
 select pg_temp.as_user(:'superdealer');
 select pg_temp.check(pg_temp.fails($$select * from public.list_orders_for_installation()$$, 'FORBIDDEN'), 'a superdealer cannot list orders for installation');
 select pg_temp.as_user(:'manager');
-select pg_temp.check((select count(*) from public.leads) = (select count(*) from public.leads where created_by = :'manager' or assigned_to = :'manager'), 'the manager still sees no foreign leads');
+-- 0012 lets a manager read NEW unassigned site requests (source 'web', no creator, no assignee): that is the only foreign lead he may see.
+-- The dealers' leads of this section (and their orders) stay closed to him: the narrow list function is the only way to see them.
+select pg_temp.check((select count(*) from public.leads where created_by is not null and created_by <> :'manager' and (assigned_to is distinct from :'manager')) = 0
+  and (select count(*) from public.leads) = (select count(*) from public.leads where created_by = :'manager' or assigned_to = :'manager' or (source = 'web' and created_by is null and assigned_to is null)),
+  'the manager sees no foreign dealer lead, only his own and the new unassigned site requests');
+select pg_temp.check((select count(*) from public.orders where id in (:'o_inbox', :'o_self', :'o_sd', :'o_dl', :'o_ok', :'o_light', :'o_foreign')) = 0, 'the manager does not read the dealers'' orders directly');
 select pg_temp.check((select count(*) from public.list_orders_for_installation() where order_id in (:'o_inbox', :'o_self', :'o_sd', :'o_dl')) = 4
   and (select needs_confirmation from public.list_orders_for_installation() where order_id = :'o_inbox') is false
   and (select bool_and(needs_confirmation) from public.list_orders_for_installation() where order_id in (:'o_self', :'o_sd', :'o_dl'))
   and (select contact_name || postcode from public.list_orders_for_installation() where order_id = :'o_inbox') = 'Order G18010',
   'the manager lists a dealer''s open orders and those whose done lacks the office''s confirmation');
 select pg_temp.check((select count(*) from public.list_orders_for_installation() where order_id in (:'o_ok', :'o_light', :'o_foreign')) = 0, 'orders confirmed by the office are not listed');
-select pg_temp.check(pg_temp.fails(format($q$select count(*) from public.orders where id = %L$q$, :'o_dl'), 'never') is false and (select count(*) from public.orders) = 0, 'the listing gives the manager no access to the orders table');
+-- order_read follows lead_read (0012): a manager reads the orders of the leads he may read, never a dealer's order through the listing
+select pg_temp.check((select count(*) from public.orders where id in (:'o_inbox', :'o_self', :'o_sd', :'o_dl', :'o_ok', :'o_light', :'o_foreign')) = 0, 'the listing gives the manager no access to the orders table');
 select public.complete_installation(:'o_dl');
 select public.complete_installation(:'o_dl');
 select public.complete_installation(:'o_sd');
@@ -571,7 +842,7 @@ select pg_temp.check(not has_function_privilege('anon', f, 'execute'), 'anon can
 select pg_temp.check(not has_function_privilege('authenticated', f, 'execute'), 'authenticated cannot execute ' || f)
   from unnest(array['public.notify_managers(text,uuid,text)', 'public.order_installed_by_office(uuid)']) f;
 
--- 0010 review round 2: the district is public, so it is cleared without consent; caption matching by whole words
+-- 0017 review round 2 (section 23): the district is public, so it is cleared without consent; caption matching by whole words
 select pg_temp.as_root();
 insert into public.projects (id, title, district, country, photos) values
   ('00000000-0000-0000-0000-0000000000ca', 'Villa in Wien-13.', 'Wien  13', 'AT', '{x/1.jpg}'),
@@ -605,7 +876,7 @@ update public.projects set title = 'Pergola 80100' where id = '00000000-0000-000
 update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000cd';
 select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000cd'), '8010 does not block 80100 (whole words)');
 
--- 0010: list_my_installed_orders and dealer_can_see_order
+-- 0017: list_my_installed_orders and dealer_can_see_order
 select pg_temp.as_root();
 select pg_temp.check((select count(*) from public.project_private where order_id = :'o_light' and rejected_reason is null) = 1, 'fixture: o_light has an active second request');
 select pg_temp.as_user(:'graz1');
@@ -647,5 +918,24 @@ select pg_temp.check(not has_function_privilege('anon', f, 'execute'), 'anon can
   from unnest(array['public.list_my_installed_orders()', 'public.dealer_can_see_order(uuid)', 'public.norm_caption(text)', 'public.caption_has(text,text)']) f;
 select pg_temp.check(not has_function_privilege('authenticated', f, 'execute'), 'authenticated cannot execute ' || f)
   from unnest(array['public.dealer_can_see_order(uuid)', 'public.norm_caption(text)', 'public.caption_has(text,text)']) f;
+
+-- the helper behind the dealer's order list must agree with the real policy (order_read through lead_read) for every dealer:
+-- same orders, whatever main changes in the rules of seeing leads
+select pg_temp.as_root();
+select set_config('request.jwt.claim.sub', :'graz1', false);
+select coalesce(string_agg(id::text, ',' order by id), '') as h_graz1 from public.orders where public.dealer_can_see_order(id) \gset
+select set_config('request.jwt.claim.sub', :'graz2', false);
+select coalesce(string_agg(id::text, ',' order by id), '') as h_graz2 from public.orders where public.dealer_can_see_order(id) \gset
+select set_config('request.jwt.claim.sub', :'linz', false);
+select coalesce(string_agg(id::text, ',' order by id), '') as h_linz from public.orders where public.dealer_can_see_order(id) \gset
+select pg_temp.as_user(:'graz1');
+select coalesce(string_agg(id::text, ',' order by id), '') as r_graz1 from public.orders \gset
+select pg_temp.as_user(:'graz2');
+select coalesce(string_agg(id::text, ',' order by id), '') as r_graz2 from public.orders \gset
+select pg_temp.as_user(:'linz');
+select coalesce(string_agg(id::text, ',' order by id), '') as r_linz from public.orders \gset
+select pg_temp.as_root();
+select pg_temp.check(:'h_graz1' = :'r_graz1' and :'h_graz2' = :'r_graz2' and :'h_linz' = :'r_linz', 'dealer_can_see_order gives the same orders as the order_read policy for every dealer');
+select pg_temp.check(length(:'r_graz1') > 0 and :'r_graz1' <> :'r_linz', 'the comparison is not vacuous: the dealers see different, non-empty sets of orders');
 
 select 'access tests passed' as result;

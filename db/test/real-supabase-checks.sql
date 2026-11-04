@@ -1,5 +1,5 @@
 -- Checks to run on a REAL Supabase project (the stage project), not on the local stub. Every check raises an exception on a mismatch.
--- Run after all migrations 0001-0010 are applied:   psql "$STAGE_DB_URL" -X -v ON_ERROR_STOP=1 -f db/test/real-supabase-checks.sql
+-- Run after all migrations 0001-0017 are applied:   psql "$STAGE_DB_URL" -X -v ON_ERROR_STOP=1 -f db/test/real-supabase-checks.sql
 -- It changes nothing that stays: the role scenarios run inside a transaction that is rolled back.
 -- Why it exists: the local tests use a stand-in for Supabase (db/test/supabase_stub.sql). This file checks what the stand-in only
 -- imitates: default privileges on new functions, the real storage.foldername, the real storage policies and tables.

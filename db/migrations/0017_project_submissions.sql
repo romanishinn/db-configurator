@@ -22,8 +22,8 @@ create unique index project_private_one_active_per_order on public.project_priva
   where order_id is not null and (rejected_reason is null or rejected_reason = 'consent_withdrawn');
 
 alter table public.project_private enable row level security;
-create policy project_private_staff_read on public.project_private for select to authenticated using (public.can_edit_projects());
-create policy project_private_dealer_read on public.project_private for select to authenticated using (submitted_by = auth.uid());
+create policy project_private_staff_read on public.project_private for select to authenticated using ((select public.can_edit_projects()));
+create policy project_private_dealer_read on public.project_private for select to authenticated using (submitted_by = (select auth.uid()));
 revoke all on public.project_private from anon, authenticated;
 grant select on public.project_private to authenticated;  -- policies decide; written only by the functions below (security definer), never directly
 
@@ -70,7 +70,7 @@ create trigger projects_consent_guard before insert or update on public.projects
 
 -- the dealer sees his own requests, also unpublished ones; he writes nothing (no write policy for him)
 create policy projects_dealer_read on public.projects for select to authenticated using (
-  exists (select 1 from public.project_private pp where pp.project_id = projects.id and pp.submitted_by = auth.uid())
+  exists (select 1 from public.project_private pp where pp.project_id = projects.id and pp.submitted_by = (select auth.uid()))
 );
 
 -- 3. notifications for the office (like notify_superadmins)
@@ -108,8 +108,9 @@ create function public.dealer_can_see_order(p_order uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.orders o join public.leads l on l.id = o.lead_id
    where o.id = p_order
-     and (l.created_by = auth.uid() or l.assigned_to = auth.uid()
-          or (public.my_org() is not null and public.org_of(l.assigned_to) = public.my_org())))
+     -- the dealer branch of lead_read (0016): own leads, leads assigned to him, leads of the people of his company.
+     -- It must give the same orders as the order_read policy; db/test/access.sql compares the two for every dealer.
+     and (l.created_by = auth.uid() or l.assigned_to = auth.uid() or l.assigned_to = any (public.my_org_users())))
 $$;
 
 create function public.submit_project(p_order uuid, p_note text, p_assured boolean) returns uuid
@@ -270,14 +271,14 @@ grant execute on function public.submit_project(uuid, text, boolean), public.att
 -- ASSUMPTION: photos of a project live in the folder named by the project id; files elsewhere only the superadmin deletes.
 create policy project_photos_dealer_insert on storage.objects for insert to authenticated
   with check (
-    bucket_id = 'project-photos' and public.my_role() = 'dealer'
+    bucket_id = 'project-photos' and (select public.my_role()) = 'dealer'
     and name ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}\.jpg$'
     and exists (select 1 from public.projects p join public.project_private pp on pp.project_id = p.id
-                where p.id::text = (storage.foldername(name))[1] and pp.submitted_by = auth.uid()
+                where p.id::text = (storage.foldername(name))[1] and pp.submitted_by = (select auth.uid())
                   and not p.published and pp.rejected_reason is null)
   );
 create policy project_photos_staff_delete_draft on storage.objects for delete to authenticated
   using (
-    bucket_id = 'project-photos' and public.can_edit_projects()
+    bucket_id = 'project-photos' and (select public.can_edit_projects())
     and exists (select 1 from public.projects p where p.id::text = (storage.foldername(name))[1] and not p.published)
   );

@@ -481,8 +481,71 @@ const hemi = new THREE.HemisphereLight(0xdfe9f0, 0x8a8a80, 0.85); scene.add(hemi
 const sun = new THREE.DirectionalLight(0xffffff, 0.95);
 sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
 scene.add(sun); scene.add(sun.target);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0xb9bdb5, roughness: 1 }));
+// lawn: one plain material, a slow colour variation in the vertex colours (no pictures)
+const lawnGeo = new THREE.PlaneGeometry(200, 200, 50, 50);
+{ const pos = lawnGeo.attributes.position, col = new Float32Array(pos.count * 3), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), n = 0.5 + 0.25 * Math.sin(x * 0.9 + y * 0.35) + 0.25 * Math.sin(y * 1.3 - x * 0.45 + 2); // 0..1
+    c.setRGB(0.12 + 0.04 * n, 0.28 + 0.07 * n, 0.09 + 0.03 * n); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  }
+  lawnGeo.setAttribute('color', new THREE.BufferAttribute(col, 3)); }
+const ground = new THREE.Mesh(lawnGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1 }));
 ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+/* Low fence round the plot (4 sides, one InstancedMesh each: pickets + 2 rails). The side the camera stands behind fades out,
+ * so it never hides the pergola. Hidden completely on the customer's photo. Not part of bounds() / the "fits the frame" test.
+ * ASSUMPTION: plot = pergola + 3.5 m each side, 3 m behind, 4 m in front; fence 0.95 m, light wood; tile joints every 0.6 m. */
+const envGroup = new THREE.Group(); scene.add(envGroup);
+const fenceBox = new THREE.BoxGeometry(1, 1, 1), fenceSides = [];
+const FENCE_DAY = new THREE.Color(0xeee9de), FENCE_NIGHT = new THREE.Color(0x3a3d43);
+function buildEnv(W, D) {
+  for (const f of fenceSides) { envGroup.remove(f.mesh); f.mesh.dispose(); f.mesh.material.dispose(); }
+  fenceSides.length = 0;
+  const x0 = -3.5, x1 = W + 3.5, z0 = -3, z1 = D + 4, h = 0.95, pitch = 0.14, m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(), pp = new THREE.Vector3();
+  // side: along = 'x' or 'z'; fixed = coordinate on the other axis; face = outward normal axis/sign for the fade test
+  for (const sd of [{ n: 'back', al: 'x', a: x0, b: x1, f: z0, ax: 'z', sg: -1 }, { n: 'front', al: 'x', a: x0, b: x1, f: z1, ax: 'z', sg: 1 }, { n: 'left', al: 'z', a: z0, b: z1, f: x0, ax: 'x', sg: -1 }, { n: 'right', al: 'z', a: z0, b: z1, f: x1, ax: 'x', sg: 1 }]) {
+    const L = sd.b - sd.a, n = Math.floor(L / pitch), mat = new THREE.MeshStandardMaterial({ color: FENCE_DAY, roughness: 0.8, transparent: true, depthWrite: false });
+    const mesh = new THREE.InstancedMesh(fenceBox, mat, n + 2);
+    const put = (i, along, y, sA, sY, sF, off) => { // along = position along the fence, off = shift across it
+      pp.set(sd.al === 'x' ? along : sd.f + off, y, sd.al === 'x' ? sd.f + off : along);
+      one.set(sd.al === 'x' ? sA : sF, sY, sd.al === 'x' ? sF : sA); m4.compose(pp, q, one); mesh.setMatrixAt(i, m4);
+    };
+    for (let i = 0; i < n; i++) put(i, sd.a + pitch / 2 + i * pitch, h / 2, 0.08, h, 0.02, 0);
+    put(n, (sd.a + sd.b) / 2, 0.3, L, 0.05, 0.03, 0.025 * -sd.sg); put(n + 1, (sd.a + sd.b) / 2, 0.7, L, 0.05, 0.03, 0.025 * -sd.sg);
+    mesh.instanceMatrix.needsUpdate = true; mesh.frustumCulled = false; mesh.renderOrder = 1;
+    mat.opacity = 1; envGroup.add(mesh); fenceSides.push({ mesh, ax: sd.ax, sg: sd.sg, at: sd.f });
+  }
+}
+function fadeFence(dt) { // a side fades out while the camera stands outside of it (between the viewer and the pergola)
+  for (const f of fenceSides) {
+    const out = f.sg * (camera.position[f.ax] - f.at) > -1; // camera beyond (or near) this side
+    const goal = out ? 0 : 1, o = f.mesh.material.opacity;
+    f.mesh.material.opacity = o + Math.max(-dt / 300, Math.min(dt / 300, goal - o));
+    f.mesh.visible = !PHOTO.url && f.mesh.material.opacity > 0.02;
+  }
+}
+/** day / evening look of the surroundings; envK 0 = day, 1 = evening, eased in the loop so the night does not switch on abruptly */
+let envK = 0, envGoalInit = false, envT = 0;
+const BG_DAY = new THREE.Color(0xc5d1d9), BG_NIGHT = new THREE.Color(0x1b2530), GR_NIGHT = new THREE.Color(0x56606a), bgTmp = new THREE.Color(), bgPhoto = new THREE.Color(), TILE_NIGHT = new THREE.Color(0x14181c);
+const envFog = new THREE.Fog(0x1b2530, 200, 400);
+function applyEnv() {
+  const k = envK;
+  bgTmp.copy(BG_DAY).lerp(BG_NIGHT, k);
+  scene.background = PHOTO.url ? null : bgPhoto.copy(bgTmp);
+  hemi.intensity = 0.85 + (0.25 - 0.85) * k; sun.intensity = 0.95 + (0.12 - 0.95) * k;
+  groundMat.color.setRGB(1, 1, 1).lerp(GR_NIGHT, k);
+  for (const f of fenceSides) f.mesh.material.color.copy(FENCE_DAY).lerp(FENCE_NIGHT, k);
+  if (M.tileLine) M.tileLine.color.setRGB(0.46, 0.42, 0.36).lerp(TILE_NIGHT, k);
+  // light haze only in the evening, eased in (near/far come in from far away)
+  // fog distances are relative to the viewing distance: the pergola itself stays clear
+  if (k > 0.01 && !PHOTO.url) { envFog.color.copy(bgTmp); const dd = Math.max(8, camera.position.distanceTo(controls.target)); envFog.near = dd * (20 + (1.6 - 20) * k); envFog.far = dd * (40 + (6 - 40) * k); scene.fog = envFog; } else scene.fog = null;
+}
+function stepEnv(now) {
+  const dt = Math.min(100, envT ? now - envT : 16); envT = now;
+  const goal = state.evening ? 1 : 0;
+  if (envK !== goal) { envK += Math.max(-dt / 500, Math.min(dt / 500, goal - envK)); if (Math.abs(goal - envK) < 0.002) envK = goal; if (window.__camInstant) envK = goal; applyEnv(); }
+  else if (envK > 0 && !PHOTO.url) applyEnv(); // the viewing distance changes the haze
+  fadeFence(dt);
+}
 let root = new THREE.Group(); scene.add(root);
 let pickables = [];
 let animated = { louvers: [], screens: [], leds: [], glass: [], opening: [] };
@@ -496,6 +559,7 @@ const M = {
   wall: new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.95 }),
   parapet: new THREE.MeshStandardMaterial({ color: 0xcdc6ba, roughness: 0.95 }),
   deck: new THREE.MeshStandardMaterial({ color: 0x9c8f7d, roughness: 0.9 }),
+  tileLine: new THREE.LineBasicMaterial({ color: 0x756b5c }),
   fabric: new THREE.MeshStandardMaterial({ color: 0x2b2f31, roughness: 0.95, transparent: true, opacity: 0.78, side: THREE.DoubleSide }),
   glass: new THREE.MeshPhysicalMaterial({ color: 0xcfe3ea, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.22, side: THREE.DoubleSide }),
   rail: new THREE.MeshStandardMaterial({ color: 0x2a2e31, roughness: 0.5, metalness: 0.4 }),
@@ -640,6 +704,14 @@ function build() {
   // deck + wall
   // on the customer's photo their own terrace and wall are in the picture: no drawn deck and wall
   if (!PHOTO.url) box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
+  if (!PHOTO.url) { // tile joints on the deck, every 0.6 m from the deck corner (ASSUMPTION: 600 mm tiles, shown as lines only)
+    const zA = state.mount === 'wall' ? 0 : -0.6, xA = -0.6, w = W + 1.2, d = D + 1.2, v = [];
+    for (let x = 0.6; x < w - 0.01; x += 0.6) v.push(xA + x, 0.0405, zA, xA + x, 0.0405, zA + d);
+    for (let z = 0.6; z < d - 0.01; z += 0.6) v.push(xA, 0.0405, zA + z, xA + w, 0.0405, zA + z);
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+    root.add(new THREE.LineSegments(g, M.tileLine));
+  }
+  buildEnv(W, D); envGroup.visible = !PHOTO.url;
   if (state.mount === 'wall' && !PHOTO.url) buildWall(W);
   const yTop = H, yC = H - sp.crown / 2;
   for (const m of opt.modules) {
@@ -1180,8 +1252,8 @@ function applyAnim() {
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
   for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.2 : 0.4;
   for (const pl of animated.lights || []) pl.intensity = state.evening ? 1.6 : 0;
-  scene.background = PHOTO.url ? null : new THREE.Color(state.evening ? 0x1b2530 : 0xc5d1d9);
-  hemi.intensity = state.evening ? 0.25 : 0.85; sun.intensity = state.evening ? 0.12 : 0.95;
+  if (!envGoalInit || PHOTO.url) { envK = state.evening ? 1 : 0; envGoalInit = true; } // first draw / photo: no easing
+  applyEnv();
 }
 
 /**
@@ -1374,9 +1446,79 @@ function bounds() { const o = state.options[state.optIndex]; if (!o) return { W:
 let lastView = 'under', userMoved = false;
 /** after a rebuild: a view the customer turned by hand stays exactly as it is; otherwise the chosen view
  *  (3D / front / top) is fitted to the new pergola — never a forced jump back to the 3D view */
-function refit() { if (!userMoved) setView(lastView); }
-function setView(kind) {
+function refit() { scheduleSettle(); }
+/** Camera moves. setView(kind) is instant (old callers, the PDF picture); setView(kind, {smooth:true}) glides ~0.5 s;
+ *  window.__camInstant = true makes every move instant (snapshots, tests). */
+let camReady = false, camTr = null, settleT = 0;
+function stopInertia() { // OrbitControls damping keeps a leftover rotation/pan after a programmatic move and the view "drifts": drop it, keep the pose
+  const p = camera.position.clone(), t = controls.target.clone();
+  controls.enableDamping = false; controls.update(); controls.enableDamping = true;
+  camera.position.copy(p); controls.target.copy(t); camera.lookAt(t);
+}
+function endTr() {
+  if (!camTr) return;
+  const t = camTr; camTr = null;
+  controls.minDistance = 3; controls.maxPolarAngle = t.maxPolar; controls.maxDistance = t.maxDist;
+  camera.position.copy(t.pos); controls.target.copy(t.tgt); controls.update();
+}
+/** the user grabbed the camera mid-glide: stop where it is (final limits back, pose untouched) */
+function stopTr() { if (!camTr) return; const g = camTr; camTr = null; // keep the limits wide enough for the pose the camera is in right now, otherwise update() pushes it (a jump)
+  const v = camera.position.clone().sub(controls.target), d = v.length(), pol = Math.acos(Math.min(1, Math.max(-1, v.y / (d || 1)))); // not getPolarAngle(): it is stale while update() is skipped during the glide
+  controls.minDistance = Math.min(3, d); controls.maxPolarAngle = Math.max(g.maxPolar, pol); controls.maxDistance = Math.max(g.maxDist, d); }
+function glideTo(pos, tgt, maxPolar, maxDist, ms) {
+  const instant = !camReady || window.__camInstant;
+  if (instant || (camera.position.distanceTo(pos) < 1e-3 && controls.target.distanceTo(tgt) < 1e-3)) {
+    controls.maxPolarAngle = maxPolar; controls.maxDistance = maxDist; camera.position.copy(pos); controls.target.copy(tgt); controls.update(); return;
+  }
+  stopInertia();
+  camTr = { p0: camera.position.clone(), t0: controls.target.clone(), pos: pos.clone(), tgt: tgt.clone(), maxPolar, maxDist, s: performance.now(), ms: ms || 500 };
+  controls.minDistance = 0; controls.maxPolarAngle = Math.PI; controls.maxDistance = 1000; // free limits while gliding; the final ones are set at the end
+}
+function stepTr(now) {
+  const t = camTr; if (!t) return;
+  const u = Math.min(1, (now - t.s) / t.ms), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; // ease in-out
+  if (u >= 1) { endTr(); return; }
+  camera.position.lerpVectors(t.p0, t.pos, e); controls.target.lerpVectors(t.t0, t.tgt, e); camera.lookAt(controls.target);
+}
+/** do the pergola and its dimension labels fit the frame with the margin m (1 = frame edge)? */
+function fitsFrame(kind, m, minFill) {
+  if (!state.options.length) return true;
+  const { W, D } = bounds(), pts = [];
+  if (kind === 'under') { for (const x of [-0.1, W + 0.1]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z)); for (const x of [0, W]) pts.push(new THREE.Vector3(x, 0.3, D)); }
+  else if (kind === 'box' || kind === 'inside') { for (const x of [0, W]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z)); }
+  else for (const x of [-0.9, W + 0.3]) for (const y of [0, H + 0.25]) for (const z of [-0.2, D + 1.35]) pts.push(new THREE.Vector3(x, y, z));
+  camera.updateMatrixWorld();
+  let mx = 0;
+  const inside = pts.every((p) => { const v = p.clone().project(camera); mx = Math.max(mx, Math.abs(v.x), Math.abs(v.y)); return v.z <= 1 && Math.abs(v.x) <= m && Math.abs(v.y) <= m; });
+  return inside && mx >= (minFill || 0); // minFill: the object must not be lost far away either (e.g. a frame that was 0 px wide)
+}
+/** after changes settle: nothing moves while the object is in frame; a view the user turned only backs away; otherwise a soft re-fit */
+function scheduleSettle() { clearTimeout(settleT); settleT = setTimeout(settleCamera, camReady ? 300 : 0); }
+function settleCamera() {
+  if (PHOTO.pts || !state.options.length) return;
+  if (!camReady) { setView(lastView); return; }
+  if (camTr) { const g = camTr; camTr = null; controls.minDistance = 3; controls.maxPolarAngle = g.maxPolar; controls.maxDistance = g.maxDist; } // restart from where it is
+  if (fitsFrame(userMoved ? 'box' : lastView, 0.95, userMoved ? 0 : 0.3)) return;
+  if (!userMoved) { setView(lastView, { smooth: true }); return; }
+  const tgt = controls.target.clone(), off = camera.position.clone().sub(tgt), keep = camera.position.clone();
+  let k = 1;
+  for (let i = 0; i < 30 && !fitsFrame('box', 0.86); i++) { k *= 1.06; camera.position.copy(tgt).addScaledVector(off, k); camera.updateMatrixWorld(); }
+  const to = camera.position.clone(); camera.position.copy(keep); camera.updateMatrixWorld();
+  if (k > 1) glideTo(to, tgt, controls.maxPolarAngle, Math.max(controls.maxDistance, off.length() * k * 2.5), 500);
+}
+function setView(kind, o) {
   if (PHOTO.pts) { applyPhotoCamera(); return; } // on the customer's photo the view is the photo's own camera
+  stopInertia(); endTr(); clearTimeout(settleT);
+  const p0 = camera.position.clone(), t0 = controls.target.clone();
+  applyView(kind);
+  const smooth = o && o.smooth && camReady && !window.__camInstant;
+  camReady = true;
+  if (!smooth) return;
+  const pos = camera.position.clone(), tgt = controls.target.clone(), mp = controls.maxPolarAngle, md = controls.maxDistance;
+  camera.position.copy(p0); controls.target.copy(t0); camera.lookAt(t0);
+  glideTo(pos, tgt, mp, md, 500);
+}
+function applyView(kind) {
   if (kind === 'inside' && !(state.mount === 'wall' && state.opening && state.opening.on && OPENING_GEO)) kind = 'under'; // no opening → fall back
   lastView = kind; userMoved = false;
   { const vp = $('tb-views'); if (vp) for (const x of vp.children) x.setAttribute('aria-pressed', String(x.id === 'v-' + kind)); }
@@ -1439,7 +1581,7 @@ function insideView() {
   controls.maxDistance = D + 4;
   controls.update();
 }
-controls.addEventListener('start', () => { userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
+controls.addEventListener('start', () => { stopTr(); userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
 const labels = $('labels');
 let labelDefs = [];
 function renderLabels(opt) {
@@ -1485,13 +1627,14 @@ function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.w
   // the camera is re-framed only when the width really changes (window, phone turned); a panel opening under the 3D
   // or a choice (Verto, colour, light) changes only the height — the view stays exactly where it is
   const widthChanged = Math.abs(r.width - lastFitW) > 2; lastFitW = r.width;
-  if (PHOTO.pts) applyPhotoCamera(); else if (widthChanged && !userMoved && state.options.length) setView(lastView); }
+  if (PHOTO.pts) applyPhotoCamera(); else if (widthChanged && state.options.length) scheduleSettle(); }
 new ResizeObserver(resize).observe(view);
 (function loop(t) {
   requestAnimationFrame(loop);
   // heat shimmer: the warm glow breathes slowly
   if (animated.heat && animated.heat.length) { const f = 0.85 + 0.15 * Math.sin((t || 0) / 450), k = state.evening ? 1.6 : 1; M.heatCone.opacity = 0.25 * f * k; M.heatFloor.opacity = 0.9 * f * k; }
-  if (!PHOTO.pts) controls.update(); renderer.render(scene, camera); placeLabels(); })();
+  stepTr(performance.now()); stepEnv(performance.now());
+  if (!PHOTO.pts && !camTr) controls.update(); renderer.render(scene, camera); placeLabels(); })();
 
 /* ---------- picking sides ---------- */
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
@@ -2182,6 +2325,7 @@ function keepCamera(fn) {
   const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved;
   fn();
   camera.position.copy(pos); controls.target.copy(tgt); lastView = lv; userMoved = um; controls.update();
+  scheduleSettle(); // the camera stays, but backs away if the rebuilt object no longer fits
 }
 $('louv-dir').onclick = () => { if (window.renderLouvPop) window.renderLouvPop(); togglePop($('louv-dir'), $('tb-louv')); };
 $('tb-kit').onclick = () => { if (window.renderKitPop) window.renderKitPop(); togglePop($('tb-kit'), $('tb-kit-pop')); };
@@ -2401,8 +2545,9 @@ $('tb-move').onclick = () => togglePop($('tb-move'), $('tb-sliders'));
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#tb-views, #tb-sliders, #tb-view, #tb-move')) { togglePop($('tb-view'), $('tb-views'), false); } });
 $('clr-btn').onclick = () => { const pop = $('clr-pop'); pop.hidden = !pop.hidden; $('clr-btn').setAttribute('aria-pressed', String(!pop.hidden)); renderColorPop(); };
 $('clr-pop').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; state.colorOpen = b.dataset.pick; renderColors(); $('clr').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
-$('v-under').onclick = () => setView('under');
-$('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top'); $('v-inside').onclick = () => setView('inside');
+const SM = { smooth: true };
+$('v-under').onclick = () => setView('under', SM);
+$('v-iso').onclick = () => setView('iso', SM); $('v-front').onclick = () => setView('front', SM); $('v-top').onclick = () => setView('top', SM); $('v-inside').onclick = () => setView('inside', SM);
 /* ---------- colour picker ---------- */
 const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); const f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map((v) => f(v).toString(16).padStart(2, '0')).join(''); };
 const swatchBg = (c) => c.finish === 'wood' ? `repeating-linear-gradient(100deg, ${c.hex} 0 3px, ${shade(c.hex, 0.82)} 3px 4px, ${c.hex} 4px 7px, ${shade(c.hex, 1.1)} 7px 8px)` : c.custom ? `repeating-linear-gradient(45deg, #9aa0a5 0 4px, #c4c8cb 4px 8px)` : c.finish === 'metallic' ? `linear-gradient(135deg, ${shade(c.hex, 1.25)}, ${c.hex} 55%, ${shade(c.hex, 0.8)})` : c.hex;
