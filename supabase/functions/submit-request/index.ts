@@ -65,8 +65,8 @@ Deno.serve(async (req) => {
   const c = isObj(body.contact) ? body.contact : null;
   const q = isObj(body.quote) ? body.quote : null;
   if (!c || !q) return fail("invalid_payload", 400, h);
-  const total = Number(q.total_net);
-  if (q.total_net === undefined || q.total_net === null || !Number.isFinite(total)) return fail("invalid_payload", 400, h);
+  if (typeof q.catalog !== "string" || !q.catalog.trim()) return fail("invalid_payload", 400, h);
+  if (typeof q.total_net !== "number" || !Number.isFinite(q.total_net) || q.total_net < 0) return fail("invalid_payload", 400, h);
   const name = str(c.name, 200);
   const email = str(c.email, 254).toLowerCase();
   if (!name || !EMAIL.test(email)) return fail("contact_required", 400, h);

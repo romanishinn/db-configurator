@@ -319,8 +319,6 @@ select pg_temp.fails(format($q$select public.set_user_role(%L, 'client')$q$, :'n
 select pg_temp.as_root();
 select pg_temp.check(:'ok' and (select role from public.profiles where id = :'newbie') = 'manager', 'a superdealer cannot change a manager''s role');
 
-select 'access tests passed' as result;
-
 -- ---------- 15. a manager reads new site requests (0012), read only ----------
 -- Karl's request is still unassigned: no creator, no assignee. Maria's went to a dealer in section 3.
 select pg_temp.as_service();
@@ -354,3 +352,68 @@ select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($q$select journey from public.leads$q$, 'permission denied'), 'anon cannot read the journey');
 select pg_temp.check(pg_temp.fails($q$select * from public.lead_events$q$, 'permission denied'), 'anon cannot read the history');
 select pg_temp.check(pg_temp.fails($q$select public.submit_request('{"email":"a@b.at"}', '{"catalog":"c","config":{},"total_net":1}')$q$, 'permission denied'), 'anon still cannot call submit_request (0012)');
+-- narrowing: only stage 'new' (and still unassigned) is visible
+select pg_temp.as_service();
+select public.submit_request('{"name":"Stage Test","email":"s@x.at"}', '{"catalog":"c","config":{},"total_net":5}') as n4 \gset
+select public.submit_request('{"name":"Assign Test","email":"a@x.at"}', '{"catalog":"c","config":{},"total_net":5}') as n5 \gset
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name in ('Stage Test', 'Assign Test')) = 2, 'a manager sees both fresh site requests');
+select pg_temp.as_root();
+update public.leads set stage = 'contacted' where contact_name = 'Stage Test';
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Stage Test') = 0, 'a site request past stage new is not visible to a manager');
+select pg_temp.check((select count(*) from public.quotes where number = :'n4') = 0, '... nor its quote');
+select pg_temp.as_user(:'admin');
+select public.assign_lead((select id from public.leads where contact_name = 'Assign Test'), :'graz1');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Assign Test') = 0, 'after assign_lead the request leaves the manager''s view');
+
+-- orders: reading a lead gives no write on its orders; quotes cannot be attached to a lead one may only see
+select pg_temp.as_root();
+insert into public.orders (lead_id, paid) select id, false from public.leads where contact_name = 'Journey Test';
+insert into public.orders (lead_id, paid) select id, false from public.leads where contact_name = 'Assign Test';
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.orders o join public.leads l on l.id = o.lead_id where l.contact_name = 'Journey Test') = 1, 'a manager reads the order of a site request');
+update public.orders set paid = true, seller_id = :'manager' where lead_id = (select id from public.leads where contact_name = 'Journey Test');
+select pg_temp.as_root();
+select pg_temp.check((select paid is false and seller_id is null from public.orders where lead_id = (select id from public.leads where contact_name = 'Journey Test')), 'a manager cannot change the order of a site request');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format('insert into public.orders (lead_id) values (%L)', (select id from public.leads where contact_name = 'Journey Test')), 'row-level security'), 'a manager cannot create an order for a site request');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, lead_id, catalog, config, total_net) values (%L, %L, 'c', '{}', 1)$q$, :'manager', (select id from public.leads where contact_name = 'Journey Test')), 'row-level security'), 'a manager cannot attach a quote to a site request');
+-- dealer leads are not editable either (the assigned dealer's colleague of another org, a manager)
+select pg_temp.as_user(:'linz');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, lead_id, catalog, config, total_net) values (%L, %L, 'c', '{}', 1)$q$, :'linz', :'lead_maria'), 'row-level security'), 'a dealer of another organisation cannot attach a quote to a foreign lead');
+-- unchanged: the assigned dealer, a colleague of his organisation and the superadmin write as before
+select pg_temp.as_user(:'graz1');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'graz1', :'lead_maria', 'c', '{}', 1);
+insert into public.orders (lead_id) values (:'lead_maria');
+update public.orders set paid = true, seller_id = :'graz1' where lead_id = :'lead_maria';
+select pg_temp.check((select paid from public.orders where lead_id = :'lead_maria'), 'the assigned dealer creates and changes his order and attaches a quote');
+select pg_temp.as_user(:'graz2');
+update public.orders set note = 'colleague' where lead_id = :'lead_maria';
+select pg_temp.as_root();
+select pg_temp.check((select note from public.orders where lead_id = :'lead_maria') = 'colleague', 'a colleague of the same organisation changes the order');
+select pg_temp.as_user(:'admin');
+update public.orders set note = 'admin' where lead_id = (select id from public.leads where contact_name = 'Journey Test');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'admin', (select id from public.leads where contact_name = 'Journey Test'), 'c', '{}', 1);
+select pg_temp.as_root();
+select pg_temp.check((select note from public.orders where lead_id = (select id from public.leads where contact_name = 'Journey Test')) = 'admin', 'the superadmin changes orders and attaches quotes as before');
+-- a manager who is assigned the lead writes as before
+select pg_temp.as_user(:'admin');
+select public.assign_lead((select id from public.leads where contact_name = 'Journey Test'), :'manager');
+select pg_temp.as_user(:'manager');
+update public.orders set paid = true where lead_id = (select id from public.leads where contact_name = 'Journey Test');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'manager', (select id from public.leads where contact_name = 'Journey Test'), 'c', '{}', 1);
+select pg_temp.as_root();
+select pg_temp.check((select paid from public.orders where lead_id = (select id from public.leads where contact_name = 'Journey Test')), 'a manager assigned to the lead changes its order and attaches a quote');
+
+-- the rule is exactly "web, no creator, no assignee, new": neighbouring shapes stay invisible to a manager
+select pg_temp.as_root();
+alter table public.leads disable trigger user;
+insert into public.leads (source, created_by, contact_name, phone) values ('web', :'admin', 'Shape created', '+43 9');
+insert into public.leads (source, contact_name, phone) values ('dealer', 'Shape dealer', '+43 9');
+alter table public.leads enable trigger user;
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name in ('Shape created', 'Shape dealer')) = 0, 'a manager does not see a lead with a creator, or a non-site lead without an assignee');
+
+select 'access tests passed' as result;
