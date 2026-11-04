@@ -175,3 +175,6 @@ Win Verto теперь не «заполнение проёма», а отдел
 - Events: `step_opened`, `side_set` (fill, inner), `all_sides_set`, `roof_type`, `mount`, `light`, `layout_changed`, `decor_changed`, `link_copied`, `photo_clicked`, `photo_uploaded`, `language`, `pdf_generated` (quote no, total), `request_sent` (total, size, roof, mount, interest), `consent_given`; plus PostHog pageviews and autocapture.
 - The request e-mail gets a "Sitzungsaufzeichnung (intern)" link to the visitor's recording when it exists.
 - ASSUMPTION: consent text and privacy policy to be checked by D&B (GDPR / TKG).
+
+## 3D view polish (`prototype/scene-polish.js`)
+A separate script, inlined by `prototype/build.sh` in front of the backend script (after the scene exists), so it does not touch the scene template that other work changes. It gives the view a sky gradient (day / night, follows the Night button), a ground disk whose edge fades into the sky (no horizon line, no fog), a plaster wall and a wooden deck with boards. It does **not** change lights, tone mapping or any pergola material: a RAL colour must look like its sample (checked: the frame pixels are identical before and after). In the customer's photo mode the disk steps aside, so the photo stays untouched. It only uses `scene`, `renderer`, `ground` and `M` and does nothing if one of them is missing.
