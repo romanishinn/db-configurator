@@ -526,8 +526,8 @@
 
   /* ---------- actions on the card ---------- */
   const curLead = () => byId.get(curLid);
-  async function act(fn, okMsg) {
-    try { await fn(); if (okMsg) toast(okMsg); const lid = curLid, old = JSON.stringify(detail[lid]); await refresh(lid, true); await loadDetail(lid, true); if (curLid === lid && JSON.stringify(detail[lid]) !== old) C.rerenderRecord(); } catch (e) { toast(humanError(e), true); }
+  async function act(fn, okMsg, undo) {
+    try { await fn(); if (okMsg) toast(okMsg, false, undo ? { label: _('Отменить'), run: () => act(undo, _('Возвращено')) } : null); const lid = curLid, old = JSON.stringify(detail[lid]); await refresh(lid, true); await loadDetail(lid, true); if (curLid === lid && JSON.stringify(detail[lid]) !== old) C.rerenderRecord(); } catch (e) { toast(humanError(e), true); }
   }
   function nextDialog(l) {
     dialog({
@@ -594,7 +594,7 @@
     if (act0 === 'reopen') return act(async () => { await run(sb.from('leads').update({ stage: 'processing', lost_reason: null }).eq('id', l.id)); }, _('Лид снова в работе'));
     if (act0 === 'advance') {
       const to = NEXT_STAGE[STAGE_IDX[l.stage]];
-      const go = () => act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to]);
+      const prev = l.stage, go = () => act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to], to === 'won' ? null : async () => { await run(sb.from('leads').update({ stage: prev }).eq('id', l.id)); });
       if (to === 'won') return dialog({ title: _('Оформить заказ?'), sub: _('Лид станет клиентом, а в «Заказах» появится карточка.'), foot: [{ label: _('Нет'), run: (c) => c() }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await go(); c(); } }] });
       return go();
     }
@@ -603,7 +603,8 @@
       if (!isOpen(l) || i === STAGE_IDX[l.stage]) return;
       if (i === 4) return dialog({ title: _('Итог сделки'), sub: _('Выберите, чем закончилась сделка.'), foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отказ'), run: (c) => { c(); loseDialog(l); } }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await act(async () => { await run(sb.from('leads').update({ stage: 'won' }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU.won); c(); } }] });
       const to = ['new', 'contacted', 'quote_issued', 'negotiation'][i];
-      return act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to]);
+      const prev = l.stage;
+      return act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to], async () => { await run(sb.from('leads').update({ stage: prev }).eq('id', l.id)); });
     }
     if (act0 === 'setnext') return nextDialog(l);
     if (act0 === 'done') return act(async () => {
