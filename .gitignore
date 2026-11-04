@@ -6,3 +6,6 @@ dist/
 __pycache__/
 .DS_Store
 prototype/dist/
+
+# local list of names that must never appear in the repo (see tools/harness/redlines.sh)
+.redlines.local

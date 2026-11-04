@@ -14,5 +14,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Red lines (secrets, forbidden names, purchase data)
+        run: sh tools/harness/redlines.sh
+        env: { REDLINE_TERMS: '${{ secrets.REDLINE_TERMS }}' }
       - run: pnpm -r typecheck
       - run: pnpm -r test
