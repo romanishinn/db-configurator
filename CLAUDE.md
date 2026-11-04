@@ -30,4 +30,4 @@
 - Hand-off note at about 80% of the context, not later. Max two review rounds, then change the approach.
 - Merging to `main` deploys the site and applies migrations to the production database: only on the owner's word. There is no stage environment yet. Other irreversible steps (deleting data, paid services, mail to real people, promises to customers) also only on the owner's word.
 - Run `sh tools/harness/redlines.sh` before saying "done".
-
+- For important decisions offer the owner the outside view (`/founder`, `docs/harness/README.md`): only on the owner's word, never automatically. Its finance output stays in the chat, never in the repository; its conclusions are hypotheses, not decisions.

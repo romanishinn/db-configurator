@@ -43,7 +43,7 @@ hits=$($G -i -E -e 'purchase_|purchaseprice|cost_?price|dealer_?(discount|price)
 [ -n "$hits" ] && say "закупочные данные/маржа в коде, данных или схеме: $hits"
 
 # 4. files that must never be committed (the transferred HANDOFF with the economics, price lists, env files)
-bad=$(git ls-files -co --exclude-standard | grep -Ei '(^|/)handoff[^/]*\.md$|\.(pdf|xlsx|xls)$|(^|/)\.env($|\.)' | grep -v '\.env\.example$' | tr '\n' ' ')
+bad=$(git ls-files -co --exclude-standard | grep -Ei '(^|/)handoff[^/]*\.md$|\.(pdf|xlsx|xls)$|(^|/)\.env($|\.)|^founder/' | grep -v '\.env\.example$' | tr '\n' ' ')
 [ -n "$bad" ] && say "нельзя коммитить: $bad"
 
 [ "$fail" = 0 ] && echo "redlines: ok"
