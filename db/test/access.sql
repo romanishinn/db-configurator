@@ -27,7 +27,7 @@ insert into public.organizations (id, name, kind, city) values
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000001', 'admin@db.test'),
   ('00000000-0000-0000-0000-000000000002', 'superdealer@db.test'),
-  ('00000000-0000-0000-0000-000000000003', 'seller@db.test'),
+  ('00000000-0000-0000-0000-000000000003', 'manager@db.test'),
   ('00000000-0000-0000-0000-000000000004', 'graz1@dealer.test'),
   ('00000000-0000-0000-0000-000000000005', 'graz2@dealer.test'),
   ('00000000-0000-0000-0000-000000000006', 'linz@dealer.test'),
@@ -41,7 +41,7 @@ update public.profiles set role = 'dealer', discount_limit = 10, org_id = '00000
 update public.profiles set role = 'dealer', discount_limit = 8, org_id = '00000000-0000-0000-0000-0000000000b1' where id = '00000000-0000-0000-0000-000000000006';
 \set admin '00000000-0000-0000-0000-000000000001'
 \set superdealer '00000000-0000-0000-0000-000000000002'
-\set seller '00000000-0000-0000-0000-000000000003'
+\set manager '00000000-0000-0000-0000-000000000003'
 \set graz1 '00000000-0000-0000-0000-000000000004'
 \set graz2 '00000000-0000-0000-0000-000000000005'
 \set linz '00000000-0000-0000-0000-000000000006'
@@ -84,8 +84,8 @@ select pg_temp.as_user(:'graz2');
 select pg_temp.check((select count(*) from public.leads) = 1, 'a colleague in the same dealer company sees it too');
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.quotes) = 0, 'another dealer sees nothing');
-select pg_temp.as_user(:'seller');
-select pg_temp.check((select count(*) from public.leads) = 0, 'a seller sees nothing that is not his');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads) = 0, 'a manager sees nothing that is not his');
 
 -- ---------- 4. stages: history, required reason for a refusal, assignment cannot be changed directly ----------
 select pg_temp.as_user(:'graz1');
@@ -98,9 +98,9 @@ select pg_temp.check(:'ok', 'assignment only through assign_lead / transfer_lead
 select pg_temp.check((select count(*) from public.lead_events where kind = 'stage') = 2, 'each stage change is in the history');
 select pg_temp.check((select comment from public.lead_events where to_stage = 'lost') = 'zu teuer', 'the reason is in the history');
 
--- ---------- 5. a seller enters a lead and passes it to a dealer (comment required) ----------
-select pg_temp.as_user(:'seller');
-insert into public.leads (created_by, source, contact_name, phone) values (:'seller', 'manager', 'Anna', '+43 660 3');
+-- ---------- 5. a manager enters a lead and passes it to a dealer (comment required) ----------
+select pg_temp.as_user(:'manager');
+insert into public.leads (created_by, source, contact_name, phone) values (:'manager', 'manager', 'Anna', '+43 660 3');
 select id as lead_anna from public.leads where contact_name = 'Anna' \gset
 select pg_temp.fails(format('select public.transfer_lead(%L, %L, %L)', :'lead_anna', :'linz', ' '), 'COMMENT_REQUIRED') as ok \gset
 select pg_temp.check(:'ok', 'passing a lead on needs a comment');
@@ -135,7 +135,7 @@ select pg_temp.check((select valid_until from public.quotes where owner = :'graz
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.quotes where owner = :'graz1') = 0, 'a dealer never sees another dealer''s quotes');
 
--- ---------- 7. roles: only the superadmin sets roles; a superdealer cannot make managers or dealers ----------
+-- ---------- 7. roles: the manager role is set by the superadmin only ----------
 select pg_temp.as_user(:'superdealer');
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'manager')$q$, :'newbie'), 'FORBIDDEN') as ok0 \gset
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'dealer')$q$, :'newbie'), 'FORBIDDEN') as ok1 \gset
@@ -143,7 +143,7 @@ select pg_temp.fails(format($q$select public.set_user_role(%L, 'manager', null, 
 select pg_temp.as_user(:'graz1');
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'superadmin')$q$, :'graz1'), 'FORBIDDEN') as ok3 \gset
 select pg_temp.fails(format($q$update public.profiles set discount_limit = 100 where id = %L$q$, :'graz1'), 'permission denied') as ok4 \gset
-select pg_temp.check(:'ok0' and :'ok1' and :'ok2', 'a superdealer can make neither managers nor dealers nor set discount limits');
+select pg_temp.check(:'ok0' and :'ok1' and :'ok2', 'a superdealer can make neither managers nor dealers nor discount limits');
 select pg_temp.check(:'ok3' and :'ok4', 'nobody raises his own role or limit');
 
 -- ---------- 8. the board: 7 days without movement are flagged ----------
@@ -182,7 +182,7 @@ select pg_temp.check((select count(*) from public.quotes where number = :'qbase_
 -- ---------- 11. pricing config: everyone reads, only superadmin writes (0004) ----------
 select pg_temp.as_anon();
 select pg_temp.check((select install_pct from public.pricing_config where id = 1) is not null, 'anyone (anon) can read pricing_config');
-select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a manager
 update public.pricing_config set install_pct = 99 where id = 1;   -- RLS hides the row: updates nothing, no error
 select pg_temp.check((select install_pct from public.pricing_config where id = 1) <> 99, 'a non-superadmin cannot change pricing_config');
 select pg_temp.as_user(:'admin');  -- superadmin
@@ -195,43 +195,152 @@ select pg_temp.as_anon();
 insert into public.access_requests (company, first_name, last_name, location, email)
   values ('Graz Pergolas', 'Max', 'Muster', 'Graz, AT', 'max@graz.test');
 -- a non-superadmin cannot read requests
-select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
-select pg_temp.check((select count(*) from public.access_requests) = 0, 'a seller cannot see access requests');
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a manager
+select pg_temp.check((select count(*) from public.access_requests) = 0, 'a manager cannot see access requests');
 -- the superadmin sees them
 select pg_temp.as_user(:'admin');
 select pg_temp.check((select count(*) from public.access_requests) >= 1, 'superadmin sees access requests');
 -- only the superadmin may create an invite
-select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
-select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('dealer')$$, 'row-level'), 'a seller cannot create an invite');
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a manager
+select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('dealer')$$, 'row-level'), 'a manager cannot create an invite');
 select pg_temp.as_user(:'admin');
 insert into public.invites (role, discount_group_id) values ('dealer', (select id from public.discount_groups where code = 'dealer'));
 select pg_temp.check((select count(*) from public.invites where role = 'dealer') = 1, 'superadmin can create an invite');
 -- an invite is only for dealer or architect
 select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('client')$$, 'invites_role_check'), 'an invite role must be dealer or architect');
 
+-- ---------- 13. reference projects on the landing page + their photo bucket (0008) ----------
+select pg_temp.as_root();
+insert into public.projects (id, title, district, country, options, photos, published, reference_available) values
+  ('00000000-0000-0000-0000-0000000000c1', 'Villa mit Glasdach, Wien 13.', 'Wien 13', 'AT', '{bioklimatisch,glas}', '{a/1.jpg}', true, true),
+  ('00000000-0000-0000-0000-0000000000c2', 'Entwurf', 'Linz', 'AT', '{zip}', '{}', false, false);
+-- the public sees published projects only
+select pg_temp.as_anon();
+select pg_temp.check((select count(*) from public.projects) = 1, 'anon sees only published projects');
+select pg_temp.check((select count(*) from public.projects where title = 'Entwurf') = 0, 'a draft project is hidden from the public');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'permission denied'), 'anon cannot add a project');
+select pg_temp.check(pg_temp.fails($$update public.projects set published = false$$, 'permission denied'), 'anon cannot change a project');
+select pg_temp.check(pg_temp.fails($$delete from public.projects$$, 'permission denied'), 'anon cannot delete a project');
+-- dealer and superdealer read like the public and write nothing (only manager and superadmin write)
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.projects) = 1, 'a dealer sees only published projects');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'row-level'), 'a dealer cannot add a project');
+update public.projects set title = 'hacked';
+delete from public.projects;
+select pg_temp.as_user(:'superdealer');
+select pg_temp.check((select count(*) from public.projects) = 1, 'a superdealer sees only published projects');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'row-level'), 'a superdealer cannot add a project');
+update public.projects set title = 'hacked';
+delete from public.projects;
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin sees drafts too');
+select pg_temp.check((select count(*) from public.projects where title = 'hacked') = 0, 'dealer and superdealer cannot change a project (policy hides the write)');
+-- the superadmin manages projects; the data rules hold
+insert into public.projects (title, district, country, options, photos, published, sort)
+  values ('Terrasse mit ZIP-Screens, Wien 19.', 'Wien 19', 'AT', '{bioklimatisch,zip,licht}', '{b/1.jpg,b/2.jpg}', true, 5);
+update public.projects set sort = 1 where id = '00000000-0000-0000-0000-0000000000c2';
+select pg_temp.check((select sort from public.projects where id = '00000000-0000-0000-0000-0000000000c2') = 1, 'superadmin can edit a project');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, published) values ('x', 'y', 'AT', true)$$, 'published_needs_photo'), 'a published project needs a photo');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, options) values ('x', 'y', 'AT', '{sauna}')$$, 'projects_options_check'), 'only known options are allowed');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'DE')$$, 'projects_country_check'), 'country is AT or HR');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('  ', 'y', 'AT')$$, 'projects_title_check'), 'a title is required');
+delete from public.projects where id = '00000000-0000-0000-0000-0000000000c2';
+select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin can delete a project');
+-- a manager adds and edits projects, sees drafts, but never deletes (only the superadmin)
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.projects) = 2, 'a manager sees drafts too');
+insert into public.projects (id, title, district, country) values ('00000000-0000-0000-0000-0000000000c3', 'Von Manager', 'Graz', 'AT');
+update public.projects set district = 'Graz 2' where id = '00000000-0000-0000-0000-0000000000c3';
+select pg_temp.check((select district from public.projects where id = '00000000-0000-0000-0000-0000000000c3') = 'Graz 2', 'a manager can add and edit a project');
+update public.projects set photos = '{c/1.jpg}', published = true where id = '00000000-0000-0000-0000-0000000000c3';
+select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c3'), 'a manager can publish a project');
+delete from public.projects;
+select pg_temp.check((select count(*) from public.projects) = 3, 'a manager cannot delete a project (policy hides the delete)');
+-- photo bucket: public bucket; manager and superadmin upload, only the superadmin deletes
+select pg_temp.as_root();
+select pg_temp.check((select public from storage.buckets where id = 'project-photos'), 'the photo bucket is public');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'anon cannot upload a photo');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'a dealer cannot upload a photo');
+select pg_temp.as_user(:'superdealer');
+select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'a superdealer cannot upload a photo');
+select pg_temp.as_user(:'manager');
+insert into storage.objects (bucket_id, name) values ('project-photos', 'm/1.jpg');
+select pg_temp.check((select count(*) from storage.objects where name = 'm/1.jpg') = 1, 'a manager can upload and see a photo');
+update storage.objects set name = 'm/2.jpg' where name = 'm/1.jpg';
+select pg_temp.check((select count(*) from storage.objects where name = 'm/2.jpg') = 0, 'a manager cannot rename a photo');
+update storage.objects set owner = :'manager' where name = 'm/1.jpg';  -- upsert is an UPDATE
+select pg_temp.check((select count(*) from storage.objects where owner is not null) = 0, 'a manager cannot overwrite a photo');
+select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('other-bucket', 'x.jpg')$$, 'row-level'), 'a manager cannot write to another bucket');
+delete from storage.objects;
+select pg_temp.check((select count(*) from storage.objects where name = 'm/1.jpg') = 1, 'a manager cannot delete a photo');
+select pg_temp.as_user(:'admin');
+insert into storage.objects (bucket_id, name) values ('project-photos', 'c/1.jpg');
+select pg_temp.check((select count(*) from storage.objects where bucket_id = 'project-photos') = 2, 'superadmin can upload a photo');
+select pg_temp.as_anon();
+select pg_temp.check((select count(*) from storage.objects) = 0, 'the bucket cannot be listed by the public');
+select pg_temp.as_user(:'admin');
+delete from storage.objects;
+select pg_temp.check((select count(*) from storage.objects) = 0, 'superadmin can delete a photo');
+delete from public.projects where id = '00000000-0000-0000-0000-0000000000c3';
+select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin can delete a manager''s project');
 
--- ---------- 13. CRM: customers view (0008) and the "next action" text ----------
+-- ---------- 14. role manager (0009): lead source, assignment, role change ----------
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select source from public.leads where id = :'lead_anna') = 'manager', 'a manager''s lead has source manager');
+select pg_temp.check((select assigned_to from public.leads where id = :'lead_anna') is not null, 'a manager''s lead is assigned from the start');
+select pg_temp.fails($$select 'seller'::public.app_role$$, 'invalid input value for enum') as ok \gset
+select pg_temp.check(:'ok', 'the label seller no longer exists');
+-- a tab opened before the change still sends source seller: it becomes manager
+insert into public.leads (created_by, source, contact_name, phone) values (:'manager', 'seller', 'Old tab', '+43 5');
+select pg_temp.check((select source from public.leads where contact_name = 'Old tab') = 'manager', 'the old source seller becomes manager');
+select pg_temp.check((select assigned_to from public.leads where contact_name = 'Old tab') = :'manager', 'the lead of a manager is his own at once');
+select pg_temp.as_user(:'admin');
+select public.assign_lead((select id from public.leads where contact_name = 'Old tab'), :'manager');
+select pg_temp.check((select count(*) from public.lead_events where kind = 'assigned' and to_user = :'manager') >= 1, 'the superadmin can assign a lead to a manager');
+select pg_temp.as_user(:'manager');
+select public.transfer_lead((select id from public.leads where contact_name = 'Old tab'), :'graz1', 'weiter');
+select pg_temp.check((select assigned_to from public.leads where contact_name = 'Old tab') = :'graz1', 'a manager can pass a lead to a dealer');
+select pg_temp.as_user(:'superdealer');
+select public.set_user_role(:'newbie', 'client');
+select pg_temp.as_user(:'admin');
+select public.set_user_role(:'newbie', 'manager');
+select pg_temp.as_root();
+select pg_temp.check((select role from public.profiles where id = :'newbie') = 'manager', 'the superadmin can make someone a manager');
+-- nobody raises his own role or limit by a plain UPDATE: only full_name and phone are granted on profiles
+select pg_temp.as_user(:'manager');
+select pg_temp.fails(format($q$update public.profiles set role = 'superadmin' where id = %L$q$, :'manager'), 'permission denied') as okr \gset
+select pg_temp.check(:'okr', 'a manager cannot set his own role by a direct update');
+select pg_temp.fails(format($q$update public.profiles set discount_limit = 100 where id = %L$q$, :'manager'), 'permission denied') as okl \gset
+select pg_temp.check(:'okl', 'a manager cannot set his own discount limit by a direct update');
+select pg_temp.as_user(:'superdealer');
+select pg_temp.fails(format($q$select public.set_user_role(%L, 'client')$q$, :'newbie'), 'FORBIDDEN') as ok \gset
+select pg_temp.as_root();
+select pg_temp.check(:'ok' and (select role from public.profiles where id = :'newbie') = 'manager', 'a superdealer cannot change a manager''s role');
+
+-- ---------- 15. CRM: customers view (0010) and the "next action" text ----------
 select pg_temp.check(public.norm_phone('+43 660 112 020') = public.norm_phone('0660 112 020') and public.norm_phone('0043 660 112 020') = '660112020', 'phone formats of one number match');
 select pg_temp.check(public.norm_phone('') is null and public.norm_phone(null) is null, 'an empty phone has no key');
-select pg_temp.as_user(:'seller');
+select pg_temp.as_user(:'manager');
 insert into public.leads (created_by, source, contact_name, phone, next_action, next_action_at) values
-  (:'seller', 'manager', 'Eva Berger', '+43 660 112 020', 'Позвонить', current_date),
-  (:'seller', 'manager', 'Eva B.', '0660 112 020', null, null),
-  (:'seller', 'manager', 'Tom', null, null, null);
+  (:'manager', 'manager', 'Eva Berger', '+43 660 112 020', 'Позвонить', current_date),
+  (:'manager', 'manager', 'Eva B.', '0660 112 020', null, null),
+  (:'manager', 'manager', 'Tom', null, null, null);
 select pg_temp.check((select leads from public.customers where key = '660112020') = 2, 'one person with two phone formats is one customer with 2 leads');
 select pg_temp.check((select name from public.customers where key = '660112020') in ('Eva Berger', 'Eva B.'), 'the customer has a name');
 select pg_temp.check((select count(*) from public.customers where name = 'Tom') = 0, 'a lead without phone and e-mail is not a customer');
 update public.leads set next_action = 'Отправить КП' where contact_name = 'Eva Berger';
 select pg_temp.check((select next_action from public.leads where contact_name = 'Eva Berger') = 'Отправить КП', 'the owner can edit next_action');
 select pg_temp.as_user(:'graz1');
-select pg_temp.check((select count(*) from public.customers where key = '660112020') = 0, 'a dealer does not see a seller''s customer');
+select pg_temp.check((select count(*) from public.customers where key = '660112020') = 0, 'a dealer does not see a manager''s customer');
 select pg_temp.as_user(:'admin');
 select pg_temp.check((select count(*) from public.customers where key = '660112020') = 1, 'superadmin sees the customer');
 select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($$select * from public.customers$$, 'permission denied'), 'the public site cannot read customers');
 
 
--- ---------- 14. a discount above the personal limit goes to approval (0009) ----------
+-- ---------- 16. a discount above the personal limit goes to approval (0011) ----------
 select pg_temp.as_user(:'graz1');   -- dealer, limit 10
 insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 20000, '{"pergola": 12}') returning id as qa \gset
 insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 21000, '{"pergola": 15}') returning id as qb \gset
@@ -262,7 +371,7 @@ select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($$select public.quote_over_limit(null, '{}')$$, 'permission denied'), 'the limit check is not callable from the public API');
 select pg_temp.check(pg_temp.fails($$select public.decide_approval(null, true)$$, 'permission denied'), 'anonymous cannot decide');
 
--- ---------- 15. architect: only his own projects and quotes (0009) ----------
+-- ---------- 17. architect: only his own projects and quotes (0011) ----------
 select pg_temp.as_root();
 insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000000009', 'arch@db.test');
 update public.profiles set role = 'architect', discount_limit = 0 where id = '00000000-0000-0000-0000-000000000009';
@@ -274,7 +383,7 @@ select pg_temp.check((select count(*) from public.leads) = 1, 'an architect sees
 select pg_temp.check((select count(*) from public.quotes) = 1, 'an architect sees only his own quotes');
 select pg_temp.check((select count(*) from public.lead_board) = 1 and (select count(*) from public.customers) = 1, 'the board and customers show only his own');
 select pg_temp.check((select count(*) from public.lead_events) >= 1 and (select count(distinct lead_id) from public.lead_events) = 1, 'history only of his own project');
-select pg_temp.check(pg_temp.fails(format($q$insert into public.leads (created_by, source, contact_name) values (%L, 'office', 'Fake')$q$, :'seller'), 'row-level'), 'an architect cannot enter a lead in somebody else''s name');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.leads (created_by, source, contact_name) values (%L, 'office', 'Fake')$q$, :'manager'), 'row-level'), 'an architect cannot enter a lead in somebody else''s name');
 update public.leads set note = 'mine' where contact_name = 'Arch Project';
 update public.leads set note = 'hacked' where contact_name = 'Anna';
 select pg_temp.check((select note from public.leads where contact_name = 'Arch Project') = 'mine', 'an architect edits his own project');
@@ -283,16 +392,7 @@ select pg_temp.check((select count(*) from public.orders) = 0 and (select count(
 select pg_temp.as_user(:'admin');
 select pg_temp.check((select note from public.leads where contact_name = 'Anna') is distinct from 'hacked', 'a lead of somebody else is untouched');
 select pg_temp.check((select score from public.lead_board limit 1) is not null, 'the board carries the score');
-select pg_temp.as_user(:'seller');
-select pg_temp.check((select count(*) from public.leads where contact_name = 'Arch Project') = 0, 'a seller does not see an architect''s project');
-
-
--- ---------- 16. the role is called "manager" everywhere (0010) ----------
-select pg_temp.as_root();
-select pg_temp.check(not exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = 'app_role' and e.enumlabel = 'seller'), 'there is no "seller" role any more');
-select pg_temp.as_user(:'seller');
-insert into public.leads (created_by, source, contact_name, phone) values (:'seller', 'seller', 'Old Client', '+43 1 999');
-select pg_temp.check((select source from public.leads where contact_name = 'Old Client') = 'manager', 'an older client sending source "seller" is stored as "manager"');
-select pg_temp.check((select assigned_to from public.leads where contact_name = 'Old Client') = :'seller', 'a lead a manager enters is his own from the start');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Arch Project') = 0, 'a manager does not see an architect''s project');
 
 select 'access tests passed' as result;

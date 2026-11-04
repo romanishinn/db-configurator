@@ -21,6 +21,9 @@ jobs:
       - name: Access rules (roles, leads, quotes)
         run: sh db/test/run.sh
         env: { PGURL: 'postgresql://postgres:postgres@localhost:5432/postgres' }
+      - name: Upgrade path (0001-0008 with old data, then 0009, then access rules)
+        run: sh db/test/upgrade.sh
+        env: { PGURL: 'postgresql://postgres:postgres@localhost:5432/postgres' }
   migrate:
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
