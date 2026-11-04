@@ -27,7 +27,7 @@ insert into public.organizations (id, name, kind, city) values
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000001', 'admin@db.test'),
   ('00000000-0000-0000-0000-000000000002', 'superdealer@db.test'),
-  ('00000000-0000-0000-0000-000000000003', 'seller@db.test'),
+  ('00000000-0000-0000-0000-000000000003', 'manager@db.test'),
   ('00000000-0000-0000-0000-000000000004', 'graz1@dealer.test'),
   ('00000000-0000-0000-0000-000000000005', 'graz2@dealer.test'),
   ('00000000-0000-0000-0000-000000000006', 'linz@dealer.test'),
@@ -36,12 +36,12 @@ insert into auth.users (id, email) values
 select pg_temp.check((select count(*) from public.profiles where role = 'client') = 8, 'every login starts as a client');
 update public.profiles set role = 'superadmin' where id = '00000000-0000-0000-0000-000000000001';
 update public.profiles set role = 'superdealer' where id = '00000000-0000-0000-0000-000000000002';
-update public.profiles set role = 'seller', discount_limit = 5 where id = '00000000-0000-0000-0000-000000000003';
+update public.profiles set role = 'manager', discount_limit = 5 where id = '00000000-0000-0000-0000-000000000003';
 update public.profiles set role = 'dealer', discount_limit = 10, org_id = '00000000-0000-0000-0000-0000000000a1' where id in ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000005');
 update public.profiles set role = 'dealer', discount_limit = 8, org_id = '00000000-0000-0000-0000-0000000000b1' where id = '00000000-0000-0000-0000-000000000006';
 \set admin '00000000-0000-0000-0000-000000000001'
 \set superdealer '00000000-0000-0000-0000-000000000002'
-\set seller '00000000-0000-0000-0000-000000000003'
+\set manager '00000000-0000-0000-0000-000000000003'
 \set graz1 '00000000-0000-0000-0000-000000000004'
 \set graz2 '00000000-0000-0000-0000-000000000005'
 \set linz '00000000-0000-0000-0000-000000000006'
@@ -84,8 +84,8 @@ select pg_temp.as_user(:'graz2');
 select pg_temp.check((select count(*) from public.leads) = 1, 'a colleague in the same dealer company sees it too');
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.quotes) = 0, 'another dealer sees nothing');
-select pg_temp.as_user(:'seller');
-select pg_temp.check((select count(*) from public.leads) = 0, 'a seller sees nothing that is not his');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.leads) = 0, 'a manager sees nothing that is not his');
 
 -- ---------- 4. stages: history, required reason for a refusal, assignment cannot be changed directly ----------
 select pg_temp.as_user(:'graz1');
@@ -98,9 +98,9 @@ select pg_temp.check(:'ok', 'assignment only through assign_lead / transfer_lead
 select pg_temp.check((select count(*) from public.lead_events where kind = 'stage') = 2, 'each stage change is in the history');
 select pg_temp.check((select comment from public.lead_events where to_stage = 'lost') = 'zu teuer', 'the reason is in the history');
 
--- ---------- 5. a seller enters a lead and passes it to a dealer (comment required) ----------
-select pg_temp.as_user(:'seller');
-insert into public.leads (created_by, source, contact_name, phone) values (:'seller', 'seller', 'Anna', '+43 660 3');
+-- ---------- 5. a manager enters a lead and passes it to a dealer (comment required) ----------
+select pg_temp.as_user(:'manager');
+insert into public.leads (created_by, source, contact_name, phone) values (:'manager', 'manager', 'Anna', '+43 660 3');
 select id as lead_anna from public.leads where contact_name = 'Anna' \gset
 select pg_temp.fails(format('select public.transfer_lead(%L, %L, %L)', :'lead_anna', :'linz', ' '), 'COMMENT_REQUIRED') as ok \gset
 select pg_temp.check(:'ok', 'passing a lead on needs a comment');
@@ -135,15 +135,15 @@ select pg_temp.check((select valid_until from public.quotes where owner = :'graz
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.quotes where owner = :'graz1') = 0, 'a dealer never sees another dealer''s quotes');
 
--- ---------- 7. roles: superdealer may only make sellers ----------
+-- ---------- 7. roles: superdealer may only make managers ----------
 select pg_temp.as_user(:'superdealer');
-select public.set_user_role(:'newbie', 'seller');
+select public.set_user_role(:'newbie', 'manager');
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'dealer')$q$, :'newbie'), 'FORBIDDEN') as ok1 \gset
-select pg_temp.fails(format($q$select public.set_user_role(%L, 'seller', null, 50)$q$, :'newbie'), 'FORBIDDEN') as ok2 \gset
+select pg_temp.fails(format($q$select public.set_user_role(%L, 'manager', null, 50)$q$, :'newbie'), 'FORBIDDEN') as ok2 \gset
 select pg_temp.as_user(:'graz1');
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'superadmin')$q$, :'graz1'), 'FORBIDDEN') as ok3 \gset
 select pg_temp.fails(format($q$update public.profiles set discount_limit = 100 where id = %L$q$, :'graz1'), 'permission denied') as ok4 \gset
-select pg_temp.check(:'ok1' and :'ok2', 'a superdealer can make sellers but not dealers or discount limits');
+select pg_temp.check(:'ok1' and :'ok2', 'a superdealer can make managers but not dealers or discount limits');
 select pg_temp.check(:'ok3' and :'ok4', 'nobody raises his own role or limit');
 
 -- ---------- 8. the board: 7 days without movement are flagged ----------
@@ -182,7 +182,7 @@ select pg_temp.check((select count(*) from public.quotes where number = :'qbase_
 -- ---------- 11. pricing config: everyone reads, only superadmin writes (0004) ----------
 select pg_temp.as_anon();
 select pg_temp.check((select install_pct from public.pricing_config where id = 1) is not null, 'anyone (anon) can read pricing_config');
-select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a manager
 update public.pricing_config set install_pct = 99 where id = 1;   -- RLS hides the row: updates nothing, no error
 select pg_temp.check((select install_pct from public.pricing_config where id = 1) <> 99, 'a non-superadmin cannot change pricing_config');
 select pg_temp.as_user(:'admin');  -- superadmin
@@ -195,14 +195,14 @@ select pg_temp.as_anon();
 insert into public.access_requests (company, first_name, last_name, location, email)
   values ('Graz Pergolas', 'Max', 'Muster', 'Graz, AT', 'max@graz.test');
 -- a non-superadmin cannot read requests
-select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
-select pg_temp.check((select count(*) from public.access_requests) = 0, 'a seller cannot see access requests');
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a manager
+select pg_temp.check((select count(*) from public.access_requests) = 0, 'a manager cannot see access requests');
 -- the superadmin sees them
 select pg_temp.as_user(:'admin');
 select pg_temp.check((select count(*) from public.access_requests) >= 1, 'superadmin sees access requests');
 -- only the superadmin may create an invite
-select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a seller
-select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('dealer')$$, 'row-level'), 'a seller cannot create an invite');
+select pg_temp.as_user('00000000-0000-0000-0000-000000000003');  -- a manager
+select pg_temp.check(pg_temp.fails($$insert into public.invites (role) values ('dealer')$$, 'row-level'), 'a manager cannot create an invite');
 select pg_temp.as_user(:'admin');
 insert into public.invites (role, discount_group_id) values ('dealer', (select id from public.discount_groups where code = 'dealer'));
 select pg_temp.check((select count(*) from public.invites where role = 'dealer') = 1, 'superadmin can create an invite');
@@ -221,15 +221,15 @@ select pg_temp.check((select count(*) from public.projects where title = 'Entwur
 select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'permission denied'), 'anon cannot add a project');
 select pg_temp.check(pg_temp.fails($$update public.projects set published = false$$, 'permission denied'), 'anon cannot change a project');
 select pg_temp.check(pg_temp.fails($$delete from public.projects$$, 'permission denied'), 'anon cannot delete a project');
--- a logged-in non-admin (seller) reads like the public and writes nothing
-select pg_temp.as_user(:'seller');
-select pg_temp.check((select count(*) from public.projects) = 1, 'a seller sees only published projects');
-select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'row-level'), 'a seller cannot add a project');
+-- a logged-in non-admin (manager) reads like the public and writes nothing
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.projects) = 1, 'a manager sees only published projects');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'row-level'), 'a manager cannot add a project');
 update public.projects set title = 'hacked';
 delete from public.projects;
 select pg_temp.as_user(:'admin');
 select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin sees drafts too');
-select pg_temp.check((select count(*) from public.projects where title = 'hacked') = 0, 'a seller cannot change a project (policy hides the write)');
+select pg_temp.check((select count(*) from public.projects where title = 'hacked') = 0, 'a manager cannot change a project (policy hides the write)');
 -- the superadmin manages projects; the data rules hold
 insert into public.projects (title, district, country, options, photos, published, sort)
   values ('Terrasse mit ZIP-Screens, Wien 19.', 'Wien 19', 'AT', '{bioklimatisch,zip,licht}', '{b/1.jpg,b/2.jpg}', true, 5);
@@ -246,8 +246,8 @@ select pg_temp.as_root();
 select pg_temp.check((select public from storage.buckets where id = 'project-photos'), 'the photo bucket is public');
 select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'anon cannot upload a photo');
-select pg_temp.as_user(:'seller');
-select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'a seller cannot upload a photo');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails($$insert into storage.objects (bucket_id, name) values ('project-photos', 'x.jpg')$$, 'row-level'), 'a manager cannot upload a photo');
 select pg_temp.as_user(:'admin');
 insert into storage.objects (bucket_id, name) values ('project-photos', 'c/1.jpg');
 select pg_temp.check((select count(*) from storage.objects where bucket_id = 'project-photos') = 1, 'superadmin can upload a photo');
