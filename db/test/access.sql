@@ -327,4 +327,166 @@ select pg_temp.fails(format($q$select public.set_user_role(%L, 'client')$q$, :'n
 select pg_temp.as_root();
 select pg_temp.check(:'ok' and (select role from public.profiles where id = :'newbie') = 'manager', 'a superdealer cannot change a manager''s role');
 
+-- ---------- 15. dealer sends a project, the office checks, records the owner's consent and publishes (0010) ----------
+select pg_temp.as_root();
+insert into public.leads (id, created_by, assigned_to, source, contact_name, phone, postcode) values
+  ('00000000-0000-0000-0000-0000000000d1', :'graz1', :'graz1', 'dealer', 'Order G1', '+43 1', '8010'),
+  ('00000000-0000-0000-0000-0000000000d2', :'linz', :'linz', 'dealer', 'Order L', '+43 2', '4020');
+insert into public.orders (id, lead_id) values
+  ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000d1'),  -- installed, confirmed by the office
+  ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-0000000000d1'),  -- still in the inbox
+  ('00000000-0000-0000-0000-0000000000e3', '00000000-0000-0000-0000-0000000000d1'),  -- 'done' set by the dealer himself
+  ('00000000-0000-0000-0000-0000000000e4', '00000000-0000-0000-0000-0000000000d1'),  -- rejected for light, sent again
+  ('00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000d2');  -- a foreign dealer's order
+\set o_ok '00000000-0000-0000-0000-0000000000e1'
+\set o_inbox '00000000-0000-0000-0000-0000000000e2'
+\set o_self '00000000-0000-0000-0000-0000000000e3'
+\set o_light '00000000-0000-0000-0000-0000000000e4'
+\set o_foreign '00000000-0000-0000-0000-0000000000e5'
+-- only the office confirms an installation; the event carries the author
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails(format($q$select public.complete_installation(%L)$q$, :'o_ok'), 'FORBIDDEN'), 'a dealer cannot complete an installation');
+update public.orders set stage = 'done' where id = :'o_self';  -- the old rule still lets him; the project function must not trust it
+select pg_temp.as_user(:'manager');
+select public.complete_installation(:'o_ok');
+select public.complete_installation(:'o_light');
+select public.complete_installation(:'o_foreign');
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.lead_events where order_id = :'o_ok' and kind = 'stage' and order_to = 'done' and by = :'manager') = 1, 'completing an installation logs the manager as author');
+select pg_temp.check((select stage from public.orders where id = :'o_ok') = 'done', 'the order is done');
+select pg_temp.check((select count(*) from public.lead_events where order_id = :'o_self' and order_to = 'done' and by = :'graz1') = 1, 'the dealer''s own done is logged under his name');
+
+-- refusals of submit_project
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', false)$q$, :'o_ok'), 'ASSURANCE_REQUIRED'), 'a dealer must give the assurance');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_foreign'), 'ORDER_NOT_FOUND'), 'a dealer cannot send a project for a foreign order');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_inbox'), 'NOT_INSTALLED'), 'an order not yet done cannot be sent');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_self'), 'NOT_INSTALLED'), 'an order the dealer set to done himself cannot be sent');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_ok'), 'FORBIDDEN'), 'only a dealer sends a project');
+select pg_temp.as_user(:'client');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_ok'), 'FORBIDDEN'), 'a client cannot send a project');
+
+-- the request
+select pg_temp.as_user(:'graz1');
+select public.submit_project(:'o_ok', 'Foto vom Montag', true) as pj \gset
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'n', true)$q$, :'o_ok'), 'ALREADY_SUBMITTED'), 'one active project per order');
+select pg_temp.check((select title from public.projects where id = :'pj') = 'Bioklimatische Pergola, 8010, ' || to_char(now() at time zone 'Europe/Vienna', 'YYYY')
+  and (select country || district || published::text || cardinality(photos) from public.projects where id = :'pj') = 'AT8010false0'
+  and (select installed_on from public.projects where id = :'pj') = (now() at time zone 'Europe/Vienna')::date, 'the request is a draft filled from the order');
+select pg_temp.check((select count(*) from public.project_private where project_id = :'pj' and submitted_by = :'graz1' and order_id = :'o_ok' and dealer_note = 'Foto vom Montag') = 1, 'the sender and the order are recorded');
+select pg_temp.check((select count(*) from public.projects where id = :'pj') = 1 and (select count(*) from public.project_private) = 1, 'a dealer sees his own request');
+select pg_temp.as_user(:'graz2');
+select pg_temp.check((select count(*) from public.projects where id = :'pj') = 0 and (select count(*) from public.project_private) = 0, 'a colleague of the same company does not see the request');
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.projects where id = :'pj') = 0 and (select count(*) from public.project_private) = 0, 'another dealer does not see the request');
+select pg_temp.as_user(:'superdealer');
+select pg_temp.check((select count(*) from public.project_private) = 0, 'a superdealer does not see project_private');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select * from public.project_private$$, 'permission denied'), 'the public never reads project_private');
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.notifications where kind = 'project_submitted' and user_id in (:'manager', :'admin')) = 2
+  and (select count(*) from public.notifications n join public.profiles p on p.id = n.user_id where n.kind = 'project_submitted' and p.role not in ('manager', 'superadmin')) = 0
+  and (select text from public.notifications where kind = 'project_submitted' limit 1) = 'Новая заявка проекта от дилера', 'managers and superadmins, and only they, are notified of a request');
+
+-- the dealer writes nothing directly
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'AT')$$, 'row-level'), 'a dealer cannot insert into projects');
+update public.projects set title = 'hacked' where id = :'pj';
+delete from public.projects where id = :'pj';
+select pg_temp.check((select title from public.projects where id = :'pj') <> 'hacked', 'a dealer cannot update or delete his request in projects');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.project_private (project_id, submitted_by) values (%L, %L)$q$, '00000000-0000-0000-0000-0000000000c2', :'graz1'), 'row-level'), 'a dealer cannot insert into project_private');
+update public.project_private set consent_at = now(), dealer_note = 'x' where project_id = :'pj';
+select pg_temp.check((select consent_at is null and dealer_note = 'Foto vom Montag' from public.project_private where project_id = :'pj'), 'a dealer cannot grant consent to himself');
+select pg_temp.check(pg_temp.fails($$delete from public.project_private$$, 'permission denied'), 'a dealer cannot delete from project_private');
+
+-- photos: attach_photos
+select pg_temp.as_user(:'graz2');
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, '{}')$q$, :'pj'), 'FORBIDDEN'), 'only the author attaches photos');
+select pg_temp.as_user(:'graz1');
+select gen_random_uuid() as f1, gen_random_uuid() as f2 \gset
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, (select array_agg(%L || '/' || gen_random_uuid() || '.jpg') from generate_series(1, 13)))$q$, :'pj', :'pj'), 'TOO_MANY_PHOTOS'), 'at most 12 photos');
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, array['evil/%s.jpg'])$q$, :'pj', :'f1'), 'BAD_PATH'), 'a photo path must lie in the project folder');
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, array['%s/x.png'])$q$, :'pj', :'pj'), 'BAD_PATH'), 'a photo path must be uuid.jpg');
+-- storage: the dealer writes only into the folder of his own open project
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('project-photos', %L)$q$, :'pj' || '/' || :'f1' || '.png'), 'row-level'), 'a dealer cannot upload a name other than uuid.jpg');
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('project-photos', %L)$q$, :'pj' || '/a/' || :'f1' || '.jpg'), 'row-level'), 'a dealer cannot upload into a subfolder');
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('project-photos', %L)$q$, '00000000-0000-0000-0000-0000000000c2/' || :'f1' || '.jpg'), 'row-level'), 'a dealer cannot upload into a project that is not his');
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('project-photos', %L)$q$, :'f1' || '/' || :'f2' || '.jpg'), 'row-level'), 'a dealer cannot upload into a folder without a project');
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('other-bucket', %L)$q$, :'pj' || '/' || :'f1' || '.jpg'), 'row-level'), 'a dealer cannot upload into another bucket');
+select pg_temp.as_user(:'graz2');
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('project-photos', %L)$q$, :'pj' || '/' || :'f1' || '.jpg'), 'row-level'), 'a colleague cannot upload into my project');
+select pg_temp.as_user(:'graz1');
+insert into storage.objects (bucket_id, name) values ('project-photos', :'pj' || '/' || :'f1' || '.jpg');
+select pg_temp.check((select count(*) from storage.objects) = 0, 'a dealer cannot read files');
+update storage.objects set name = :'pj' || '/' || :'f2' || '.jpg';
+delete from storage.objects;
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from storage.objects where name = :'pj' || '/' || :'f1' || '.jpg') = 1, 'a dealer can neither rename nor delete a file');
+select pg_temp.as_user(:'graz1');
+select public.attach_photos(:'pj', array[:'pj' || '/' || :'f1' || '.jpg']);
+select pg_temp.check((select photos[1] from public.projects where id = :'pj') = :'pj' || '/' || :'f1' || '.jpg', 'attach_photos stores the paths');
+
+-- the office: only manager and superadmin act; consent comes first
+select pg_temp.check(pg_temp.fails(format($q$select public.reject_project(%L, 'light', null)$q$, :'pj'), 'FORBIDDEN'), 'a dealer cannot reject a project');
+select pg_temp.check(pg_temp.fails(format($q$select public.unpublish_project(%L, null)$q$, :'pj'), 'FORBIDDEN'), 'a dealer cannot unpublish a project');
+select pg_temp.check(pg_temp.fails(format($q$select public.record_consent(%L, 'call', 'v1', true, true)$q$, :'pj'), 'FORBIDDEN'), 'a dealer cannot record a consent');
+select pg_temp.as_user(:'superdealer');
+select pg_temp.check(pg_temp.fails(format($q$select public.reject_project(%L, 'light', null)$q$, :'pj'), 'FORBIDDEN'), 'a superdealer cannot reject a project');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format($q$update public.projects set published = true where id = %L$q$, :'pj'), 'CONSENT_REQUIRED'), 'publishing without a consent is refused');
+select pg_temp.check(pg_temp.fails(format($q$select public.record_consent(%L, 'sms', 'v1', true, true)$q$, :'pj'), 'project_private_consent_channel_check'), 'consent channel is call, form or paper');
+select pg_temp.check(pg_temp.fails(format($q$select public.reject_project(%L, 'ugly', null)$q$, :'pj'), 'BAD_REASON'), 'a rejection needs a reason from the list');
+select pg_temp.check(pg_temp.fails(format($q$select public.reject_project(%L, 'consent_withdrawn', null)$q$, :'pj'), 'BAD_REASON'), 'consent_withdrawn is set only by unpublish');
+select public.record_consent(:'pj', 'form', 'v1', true, true);
+select pg_temp.check((select consent_at is not null and consent_by = :'manager' and consent_channel = 'form' and consent_version = 'v1' and consent_district from public.project_private where project_id = :'pj')
+  and (select reference_available from public.projects where id = :'pj'), 'the consent is recorded with author, channel, version and scope');
+update public.projects set published = true, title = 'Pergola, Graz', district = 'Graz' where id = :'pj';
+select pg_temp.check((select published from public.projects where id = :'pj'), 'with a consent the project is published');
+select pg_temp.as_anon();
+select pg_temp.check((select count(*) from public.projects where id = :'pj') = 1, 'the public sees the published project');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, '{}')$q$, :'pj'), 'PROJECT_LOCKED'), 'photos of a published project are locked');
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('project-photos', %L)$q$, :'pj' || '/' || :'f2' || '.jpg'), 'row-level'), 'a dealer cannot upload into a published project');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format($q$select public.reject_project(%L, 'light', null)$q$, :'pj'), 'PROJECT_PUBLISHED'), 'a published project is unpublished, not rejected');
+delete from storage.objects where name like :'pj' || '/%';
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from storage.objects where name = :'pj' || '/' || :'f1' || '.jpg') = 1, 'a manager cannot delete a file of a published project');
+select pg_temp.as_user(:'manager');
+-- withdrawal of the consent
+select public.unpublish_project(:'pj', 'Eigentümer ruft an');
+select pg_temp.check(not (select published from public.projects where id = :'pj') and (select rejected_reason from public.project_private where project_id = :'pj') = 'consent_withdrawn', 'unpublishing records the withdrawal');
+select pg_temp.check(pg_temp.fails(format($q$update public.projects set published = true where id = %L$q$, :'pj'), 'CONSENT_REQUIRED'), 'a withdrawn project cannot be published again');
+select pg_temp.check(pg_temp.fails(format($q$select public.record_consent(%L, 'call', 'v2', true, true)$q$, :'pj'), 'CONSENT_WITHDRAWN'), 'a consent cannot revive a withdrawn project');
+delete from storage.objects where name like :'pj' || '/%';
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from storage.objects where name like :'pj' || '/%') = 0, 'a manager deletes the files of an unpublished project');
+select pg_temp.check((select count(*) from public.notifications where kind = 'project_unpublished' and user_id = :'graz1') = 1, 'the dealer is told about the withdrawal');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'again', true)$q$, :'o_ok'), 'ALREADY_SUBMITTED'), 'after a withdrawn consent the order cannot be sent again');
+select pg_temp.check(pg_temp.fails(format($q$insert into storage.objects (bucket_id, name) values ('project-photos', %L)$q$, :'pj' || '/' || :'f2' || '.jpg'), 'row-level'), 'a dealer cannot upload into a withdrawn project');
+
+-- rejection for quality: the dealer may send again
+select public.submit_project(:'o_light', null, true) as pjl \gset
+select pg_temp.as_user(:'manager');
+select public.reject_project(:'pjl', 'light', 'zu dunkel');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select rejected_reason || rejected_note from public.project_private where project_id = :'pjl') = 'lightzu dunkel', 'the dealer sees the reason of the rejection');
+select pg_temp.check((select count(*) from public.notifications where kind = 'project_rejected' and user_id = :'graz1') = 1, 'the dealer is notified of the rejection');
+select pg_temp.check(pg_temp.fails(format($q$select public.attach_photos(%L, '{}')$q$, :'pjl'), 'PROJECT_LOCKED'), 'photos of a rejected request are locked');
+select public.submit_project(:'o_light', 'neu', true) as pjl2 \gset
+select pg_temp.check(:'pjl2' <> :'pjl', 'after a rejection for light the order can be sent again');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_project(%L, 'x', true)$q$, :'o_light'), 'ALREADY_SUBMITTED'), 'the second request is the active one');
+
+-- projects added by the office need a consent too
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, photos, published) values ('Büro', 'Wien', 'AT', '{x/1.jpg}', true)$$, 'CONSENT_REQUIRED'), 'an office project cannot be inserted as published');
+insert into public.projects (id, title, district, country, photos) values ('00000000-0000-0000-0000-0000000000c5', 'Büro', 'Wien', 'AT', '{x/1.jpg}');
+select pg_temp.check(pg_temp.fails($$update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000c5'$$, 'CONSENT_REQUIRED'), 'an office project without any private row cannot be published');
+select public.record_consent('00000000-0000-0000-0000-0000000000c5', 'paper', 'v1', false, false);
+update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000c5';
+select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c5') and (select submitted_by is null from public.project_private where project_id = '00000000-0000-0000-0000-0000000000c5'), 'record_consent creates the private row of an office project');
+select pg_temp.check(pg_temp.fails(format($q$select public.complete_installation(%L)$q$, '00000000-0000-0000-0000-000000000099'), 'ORDER_NOT_FOUND'), 'completing a missing order is refused');
+
 select 'access tests passed' as result;
