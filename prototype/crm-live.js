@@ -37,7 +37,7 @@
   const WANTS = ['Пергола', 'Боковые системы', 'Стекло', 'Пока не знает'];
 
   /* ---------- state ---------- */
-  let sb = null, me = null, leads = [], orders = [], users = [], groups = [];
+  let sb = null, me = null, orders = [], users = [], groups = [];
   const detail = {};            // lead id -> { events, quotes }
   let chip = 'need', query = '', tab = 'ov', curLid = null, booted = false;
 
@@ -119,8 +119,61 @@
     const { data } = await sb.from('profiles').select('id, role, full_name, email, org_id, discount_limit').eq('id', session.user.id).single();
     return data || null;
   }
-  const loadLeads = async () => { leads = await run(sb.from('lead_board').select('*').order('last_activity_at', { ascending: false }).limit(2000)); };
-  const loadOrders = async () => { try { orders = await run(sb.from('orders').select('id, stage, measured_at, paid, delivery_eta, note, created_at, lead_id, leads(contact_name), quotes(number, total_net)').order('created_at', { ascending: false }).limit(500)); } catch (e) { orders = []; } };
+  /* ---------- leads come in pages from the server: never "all leads" ----------
+   * byId holds every lead row that was loaded (any page, board column or lookup). The Today list and each board
+   * column keep only the ids of their pages. The server (lead_page / lead_counts / crm_stats) filters, searches,
+   * counts and respects the access rules; the page only asks for what is on the screen. */
+  const PAGE = 40, COL_PAGE = 20;
+  const byId = new Map();
+  const T0 = { rows: [], done: false, busy: false };                       // Today list: ids in server order
+  const colD = [0, 1, 2, 3, 4].map(() => ({ ids: [], done: false }));      // board columns
+  let counts = null, stats = null, colsLoaded = false, ordersLoaded = false, tgen = 0;
+  const pinned = new Set();                                                 // opened from elsewhere: kept in the deal list
+  const SRV = { need: 'need', late: 'late', wait: 'wait', all: 'open' };    // chip -> server filter
+  const remember = (rows) => (rows || []).map((r) => { byId.set(r.id, r); return r.id; });
+  const fetchPage = (chipName, q, offset, limit) => run(sb.rpc('lead_page', { p_chip: chipName, p_q: q || null, p_limit: limit, p_offset: offset }));
+  async function loadCounts() { const r = await run(sb.rpc('lead_counts')); counts = (r && r[0]) || null; }
+  async function loadToday(reset, limit) {
+    if (reset) { tgen++; T0.done = false; } else if (T0.busy || T0.done) return;
+    const g = tgen, lim = limit || PAGE, off = reset ? 0 : T0.rows.length;
+    T0.busy = true;
+    let rows;
+    try { rows = await fetchPage(query ? 'all' : SRV[chip], query, off, lim); }          // a search looks through every lead, closed ones too
+    catch (e) { if (g === tgen) T0.busy = false; throw e; }
+    if (g !== tgen) return;                       // the filter or the search changed meanwhile: this answer is stale
+    T0.busy = false;
+    const ids = remember(rows);
+    if (reset) T0.rows = ids; else { const have = new Set(T0.rows); ids.forEach((i) => { if (!have.has(i)) T0.rows.push(i); }); }
+    T0.done = rows.length < lim;
+  }
+  async function loadCols(reset) {
+    await Promise.all(colD.map(async (c, i) => {
+      const off = reset ? 0 : c.ids.length, lim = reset ? Math.max(COL_PAGE, Math.min(100, c.ids.length)) : COL_PAGE;
+      const rows = await fetchPage('c' + i, null, off, lim);
+      const ids = remember(rows);
+      if (reset) c.ids = ids; else { const have = new Set(c.ids); ids.forEach((x) => { if (!have.has(x)) c.ids.push(x); }); }
+      c.done = rows.length < lim;
+    }));
+    colsLoaded = true;
+  }
+  async function loadStats() { try { stats = await run(sb.rpc('crm_stats')); } catch (e) { stats = null; } }
+
+  /* the first page is kept on the device: the next start shows it at once, then the server answers.
+   * Personal data of customers: one user, 7 days, removed on sign-out (see docs/backend.md). */
+  const CK = 'crm.cache.v1';
+  function cacheSave() {
+    if (!me || chip !== 'need' || query) return;
+    try { localStorage.setItem(CK, JSON.stringify({ uid: me.id, ts: Date.now(), me: { id: me.id, role: me.role, full_name: me.full_name, email: me.email, org_id: me.org_id, discount_limit: me.discount_limit }, counts, rows: T0.rows.map((id) => byId.get(id)).filter(Boolean).map((r) => Object.assign({}, r, { journey: null })) })); } catch (e) {}
+  }
+  function cacheLoad() {
+    try {
+      const c = JSON.parse(localStorage.getItem(CK) || 'null');
+      if (!c || !me || c.uid !== me.id || Date.now() - c.ts > 7 * 864e5 || !Array.isArray(c.rows)) return false;
+      T0.rows = remember(c.rows); T0.done = c.rows.length < PAGE; counts = c.counts || null; return true;
+    } catch (e) { return false; }
+  }
+  const cacheClear = () => { try { localStorage.removeItem(CK); } catch (e) {} };
+  const loadOrders = async () => { ordersLoaded = true; try { orders = await run(sb.from('orders').select('id, stage, measured_at, paid, delivery_eta, note, created_at, lead_id, leads(contact_name), quotes(number, total_net)').order('created_at', { ascending: false }).limit(500)); } catch (e) { orders = []; } };
   const loadUsers = async () => { try { users = await run(sb.from('profiles').select('id, role, full_name, email, org_id, discount_limit, active')); } catch (e) { users = []; } };
   let approvals = [];
   const loadApprovals = async () => { try { approvals = await run(sb.from('quote_approvals').select('quote_id, status, created_at, decided_at, comment, quotes(number, total_net, discount, owner, lead_id, leads(contact_name))').order('created_at', { ascending: false }).limit(300)); } catch (e) { approvals = []; } };
@@ -166,14 +219,13 @@
       q: { net: l.last_total_net != null ? money(l.last_total_net) : '—' },
     };
   }
-  const prio = (l) => overdue(l) ? 0 : dueNow(l) ? 1 : l.stage === 'new' ? 2 : isOpen(l) ? 3 : 4;
-  const sortLeads = (arr) => arr.slice().sort((a, b) => prio(a) - prio(b) || new Date(b.last_activity_at) - new Date(a.last_activity_at));
-
-  function buildBoards(deals) {
+  function buildBoards(deals, idxOf) {
     const col = (tK, ix) => {
-      const list = deals.map((d, di) => ({ d, di })).filter((x) => x.d.stage === ix);
+      const cd = colD[ix];
+      const list = cd.ids.map((id) => idxOf.get(id)).filter((i) => i != null).map((i) => ({ d: deals[i], di: i }));
+      const total = counts ? (ix === 4 ? Number(counts.won) + Number(counts.lost) : Number(counts['c' + ix])) : list.length;
       const sum = list.reduce((a, x) => a + (Number(x.d.raw.last_total_net) || 0), 0);
-      return { tK, sum: sum ? money(sum) : '', cards: list.map(({ d, di }) => ({ n: d.name, di, sum: d.q.net, sc: d.score, hot: d.hot, stK: d.raw.stage === 'won' || d.raw.stage === 'lost' ? STAGE_RU[d.raw.stage] : (d.raw.next_action || STAGE_RU[d.raw.stage]), dot: d.dot, days: d.curDays, rot: !!d.raw.stale, cold: false })) };
+      return { tK, key: 'c' + ix, total, more: Math.max(0, total - list.length), sum: sum && total <= list.length ? money(sum) : '', cards: list.map(({ d, di }) => ({ n: d.name, di, sum: d.q.net, sc: d.score, hot: d.hot, stK: d.raw.stage === 'won' || d.raw.stage === 'lost' ? STAGE_RU[d.raw.stage] : (d.raw.next_action || STAGE_RU[d.raw.stage]), dot: d.dot, days: d.curDays, rot: !!d.raw.stale, cold: false })) };
     };
     const req = [col('st.new', 0), col('st.processing', 1), col('st.proposal', 2), col('st.negotiation', 3), col('st.winlose', 4)];
     const ord = ORDER_COL.map(([tK, st]) => {
@@ -183,64 +235,96 @@
     });
     return [req, ord];
   }
+  C.moreLabel = (n) => _('Показать ещё') + ' · ' + n;
 
+  let todaySet = new Set();
   function rebuild(keepLid) {
-    const sorted = sortLeads(leads);
-    const deals = sorted.map(toDeal);
-    const [req, ord] = buildBoards(deals);
-    let sel = keepLid ? deals.findIndex((d) => d.lid === keepLid) : -1;
-    if (sel < 0) { const f = deals.findIndex((d) => C.filter(d)); sel = f < 0 ? 0 : f; }
+    const ids = [], seen = new Set();
+    const add = (id) => { if (!seen.has(id) && byId.has(id)) { seen.add(id); ids.push(id); } };
+    T0.rows.forEach(add); colD.forEach((c) => c.ids.forEach(add)); pinned.forEach(add); if (curLid) add(curLid);
+    const deals = ids.map((id) => toDeal(byId.get(id)));
+    const idxOf = new Map(deals.map((d, i) => [d.lid, i]));
+    todaySet = new Set(T0.rows);
+    const [req, ord] = buildBoards(deals, idxOf);
+    let sel = keepLid ? idxOf.get(keepLid) : undefined;
+    if (sel == null) { const f = deals.findIndex((d) => todaySet.has(d.lid)); sel = f < 0 ? 0 : f; }
+    const rows = $('#rows'), keep = rows ? rows.scrollTop : 0;
     C.setData(deals, req, ord, sel);
     C.rerender();
+    if (rows && keep) rows.scrollTop = keep;
     renderChips(); renderBadges();
     if (curScreen() === 'approvals') renderApprovals();
   }
   let sig = '';
   async function refresh(keepLid, force) {
-    await Promise.all([loadLeads(), loadOrders(), loadApprovals()]);
+    const keep = Math.min(100, Math.max(PAGE, T0.rows.length));
+    await Promise.all([loadCounts(), loadToday(true, keep), loadApprovals(), colsLoaded ? loadCols(true) : null, ordersLoaded ? loadOrders() : null]);
     loaded = true;
-    const s = JSON.stringify([leads, orders, approvals]) + curLang();
+    const s = JSON.stringify([counts, T0.rows.map((id) => byId.get(id)), colD.map((c) => c.ids.map((id) => byId.get(id))), orders, approvals]) + curLang();
     if (s === sig && !force) return false;         // nothing changed: do not redraw (no flicker, scroll and typing stay)
-    sig = s;
+    sig = s; stats = null;
+    cacheSave();
     rebuild(keepLid === undefined ? curLid : keepLid);
-    if (curScreen() === 'quotes') renderQuotes();
-    if (curScreen() === 'customers') renderCustomers();
+    if (curScreen() === 'quotes') renderQuotes(true);
+    if (curScreen() === 'customers') renderCustomers(true);
     if (curScreen() === 'admin') renderAdmin();
     return true;
   }
   const curScreen = () => (($('.screen.on') || {}).dataset || {}).screen;
 
-  /* ---------- Today: filter chips + search ---------- */
-  const preds = {
-    need: (l) => isOpen(l) && (!l.assigned_to || l.assigned_to === (me && me.id)) && (dueNow(l) || l.stage === 'new'),
-    wait: (l) => isOpen(l) && (STAGE_IDX[l.stage] >= 2) && !dueNow(l),
-    late: (l) => overdue(l),
-    all: (l) => isOpen(l),
-  };
-  C.filter = (d) => {
-    const l = d.raw; if (!preds[chip](l)) return false;
-    if (!query) return true;
-    const q = query.toLowerCase(), digits = query.replace(/\D/g, '');
-    return [l.contact_name, l.email, l.object_address, l.last_quote, l.note].some((x) => String(x || '').toLowerCase().includes(q)) || (digits.length >= 3 && String(l.phone || '').replace(/\D/g, '').includes(digits));
-  };
+  /* ---------- Today: filter chips + search (the server does both) ---------- */
+  C.filter = (d) => todaySet.has(d.lid);
+  function setChip(k) {
+    chip = k; T0.rows = []; T0.busy = true; todaySet = new Set(); renderChips(); C.rerender();
+    loadToday(true).then(() => rebuild(curLid), (e) => { T0.busy = false; toast(humanError(e), true); C.rerender(); });
+  }
+  let qTimer = null;
+  function setQuery(v) {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => {
+      query = v; if (curScreen() !== 'today') C.show('today');
+      if (query) chip = 'all';
+      T0.rows = []; T0.busy = true; todaySet = new Set(); renderChips(); C.rerender();
+      loadToday(true).then(() => rebuild(curLid), (e) => { T0.busy = false; toast(humanError(e), true); C.rerender(); });
+    }, 250);
+  }
   function renderChips() {
     const box = $('.lh .chips'); if (!box) return;
-    if (!loaded) { box.innerHTML = ''; return; }
-    const cnt = (k) => leads.filter(preds[k]).length;
+    if (!loaded || !counts) { box.innerHTML = ''; return; }
+    const num = { need: counts.need, late: counts.late, wait: counts.wait, all: counts.open };
     const def = [['need', _('Нужны вам')], ['late', _('Просрочено')], ['wait', _('Ждут клиента')], ['all', _('Все открытые')]];
-    box.innerHTML = def.map(([k, t]) => '<button type="button" class="cchip' + (chip === k ? ' on' : '') + '" data-chip="' + k + '"><span class="n">' + cnt(k) + '</span> <span>' + t + '</span></button>').join('');
+    box.innerHTML = def.map(([k, t]) => '<button type="button" class="cchip' + (chip === k ? ' on' : '') + '" data-chip="' + k + '"><span class="n">' + Number(num[k]) + '</span> <span>' + t + '</span></button>').join('');
   }
   function renderBadges() {
-    const n = leads.filter(preds.late).length;
+    const n = counts ? Number(counts.late) : 0;
     const lnk = $('.rail a[data-s="today"]'); if (!lnk) return;
     let b = lnk.querySelector('.badge'); if (!b) { b = document.createElement('span'); b.className = 'badge'; lnk.appendChild(b); }
     b.textContent = n; b.hidden = !n;
     const al = $('.rail a[data-s="approvals"]');
     if (al) { let ab = al.querySelector('.badge'); if (!ab) { ab = document.createElement('span'); ab.className = 'badge'; al.appendChild(ab); } const pn = approvals.filter((a) => a.status === 'pending').length; ab.textContent = pn; ab.hidden = !pn; }
   }
+  // "show more" at the end of the Today list: a button, and the same thing when it scrolls into view
+  C.rowsFooter = () => (T0.done || !T0.rows.length) ? '' : '<div id="moreRows" class="morerows"><button type="button" class="btn sm ghost" data-more="today">' + _('Показать ещё') + '</button></div>';
+  let io = null;
+  C.afterRows = () => {
+    if (io) { io.disconnect(); io = null; }
+    const m = $('#moreRows'); if (!m || !('IntersectionObserver' in window)) return;
+    io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) more('today'); }, { root: $('#rows'), rootMargin: '200px' });
+    io.observe(m);
+  };
+  async function more(what) {
+    if (what === 'today') { try { await loadToday(false); rebuild(curLid); } catch (e) { toast(humanError(e), true); } return; }
+    const i = +String(what).slice(1); if (!(i >= 0 && i <= 4)) return;
+    const cd = colD[i]; if (cd.done) return;
+    try {
+      const rows = await fetchPage('c' + i, null, cd.ids.length, COL_PAGE);
+      const have = new Set(cd.ids); remember(rows).forEach((x) => { if (!have.has(x)) cd.ids.push(x); }); cd.done = rows.length < COL_PAGE;
+      rebuild(curLid);
+    } catch (e) { toast(humanError(e), true); }
+  }
   C.emptyList = () => {
-    if (!loaded) return skeleton(5);
-    const empty = !leads.length;
+    if (!loaded || T0.busy) return skeleton(5);
+    const empty = counts ? Number(counts.open) + Number(counts.won) + Number(counts.lost) === 0 : !T0.rows.length;
     return '<div class="empty" style="height:auto;padding:48px 18px"><div class="ic">✓</div><div>' + (empty ? _('Пока нет ни одного лида.<br><span class="muted">Заявки с сайта появятся здесь сами. Или добавьте первого клиента вручную.</span>') : _('В этом списке пусто.<br><span class="muted">Переключите фильтр или очистите поиск.</span>')) + _('</div><button class="btn primary" data-act="newlead">＋ Новый лид</button></div>');
   };
   C.emptyRecord = () => !loaded ? skeleton(4) : _('<div class="empty"><div class="ic">◍</div><div>Выберите лид слева<br><span class="muted">или создайте нового кнопкой «Новый лид»</span></div></div>');
@@ -261,7 +345,7 @@
     if (error) { status.textContent = humanError(error); status.className = 'gstatus warn'; return; }
     done();
   };
-  async function signOut() { try { await sb.auth.signOut(); } catch (e) {} location.reload(); }
+  async function signOut() { cacheClear(); try { await sb.auth.signOut(); } catch (e) {} location.reload(); }
 
   function chrome() {
     if (!me) return;
@@ -292,11 +376,13 @@
   async function boot() {
     if (booted) return; booted = true;
     applyRole();
+    if (cacheLoad()) { loaded = true; rebuild(null); }       // the saved first page, at once; the server answers next
     await Promise.all([loadUsers(), loadGroups()]);
-    try { await refresh(null, true); } catch (e) { loaded = true; toast(humanError(e), true); C.rerender(); }
+    try { await refresh(null, true); } catch (e) { loaded = true; T0.busy = false; toast(humanError(e), true); C.rerender(); }
     renderChips(); C.onShow(curScreen());
-    pollNotifications(); setInterval(() => { pollNotifications(); }, 60000);
-    setInterval(() => { const a = document.activeElement; if (!document.hidden && !$('.dlgback') && !(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) refresh().catch(() => {}); }, 120000);
+    pollNotifications(); pollChanges();
+    setInterval(() => { pollNotifications(); pollChanges(); }, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pollChanges(); });
     const h = location.hash.replace('#', ''); if (h) C.onShow(h);
   }
 
@@ -310,10 +396,19 @@
   C.rerender(); renderChips();
   ready.then(async (ok) => {
     if (!ok) { unrestore(); return; }
+    // a warm start: the stored session and the saved first page are enough to draw the app at once; the server confirms in the background
+    let early = null;
+    try { const { data: { session } } = await sb.auth.getSession(); const c = JSON.parse(localStorage.getItem(CK) || 'null'); if (session && c && c.me && c.uid === session.user.id && Date.now() - c.ts < 7 * 864e5 && STAFF.includes(c.me.role)) early = c.me; } catch (e) {}
+    if (early) {
+      me = early; unrestore(); document.body.classList.add('authed'); boot();
+      loadMe().then((m) => { if (!m || !STAFF.includes(m.role) || m.role !== early.role) { cacheClear(); location.reload(); } else me = m; }, () => {});
+      sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { cacheClear(); location.reload(); } });
+      return;
+    }
     me = await loadMe();
     unrestore();
     if (me && STAFF.includes(me.role)) { document.body.classList.add('authed'); await boot(); }
-    sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT' && booted) location.reload(); });
+    sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { cacheClear(); if (booted) location.reload(); } });
   });
 
   /* ---------- lead card ---------- */
@@ -417,16 +512,18 @@
   };
   const kv = (k, v) => '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
 
-  function dupHint(l) {
-    const box = $('#dupHint'); if (!box) return;
+  async function dupHint(l) {
     const key = normPhone(l.phone), em = (l.email || '').toLowerCase();
-    const other = leads.filter((x) => x.id !== l.id && ((key && normPhone(x.phone) === key) || (em && (x.email || '').toLowerCase() === em)));
-    if (!other.length) return;
+    const q = key.length >= 7 ? key : em; if (!q) return;
+    let other;
+    try { other = (await fetchPage('all', q, 0, 6)).filter((x) => x.id !== l.id); } catch (e) { return; }
+    const box = $('#dupHint'); if (!box || curLid !== l.id || !other.length) return;
+    remember(other);
     box.innerHTML = _('<div class="dup" style="margin-top:12px"><b>Этот клиент уже обращался (') + other.length + ')</b>' + other.slice(0, 4).map((x) => '<div><a href="#" data-open="' + x.id + '" style="color:var(--accent)">' + esc(x.contact_name || x.phone) + '</a> · ' + esc(STAGE_RU[x.stage]) + ' · ' + dmy(x.created_at) + '</div>').join('') + '</div>';
   }
 
   /* ---------- actions on the card ---------- */
-  const curLead = () => leads.find((x) => x.id === curLid);
+  const curLead = () => byId.get(curLid);
   async function act(fn, okMsg) {
     try { await fn(); if (okMsg) toast(okMsg); const lid = curLid, old = JSON.stringify(detail[lid]); await refresh(lid, true); await loadDetail(lid, true); if (curLid === lid && JSON.stringify(detail[lid]) !== old) C.rerenderRecord(); } catch (e) { toast(humanError(e), true); }
   }
@@ -476,7 +573,8 @@
 
   document.addEventListener('click', (e) => {
     const chipEl = e.target.closest('[data-chip]');
-    if (chipEl) { chip = chipEl.dataset.chip; renderChips(); C.rerender(); return; }
+    if (chipEl) { setChip(chipEl.dataset.chip); return; }
+    const mo = e.target.closest('[data-more]'); if (mo) { more(mo.dataset.more); return; }
     const op = e.target.closest('[data-open]');
     if (op) { e.preventDefault(); openLead(op.dataset.open); return; }
     const tb = e.target.closest('.tabs [data-tab]');
@@ -510,9 +608,12 @@
     if (act0 === 'openq') { const q = ((detail[l.id] || {}).quotes || []).find((x) => x.id === a.dataset.q); return handoff(l, q || null); }
   });
 
-  function openLead(id) {
-    const i = C.deals.findIndex((d) => d.lid === id);
-    if (i >= 0) { chip = 'all'; query = ''; const s = $('#gsearch'); if (s) s.value = ''; renderChips(); C.rerender(); C.open(C.deals.findIndex((d) => d.lid === id)); }
+  async function openLead(id) {
+    if (!byId.has(id)) {
+      try { const r = await run(sb.from('lead_board').select('*').eq('id', id).limit(1)); if (!r.length) return toast(_('Лид не найден'), true); remember(r); } catch (e) { return toast(humanError(e), true); }
+    }
+    pinned.add(id); curLid = id; rebuild(id);
+    const i = C.deals.findIndex((d) => d.lid === id); if (i >= 0) C.open(i);
   }
 
   /* ---------- new lead ---------- */
@@ -532,11 +633,17 @@
       onOpen: (r) => {
         r.querySelector('[data-want]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; b.classList.toggle('on'); wantSel = $$('[data-want] .on', r).map((x) => x.textContent); });
         r.querySelector('[data-src]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('[data-src] button', r).forEach((x) => x.classList.remove('on')); b.classList.add('on'); srcSel = b.dataset.v; });
+        let dupT = null;
         const check = () => {
-          const p = normPhone(val(r, 'p')), em = val(r, 'e').trim().toLowerCase();
-          const hit = leads.find((x) => (p.length >= 7 && normPhone(x.phone) === p) || (em && (x.email || '').toLowerCase() === em));
-          const box = r.querySelector('#dupBox');
-          box.innerHTML = hit ? _('<div class="dup"><div><b>Такой клиент уже есть:</b> ') + esc(hit.contact_name || hit.phone) + ' · ' + esc(STAGE_RU[hit.stage]) + (hit.assignee_name ? ' · ' + esc(hit.assignee_name) : '') + '</div><div class="a"><button type="button" class="btn sm primary" data-existing="' + hit.id + _('">Открыть его карточку</button><span class="muted" style="align-self:center">или нажмите «Создать» — это будет новое обращение</span></div></div>') : '';
+          clearTimeout(dupT);
+          dupT = setTimeout(async () => {
+            const p = normPhone(val(r, 'p')), em = val(r, 'e').trim().toLowerCase();
+            const q = p.length >= 7 ? p : (/@/.test(em) ? em : ''), box = r.querySelector('#dupBox'); if (!box) return;
+            if (!q) { box.innerHTML = ''; return; }
+            let hit = null; try { hit = (await fetchPage('all', q, 0, 3))[0]; } catch (e) { return; }
+            if (!r.isConnected) return; remember(hit ? [hit] : []);
+            box.innerHTML = hit ? _('<div class="dup"><div><b>Такой клиент уже есть:</b> ') + esc(hit.contact_name || hit.phone) + ' · ' + esc(STAGE_RU[hit.stage]) + (hit.assignee_name ? ' · ' + esc(hit.assignee_name) : '') + '</div><div class="a"><button type="button" class="btn sm primary" data-existing="' + hit.id + _('">Открыть его карточку</button><span class="muted" style="align-self:center">или нажмите «Создать» — это будет новое обращение</span></div></div>') : '';
+          }, 300);
         };
         r.querySelector('[name=p]').addEventListener('input', check); r.querySelector('[name=e]').addEventListener('input', check);
         r.addEventListener('click', (e) => { const x = e.target.closest('[data-existing]'); if (x) { d.close(); openLead(x.dataset.existing); } });
@@ -560,7 +667,8 @@
         const row = await run(sb.from('leads').insert({ created_by: me.id, source: me.role === 'dealer' ? 'dealer' : me.role === 'manager' ? 'manager' : me.role === 'seller' ? 'seller' : 'office', utm: { source: srcSel }, contact_name: name || null, phone: phone || null, email: email || null, object_address: addr || null, postcode: zip || null, note: note || null, next_action: step || null, next_action_at: step ? (val(r, 'd') || plusDays(1)) : null }).select('id').single());
         if (sees()) { try { await run(sb.rpc('assign_lead', { p_lead: row.id, p_to: me.id, p_comment: _('Создал вручную') })); } catch (e) { /* stays unassigned: "Взять себе" is on the card */ } }
         close(); toast(_('Лид создан'));
-        curLid = row.id; await refresh(row.id); chip = 'all'; renderChips(); C.rerender();
+        curLid = row.id; pinned.add(row.id); chip = 'all'; query = ''; const sq = $('#gsearch'); if (sq) sq.value = '';
+        await refresh(row.id, true);
         const i = C.deals.findIndex((x) => x.lid === row.id); if (i >= 0) C.open(i);
         if (withQuote) handoff({ id: row.id, contact_name: name, phone }, null);
       } catch (e) { toast(humanError(e), true); }
@@ -581,49 +689,88 @@
 
   /* ---------- screens: quotes, customers, admin, settings ---------- */
   function setScreen(id, html) { const sc = $('[data-screen="' + id + '"]'); if (!sc) return; const out = html.startsWith('<div class="skel"') ? html : '<div class="pad">' + html + '</div>'; if (sc.dataset.h === out) return; sc.dataset.h = out; sc.innerHTML = out; }
-  let quotes = [], qTab = 'act', qSearch = '';
+  let quotes = [], qTab = 'act', qSearch = '', qDone = false, qBusy = false, qsTimer = null;
+  const revisedSet = new Set();
   let quotesLoaded = false;
-  async function renderQuotes() {
+  const safeQ = (s) => String(s || '').replace(/[,()"\\%*_]/g, ' ').trim();
+  async function renderQuotes(force) {
     if (!quotesLoaded) setScreen('quotes', skeleton());
-    try { await loadQuotes(); quotesLoaded = true; } catch (e) { toast(humanError(e), true); return; }
+    if (!quotesLoaded || force) { try { await loadQuotes(true); quotesLoaded = true; } catch (e) { toast(humanError(e), true); return; } }
     drawQuotes();
   }
-  async function loadQuotes() {
-    quotes = await run(sb.from('quotes').select('id, number, created_at, valid_until, total_net, revises, lead_id, owner, config, leads(contact_name, phone)').order('created_at', { ascending: false }).limit(500));
+  const QSEL = 'id, number, created_at, valid_until, total_net, revises, lead_id, owner, config, leads(contact_name, phone)';
+  async function loadQuotes(reset) {
+    if (reset) { quotes = []; qDone = false; revisedSet.clear(); } else if (qBusy || qDone) return;
+    qBusy = true;
+    try {
+      let rows;
+      if (qSearch) {       // by number, or by the lead found by name / phone / e-mail
+        const q = safeQ(qSearch);
+        const [a, ls] = await Promise.all([run(sb.from('quotes').select(QSEL).ilike('number', '%' + q + '%').order('created_at', { ascending: false }).limit(50)), fetchPage('all', q, 0, 30)]);
+        const ids = remember(ls).slice(0, 30);
+        const b = ids.length ? await run(sb.from('quotes').select(QSEL).in('lead_id', ids).order('created_at', { ascending: false }).limit(60)) : [];
+        const seen = new Set(); rows = a.concat(b).filter((x) => !seen.has(x.id) && seen.add(x.id)).sort((x, y) => (x.created_at < y.created_at ? 1 : -1));
+        qDone = true;
+      } else {
+        let qy = sb.from('quotes').select(QSEL).order('created_at', { ascending: false });
+        if (qTab === 'act') qy = qy.gte('valid_until', today());
+        rows = await run(qy.range(quotes.length, quotes.length + PAGE - 1));
+        qDone = rows.length < PAGE;
+      }
+      rows.forEach((r) => { if (r.revises) revisedSet.add(r.revises); });     // a newer version comes first, so its parent is known before it arrives
+      quotes = reset ? rows : quotes.concat(rows);
+    } finally { qBusy = false; }
+  }
+  const quoteShown = () => { const t = today(); const isAct = (q) => q.valid_until >= t && !revisedSet.has(q.id); return quotes.filter((q) => (qTab === 'act' ? isAct(q) : !isAct(q))); };
+  async function moreQuotes() {
+    try {
+      await loadQuotes(false);
+      for (let k = 0; k < 6 && !qDone && qTab === 'arc' && quoteShown().length < PAGE; k++) await loadQuotes(false);   // the archive is a filter of the full list
+      drawQuotes();
+    } catch (e) { toast(humanError(e), true); }
   }
   function drawQuotes() {
-    const revised = new Set(quotes.map((q) => q.revises).filter(Boolean)), t = today();
-    const isAct = (q) => q.valid_until >= t && !revised.has(q.id);
-    const list = quotes.filter((q) => (qTab === 'act' ? isAct(q) : !isAct(q))).filter((q) => !qSearch || [q.number, q.leads && q.leads.contact_name, q.leads && q.leads.phone].some((x) => String(x || '').toLowerCase().includes(qSearch.toLowerCase())));
+    const t = today(), list = quoteShown();
     setScreen('quotes', _('<div class="h1" style="margin-bottom:12px">Коммерческие предложения</div><div class="bar"><div class="seg2"><button class="') + (qTab === 'act' ? 'on' : '') + _('" data-qt="act">Действующие</button><button class="') + (qTab === 'arc' ? 'on' : '') + _('" data-qt="arc">Архив</button></div><input class="inp" id="qSearch" placeholder="Поиск: номер, клиент…" value="') + esc(qSearch) + _('"><div class="sp"></div><button class="btn primary sm" data-act="configurator">＋ Новое КП</button></div>')
-      + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>№ КП</th><th>Клиент</th><th class="num">Сумма, нетто</th><th>Создано</th><th>Действует до</th></tr></thead><tbody>') + list.map((q) => '<tr class="click" data-qrow="' + q.id + '"><td><b>' + esc(q.number) + '</b>' + apprTag(q.id) + '</td><td>' + esc((q.leads && (q.leads.contact_name || q.leads.phone)) || '—') + '</td><td class="num">' + money(q.total_net) + '</td><td>' + dmy(q.created_at) + '</td><td class="' + (q.valid_until < t ? 'late' : '') + '">' + dmy(q.valid_until) + '</td></tr>').join('') + '</tbody></table></div></div>'
+      + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>№ КП</th><th>Клиент</th><th class="num">Сумма, нетто</th><th>Создано</th><th>Действует до</th></tr></thead><tbody>') + list.map((q) => '<tr class="click" data-qrow="' + q.id + '"><td><b>' + esc(q.number) + '</b>' + apprTag(q.id) + '</td><td>' + esc((q.leads && (q.leads.contact_name || q.leads.phone)) || '—') + '</td><td class="num">' + money(q.total_net) + '</td><td>' + dmy(q.created_at) + '</td><td class="' + (q.valid_until < t ? 'late' : '') + '">' + dmy(q.valid_until) + '</td></tr>').join('') + '</tbody></table></div></div>' + (qDone ? '' : '<div class="morerows"><button type="button" class="btn sm ghost" data-moreq="1">' + _('Показать ещё') + '</button></div>')
         : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">❏</div><div>' + (qTab === 'act' ? _('Действующих КП нет.<br><span class="muted">Рассчитайте первое в конфигураторе или из карточки лида.</span>') : _('Архив пуст.')) + '</div></div>'));
-    const si = $('#qSearch'); if (si) si.oninput = () => { qSearch = si.value; const pos = si.selectionStart; drawQuotes(); const s = $('#qSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } };
+    const si = $('#qSearch'); if (si) si.oninput = () => {
+      const v = si.value, pos = si.selectionStart; qSearch = v; clearTimeout(qsTimer);
+      qsTimer = setTimeout(async () => { try { await loadQuotes(true); } catch (e) { toast(humanError(e), true); return; } drawQuotes(); const s = $('#qSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } }, 300);
+    };
   }
-  let cust = [], cSearch = '';
+  let cust = [], cSearch = '', cDone = false, cBusy = false, cTotal = 0, cTimer = null;
   let custLoaded = false;
-  async function renderCustomers() {
+  async function renderCustomers(force) {
     if (!custLoaded) setScreen('customers', skeleton());
-    await loadCustomers(); custLoaded = true; drawCustomers();
+    if (!custLoaded || force) { try { await loadCustomers(true); custLoaded = true; } catch (e) { toast(humanError(e), true); return; } }
+    drawCustomers();
   }
-  async function loadCustomers() {
-    try { cust = await run(sb.from('customers').select('*').order('last_activity_at', { ascending: false }).limit(1000)); }
-    catch (e) { // the view comes with migration 0008; until then group the leads here (same rule: last 9 digits of the phone, else e-mail)
-      const g = {}; leads.forEach((l) => { const k = normPhone(l.phone) || (l.email || '').toLowerCase(); if (!k) return; const c = g[k] || (g[k] = { key: k, name: l.contact_name, phone: l.phone, email: l.email, object_address: l.object_address, leads: 0, won: 0, last_activity_at: l.last_activity_at }); c.leads++; if (l.stage === 'won') c.won++; if (l.last_activity_at > c.last_activity_at) c.last_activity_at = l.last_activity_at; });
-      cust = Object.values(g).sort((a, b) => (a.last_activity_at < b.last_activity_at ? 1 : -1));
-    }
+  async function loadCustomers(reset) {
+    if (reset) { cust = []; cDone = false; } else if (cBusy || cDone) return;
+    cBusy = true;
+    try {
+      let qy = sb.from('customers').select('*', { count: 'exact' }).order('last_activity_at', { ascending: false });
+      const q = safeQ(cSearch), dg = cSearch.replace(/\D/g, '');
+      if (q) qy = qy.or(['name.ilike.%' + q + '%', 'email.ilike.%' + q + '%', 'object_address.ilike.%' + q + '%'].concat(dg.length >= 3 ? ['key.ilike.%' + dg.slice(-9) + '%'] : []).join(','));
+      const { data, count, error } = await qy.range(cust.length, cust.length + PAGE - 1);
+      if (error) throw error;
+      cust = cust.concat(data || []); cTotal = count == null ? cust.length : count; cDone = (data || []).length < PAGE;
+    } finally { cBusy = false; }
   }
   function drawCustomers() {
-    const q = cSearch.toLowerCase(), dg = cSearch.replace(/\D/g, '');
-    const list = cust.filter((c) => !q || [c.name, c.email, c.object_address].some((x) => String(x || '').toLowerCase().includes(q)) || (dg.length >= 3 && String(c.phone || '').replace(/\D/g, '').includes(dg)));
+    const list = cust;
     setScreen('customers', _('<div class="h1" style="margin-bottom:12px">Клиенты</div><div class="bar"><input class="inp" id="cSearch" placeholder="Поиск: имя, телефон, e-mail…" value="') + esc(cSearch) + _('"><div class="sp"></div><button class="btn primary sm" data-act="newlead">＋ Новый клиент</button></div>')
-      + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>Клиент</th><th>Телефон</th><th>Адрес</th><th class="num">Обращений</th><th class="num">Заказов</th><th>Последний контакт</th></tr></thead><tbody>') + list.map((c) => '<tr class="click" data-cust="' + esc(c.key) + '"><td><b>' + esc(c.name || c.email || c.phone) + '</b></td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.object_address || '—') + '</td><td class="num">' + c.leads + '</td><td class="num">' + c.won + '</td><td>' + ago(c.last_activity_at) + '</td></tr>').join('') + '</tbody></table></div></div>'
-        : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">◍</div><div>' + (cust.length ? _('Никого не найдено.') : _('Клиентов пока нет.<br><span class="muted">Они появятся из лидов — с сайта или созданных вручную.</span>')) + _('</div><button class="btn primary" data-act="newlead">＋ Новый клиент</button></div>')));
-    const si = $('#cSearch'); if (si) si.oninput = () => { cSearch = si.value; const pos = si.selectionStart; drawCustomers(); const s = $('#cSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } };
+      + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>Клиент</th><th>Телефон</th><th>Адрес</th><th class="num">Обращений</th><th class="num">Заказов</th><th>Последний контакт</th></tr></thead><tbody>') + list.map((c) => '<tr class="click" data-cust="' + esc(c.key) + '"><td><b>' + esc(c.name || c.email || c.phone) + '</b></td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.object_address || '—') + '</td><td class="num">' + c.leads + '</td><td class="num">' + c.won + '</td><td>' + ago(c.last_activity_at) + '</td></tr>').join('') + '</tbody></table></div></div>' + (cDone ? '' : '<div class="morerows"><button type="button" class="btn sm ghost" data-morec="1">' + _('Показать ещё') + ' · ' + Math.max(0, cTotal - list.length) + '</button></div>')
+        : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">◍</div><div>' + (cSearch ? _('Никого не найдено.') : _('Клиентов пока нет.<br><span class="muted">Они появятся из лидов — с сайта или созданных вручную.</span>')) + _('</div><button class="btn primary" data-act="newlead">＋ Новый клиент</button></div>')));
+    const si = $('#cSearch'); if (si) si.oninput = () => {
+      const v = si.value, pos = si.selectionStart; cSearch = v; clearTimeout(cTimer);
+      cTimer = setTimeout(async () => { try { await loadCustomers(true); } catch (e) { toast(humanError(e), true); return; } drawCustomers(); const s = $('#cSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } }, 300);
+    };
   }
-  function customerDialog(key) {
+  async function customerDialog(key) {
     const c = cust.find((x) => x.key === key); if (!c) return;
-    const mine = leads.filter((l) => (normPhone(l.phone) || (l.email || '').toLowerCase()) === key).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    let mine = []; try { mine = await fetchPage('all', key, 0, 30); remember(mine); } catch (e) { return toast(humanError(e), true); }
     dialog({
       title: c.name || c.email || c.phone, sub: esc([c.phone, c.email].filter(Boolean).join(' · ')),
       body: '<div class="contact">' + (c.phone ? '<a href="tel:' + esc(tel(c.phone)) + _('">📞 Позвонить</a>') : '') + (waNum(c.phone) ? '<a href="https://wa.me/' + waNum(c.phone) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (c.email ? '<a href="mailto:' + esc(c.email) + _('">✉ Написать</a>') : '') + '</div>'
@@ -634,17 +781,25 @@
     });
   }
 
+  const srcLabel = (raw) => {
+    const low = String(raw || '').toLowerCase();
+    if (/facebook|instagram|meta|fb\b/.test(low)) return 'Meta';
+    if (/google|gclid/.test(low)) return 'Google';
+    if (SOURCES.includes(raw)) return _(raw);
+    return { web: _('Сайт'), seller: _('Продавец'), manager: _('Продавец'), dealer: _('Дилер'), office: _('Офис'), client: _('Клиент') }[low] || raw;
+  };
   function renderAdmin() {
     const sc = $('[data-screen="admin"]'); if (!sc) return;
     if (!loaded) return setScreen('admin', skeleton());
-    const open = leads.filter(isOpen), won = leads.filter((l) => l.stage === 'won'), lost = leads.filter((l) => l.stage === 'lost');
-    const pipe = open.reduce((a, l) => a + (Number(l.last_total_net) || 0), 0);
+    if (!stats) { setScreen('admin', skeleton()); loadStats().then(() => { if (stats && curScreen() === 'admin') renderAdmin(); }); return; }
+    const st = stats;
+    const open = { length: Number(st.open) }, won = { length: Number(st.won) }, lost = { length: Number(st.lost) };
+    const pipe = Number(st.pipeline) || 0;
     const wr = won.length + lost.length ? Math.round(100 * won.length / (won.length + lost.length)) : null;
-    const wsum = won.filter((l) => l.last_total_net != null);
-    const avg = wsum.length ? wsum.reduce((a, l) => a + Number(l.last_total_net), 0) / wsum.length : null;
-    const bySrc = {}; leads.forEach((l) => { const k = srcInfo(l).label; bySrc[k] = (bySrc[k] || 0) + 1; });
-    const per = {}; leads.forEach((l) => { if (l.assigned_to) { const p = per[l.assigned_to] || (per[l.assigned_to] = { n: 0, open: 0, sum: 0, late: 0, won: 0, lost: 0 }); p.n++; if (isOpen(l)) { p.open++; p.sum += Number(l.last_total_net) || 0; } if (overdue(l)) p.late++; if (l.stage === 'won') p.won++; if (l.stage === 'lost') p.lost++; } });
-    const un = open.filter((l) => !l.assigned_to).length;
+    const avg = st.avg_won == null ? null : Number(st.avg_won);
+    const bySrc = {}; (st.by_source || []).forEach((s) => { const k = srcLabel(s.k); bySrc[k] = (bySrc[k] || 0) + Number(s.n); });
+    const per = {}; (st.by_user || []).forEach((u) => { per[u.id] = { n: Number(u.n), open: Number(u.open), sum: Number(u.sum), late: Number(u.late), won: Number(u.won), lost: Number(u.lost) }; });
+    const un = Number(st.unassigned);
     const kpi = (l, v, sub) => '<div class="kpi"><div class="l">' + l + '</div><div class="v tab-num">' + v + '</div>' + (sub ? '<div class="delta">' + sub + '</div>' : '') + '</div>';
     setScreen('admin', _('<div class="h1" style="margin-bottom:4px">Обзор</div><p class="muted" style="margin:0 0 16px">Цифры считаются по лидам, которые вы видите.</p>')
       + '<div class="kpis">' + kpi(_('В работе (сумма КП)'), money(pipe), open.length + _(' лидов')) + kpi(_('Доля побед'), wr == null ? '—' : wr + '%', won.length + _(' из ') + (won.length + lost.length)) + kpi(_('Средний чек'), money(avg)) + kpi(_('Без ответственного'), un, un ? _('раздайте в работу') : _('всё разобрано')) + '</div>'
@@ -719,6 +874,17 @@
 
   /* ---------- notifications ---------- */
   let notes = [];
+  // a light question every minute: did anything change? (the counters and the newest activity); only then the pages are read again
+  let lastMark = '';
+  async function pollChanges() {
+    if (document.hidden || !booted) return;
+    try {
+      const [c, l] = await Promise.all([run(sb.rpc('lead_counts')), run(sb.from('leads').select('last_activity_at').order('last_activity_at', { ascending: false }).limit(1))]);
+      const mark = JSON.stringify([c, l]);
+      if (lastMark && mark !== lastMark) { const a = document.activeElement; if (!$('.dlgback') && !(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) await refresh(); }
+      lastMark = mark;
+    } catch (e) { /* offline or a hiccup: try again in a minute */ }
+  }
   async function pollNotifications() {
     try { notes = await run(sb.from('notifications').select('id, at, text, lead_id, read').order('at', { ascending: false }).limit(20)); } catch (e) { return; }
     const un = notes.filter((n) => !n.read).length, dot = $('#bellDot'); if (dot) { dot.hidden = !un; }
@@ -745,7 +911,7 @@
 
   /* ---------- search, keyboard, screen switching, messages from the configurator ---------- */
   const si = $('#gsearch');
-  if (si) si.addEventListener('input', () => { query = si.value.trim(); if (curScreen() !== 'today') C.show('today'); chip = query ? 'all' : chip; renderChips(); C.rerender(); });
+  if (si) si.addEventListener('input', () => setQuery(si.value.trim()));
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); if (si) si.focus(); return; }
     const tag = (document.activeElement || {}).tagName;
@@ -756,7 +922,9 @@
   $$('.rail a').forEach((a) => a.addEventListener('keydown', (e) => { if (e.key === 'Enter') a.click(); }));
 
   document.addEventListener('click', (e) => {
-    const qt = e.target.closest('[data-qt]'); if (qt) { qTab = qt.dataset.qt; drawQuotes(); return; }
+    if (e.target.closest('[data-moreq]')) { moreQuotes(); return; }
+    const mc = e.target.closest('[data-morec]'); if (mc) { loadCustomers(false).then(drawCustomers, (er) => toast(humanError(er), true)); return; }
+    const qt = e.target.closest('[data-qt]'); if (qt) { qTab = qt.dataset.qt; loadQuotes(true).then(() => (qTab === 'arc' ? moreQuotes() : drawQuotes()), (er) => toast(humanError(er), true)); return; }
     const qr = e.target.closest('[data-qrow]'); if (qr) { const q = quotes.find((x) => x.id === qr.dataset.qrow); if (q && q.lead_id) openLead(q.lead_id); return; }
     const cr = e.target.closest('[data-cust]'); if (cr) { customerDialog(cr.dataset.cust); return; }
     const cf = e.target.closest('[data-act="configurator"]'); if (cf) { try { localStorage.removeItem('db.handoff'); } catch (er) {} openConfigurator(true); }
@@ -767,6 +935,8 @@
     if (!booted) return;
     if (id === 'quotes') renderQuotes();
     if (id === 'customers') renderCustomers();
+    if (id === 'leads' && !colsLoaded) { colsLoaded = true; loadCols(true).then(() => rebuild(curLid), (e) => { colsLoaded = false; toast(humanError(e), true); }); }
+    if (id === 'orders' && !ordersLoaded) loadOrders().then(() => rebuild(curLid));
     if (id === 'admin') renderAdmin();
     if (id === 'settings') renderSettings();
     if (id === 'approvals') renderApprovals();
@@ -823,7 +993,7 @@
     const g = st.ghost; g.animate([{ opacity: 0.96 }, { opacity: 0, transform: g.style.transform.replace('scale(1.03)', 'scale(.94)') }], { duration: 180, easing: 'ease-out' }).onfinish = () => g.remove();
     const idx = colIndex(col);
     st.card.classList.remove('dragging');
-    if (st.info.kind === 'lead') moveLead(leads.find((x) => x.id === st.info.id), idx); else moveOrder(orders.find((x) => x.id === st.info.id), idx);
+    if (st.info.kind === 'lead') moveLead(byId.get(st.info.id), idx); else moveOrder(orders.find((x) => x.id === st.info.id), idx);
   }
   const STAGE_AT = ['new', 'contacted', 'quote_issued', 'negotiation'];
   function moveLead(l, idx) {
@@ -891,6 +1061,6 @@
   };
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || !e.data || e.data.type !== 'db-crm-back') return;
-    refresh().then(() => { C.show(curLid ? 'today' : 'leads'); }).catch(() => {});
+    refresh(undefined, true).then(() => { C.show(curLid ? 'today' : 'leads'); }).catch(() => {});
   });
 })();
