@@ -8,8 +8,8 @@ description: >-
   final business plan with a computed verdict. Use when the user says "test my
   business idea", "would this work", "pressure-test this", "validate demand",
   "is this profitable", "write my business plan", or works through a new venture.
-  Single-file version: no sub-agents and no Python tools — run every step inline,
-  do the arithmetic yourself, and be honest about simulated-buyer limits.
+  In this project it runs with real agents (see the D&B adaptation below); do the
+  arithmetic yourself and be honest about simulated-buyer limits.
 ---
 
 # D&B adaptation (these rules override anything below)
@@ -100,7 +100,7 @@ and the strongest version of the business the board can see (may differ from the
 From `idea.md`, find 5-10 direct + indirect competitors plus main substitutes
 (Direct = same thing/same buyer; Indirect = different product, same job; Substitute
 = how buyers cope without a business). For each: name, type, url, location/channel,
-price of the comparable item, what it sells, positioning line (their own words),
+price of the comparable item, what it sells, positioning line (their own words; replace any manufacturer or supplier name with "the manufacturer" before writing it down),
 rating, review count, date. For the top 3-5, read 1-3★ then "love it, but…" 4★
 reviews; note recurring complaints with counts + linked verbatim quotes.
 Write `founder/competitors.md`: the table (sorted by directness), price range
@@ -122,8 +122,8 @@ persona each from the segments/behaviours/objections, show each the same pitch, 
 have each answer **independently and NOT agreeably**: buys (yes/no), purchases in
 first month, reason code, reason in their own voice, main objection, what would
 change their mind, and 4 price answers (too cheap / a bargain / getting expensive /
-too expensive). Never answer for a buyer. (In Claude Code with sub-agents, run one
-sub-agent per buyer in waves of ~10; single-file, reason each one through yourself.)
+too expensive). Never answer for a buyer. (Here: run one `panel-buyer` agent
+per buyer in waves of ~10; never reason a buyer through yourself.)
 Tally: buy rate, buy rate by segment/behaviour/income, top pass reasons with quotes,
 what flips a no, average purchases in month one, and collect the price answers.
 **Honest limit (say once):** simulated buyers surface objections and wording well but
@@ -184,7 +184,7 @@ positioning.
 ---
 
 ## 9. OPS — how it runs on day one
-Suppliers and their costs, who works when, step-by-step routines (open / serve or ship
+Suppliers (write only "the manufacturer", never a name) and their costs (costs go to the private document, never to a repository file), who works when, step-by-step routines (open / serve or ship
 / close), the tools, the licences and permits to check, and a risk register with what
 to do when each thing goes wrong. Feed real costs back to the CFO. Define how quality
 travels when expanding to a new region.
@@ -210,7 +210,7 @@ written by hand**, from four checks:
 Verdict = **Profitable** (all pass), **Not yet** (lead with the failing check and which
 step fixes it), or **Incomplete** (missing inputs; name the step that fills each).
 Add a half-page executive summary: what it is + who for (2 sentences), the verdict and
-the three numbers behind it (margin, break-even, year 1), where board and panel agreed
+the three numbers behind it (margin, break-even, year 1 — in the private document / chat only, never in a repository file), where board and panel agreed
 and disagreed, the biggest risk and what will be done, what's needed to start (cash +
 first test), and the one thing to do this week. Never soften a failing check.
 
@@ -219,7 +219,7 @@ first test), and the one thing to do this week. Never soften a failing check.
 ## Output
 `founder/idea.md`, `founder/competitors.md`, `founder/customer.json`, `founder/pitch.md`,
 panel results, pricing, offer, CFO numbers, marketing, brand, ops, launch, and
-`founder/business-plan.md` + `founder/summary.md`.
+`founder/business-plan.md` + `founder/summary.md`. In the repository these two files carry NO figures (no margin, break-even, costs, prices of suppliers, budgets): the figures live only in the private document / chat.
 
-Credit: method from the founder-skill pack (Jake Schincariol, MIT). This is the
-single-file adaptation — it keeps the method but not the sub-agents or Python tools.
+Credit: method from the founder-skill pack. Copyright (c) Jake Schincariol, MIT License (keep the full license text of the original pack with any redistribution).
+This is the single-file adaptation, further adapted for D&B (see the block at the top); the Python tools of the original are not included.

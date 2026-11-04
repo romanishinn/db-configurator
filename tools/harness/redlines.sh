@@ -42,8 +42,12 @@ fi
 hits=$($G -i -E -e 'purchase_|purchaseprice|cost_?price|dealer_?(discount|price)|einkaufspreis|ek_?preis|marge_|markup_|margin_(pct|percent|eur)|"(purchase|margin|marge|markup|dealer_?price)[a-z_]*"[[:space:]]*:|(^|[[:space:],(])"?(purchase|margin|marge|markup)[a-z_]*"?[[:space:]]+(numeric|integer|int|real|decimal)\b' -- data db supabase packages apps tools/import prototype ':(exclude)prototype/vendor' "$SELF" | loc)
 [ -n "$hits" ] && say "закупочные данные/маржа в коде, данных или схеме: $hits"
 
+# 3b. the outside view (/founder) may leave only NON-financial material in docs/external-view
+hits=$($G -i -E -e 'margin|marge|маржа|маржи|маржу|break-?even|безубыточ|закупк|закупоч|комисси|commission|unit economics|ebitda|payback|окупаемост' -- docs/external-view "$SELF" | loc)
+[ -n "$hits" ] && say "финансы в docs/external-view (им место только в личном документе): $hits"
+
 # 4. files that must never be committed (the transferred HANDOFF with the economics, price lists, env files)
-bad=$(git ls-files -co --exclude-standard | grep -Ei '(^|/)handoff[^/]*\.md$|\.(pdf|xlsx|xls)$|(^|/)\.env($|\.)|^founder/' | grep -v '\.env\.example$' | tr '\n' ' ')
+bad=$(git ls-files -co --exclude-standard | grep -Ei '(^|/)handoff[^/]*\.md$|\.(pdf|xlsx|xls)$|(^|/)\.env($|\.)|^founder/|(^|/)numbers\.json$' | grep -v '\.env\.example$' | tr '\n' ' ')
 [ -n "$bad" ] && say "нельзя коммитить: $bad"
 
 [ "$fail" = 0 ] && echo "redlines: ok"
