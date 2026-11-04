@@ -395,4 +395,51 @@ select pg_temp.check((select score from public.lead_board limit 1) is not null, 
 select pg_temp.as_user(:'manager');
 select pg_temp.check((select count(*) from public.leads where contact_name = 'Arch Project') = 0, 'a manager does not see an architect''s project');
 
+
+-- ---------- 18. paged lead list, counters and statistics (0012): rows follow the caller's rights ----------
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads), 'the superadmin''s list covers every lead');
+select count(*) as total_all from public.leads \gset
+select pg_temp.check((select count(distinct id) from (select * from public.lead_page('all', null, 2, 0) union all select * from public.lead_page('all', null, 2, 2)) x) = least(4, :total_all), 'two pages do not overlap');
+select pg_temp.check((select count(*) from public.lead_page('all', 'Eva', 40, 0)) >= 1, 'search by a part of the name');
+select pg_temp.check((select count(*) from public.lead_page('all', '660112020', 40, 0) where contact_name like 'Eva%') >= 1 and (select count(*) from public.lead_page('all', '0660 112 020', 40, 0) where contact_name like 'Eva%') >= 1, 'search by the digits of a phone in any format');
+select pg_temp.check((select count(*) from public.lead_page('all', '%', 40, 0)) = 0, 'a wildcard typed in the search is not a wildcard');
+select pg_temp.check((select count(*) from public.lead_page('nonsense', null, 40, 0)) = 0, 'an unknown filter returns nothing');
+select pg_temp.check((select count(*) from public.lead_page('open', null, 1000, 0)) <= 100, 'a page is capped at 100 rows');
+select pg_temp.check((select "open" + won + lost from public.lead_counts()) = :total_all, 'the counters add up to all leads');
+select pg_temp.check((select (public.crm_stats() ->> 'open')::int + (public.crm_stats() ->> 'won')::int + (public.crm_stats() ->> 'lost')::int) = :total_all, 'the statistics add up to all leads');
+-- every role gets only what row level security lets it see
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads), 'a dealer''s list equals the leads he sees');
+select pg_temp.check((select "open" + won + lost from public.lead_counts()) = (select count(*) from public.leads), 'a dealer''s counters follow his visibility');
+select pg_temp.check(not exists (select 1 from public.lead_page('all', 'Eva', 40, 0)), 'a dealer cannot find a lead of somebody else by search');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads), 'a manager''s list equals his leads');
+select pg_temp.check((select (public.crm_stats() ->> 'open')::int + (public.crm_stats() ->> 'won')::int + (public.crm_stats() ->> 'lost')::int) = (select count(*) from public.leads), 'a manager''s statistics cover his leads only');
+select pg_temp.as_user(:'arch');
+select pg_temp.check((select count(*) from public.lead_page('all', null, 100, 0)) = (select count(*) from public.leads) and (select count(*) from public.lead_page('all', null, 100, 0)) = 1, 'an architect''s list is his own project only');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select * from public.lead_page('all')$$, 'permission denied'), 'the public site cannot read the list');
+select pg_temp.check(pg_temp.fails($$select * from public.lead_counts()$$, 'permission denied') and pg_temp.fails($$select public.crm_stats()$$, 'permission denied'), 'nor the counters and statistics');
+
+-- ---------- 19. access hardening (0013): deactivated logins, company fields, org_of, discount groups, API grants ----------
+select pg_temp.as_root();
+update public.profiles set active = false where id = :'linz';
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.leads) = 0 and (select count(*) from public.quotes) = 0, 'a deactivated login sees no leads and quotes');
+select pg_temp.check(pg_temp.fails(format('select public.transfer_lead(%L, %L, %L)', :'lead_anna', :'graz1', 'x'), 'FORBIDDEN'), 'a deactivated login cannot pass a lead on');
+select pg_temp.as_root();
+update public.profiles set active = true where id = :'linz';
+select pg_temp.as_user(:'graz1');
+select pg_temp.check(pg_temp.fails($q$update public.organizations set kind = 'db' where id = '00000000-0000-0000-0000-0000000000a1'$q$, 'FORBIDDEN'), 'a dealer cannot change the kind of his company');
+select pg_temp.check(pg_temp.fails($q$update public.organizations set discount_group_id = (select id from public.discount_groups limit 1) where id = '00000000-0000-0000-0000-0000000000a1'$q$, 'FORBIDDEN'), 'a dealer cannot change his discount group');
+select pg_temp.check(public.org_of(:'linz') is null, 'org_of does not reveal another company');
+select pg_temp.as_user(:'client');
+select pg_temp.check(public.org_of(:'graz1') is null, 'a client cannot look up anybody''s company');
+select pg_temp.check((select count(*) from public.discount_groups) = 0, 'a client does not see the discount groups');
+select pg_temp.as_root();
+select pg_temp.check(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+  where c.relkind in ('r', 'v') and (has_table_privilege('anon', c.oid, 'truncate') or has_table_privilege('authenticated', c.oid, 'truncate')
+     or (c.relname not in ('pricing_config', 'projects') and has_table_privilege('anon', c.oid, 'select')))), 'the API roles have no grants beyond the intended ones');
+
 select 'access tests passed' as result;
