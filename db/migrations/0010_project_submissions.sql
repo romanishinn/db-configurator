@@ -31,22 +31,36 @@ grant select on public.project_private to authenticated;  -- policies decide; wr
 alter table public.projects drop constraint projects_title_check;
 alter table public.projects drop constraint projects_district_check;
 alter table public.projects add constraint published_needs_text
-  check (not published or (length(btrim(title)) > 0 and length(btrim(district)) > 0));
+  check (not published or length(btrim(title)) > 0);  -- the district is optional: it stays public only with the owner's consent
 
 -- publishing needs the owner's consent confirmed by the office (all projects, also those added by the office)
 -- ASSUMPTION: a project with a rejection (also a withdrawn consent) cannot be published again; a new project is made instead.
--- Without the consent for the district, the district must not appear in the title (the caption).
+-- Without the consent for the district: published => district is cleared (it is publicly readable), and neither the district
+-- nor the postcode of the order may occur in the title (the caption). Synonyms are not caught: the manager answers for the caption.
+-- Comparison: lower case, runs of blanks and hyphens = one blank, whole words only, candidates of at least 2 characters.
+create function public.norm_caption(t text) returns text
+language sql immutable set search_path = public as $$
+  select btrim(regexp_replace(lower(coalesce(t, '')), '[[:space:]-]+', ' ', 'g'))
+$$;
+create function public.caption_has(p_title text, p_candidate text) returns boolean
+language sql immutable set search_path = public as $$
+  select length(public.norm_caption(p_candidate)) >= 2
+     and public.norm_caption(p_title) ~ ('\m' || regexp_replace(public.norm_caption(p_candidate), '([.\\^$|?*+()\[\]{}])', '\\\1', 'g') || '\M')
+$$;
 create function public.projects_consent_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
-declare v_district_ok boolean;
+declare v_district_ok boolean; v_postcode text;
 begin
   if new.published then
-    select pp.consent_district into v_district_ok from public.project_private pp
+    select pp.consent_district, l.postcode into v_district_ok, v_postcode from public.project_private pp
+      left join public.orders o on o.id = pp.order_id left join public.leads l on l.id = o.lead_id
      where pp.project_id = new.id and pp.consent_at is not null and pp.rejected_reason is null;
     if not found then raise exception 'CONSENT_REQUIRED' using errcode = 'P0001'; end if;
-    if not v_district_ok and length(btrim(new.district)) > 0
-       and position(lower(btrim(new.district)) in lower(new.title)) > 0 then
-      raise exception 'DISTRICT_NOT_ALLOWED' using errcode = 'P0001';
+    if not v_district_ok then
+      if public.caption_has(new.title, new.district) or public.caption_has(new.title, v_postcode) then
+        raise exception 'DISTRICT_NOT_ALLOWED' using errcode = 'P0001';
+      end if;
+      new.district := '';
     end if;
   end if;
   return new;
@@ -89,6 +103,15 @@ begin
      where o.stage <> 'done' or not public.order_installed_by_office(o.id);
 end $$;
 
+-- The order is visible to the caller by the same rule as order_read / lead_read (0001, 0005); the caller is a dealer here.
+create function public.dealer_can_see_order(p_order uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.orders o join public.leads l on l.id = o.lead_id
+   where o.id = p_order
+     and (l.created_by = auth.uid() or l.assigned_to = auth.uid()
+          or (public.my_org() is not null and public.org_of(l.assigned_to) = public.my_org())))
+$$;
+
 create function public.submit_project(p_order uuid, p_note text, p_assured boolean) returns uuid
 language plpgsql security definer set search_path = public as $$
 declare
@@ -97,12 +120,9 @@ declare
 begin
   if public.my_role() is distinct from 'dealer' then raise exception 'FORBIDDEN' using errcode = '42501'; end if;
   if p_assured is not true then raise exception 'ASSURANCE_REQUIRED' using errcode = 'P0001'; end if;
-  -- the order must be visible to the caller by the same rule as order_read / lead_read (0001, 0005); the caller is a dealer here
+  if not public.dealer_can_see_order(p_order) then raise exception 'ORDER_NOT_FOUND' using errcode = 'P0001'; end if;
   select o.stage, l.id, l.postcode into o_stage, o_lead, v_postcode
-    from public.orders o join public.leads l on l.id = o.lead_id
-   where o.id = p_order
-     and (l.created_by = auth.uid() or l.assigned_to = auth.uid()
-          or (public.my_org() is not null and public.org_of(l.assigned_to) = public.my_org()));
+    from public.orders o join public.leads l on l.id = o.lead_id where o.id = p_order;
   if not found then raise exception 'ORDER_NOT_FOUND' using errcode = 'P0001'; end if;
   select e.at into v_at from public.lead_events e
    where e.order_id = p_order and e.kind = 'stage' and e.order_to = 'done' order by e.id desc limit 1;
@@ -123,6 +143,18 @@ begin
   end;
   perform public.notify_managers('project_submitted', o_lead, 'Новая заявка проекта от дилера');
   return v_id;
+end $$;
+
+-- The dealer's own confirmed orders that can still be sent: no active project (rejected for quality = may be sent again).
+create function public.list_my_installed_orders() returns table (order_id uuid, contact_name text, postcode text)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if public.my_role() is distinct from 'dealer' then raise exception 'FORBIDDEN' using errcode = '42501'; end if;
+  return query
+    select o.id, l.contact_name, l.postcode from public.orders o join public.leads l on l.id = o.lead_id
+     where public.dealer_can_see_order(o.id) and o.stage = 'done' and public.order_installed_by_office(o.id)
+       and not exists (select 1 from public.project_private pp where pp.order_id = o.id
+                        and (pp.rejected_reason is null or pp.rejected_reason = 'consent_withdrawn'));
 end $$;
 
 create function public.attach_photos(p_project uuid, p_paths text[]) returns void
@@ -224,12 +256,13 @@ begin
   end if;
 end $$;
 
-revoke all on function public.notify_managers(text, uuid, text), public.projects_consent_guard(), public.order_installed_by_office(uuid) from public, anon, authenticated;
+revoke all on function public.notify_managers(text, uuid, text), public.projects_consent_guard(), public.order_installed_by_office(uuid),
+  public.dealer_can_see_order(uuid), public.norm_caption(text), public.caption_has(text, text) from public, anon, authenticated;
 revoke all on function public.submit_project(uuid, text, boolean), public.attach_photos(uuid, text[]), public.reject_project(uuid, text, text),
-  public.unpublish_project(uuid, text), public.record_consent(uuid, text, text, boolean, boolean), public.complete_installation(uuid), public.list_orders_for_installation()
+  public.unpublish_project(uuid, text), public.record_consent(uuid, text, text, boolean, boolean), public.complete_installation(uuid), public.list_orders_for_installation(), public.list_my_installed_orders()
   from public, anon;
 grant execute on function public.submit_project(uuid, text, boolean), public.attach_photos(uuid, text[]), public.reject_project(uuid, text, text),
-  public.unpublish_project(uuid, text), public.record_consent(uuid, text, text, boolean, boolean), public.complete_installation(uuid), public.list_orders_for_installation()
+  public.unpublish_project(uuid, text), public.record_consent(uuid, text, text, boolean, boolean), public.complete_installation(uuid), public.list_orders_for_installation(), public.list_my_installed_orders()
   to authenticated;
 
 -- 5. photos: the dealer uploads into the folder of his own open project (<project id>/<uuid>.jpg) and can neither read,

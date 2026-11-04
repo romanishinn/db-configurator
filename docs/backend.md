@@ -43,8 +43,11 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   rejected = `rejected_reason` is set, under review = sent by a dealer and neither. Date of the request = `projects.created_at`.
   One active project per order (partial unique index): after a rejection for quality (`light` etc.) the dealer may send again, after `consent_withdrawn` not.
 - Rules in SQL: publishing ANY project needs a recorded consent (trigger, `CONSENT_REQUIRED`; also for projects added by the office, also a rejected one stays unpublishable);
-  without the district consent the district must not occur in the title (`DISTRICT_NOT_ALLOWED`, case-insensitive). Title and district are required only when published
-  (a dealer's request starts with the title `Bioklimatische Pergola, <year>` and no district in it).
+  without the district consent the trigger clears `projects.district` on publishing (it is publicly readable; `''`), and neither the district nor the order's postcode
+  may occur in the title (`DISTRICT_NOT_ALLOWED`; lower case, blanks/hyphens equal, whole words only, candidates of 2+ characters: `Au` does not block `Ausblick`, `Wien 13` catches `Villa in Wien-13.`).
+  Synonyms are not caught: the manager answers for the caption. Only the title is required when published
+  (a dealer's request starts with the title `Bioklimatische Pergola, <year>` and the postcode in `district`, which is cleared on publishing without consent).
+- `list_my_installed_orders()` (dealer only): his orders (same visibility rule as `submit_project`, helper `dealer_can_see_order`) in stage `done` confirmed by the office and without an active project.
 - `project_private` is write-protected for everybody (`authenticated` has only SELECT, no insert/update policies): only the functions below write it (security definer).
   The dealer reads his own rows, staff read all.
 - Functions (all `security definer`, error code first in the message, `anon` has no execute on any of them): `submit_project` (dealer only; assurance; own order by the lead_read rule;
@@ -58,6 +61,9 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   is true when the stage is already `done`). Notifications: `notify_managers` (managers and superadmins) on a request; the dealer on rejection or withdrawal.
 - Who can do what: the dealer sees only his own requests (`projects` and `project_private`), writes nothing directly, uploads only `<own open project id>/<uuid>.jpg`
   and cannot read, change or delete files. A manager deletes files only of unpublished projects (files of published ones: superadmin only); update of files: superadmin only.
+- Known limit: an employee can technically publish a dealer's request past the queue and the photo re-encoding by a direct update over REST (the queue is kept by the page; staff are trusted).
+- Known limit: a dealer can insert an order straight in `done` and even on a foreign lead (old `order_insert` from 0005); the office's installation confirmation covers this for requests, but order data is not trusted.
+- Known limit: `record_consent` on a published project fails with `DISTRICT_NOT_ALLOWED` if the consent is narrowed while the district is still in the title: edit the title first.
 - Known limits: the test stub does not check real Storage (path helper `storage.foldername` is copied, upload/mime/size limits are not exercised);
   `attach_photos` does not check that the files exist; photos of a project must live in the folder named by the project id for the manager's delete rule to apply;
   EXIF/GPS is not stripped in SQL (the browser must do it); consent fields change only through `record_consent` (the manager has no direct write);

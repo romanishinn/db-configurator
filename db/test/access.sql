@@ -249,7 +249,8 @@ select pg_temp.check(pg_temp.fails($$update public.projects set photos = '{}' wh
 select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country, options) values ('x', 'y', 'AT', '{sauna}')$$, 'projects_options_check'), 'only known options are allowed');
 select pg_temp.check(pg_temp.fails($$insert into public.projects (title, district, country) values ('x', 'y', 'DE')$$, 'projects_country_check'), 'country is AT or HR');
 select pg_temp.check(pg_temp.fails($$update public.projects set title = '  ' where id = '00000000-0000-0000-0000-0000000000c4'$$, 'published_needs_text'), 'a published project needs a title');
-select pg_temp.check(pg_temp.fails($$update public.projects set district = '' where id = '00000000-0000-0000-0000-0000000000c4'$$, 'published_needs_text'), 'a published project needs a district');
+update public.projects set district = '' where id = '00000000-0000-0000-0000-0000000000c4';
+select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000c4'), 'a published project needs no district (optional since 0010)');
 insert into public.projects (title, district, country) values ('', '', 'AT');  -- a draft (a dealer's request) may start empty
 delete from public.projects where id = '00000000-0000-0000-0000-0000000000c2' or (title = '' and district = '');
 select pg_temp.check((select count(*) from public.projects) = 2, 'superadmin can delete a project');
@@ -569,5 +570,82 @@ select pg_temp.check(not has_function_privilege('anon', f, 'execute'), 'anon can
     'public.list_orders_for_installation()', 'public.notify_managers(text,uuid,text)', 'public.order_installed_by_office(uuid)']) f;
 select pg_temp.check(not has_function_privilege('authenticated', f, 'execute'), 'authenticated cannot execute ' || f)
   from unnest(array['public.notify_managers(text,uuid,text)', 'public.order_installed_by_office(uuid)']) f;
+
+-- 0010 review round 2: the district is public, so it is cleared without consent; caption matching by whole words
+select pg_temp.as_root();
+insert into public.projects (id, title, district, country, photos) values
+  ('00000000-0000-0000-0000-0000000000ca', 'Villa in Wien-13.', 'Wien  13', 'AT', '{x/1.jpg}'),
+  ('00000000-0000-0000-0000-0000000000cb', 'Ausblick', 'Au', 'AT', '{x/1.jpg}'),
+  ('00000000-0000-0000-0000-0000000000cc', 'Pergola Steiermark', 'Graz', 'AT', '{x/1.jpg}');
+insert into public.project_private (project_id, consent_at, consent_channel, consent_version, consent_district) values
+  ('00000000-0000-0000-0000-0000000000ca', now(), 'call', 'v1', false),
+  ('00000000-0000-0000-0000-0000000000cb', now(), 'call', 'v1', false),
+  ('00000000-0000-0000-0000-0000000000cc', now(), 'call', 'v1', false);
+select pg_temp.check(pg_temp.fails($$update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000ca'$$, 'DISTRICT_NOT_ALLOWED'), 'Wien 13 is caught in "Villa in Wien-13."');
+update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000cb';
+select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000cb'), 'Au does not block Ausblick');
+update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000cc';
+-- whole words at the START too: 'Ort' must not block "Fort" (a match inside a word)
+insert into public.projects (id, title, district, country, photos) values ('00000000-0000-0000-0000-0000000000ce', 'Fort Pergola', 'Ort', 'AT', '{x/1.jpg}');
+insert into public.project_private (project_id, consent_at, consent_channel, consent_version, consent_district) values ('00000000-0000-0000-0000-0000000000ce', now(), 'call', 'v1', false);
+update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000ce';
+select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000ce'), 'Ort does not block Fort (word boundary at the start)');
+select pg_temp.as_anon();
+select pg_temp.check((select district from public.projects where id = '00000000-0000-0000-0000-0000000000cc') = '', 'anon does not see the district of a project without the district consent');
+select pg_temp.check((select district from public.projects where id = :'pj7') = '8010', 'with the district consent anon reads the district');
+select pg_temp.as_root();
+select pg_temp.check((select district from public.projects where id = '00000000-0000-0000-0000-0000000000c1') = 'Wien 13', 'the district with the consent is kept');
+-- the postcode of the order in the title, without consent: pj for o_ok has the postcode 8010 and consent_district true there, so use a fresh order
+insert into public.orders (id, lead_id, stage) values ('00000000-0000-0000-0000-0000000000e8', '00000000-0000-0000-0000-0000000000d1', 'inbox');
+insert into public.projects (id, title, district, country, photos) values ('00000000-0000-0000-0000-0000000000cd', 'Pergola 8010 Graz', '', 'AT', '{x/1.jpg}');
+insert into public.project_private (project_id, order_id, consent_at, consent_channel, consent_version, consent_district)
+  values ('00000000-0000-0000-0000-0000000000cd', '00000000-0000-0000-0000-0000000000e8', now(), 'call', 'v1', false);
+select pg_temp.check(pg_temp.fails($$update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000cd'$$, 'DISTRICT_NOT_ALLOWED'), 'the postcode of the order in the title is refused without the district consent');
+update public.projects set title = 'Pergola 80100' where id = '00000000-0000-0000-0000-0000000000cd';
+update public.projects set published = true where id = '00000000-0000-0000-0000-0000000000cd';
+select pg_temp.check((select published from public.projects where id = '00000000-0000-0000-0000-0000000000cd'), '8010 does not block 80100 (whole words)');
+
+-- 0010: list_my_installed_orders and dealer_can_see_order
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.project_private where order_id = :'o_light' and rejected_reason is null) = 1, 'fixture: o_light has an active second request');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.list_my_installed_orders() where order_id in (:'o_inbox', :'o_foreign', :'o_ok', :'o_light', :'o_sd', :'o_dl')) = 0,
+  'a dealer lists no foreign, unconfirmed, or already sent orders');
+select pg_temp.as_root();
+insert into public.orders (id, lead_id) values ('00000000-0000-0000-0000-0000000000e9', '00000000-0000-0000-0000-0000000000d1');
+\set o_new '00000000-0000-0000-0000-0000000000e9'
+select pg_temp.as_user(:'graz1');
+update public.orders set stage = 'done' where id = :'o_new';
+select pg_temp.check((select count(*) from public.list_my_installed_orders() where order_id = :'o_new') = 0, 'an order the dealer set to done himself is not listed until the office confirms');
+select pg_temp.as_user(:'manager');
+select public.complete_installation(:'o_new');
+select pg_temp.as_user(:'graz2');
+select pg_temp.check((select count(*) from public.list_my_installed_orders() where order_id = :'o_new') = 1
+  and (select contact_name || postcode from public.list_my_installed_orders() where order_id = :'o_new') = 'Order G18010', 'a confirmed order is listed (also for a colleague of the same company)');
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.list_my_installed_orders() where order_id = :'o_new') = 0, 'another dealer does not see it');
+select pg_temp.as_user(:'graz1');
+select public.submit_project(:'o_new', null, true) as pjn \gset
+select pg_temp.check((select count(*) from public.list_my_installed_orders() where order_id = :'o_new') = 0, 'an active request hides the order');
+select pg_temp.as_user(:'manager');
+select public.reject_project(:'pjn', 'light', null);
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.list_my_installed_orders() where order_id = :'o_new') = 1, 'after a rejection for light the order is listed again');
+select public.submit_project(:'o_new', null, true) as pjn2 \gset
+select pg_temp.as_user(:'manager');
+select public.record_consent(:'pjn2', 'call', 'v1', false, false);
+select public.unpublish_project(:'pjn2', null);
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.list_my_installed_orders() where order_id = :'o_new') = 0, 'after a withdrawn consent the order is not listed');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails($$select * from public.list_my_installed_orders()$$, 'FORBIDDEN'), 'a manager cannot list a dealer''s orders');
+select pg_temp.as_user(:'superdealer');
+select pg_temp.check(pg_temp.fails($$select * from public.list_my_installed_orders()$$, 'FORBIDDEN'), 'a superdealer cannot list a dealer''s orders');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select * from public.list_my_installed_orders()$$, 'permission denied'), 'the public cannot list orders');
+select pg_temp.check(not has_function_privilege('anon', f, 'execute'), 'anon cannot execute ' || f)
+  from unnest(array['public.list_my_installed_orders()', 'public.dealer_can_see_order(uuid)', 'public.norm_caption(text)', 'public.caption_has(text,text)']) f;
+select pg_temp.check(not has_function_privilege('authenticated', f, 'execute'), 'authenticated cannot execute ' || f)
+  from unnest(array['public.dealer_can_see_order(uuid)', 'public.norm_caption(text)', 'public.caption_has(text,text)']) f;
 
 select 'access tests passed' as result;

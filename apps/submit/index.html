@@ -169,14 +169,9 @@
 
   function loadObjs() {
     var box = $('objs'); box.textContent = '';
-    return Promise.all([
-      sb.from('orders').select('id,stage,lead_id,leads(contact_name,postcode)').eq('stage', 'done'),
-      sb.from('project_private').select('order_id,rejected_reason')
-    ]).then(function (rs) {
-      var err = rs[0].error || rs[1].error;
-      if (err) { box.appendChild(el('p', 'sub', humanError(err))); return; }
-      var used = {}; (rs[1].data || []).forEach(function (p) { if (p.order_id && (!p.rejected_reason || p.rejected_reason === 'consent_withdrawn')) used[p.order_id] = 1; }); // matches the DB: a quality rejection frees the order, a withdrawn consent does not
-      var list = (rs[0].data || []).filter(function (o) { return !used[o.id]; });
+    return sb.rpc('list_my_installed_orders').then(function (r) {
+      if (r.error) { box.appendChild(el('p', 'sub', humanError(r.error))); return; }
+      var list = (r.data || []).map(function (x) { return { id: x.order_id, leads: { contact_name: x.contact_name, postcode: x.postcode } }; }); // the DB returns only orders without an active request
       if (!list.length) { box.appendChild(el('p', 'sub', 'Пока нет смонтированных объектов. Когда офис отметит монтаж, объект появится здесь')); return; }
       list.forEach(function (o) {
         var l = o.leads || {}, it = el('div', 'item'), t = el('div', 't');
@@ -250,9 +245,10 @@
       var err = rs[0].error || rs[1].error;
       if (err) { box.appendChild(el('p', 'sub', humanError(err))); return; }
       var priv = {}; (rs[1].data || []).forEach(function (p) { priv[p.project_id] = p; });
-      if (!rs[0].data.length) { box.appendChild(el('p', 'sub', 'Заявок пока нет.')); return; }
-      rs[0].data.forEach(function (p) {
-        var pr = priv[p.id] || {}, it = el('div', 'item'), t = el('div', 't'), st, cls = '', extra = null, btn = false;
+      var mine = rs[0].data.filter(function (p) { return priv[p.id]; }); // RLS also returns other dealers' published projects: show only my own requests
+      if (!mine.length) { box.appendChild(el('p', 'sub', 'Заявок пока нет.')); return; }
+      mine.forEach(function (p) {
+        var pr = priv[p.id], it = el('div', 'item'), t = el('div', 't'), st, cls = '', extra = null, btn = false;
         if (p.published) { st = 'опубликовано'; cls = ' on'; }
         else if (pr.rejected_reason) { st = 'отклонено'; cls = ' bad'; extra = 'Причина: ' + (REASONS[pr.rejected_reason] || 'другая причина') + (pr.rejected_note ? '. ' + pr.rejected_note : ''); }
         else if (!p.photos || !p.photos.length) { st = 'без фото — добавьте'; btn = true; }

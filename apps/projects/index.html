@@ -111,7 +111,7 @@
     <input id="rvTitle" type="text" lang="de" spellcheck="true">
     <label for="rvDistrict">Район</label>
     <input id="rvDistrict" type="text" lang="de" spellcheck="true">
-    <p class="sub" id="rvDistHint" hidden>Район встречается в названии, а «район можно указать в подписи» не отмечено. Уберите район из названия или отметьте разрешение в блоке согласия.</p>
+    <p class="sub" id="rvDistHint" hidden>Район встречается в названии, а «район можно указать в подписи» не отмечено. Уберите район из названия или отметьте разрешение в блоке согласия. Название можно писать без района; за подпись отвечает менеджер.</p>
     <label>Что установлено</label>
     <div class="checks" id="rvOptions"></div>
     <div id="rvConsent"></div>
@@ -428,17 +428,25 @@
     var ready = rv.consented && rv.items.some(function (x) { return x.on; });
     $('rvPublish').disabled = !ready; $('rvHint').hidden = rv.consented;
   }
+  // the original district is the postcode of the order's address: it must not appear in a title without the owner's consent
+  function norm(s) { return ' ' + String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim() + ' '; }
+  function titleHasDistrict() {
+    var d = norm(rv.dist).trim();
+    return d.length >= 2 && norm($('rvTitle').value).indexOf(' ' + d + ' ') >= 0;
+  }
   function distHint() {
-    var d = $('rvDistrict').value.trim().toLowerCase();
-    $('rvDistHint').hidden = !(rv && d && $('rvTitle').value.toLowerCase().indexOf(d) >= 0 && !rv.consent.district());
+    if (!rv) return;
+    var allowed = rv.consent.district();
+    $('rvDistrict').disabled = !allowed; if (!allowed) $('rvDistrict').value = '';
+    $('rvDistHint').hidden = allowed || !titleHasDistrict();
   }
   $('rvTitle').addEventListener('input', distHint); $('rvDistrict').addEventListener('input', distHint);
   function openReview(q) {
     var p = q.projects;
-    rv = { id: p.id, old: p.photos.slice(), items: p.photos.map(function (path) { return { path: path, on: true }; }), consented: !!q.consent_at };
+    rv = { dist: '', id: p.id, old: p.photos.slice(), items: p.photos.map(function (path) { return { path: path, on: true }; }), consented: !!q.consent_at };
     $('rvMeta').textContent = fmtDate(p.created_at) + ' · ' + p.country;
     $('rvNote').textContent = q.dealer_note || '—';
-    $('rvTitle').value = p.title || ''; $('rvDistrict').value = p.district || '';
+    $('rvTitle').value = p.title || ''; $('rvDistrict').value = ''; rv.dist = p.district || '';
     Array.prototype.forEach.call(RVO.querySelectorAll('input'), function (c) { c.checked = (p.options || []).indexOf(c.value) >= 0; });
     rv.consent = makeConsent($('rvConsent'), { onDistrict: distHint });
     rv.consent.note(rv.consented ? 'Согласие уже записано.' : '');
@@ -458,9 +466,10 @@
 
   function busy(on) { ['rvPublish', 'rvReject', 'rvBack'].forEach(function (id) { $(id).disabled = on; }); if (!on) renderReview(); }
   $('rvPublish').addEventListener('click', function () {
-    var chosen = rv.items.filter(function (x) { return x.on; }), title = $('rvTitle').value.trim(), district = $('rvDistrict').value.trim();
+    var chosen = rv.items.filter(function (x) { return x.on; }), title = $('rvTitle').value.trim(), district = rv.consent.district() ? $('rvDistrict').value.trim() : '';
     if (!chosen.length) { say('rvMsg', 'Выберите хотя бы одно фото'); return; }
-    if (!title || !district) { say('rvMsg', 'Заполните название и район'); return; }
+    if (!title) { say('rvMsg', 'Заполните название'); return; }
+    if (!rv.consent.district() && titleHasDistrict()) { say('rvMsg', humanError(new Error('DISTRICT_NOT_ALLOWED'))); return; } // before any file is touched
     var fresh = [], id = rv.id, old = rv.old.slice(), linked = false, warn = false;
     busy(true); say('rvMsg', 'Обрабатываю фото…', true);
     // (a) re-encode through canvas: drops EXIF/GPS even if the dealer bypassed his own page
@@ -482,7 +491,7 @@
       if (r.error) throw r.error;
       linked = true;
       // (d) everything in the project folder except the new files (also strays the dealer left); none of them is linked any more
-      return sb.storage.from(BUCKET).list(id).then(function (l) { return l && l.data ? l.data : []; }, function () { return []; }).then(function (files) {
+      return sb.storage.from(BUCKET).list(id, { limit: 1000 }).then(function (l) { return l && l.data ? l.data : []; }, function () { return []; }).then(function (files) {
         var names = files.map(function (f) { return id + '/' + f.name; });
         old.forEach(function (k) { if (names.indexOf(k) < 0) names.push(k); });
         names = names.filter(function (n) { return fresh.indexOf(n) < 0; });
@@ -509,7 +518,7 @@
     sb.rpc('reject_project', { p_project: id, p_reason: $('rvReason').value, p_note: $('rvRejNote').value.trim() || null }).then(function (r) {
       if (r.error) throw r.error;
       // clean the whole folder; a failure here must not undo the rejection
-      return sb.storage.from(BUCKET).list(id).then(function (l) {
+      return sb.storage.from(BUCKET).list(id, { limit: 1000 }).then(function (l) {
         var names = (l && l.data ? l.data : []).map(function (f) { return id + '/' + f.name; });
         known.forEach(function (k) { if (names.indexOf(k) < 0) names.push(k); });
         return names.length ? sb.storage.from(BUCKET).remove(names) : null;
