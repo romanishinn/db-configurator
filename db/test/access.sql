@@ -36,7 +36,7 @@ insert into auth.users (id, email) values
 select pg_temp.check((select count(*) from public.profiles where role = 'client') = 8, 'every login starts as a client');
 update public.profiles set role = 'superadmin' where id = '00000000-0000-0000-0000-000000000001';
 update public.profiles set role = 'superdealer' where id = '00000000-0000-0000-0000-000000000002';
-update public.profiles set role = 'seller', discount_limit = 5 where id = '00000000-0000-0000-0000-000000000003';
+update public.profiles set role = 'manager', discount_limit = 5 where id = '00000000-0000-0000-0000-000000000003';
 update public.profiles set role = 'dealer', discount_limit = 10, org_id = '00000000-0000-0000-0000-0000000000a1' where id in ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000005');
 update public.profiles set role = 'dealer', discount_limit = 8, org_id = '00000000-0000-0000-0000-0000000000b1' where id = '00000000-0000-0000-0000-000000000006';
 \set admin '00000000-0000-0000-0000-000000000001'
@@ -100,7 +100,7 @@ select pg_temp.check((select comment from public.lead_events where to_stage = 'l
 
 -- ---------- 5. a seller enters a lead and passes it to a dealer (comment required) ----------
 select pg_temp.as_user(:'seller');
-insert into public.leads (created_by, source, contact_name, phone) values (:'seller', 'seller', 'Anna', '+43 660 3');
+insert into public.leads (created_by, source, contact_name, phone) values (:'seller', 'manager', 'Anna', '+43 660 3');
 select id as lead_anna from public.leads where contact_name = 'Anna' \gset
 select pg_temp.fails(format('select public.transfer_lead(%L, %L, %L)', :'lead_anna', :'linz', ' '), 'COMMENT_REQUIRED') as ok \gset
 select pg_temp.check(:'ok', 'passing a lead on needs a comment');
@@ -135,15 +135,15 @@ select pg_temp.check((select valid_until from public.quotes where owner = :'graz
 select pg_temp.as_user(:'linz');
 select pg_temp.check((select count(*) from public.quotes where owner = :'graz1') = 0, 'a dealer never sees another dealer''s quotes');
 
--- ---------- 7. roles: superdealer may only make sellers ----------
+-- ---------- 7. roles: only the superadmin sets roles; a superdealer cannot make managers or dealers ----------
 select pg_temp.as_user(:'superdealer');
-select public.set_user_role(:'newbie', 'seller');
+select pg_temp.fails(format($q$select public.set_user_role(%L, 'manager')$q$, :'newbie'), 'FORBIDDEN') as ok0 \gset
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'dealer')$q$, :'newbie'), 'FORBIDDEN') as ok1 \gset
-select pg_temp.fails(format($q$select public.set_user_role(%L, 'seller', null, 50)$q$, :'newbie'), 'FORBIDDEN') as ok2 \gset
+select pg_temp.fails(format($q$select public.set_user_role(%L, 'manager', null, 50)$q$, :'newbie'), 'FORBIDDEN') as ok2 \gset
 select pg_temp.as_user(:'graz1');
 select pg_temp.fails(format($q$select public.set_user_role(%L, 'superadmin')$q$, :'graz1'), 'FORBIDDEN') as ok3 \gset
 select pg_temp.fails(format($q$update public.profiles set discount_limit = 100 where id = %L$q$, :'graz1'), 'permission denied') as ok4 \gset
-select pg_temp.check(:'ok1' and :'ok2', 'a superdealer can make sellers but not dealers or discount limits');
+select pg_temp.check(:'ok0' and :'ok1' and :'ok2', 'a superdealer can make neither managers nor dealers nor set discount limits');
 select pg_temp.check(:'ok3' and :'ok4', 'nobody raises his own role or limit');
 
 -- ---------- 8. the board: 7 days without movement are flagged ----------
@@ -215,9 +215,9 @@ select pg_temp.check(public.norm_phone('+43 660 112 020') = public.norm_phone('0
 select pg_temp.check(public.norm_phone('') is null and public.norm_phone(null) is null, 'an empty phone has no key');
 select pg_temp.as_user(:'seller');
 insert into public.leads (created_by, source, contact_name, phone, next_action, next_action_at) values
-  (:'seller', 'seller', 'Eva Berger', '+43 660 112 020', 'Позвонить', current_date),
-  (:'seller', 'seller', 'Eva B.', '0660 112 020', null, null),
-  (:'seller', 'seller', 'Tom', null, null, null);
+  (:'seller', 'manager', 'Eva Berger', '+43 660 112 020', 'Позвонить', current_date),
+  (:'seller', 'manager', 'Eva B.', '0660 112 020', null, null),
+  (:'seller', 'manager', 'Tom', null, null, null);
 select pg_temp.check((select leads from public.customers where key = '660112020') = 2, 'one person with two phone formats is one customer with 2 leads');
 select pg_temp.check((select name from public.customers where key = '660112020') in ('Eva Berger', 'Eva B.'), 'the customer has a name');
 select pg_temp.check((select count(*) from public.customers where name = 'Tom') = 0, 'a lead without phone and e-mail is not a customer');
@@ -285,5 +285,14 @@ select pg_temp.check((select note from public.leads where contact_name = 'Anna')
 select pg_temp.check((select score from public.lead_board limit 1) is not null, 'the board carries the score');
 select pg_temp.as_user(:'seller');
 select pg_temp.check((select count(*) from public.leads where contact_name = 'Arch Project') = 0, 'a seller does not see an architect''s project');
+
+
+-- ---------- 16. the role is called "manager" everywhere (0010) ----------
+select pg_temp.as_root();
+select pg_temp.check(not exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = 'app_role' and e.enumlabel = 'seller'), 'there is no "seller" role any more');
+select pg_temp.as_user(:'seller');
+insert into public.leads (created_by, source, contact_name, phone) values (:'seller', 'seller', 'Old Client', '+43 1 999');
+select pg_temp.check((select source from public.leads where contact_name = 'Old Client') = 'manager', 'an older client sending source "seller" is stored as "manager"');
+select pg_temp.check((select assigned_to from public.leads where contact_name = 'Old Client') = :'seller', 'a lead a manager enters is his own from the start');
 
 select 'access tests passed' as result;
