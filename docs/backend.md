@@ -46,6 +46,7 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   - `lead_board` is rebuilt so it carries `score` and `next_action` (a view freezes the columns it had when it was created).
   - Trigger functions are no longer callable through the public API.
 - Boards: drag a card to another column (mouse, or press and hold on a touch screen); a slim icon rail on tablets; a bottom tab bar on phones.
+- Languages: the switcher (🌐 in the top bar, also in Settings and on the login screen) is available to every user; the choice is remembered per browser. One list `LANGS` in `crm.html` drives all three menus. The whole CRM follows the language: the old screens through the `T` table in `crm.html`, the live screens through `prototype/crm-i18n.js` (keyed by the Russian source text; fallback: chosen language → English → Russian). Offered now: RU, EN, DE, HR. **Adding a language:** add `[code, native name]` to `LANGS`, add its texts to `T` and to every entry of `crm-i18n.js`, and check that the configurator (it has its own texts) supports the code. Dates and numbers follow the language. Notifications and history lines written by the database start with a fixed Russian phrase that the CRM translates; the customer's own words (notes, names) are shown as typed.
 - Role names: the live database calls the sales role `manager`, a fresh rebuild from these migrations `seller`. The CRM accepts both. The repository migrations should be synchronised with the live schema (`manager`) in a separate step.
 
 ## Not yet (next phases)

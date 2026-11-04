@@ -14,15 +14,24 @@
   const { $, $$, esc } = C;
   document.documentElement.classList.add('live');
 
+  /* ---------- language ---------- */
+  const DICT = window.CRM_I18N || {};
+  const curLang = () => (C.lang && C.lang()) || 'ru';
+  const _ = (s) => { const l = curLang(); if (l === 'ru') return s; const e = DICT[s]; if (!e) return s; return e[l] != null ? e[l] : (e.en != null ? e.en : s); };
+  const LOCALES = { ru: 'ru-RU', en: 'en-GB', de: 'de-AT', hr: 'hr-HR' };
+  const LOC = () => LOCALES[curLang()] || 'en-GB';
+  // a table of source texts that is translated when read, so a language switch needs no reload
+  const L = (o) => new Proxy(o, { get: (t, k) => (typeof t[k] === 'string' ? _(t[k]) : t[k]) });
+
   /* ---------- vocabulary ---------- */
   const STAGE_IDX = { new: 0, contacted: 1, processing: 1, visit_agreed: 1, consultation: 1, measured: 1, quote_issued: 2, proposal: 2, negotiation: 3, won: 4, lost: 4 };
-  const STAGE_RU = { new: 'Новый', contacted: 'Связались', processing: 'В обработке', visit_agreed: 'Выезд согласован', consultation: 'Консультация', measured: 'Замер сделан', quote_issued: 'КП выдано', proposal: 'Предложение', negotiation: 'Переговоры', won: 'Заказ', lost: 'Отказ' };
-  const STEPS = ['Новый', 'В работе', 'Предложение', 'Переговоры', 'Итог'];
+  const STAGE_RU = L({ new: 'Новый', contacted: 'Связались', processing: 'В обработке', visit_agreed: 'Выезд согласован', consultation: 'Консультация', measured: 'Замер сделан', quote_issued: 'КП выдано', proposal: 'Предложение', negotiation: 'Переговоры', won: 'Заказ', lost: 'Отказ' });
+  const stepsL = () => ['Новый', 'В работе', 'Предложение', 'Переговоры', 'Итог'].map(_);
   // the button "Перевести →" moves to the first stage of the next column
   const NEXT_STAGE = { 0: 'contacted', 1: 'quote_issued', 2: 'negotiation', 3: 'won' };
-  const ORDER_RU = { inbox: 'Входящие', measurement: 'Замер', awaiting_payment: 'Ожидает оплаты', delivery: 'Поставка', in_stock: 'На складе', installation: 'Монтаж', done: 'Выполнено' };
+  const ORDER_RU = L({ inbox: 'Входящие', measurement: 'Замер', awaiting_payment: 'Ожидает оплаты', delivery: 'Поставка', in_stock: 'На складе', installation: 'Монтаж', done: 'Выполнено' });
   const ORDER_COL = [['os.inbox', 'inbox'], ['os.measurement', 'measurement'], ['os.payment', 'awaiting_payment'], ['os.delivery', 'delivery'], ['os.instock', 'in_stock'], ['os.installation', 'installation'], ['os.done', 'done']];
-  const ROLE_RU = { client: 'клиент', seller: 'продавец', manager: 'менеджер', dealer: 'дилер', superdealer: 'суперДилер', superadmin: 'суперадмин', architect: 'архитектор' };
+  const ROLE_RU = L({ client: 'клиент', seller: 'продавец', manager: 'менеджер', dealer: 'дилер', superdealer: 'суперДилер', superadmin: 'суперадмин', architect: 'архитектор' });
   const HOT = 20; // ASSUMPTION: a lead with 20+ points (quote 10, stage 5, comment 2 …) is "hot"; the points come from the database
   const SOURCES = ['Звонок', 'Сайт', 'Meta', 'Google', 'Рекомендация', 'Выставка', 'Другое'];
   const WANTS = ['Пергола', 'Боковые системы', 'Стекло', 'Пока не знает'];
@@ -36,31 +45,31 @@
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const plusDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const money = (n) => n == null ? '—' : '€' + Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  const dmy = (iso) => { if (!iso) return '—'; const d = new Date(iso.length === 10 ? iso + 'T12:00:00' : iso); return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }); };
-  const dm = (iso) => { if (!iso) return ''; const d = new Date(iso.length === 10 ? iso + 'T12:00:00' : iso); return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }); };
-  const hm = (iso) => new Date(iso).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const dmy = (iso) => { if (!iso) return '—'; const d = new Date(iso.length === 10 ? iso + 'T12:00:00' : iso); return d.toLocaleDateString(LOC(), { day: '2-digit', month: '2-digit', year: 'numeric' }); };
+  const dm = (iso) => { if (!iso) return ''; const d = new Date(iso.length === 10 ? iso + 'T12:00:00' : iso); return d.toLocaleDateString(LOC(), { day: '2-digit', month: '2-digit' }); };
+  const hm = (iso) => new Date(iso).toLocaleString(LOC(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   function ago(iso) {
     const m = Math.floor((Date.now() - new Date(iso)) / 6e4);
-    if (m < 1) return 'сейчас'; if (m < 60) return m + ' мин назад';
-    const h = Math.floor(m / 60); if (h < 24) return h + ' ч назад';
-    return Math.floor(h / 24) + ' дн назад';
+    if (m < 1) return _('сейчас'); if (m < 60) return m + _(' мин назад');
+    const h = Math.floor(m / 60); if (h < 24) return h + _(' ч назад');
+    return Math.floor(h / 24) + _(' дн назад');
   }
   const days = (iso) => Math.max(0, Math.floor((Date.now() - new Date(iso)) / 864e5));
   const initials = (n) => String(n || '?').trim().split(/\s+/).slice(0, 2).map((x) => x[0]).join('').toUpperCase() || '?';
   const normPhone = (p) => { const d = String(p || '').replace(/\D/g, ''); return d.length >= 9 ? d.slice(-9) : d; };
-  const userName = (id) => { const u = users.find((x) => x.id === id); return u ? (u.full_name || u.email || 'Сотрудник') : (me && id === me.id ? me.full_name || 'Вы' : 'Сотрудник'); };
+  const userName = (id) => { const u = users.find((x) => x.id === id); return u ? (u.full_name || u.email || _('Сотрудник')) : (me && id === me.id ? me.full_name || _('Вы') : _('Сотрудник')); };
   const sees = () => !!me && (me.role === 'superadmin' || me.role === 'superdealer');
   const isAdmin = () => !!me && me.role === 'superadmin';
   const isArch = () => !!me && me.role === 'architect';
   function humanError(e) {
     const m = String((e && (e.message || e.error_description)) || e || '');
-    if (/Invalid login/i.test(m)) return 'Неверный e-mail или пароль';
-    if (/COMMENT_REQUIRED/.test(m)) return 'Нужен комментарий';
-    if (/lost_needs_reason/.test(m)) return 'Укажите причину отказа';
-    if (/BAD_ASSIGNEE/.test(m)) return 'Этому человеку лид передать нельзя';
-    if (/FORBIDDEN|permission denied|row-level security/i.test(m)) return 'Нет прав на это действие';
-    if (/Failed to fetch|NetworkError/i.test(m)) return 'Нет связи с сервером';
-    return m || 'Ошибка';
+    if (/Invalid login/i.test(m)) return _('Неверный e-mail или пароль');
+    if (/COMMENT_REQUIRED/.test(m)) return _('Нужен комментарий');
+    if (/lost_needs_reason/.test(m)) return _('Укажите причину отказа');
+    if (/BAD_ASSIGNEE/.test(m)) return _('Этому человеку лид передать нельзя');
+    if (/FORBIDDEN|permission denied|row-level security/i.test(m)) return _('Нет прав на это действие');
+    if (/Failed to fetch|NetworkError/i.test(m)) return _('Нет связи с сервером');
+    return m || _('Ошибка');
   }
 
   /* ---------- toast + dialog ---------- */
@@ -81,7 +90,7 @@
     document.addEventListener('keydown', onKey, true);
     back.addEventListener('mousedown', (e) => { if (e.target === back) close(); });
     const foot = back.querySelector('.foot');
-    (o.foot || [{ label: 'Закрыть', run: (c) => c() }]).forEach((f) => {
+    (o.foot || [{ label: _('Закрыть'), run: (c) => c() }]).forEach((f) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (f.primary ? ' primary' : ''); b.textContent = f.label;
       b.onclick = async () => { if (b.disabled) return; b.disabled = true; try { await f.run(close, back); } finally { b.disabled = false; } };
       foot.appendChild(b);
@@ -114,7 +123,7 @@
   const loadApprovals = async () => { try { approvals = await run(sb.from('quote_approvals').select('quote_id, status, created_at, decided_at, comment, quotes(number, total_net, discount, owner, lead_id, leads(contact_name))').order('created_at', { ascending: false }).limit(300)); } catch (e) { approvals = []; } };
   const apprOf = (qid) => approvals.find((a) => a.quote_id === qid);
   const APPR_RU = { pending: ['ждёт утверждения', 'warn'], approved: ['скидка утверждена', 'ok'], rejected: ['скидка отклонена', 'bad'] };
-  const apprTag = (qid) => { const a = apprOf(qid); return a ? ' <span class="tag ' + APPR_RU[a.status][1] + '">' + APPR_RU[a.status][0] + '</span>' : ''; };
+  const apprTag = (qid) => { const a = apprOf(qid); return a ? ' <span class="tag ' + APPR_RU[a.status][1] + '">' + _(APPR_RU[a.status][0]) + '</span>' : ''; };
   const loadGroups = async () => { try { groups = await run(sb.from('discount_groups').select('id, code, title, max_discount').order('title')); } catch (e) { groups = []; } };
   async function loadDetail(lid, force) {
     if (detail[lid] && !force) return detail[lid];
@@ -131,8 +140,9 @@
     let kind = 'other', label = raw;
     if (/facebook|instagram|meta|fb\b/.test(low) || u.fbclid) { kind = 'meta'; label = 'Meta'; }
     else if (/google|gclid/.test(low) || u.gclid) { kind = 'google'; label = 'Google'; }
-    else if (!raw) { label = { web: 'Сайт', seller: 'Продавец', dealer: 'Дилер', office: 'Офис', client: 'Клиент' }[l.source] || 'Сайт'; kind = l.source === 'web' ? 'web' : 'other'; }
-    else if (low === 'сайт') kind = 'web';
+    else if (!raw) { label = { web: _('Сайт'), seller: _('Продавец'), dealer: _('Дилер'), office: _('Офис'), client: _('Клиент') }[l.source] || _('Сайт'); kind = l.source === 'web' ? 'web' : 'other'; }
+    else if (low === 'сайт') { kind = 'web'; label = _('Сайт'); }
+    else if (SOURCES.includes(raw)) label = _(raw);        // a source picked in the new-lead form is stored in Russian
     return { kind, label, raw };
   }
   const isOpen = (l) => l.stage !== 'won' && l.stage !== 'lost';
@@ -140,15 +150,15 @@
   const dueNow = (l) => isOpen(l) && !!l.next_action_at && l.next_action_at <= today();
 
   function toDeal(l) {
-    const name = l.contact_name || l.phone || l.email || 'Без имени', idx = STAGE_IDX[l.stage] ?? 0, late = overdue(l);
+    const name = l.contact_name || l.phone || l.email || _('Без имени'), idx = STAGE_IDX[l.stage] ?? 0, late = overdue(l);
     const sc = l.score || 0;
     return {
       live: true, lid: l.id, raw: l, name, av: initials(name),
-      comp: l.assignee_org || '', owner: l.assignee_name || (l.assigned_to ? userName(l.assigned_to) : 'Не назначен'),
-      id: l.last_quote ? 'КП ' + l.last_quote : '', score: sc, band: sc >= HOT ? 'hi' : sc >= 8 ? 'mid' : '', hot: sc >= HOT && isOpen(l),
+      comp: l.assignee_org || '', owner: l.assignee_name || (l.assigned_to ? userName(l.assigned_to) : _('Не назначен')),
+      id: l.last_quote ? _('КП ') + l.last_quote : '', score: sc, band: sc >= HOT ? 'hi' : sc >= 8 ? 'mid' : '', hot: sc >= HOT && isOpen(l),
       product: l.object_address || (l.note ? String(l.note).replace(/\s+/g, ' ').slice(0, 48) : '—'),
       dot: late || l.stale ? 'red' : l.stage === 'new' ? 'amber' : isOpen(l) ? 'green' : 'grey',
-      statusK: late ? 'Шаг просрочен · ' + (l.next_action || STAGE_RU[l.stage]) : (l.next_action ? l.next_action : STAGE_RU[l.stage]),
+      statusK: late ? _('Шаг просрочен · ') + (l.next_action || STAGE_RU[l.stage]) : (l.next_action ? l.next_action : STAGE_RU[l.stage]),
       timeK: ago(l.last_activity_at), stage: idx, curDays: days(l.last_activity_at),
       q: { net: l.last_total_net != null ? money(l.last_total_net) : '—' },
     };
@@ -166,7 +176,7 @@
     const ord = ORDER_COL.map(([tK, st]) => {
       const list = orders.filter((o) => o.stage === st);
       const sum = list.reduce((a, o) => a + (Number(o.quotes && o.quotes.total_net) || 0), 0);
-      return { tK, sum: sum ? money(sum) : '', cards: list.map((o) => ({ oid: o.id, nOrd: (o.leads && o.leads.contact_name) || 'Заказ', sum: o.quotes ? money(o.quotes.total_net) : '', stK: o.paid ? 'оплачен' : (o.delivery_eta ? 'поставка ' + dm(o.delivery_eta) : o.measured_at ? 'замер ' + dm(o.measured_at) : ORDER_RU[o.stage]), dot: o.paid ? 'green' : 'amber', days: days(o.created_at) })) };
+      return { tK, sum: sum ? money(sum) : '', cards: list.map((o) => ({ oid: o.id, nOrd: (o.leads && o.leads.contact_name) || _('Заказ'), sum: o.quotes ? money(o.quotes.total_net) : '', stK: o.paid ? _('оплачен') : (o.delivery_eta ? _('поставка ') + dm(o.delivery_eta) : o.measured_at ? _('замер ') + dm(o.measured_at) : ORDER_RU[o.stage]), dot: o.paid ? 'green' : 'amber', days: days(o.created_at) })) };
     });
     return [req, ord];
   }
@@ -207,7 +217,7 @@
   function renderChips() {
     const box = $('.lh .chips'); if (!box) return;
     const cnt = (k) => leads.filter(preds[k]).length;
-    const def = [['need', 'Нужны вам'], ['late', 'Просрочено'], ['wait', 'Ждут клиента'], ['all', 'Все открытые']];
+    const def = [['need', _('Нужны вам')], ['late', _('Просрочено')], ['wait', _('Ждут клиента')], ['all', _('Все открытые')]];
     box.innerHTML = def.map(([k, t]) => '<button type="button" class="cchip' + (chip === k ? ' on' : '') + '" data-chip="' + k + '"><span class="n">' + cnt(k) + '</span> <span>' + t + '</span></button>').join('');
   }
   function renderBadges() {
@@ -220,28 +230,37 @@
   }
   C.emptyList = () => {
     const empty = !leads.length;
-    return '<div class="empty" style="height:auto;padding:48px 18px"><div class="ic">✓</div><div>' + (empty ? 'Пока нет ни одного лида.<br><span class="muted">Заявки с сайта появятся здесь сами. Или добавьте первого клиента вручную.</span>' : 'В этом списке пусто.<br><span class="muted">Переключите фильтр или очистите поиск.</span>') + '</div><button class="btn primary" data-act="newlead">＋ Новый лид</button></div>';
+    return '<div class="empty" style="height:auto;padding:48px 18px"><div class="ic">✓</div><div>' + (empty ? _('Пока нет ни одного лида.<br><span class="muted">Заявки с сайта появятся здесь сами. Или добавьте первого клиента вручную.</span>') : _('В этом списке пусто.<br><span class="muted">Переключите фильтр или очистите поиск.</span>')) + _('</div><button class="btn primary" data-act="newlead">＋ Новый лид</button></div>');
   };
-  C.emptyRecord = () => '<div class="empty"><div class="ic">◍</div><div>Выберите лид слева<br><span class="muted">или создайте нового кнопкой «Новый лид»</span></div></div>';
+  C.emptyRecord = () => _('<div class="empty"><div class="ic">◍</div><div>Выберите лид слева<br><span class="muted">или создайте нового кнопкой «Новый лид»</span></div></div>');
 
   /* ---------- login / boot ---------- */
   C.login = async (email, pass, status, done) => {
     status.className = 'gstatus'; status.textContent = '…';
-    if (!(await ready)) { status.textContent = 'Сервер недоступен'; status.className = 'gstatus warn'; return; }
+    if (!(await ready)) { status.textContent = _('Сервер недоступен'); status.className = 'gstatus warn'; return; }
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) { status.textContent = humanError(error); status.className = 'gstatus warn'; return; }
     me = await loadMe();
-    if (!me || !STAFF.includes(me.role)) { status.textContent = 'Нет доступа: этот вход не для CRM'; status.className = 'gstatus warn'; await sb.auth.signOut(); me = null; return; }
+    if (!me || !STAFF.includes(me.role)) { status.textContent = _('Нет доступа: этот вход не для CRM'); status.className = 'gstatus warn'; await sb.auth.signOut(); me = null; return; }
     status.textContent = ''; done(); await boot();
   };
   C.requestAccess = async (row, status, done) => {
-    if (!(await ready)) { status.textContent = 'Сервер недоступен'; status.className = 'gstatus warn'; return; }
+    if (!(await ready)) { status.textContent = _('Сервер недоступен'); status.className = 'gstatus warn'; return; }
     const { error } = await sb.from('access_requests').insert(row);
     if (error) { status.textContent = humanError(error); status.className = 'gstatus warn'; return; }
     done();
   };
   async function signOut() { try { await sb.auth.signOut(); } catch (e) {} location.reload(); }
 
+  function chrome() {
+    if (!me) return;
+    const nm = me.full_name || me.email || _('Пользователь');
+    const av = $('.rail .me .av'); if (av) av.textContent = initials(nm);
+    const box = $('.rail .me > div'); if (box) box.innerHTML = '<div style="font-size:12.5px">' + esc(nm) + '</div><small>' + esc(ROLE_RU[me.role] || me.role) + _(' · <a href="#" id="logout" style="color:var(--accent)">выйти</a></small>');
+    const lo = $('#logout'); if (lo) lo.onclick = (e) => { e.preventDefault(); signOut(); };
+    const l = $('#newCalcBtn .lbl'); if (l) l.textContent = _(' Новый лид');
+    $$('.rail a').forEach((a) => { const t = a.querySelector('span:nth-child(2)'); if (t) a.title = t.textContent; });
+  }
   function applyRole() {
     const set = (sel, on) => $$(sel).forEach((e) => { e.hidden = !on; e.style.display = on ? '' : 'none'; });
     set('.rail a[data-s="approvals"]', isAdmin());
@@ -249,13 +268,10 @@
     set('.rail a[data-s="admin"]', sees());
     set('.rail a[data-s="settings"]', isAdmin());
     const grp = $('.rail .grp'); if (grp) { grp.hidden = !sees(); grp.style.display = sees() ? '' : 'none'; }
-    const nm = me.full_name || me.email || 'Пользователь';
-    const av = $('.rail .me .av'); if (av) av.textContent = initials(nm);
-    const box = $('.rail .me > div'); if (box) box.innerHTML = '<div style="font-size:12.5px">' + esc(nm) + '</div><small>' + esc(ROLE_RU[me.role] || me.role) + ' · <a href="#" id="logout" style="color:var(--accent)">выйти</a></small>';
-    const lo = $('#logout'); if (lo) lo.onclick = (e) => { e.preventDefault(); signOut(); };
     // top button: new lead (the configurator has its own menu item)
     const nb = $('#newCalcBtn');
-    if (nb) { const c = nb.cloneNode(true); nb.replaceWith(c); const l = c.querySelector('.lbl'); if (l) { l.removeAttribute('data-i18n'); l.textContent = ' Новый лид'; } c.addEventListener('click', () => newLeadDialog()); }
+    if (nb) { const c = nb.cloneNode(true); nb.replaceWith(c); const l = c.querySelector('.lbl'); if (l) l.removeAttribute('data-i18n'); c.addEventListener('click', () => newLeadDialog()); }
+    chrome();
     // demo-only things that have no data behind them
     const seg = $('.board-top .seg'); if (seg) seg.style.display = 'none';
     $$('.board-top .pill').forEach((p) => { p.style.display = 'none'; });
@@ -289,21 +305,25 @@
 
   function evText(e) {
     switch (e.kind) {
-      case 'created': return 'Лид создан';
-      case 'assigned': return 'Назначен: ' + userName(e.to_user) + (e.comment ? ' — ' + e.comment : '');
-      case 'transferred': return 'Передан: ' + userName(e.to_user) + (e.comment ? ' — ' + e.comment : '');
-      case 'stage': return 'Стадия: ' + (STAGE_RU[e.from_stage] || '—') + ' → ' + (STAGE_RU[e.to_stage] || '—') + (e.comment ? ' — ' + e.comment : '');
-      case 'comment': return e.comment || '';
-      case 'quote': return 'Выставлено КП' + (e.comment ? ' ' + e.comment : '');
+      case 'created': return _('Лид создан');
+      case 'assigned': return _('Назначен: ') + userName(e.to_user) + (e.comment ? ' — ' + e.comment : '');
+      case 'transferred': return _('Передан: ') + userName(e.to_user) + (e.comment ? ' — ' + e.comment : '');
+      case 'stage': return _('Стадия: ') + (STAGE_RU[e.from_stage] || '—') + ' → ' + (STAGE_RU[e.to_stage] || '—') + (e.comment ? ' — ' + e.comment : '');
+      case 'comment': return evComment(e.comment);
+      case 'quote': return _('Выставлено КП') + (e.comment ? ' ' + e.comment : '');
       default: return e.kind;
     }
   }
-  const feedHtml = (evs, n) => (evs || []).slice(0, n || 99).map((e) => '<div class="fe' + (e.kind === 'comment' ? '' : '') + '"><div style="white-space:pre-wrap;word-break:break-word">' + (e.kind === 'comment' ? '💬 ' : '') + esc(evText(e)) + '</div><div class="who">' + esc(e.by ? userName(e.by) : 'система') + ' · ' + hm(e.at) + '</div></div>').join('') || '<div class="muted" style="padding:6px 0">Событий пока нет</div>';
+  // texts the database writes itself start with a fixed Russian phrase: translate the phrase, keep the rest
+  const NTF = ['Скидка выше лимита, нужно утверждение: КП ', 'Скидка утверждена: КП ', 'Скидка отклонена: КП ', 'Лид передан дальше: ', 'Новая заявка: ', 'Вам передан лид'];
+  const ntfText = (t) => { t = String(t || ''); for (const p of NTF) if (t.startsWith(p)) return _(p) + t.slice(p.length); return t; };
+  const evComment = (c) => { c = String(c || ''); const m = /^Скидка по КП (\S+) (утверждена|отклонена: [\s\S]*)$/.exec(c); if (!m) return c; return m[2] === 'утверждена' ? _('Скидка по КП ') + m[1] + _(' утверждена') : _('Скидка по КП ') + m[1] + _(' отклонена: ') + m[2].slice('отклонена: '.length); };
+  const feedHtml = (evs, n) => (evs || []).slice(0, n || 99).map((e) => '<div class="fe' + (e.kind === 'comment' ? '' : '') + '"><div style="white-space:pre-wrap;word-break:break-word">' + (e.kind === 'comment' ? '💬 ' : '') + esc(evText(e)) + '</div><div class="who">' + esc(e.by ? userName(e.by) : _('система')) + ' · ' + hm(e.at) + '</div></div>').join('') || _('<div class="muted" style="padding:6px 0">Событий пока нет</div>');
 
   function utmHtml(l) {
     const u = l.utm || {}, keys = Object.keys(u).filter((k) => u[k]);
     if (!keys.length) return '';
-    return '<details class="jr"><summary>Откуда пришёл — подробно</summary><div style="margin-top:8px">' + keys.map((k) => '<div class="kv"><span class="k">' + esc(k) + '</span><span class="v" style="word-break:break-all">' + esc(String(u[k]).length > 90 ? String(u[k]).slice(0, 90) + '…' : u[k]) + '</span></div>').join('') + '</div></details>';
+    return _('<details class="jr"><summary>Откуда пришёл — подробно</summary><div style="margin-top:8px">') + keys.map((k) => '<div class="kv"><span class="k">' + esc(k) + '</span><span class="v" style="word-break:break-all">' + esc(String(u[k]).length > 90 ? String(u[k]).slice(0, 90) + '…' : u[k]) + '</span></div>').join('') + '</div></details>';
   }
 
   C.renderLive = (d, wrap) => {
@@ -313,58 +333,59 @@
     if (!dt) loadDetail(l.id).then(() => { if (curLid === l.id) C.rerenderRecord(); }).catch((e) => toast(humanError(e), true));
     const src = srcInfo(l), late = overdue(l), open = isOpen(l), idx = d.stage;
     const mine = l.assigned_to && me && l.assigned_to === me.id;
-    const steps = STEPS.map((t, i) => {
+    const stepNames = stepsL();
+    const steps = stepNames.map((t, i) => {
       const cls = l.stage === 'won' ? 'cv done' : i < idx ? 'cv done' : i === idx ? 'cv now' : 'cv';
-      const small = i === idx ? '<small>' + (l.stage === 'lost' ? 'Отказ · ' : l.stage === 'won' ? 'Заказ · ' : (STAGE_RU[l.stage] !== STEPS[i] ? STAGE_RU[l.stage] + ' · ' : '')) + d.curDays + ' дн</small>' : '';
+      const small = i === idx ? '<small>' + (l.stage === 'lost' ? _('Отказ · ') : l.stage === 'won' ? _('Заказ · ') : (STAGE_RU[l.stage] !== stepNames[i] ? STAGE_RU[l.stage] + ' · ' : '')) + d.curDays + _(' дн</small>') : '';
       return '<div class="' + cls + '"><span>' + t + '</span>' + small + '</div>';
     }).join('');
     let own = '';
-    if (open) own = !l.assigned_to ? (sees() ? '<button class="btn sm" data-act="take">Взять себе</button>' : '') : (mine || sees() ? '<button class="btn sm" data-act="transfer">Передать</button>' : '');
-    const next = open && NEXT_STAGE[idx] ? '<button class="btn primary sm" data-act="advance">Перевести → ' + esc(NEXT_STAGE[idx] === 'won' ? 'Заказ' : STAGE_RU[NEXT_STAGE[idx]]) + '</button>' : '';
-    const lose = open ? '<button class="btn sm" data-act="lose">Отказ</button>' : '<button class="btn sm" data-act="reopen">Вернуть в работу</button>';
+    if (open) own = !l.assigned_to ? (sees() ? _('<button class="btn sm" data-act="take">Взять себе</button>') : '') : (mine || sees() ? _('<button class="btn sm" data-act="transfer">Передать</button>') : '');
+    const next = open && NEXT_STAGE[idx] ? _('<button class="btn primary sm" data-act="advance">Перевести → ') + esc(NEXT_STAGE[idx] === 'won' ? _('Заказ') : STAGE_RU[NEXT_STAGE[idx]]) + '</button>' : '';
+    const lose = open ? _('<button class="btn sm" data-act="lose">Отказ</button>') : _('<button class="btn sm" data-act="reopen">Вернуть в работу</button>');
     const wa = waNum(l.phone);
-    const contacts = (l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '">📞 ' + esc(l.phone) + '</a>' : '') + (wa ? '<a href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (l.email ? '<a href="mailto:' + esc(l.email) + '">✉ ' + esc(l.email) + '</a>' : '') + (l.object_address ? '<a href="' + esc(mapUrl(l.object_address)) + '" target="_blank" rel="noopener">📍 Карта</a>' : '');
+    const contacts = (l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '">📞 ' + esc(l.phone) + '</a>' : '') + (wa ? '<a href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (l.email ? '<a href="mailto:' + esc(l.email) + '">✉ ' + esc(l.email) + '</a>' : '') + (l.object_address ? '<a href="' + esc(mapUrl(l.object_address)) + _('" target="_blank" rel="noopener">📍 Карта</a>') : '');
 
     const nextBlock = (l.next_action || l.next_action_at)
-      ? '<div class="task"><span class="i">' + (late ? '⏰' : '📞') + '</span><div class="t"><b>' + esc(l.next_action || 'Следующий шаг') + '</b><div class="' + (late ? 'late' : '') + '">' + (l.next_action_at ? (late ? 'Просрочено · ' : 'До ') + dmy(l.next_action_at) : 'Срок не задан') + '</div></div>' + (open ? '<button class="go" data-act="done">Готово</button><button class="go" data-act="setnext" style="color:var(--muted)">Изменить</button>' : '') + '</div>'
-      : '<div class="task"><span class="i">＋</span><div class="t"><b>Следующий шаг не задан</b><div>Лид без шага «забывают» — назначьте звонок или встречу</div></div>' + (open ? '<button class="go" data-act="setnext">Задать шаг</button>' : '') + '</div>';
+      ? '<div class="task"><span class="i">' + (late ? '⏰' : '📞') + '</span><div class="t"><b>' + esc(l.next_action || _('Следующий шаг')) + '</b><div class="' + (late ? 'late' : '') + '">' + (l.next_action_at ? (late ? _('Просрочено · ') : _('До ')) + dmy(l.next_action_at) : _('Срок не задан')) + '</div></div>' + (open ? _('<button class="go" data-act="done">Готово</button><button class="go" data-act="setnext" style="color:var(--muted)">Изменить</button>') : '') + '</div>'
+      : _('<div class="task"><span class="i">＋</span><div class="t"><b>Следующий шаг не задан</b><div>Лид без шага «забывают» — назначьте звонок или встречу</div></div>') + (open ? _('<button class="go" data-act="setnext">Задать шаг</button>') : '') + '</div>';
 
     const brief = '<div class="brief">'
-      + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="src ' + src.kind + '">' + esc(src.label) + '</span><span class="muted">пришёл ' + esc(ago(l.created_at)) + '</span>' + (d.hot ? '<span class="hotchip">🔥 HOT</span>' : '') + (l.stale ? '<span class="tag bad">без движения 7+ дн</span>' : '') + '</div>'
-      + '<div><div class="lb">Чего хочет</div><div class="msg">' + (l.note ? esc(l.note) : '<span class="muted">Сообщения нет — спросите по телефону</span>') + '</div></div>'
-      + (l.object_address ? '<div><div class="lb">Объект</div><div>' + esc(l.object_address) + '</div></div>' : '')
-      + (src.raw && src.raw !== src.label ? '<div><div class="lb">Источник</div><div style="word-break:break-all">' + esc(src.raw) + '</div></div>' : '')
+      + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="src ' + src.kind + '">' + esc(src.label) + _('</span><span class="muted">пришёл ') + esc(ago(l.created_at)) + '</span>' + (d.hot ? '<span class="hotchip">🔥 HOT</span>' : '') + (l.stale ? _('<span class="tag bad">без движения 7+ дн</span>') : '') + '</div>'
+      + _('<div><div class="lb">Чего хочет</div><div class="msg">') + (l.note ? esc(l.note) : _('<span class="muted">Сообщения нет — спросите по телефону</span>')) + '</div></div>'
+      + (l.object_address ? _('<div><div class="lb">Объект</div><div>') + esc(l.object_address) + '</div></div>' : '')
+      + (src.raw && src.raw !== src.label && !SOURCES.includes(src.raw) ? _('<div><div class="lb">Источник</div><div style="word-break:break-all">') + esc(src.raw) + '</div></div>' : '')
       + utmHtml(l)
-      + (l.journey ? '<details class="jr"><summary>Что клиент делал в конфигураторе</summary><pre>' + esc(l.journey) + '</pre></details>' : '')
+      + (l.journey ? _('<details class="jr"><summary>Что клиент делал в конфигураторе</summary><pre>') + esc(l.journey) + '</pre></details>' : '')
       + '</div>';
 
     let tabBody = '';
     const evs = dt && dt.events, qs = dt && dt.quotes;
     if (tab === 'ov') {
-      tabBody = kv('Телефон', l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '" style="color:inherit">' + esc(l.phone) + '</a>' : '—') + kv('E-mail', l.email ? '<a href="mailto:' + esc(l.email) + '" style="color:inherit">' + esc(l.email) + '</a>' : '—')
-        + kv('Адрес объекта', esc(l.object_address || '—') + (l.postcode ? ' · ' + esc(l.postcode) : '')) + kv('Ответственный', esc(d.owner) + (d.comp ? ' · ' + esc(d.comp) : '')) + kv('Создан', dmy(l.created_at))
-        + (l.stage === 'lost' ? kv('Причина отказа', esc(l.lost_reason || '—')) : '')
-        + '<div id="dupHint"></div><h4 class="ovhead">Недавняя активность</h4><div class="feed">' + (evs ? feedHtml(evs, 5) : '<div class="muted">Загрузка…</div>') + '</div>'
-        + '<div style="margin-top:14px"><button class="btn sm" data-act="edit">✎ Править данные клиента</button></div>';
+      tabBody = kv(_('Телефон'), l.phone ? '<a href="tel:' + esc(tel(l.phone)) + '" style="color:inherit">' + esc(l.phone) + '</a>' : '—') + kv('E-mail', l.email ? '<a href="mailto:' + esc(l.email) + '" style="color:inherit">' + esc(l.email) + '</a>' : '—')
+        + kv(_('Адрес объекта'), esc(l.object_address || '—') + (l.postcode ? ' · ' + esc(l.postcode) : '')) + kv(_('Ответственный'), esc(d.owner) + (d.comp ? ' · ' + esc(d.comp) : '')) + kv(_('Создан'), dmy(l.created_at))
+        + (l.stage === 'lost' ? kv(_('Причина отказа'), esc(l.lost_reason || '—')) : '')
+        + _('<div id="dupHint"></div><h4 class="ovhead">Недавняя активность</h4><div class="feed">') + (evs ? feedHtml(evs, 5) : _('<div class="muted">Загрузка…</div>')) + '</div>'
+        + _('<div style="margin-top:14px"><button class="btn sm" data-act="edit">✎ Править данные клиента</button></div>');
     } else if (tab === 'q') {
-      tabBody = !qs ? '<div class="muted">Загрузка…</div>' : qs.length ? qs.map((q) => '<div class="vrow"><span>' + esc(q.number) + '</span><span class="d">' + dmy(q.created_at) + ' · до ' + dmy(q.valid_until) + apprTag(q.id) + '</span><span class="s tab-num">' + money(q.total_net) + '</span><button class="btn sm" data-act="openq" data-q="' + q.id + '">Открыть</button></div>').join('') : '<div class="muted">КП ещё нет. Нажмите «Рассчитать КП».</div>';
+      tabBody = !qs ? _('<div class="muted">Загрузка…</div>') : qs.length ? qs.map((q) => '<div class="vrow"><span>' + esc(q.number) + '</span><span class="d">' + dmy(q.created_at) + _(' · до ') + dmy(q.valid_until) + apprTag(q.id) + '</span><span class="s tab-num">' + money(q.total_net) + '</span><button class="btn sm" data-act="openq" data-q="' + q.id + _('">Открыть</button></div>')).join('') : _('<div class="muted">КП ещё нет. Нажмите «Рассчитать КП».</div>');
     } else if (tab === 'hist') {
-      tabBody = '<div class="feed">' + (evs ? feedHtml(evs) : '<div class="muted">Загрузка…</div>') + '</div>';
+      tabBody = '<div class="feed">' + (evs ? feedHtml(evs) : _('<div class="muted">Загрузка…</div>')) + '</div>';
     } else {
-      tabBody = '<div class="fld"><label for="noteTxt">Заметка (видна всем, кто видит лид)</label><textarea id="noteTxt" placeholder="Что обсудили, что обещали…"></textarea></div><div style="margin:8px 0 14px"><button class="btn primary sm" data-act="comment">Добавить заметку</button></div><div class="feed">' + (evs ? feedHtml(evs.filter((e) => e.kind === 'comment')) : '') + '</div>';
+      tabBody = _('<div class="fld"><label for="noteTxt">Заметка (видна всем, кто видит лид)</label><textarea id="noteTxt" placeholder="Что обсудили, что обещали…"></textarea></div><div style="margin:8px 0 14px"><button class="btn primary sm" data-act="comment">Добавить заметку</button></div><div class="feed">') + (evs ? feedHtml(evs.filter((e) => e.kind === 'comment')) : '') + '</div>';
     }
-    const tabs = [['ov', 'Обзор'], ['q', 'КП' + (qs ? ' (' + qs.length + ')' : '')], ['hist', 'История'], ['notes', 'Заметки']].map(([k, t]) => '<div class="t' + (tab === k ? ' on' : '') + '" role="tab" tabindex="0" data-tab="' + k + '">' + t + '</div>').join('');
+    const tabs = [['ov', _('Обзор')], ['q', _('КП') + (qs ? ' (' + qs.length + ')' : '')], ['hist', _('История')], ['notes', _('Заметки')]].map(([k, t]) => '<div class="t' + (tab === k ? ' on' : '') + '" role="tab" tabindex="0" data-tab="' + k + '">' + t + '</div>').join('');
 
     const lq = qs && qs[0];
     const qpanel = '<div class="qpanel"><div class="qcard"><div class="b">'
-      + (lq ? '<div class="tot"><span class="big tab-num">' + money(lq.total_net) + '</span><small>нетто · КП ' + esc(lq.number) + '</small></div>' + (apprOf(lq.id) ? '<div style="margin:-4px 0 8px">' + apprTag(lq.id) + '</div>' : '') + '<div class="qmeta"><div class="l"><span>Создано</span><b>' + dmy(lq.created_at) + '</b></div><div class="l"><span>Действует</span><b>до ' + dmy(lq.valid_until) + '</b></div>' + (qs.length > 1 ? '<div class="l"><span>Версий</span><b>' + qs.length + '</b></div>' : '') + '</div>'
-        + '<div class="qbtns"><button class="btn primary sm wide" data-act="openq" data-q="' + lq.id + '">Открыть / исправить КП</button></div>'
-        : '<div class="tot"><span class="big tab-num">—</span><small>' + (qs ? 'КП ещё не рассчитано' : 'Загрузка…') + '</small></div>')
-      + '<div class="qbtns"><button class="btn ' + (lq ? '' : 'primary ') + 'sm wide" data-act="newq">＋ Рассчитать ' + (lq ? 'новое ' : '') + 'КП</button></div>'
+      + (lq ? '<div class="tot"><span class="big tab-num">' + money(lq.total_net) + _('</span><small>нетто · КП ') + esc(lq.number) + '</small></div>' + (apprOf(lq.id) ? '<div style="margin:-4px 0 8px">' + apprTag(lq.id) + '</div>' : '') + _('<div class="qmeta"><div class="l"><span>Создано</span><b>') + dmy(lq.created_at) + _('</b></div><div class="l"><span>Действует</span><b>до ') + dmy(lq.valid_until) + '</b></div>' + (qs.length > 1 ? _('<div class="l"><span>Версий</span><b>') + qs.length + '</b></div>' : '') + '</div>'
+        + '<div class="qbtns"><button class="btn primary sm wide" data-act="openq" data-q="' + lq.id + _('">Открыть / исправить КП</button></div>')
+        : '<div class="tot"><span class="big tab-num">—</span><small>' + (qs ? _('КП ещё не рассчитано') : _('Загрузка…')) + '</small></div>')
+      + '<div class="qbtns"><button class="btn ' + (lq ? '' : 'primary ') + _('sm wide" data-act="newq">＋ Рассчитать ') + (lq ? _('новое ') : '') + _('КП</button></div>')
       + '</div></div></div>';
 
-    wrap.innerHTML = '<div class="rhead"><button class="btn sm ghost back" id="recBack">← Назад</button><div class="top"><div class="idn"><h2>' + esc(d.name) + (d.hot ? ' <span class="hotchip">🔥 HOT</span>' : '') + '</h2><div class="meta"><span>' + esc(d.owner) + '</span>' + (d.id ? '<span>' + esc(d.id) + '</span>' : '') + '<span>' + esc(STAGE_RU[l.stage]) + '</span></div><div class="contact">' + contacts + '</div></div><div class="acts">' + own + lose + next + '</div></div><div class="stages">' + steps + '</div></div>'
-      + '<div class="rbody"><div class="rmain">' + brief + '<div class="upnext"><div class="uh"><span>Следующий шаг</span></div>' + nextBlock + '</div><div class="tabs" role="tablist">' + tabs + '</div>' + tabBody + '</div>' + qpanel + '</div>';
+    wrap.innerHTML = _('<div class="rhead"><button class="btn sm ghost back" id="recBack">← Назад</button><div class="top"><div class="idn"><h2>') + esc(d.name) + (d.hot ? ' <span class="hotchip">🔥 HOT</span>' : '') + '</h2><div class="meta"><span>' + esc(d.owner) + '</span>' + (d.id ? '<span>' + esc(d.id) + '</span>' : '') + '<span>' + esc(STAGE_RU[l.stage]) + '</span></div><div class="contact">' + contacts + '</div></div><div class="acts">' + own + lose + next + '</div></div><div class="stages">' + steps + '</div></div>'
+      + '<div class="rbody"><div class="rmain">' + brief + _('<div class="upnext"><div class="uh"><span>Следующий шаг</span></div>') + nextBlock + '</div><div class="tabs" role="tablist">' + tabs + '</div>' + tabBody + '</div>' + qpanel + '</div>';
     const back = $('#recBack', wrap); if (back) back.onclick = () => $('#split').classList.remove('show-rec');
     if (tab === 'ov') dupHint(l);
   };
@@ -375,7 +396,7 @@
     const key = normPhone(l.phone), em = (l.email || '').toLowerCase();
     const other = leads.filter((x) => x.id !== l.id && ((key && normPhone(x.phone) === key) || (em && (x.email || '').toLowerCase() === em)));
     if (!other.length) return;
-    box.innerHTML = '<div class="dup" style="margin-top:12px"><b>Этот клиент уже обращался (' + other.length + ')</b>' + other.slice(0, 4).map((x) => '<div><a href="#" data-open="' + x.id + '" style="color:var(--accent)">' + esc(x.contact_name || x.phone) + '</a> · ' + esc(STAGE_RU[x.stage]) + ' · ' + dmy(x.created_at) + '</div>').join('') + '</div>';
+    box.innerHTML = _('<div class="dup" style="margin-top:12px"><b>Этот клиент уже обращался (') + other.length + ')</b>' + other.slice(0, 4).map((x) => '<div><a href="#" data-open="' + x.id + '" style="color:var(--accent)">' + esc(x.contact_name || x.phone) + '</a> · ' + esc(STAGE_RU[x.stage]) + ' · ' + dmy(x.created_at) + '</div>').join('') + '</div>';
   }
 
   /* ---------- actions on the card ---------- */
@@ -385,35 +406,35 @@
   }
   function nextDialog(l) {
     dialog({
-      title: 'Следующий шаг', sub: esc(l.contact_name || ''),
-      body: '<div class="fld"><label>Что сделать</label><input class="inp" name="t" value="' + esc(l.next_action || 'Позвонить') + '" autofocus></div><div class="fld"><label>Когда</label><input class="inp" type="date" name="d" value="' + esc(l.next_action_at || plusDays(1)) + '"></div><div class="chips2" data-quick>' + [['Сегодня', 0], ['Завтра', 1], ['Через 3 дня', 3], ['Через неделю', 7]].map(([t, n]) => '<button type="button" data-n="' + n + '">' + t + '</button>').join('') + '</div>',
+      title: _('Следующий шаг'), sub: esc(l.contact_name || ''),
+      body: _('<div class="fld"><label>Что сделать</label><input class="inp" name="t" value="') + esc(l.next_action || _('Позвонить')) + _('" autofocus></div><div class="fld"><label>Когда</label><input class="inp" type="date" name="d" value="') + esc(l.next_action_at || plusDays(1)) + '"></div><div class="chips2" data-quick>' + [[_('Сегодня'), 0], [_('Завтра'), 1], [_('Через 3 дня'), 3], [_('Через неделю'), 7]].map(([t, n]) => '<button type="button" data-n="' + n + '">' + t + '</button>').join('') + '</div>',
       onOpen: (r) => r.querySelector('[data-quick]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) r.querySelector('[name=d]').value = plusDays(+b.dataset.n); }),
-      foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Сохранить', primary: true, run: async (c, r) => { const t = val(r, 't').trim(), d = val(r, 'd'); if (!t) return toast('Напишите, что сделать', true); await act(async () => { await run(sb.from('leads').update({ next_action: t, next_action_at: d || null }).eq('id', l.id)); }, 'Шаг сохранён'); c(); } }],
+      foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Сохранить'), primary: true, run: async (c, r) => { const t = val(r, 't').trim(), d = val(r, 'd'); if (!t) return toast(_('Напишите, что сделать'), true); await act(async () => { await run(sb.from('leads').update({ next_action: t, next_action_at: d || null }).eq('id', l.id)); }, _('Шаг сохранён')); c(); } }],
     });
   }
   function loseDialog(l) {
-    const reasons = ['Дорого', 'Выбрал другого', 'Не сейчас', 'Нет связи', 'Дубль', 'Спам'];
+    const reasons = [_('Дорого'), _('Выбрал другого'), _('Не сейчас'), _('Нет связи'), _('Дубль'), _('Спам')];
     dialog({
-      title: 'Отказ: ' + (l.contact_name || ''), sub: 'Причина обязательна — по ней потом видно, где мы теряем клиентов.',
-      body: '<div class="chips2" data-r>' + reasons.map((r) => '<button type="button">' + r + '</button>').join('') + '</div><div class="fld"><label>Причина</label><input class="inp" name="r" placeholder="Выберите выше или напишите своё" autofocus></div>',
+      title: _('Отказ: ') + (l.contact_name || ''), sub: _('Причина обязательна — по ней потом видно, где мы теряем клиентов.'),
+      body: '<div class="chips2" data-r>' + reasons.map((r) => '<button type="button">' + r + '</button>').join('') + _('</div><div class="fld"><label>Причина</label><input class="inp" name="r" placeholder="Выберите выше или напишите своё" autofocus></div>'),
       onOpen: (root) => root.querySelector('[data-r]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) root.querySelector('[name=r]').value = b.textContent; }),
-      foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Отметить отказ', primary: true, run: async (c, r) => { const t = val(r, 'r').trim(); if (!t) return toast('Укажите причину', true); await act(async () => { await run(sb.from('leads').update({ stage: 'lost', lost_reason: t, next_action: null, next_action_at: null }).eq('id', l.id)); }, 'Лид закрыт: отказ'); c(); } }],
+      foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отметить отказ'), primary: true, run: async (c, r) => { const t = val(r, 'r').trim(); if (!t) return toast(_('Укажите причину'), true); await act(async () => { await run(sb.from('leads').update({ stage: 'lost', lost_reason: t, next_action: null, next_action_at: null }).eq('id', l.id)); }, _('Лид закрыт: отказ')); c(); } }],
     });
   }
   function transferDialog(l) {
     const cands = users.filter((u) => ['seller', 'manager', 'dealer'].includes(u.role) && u.active !== false && u.id !== (me && me.id));
-    if (!cands.length) return toast('Нет сотрудников, которым можно передать лид', true);
+    if (!cands.length) return toast(_('Нет сотрудников, которым можно передать лид'), true);
     dialog({
-      title: 'Передать лид', sub: esc(l.contact_name || ''),
-      body: '<div class="fld"><label>Кому</label><select class="inp" name="u">' + cands.map((u) => '<option value="' + u.id + '">' + esc((u.full_name || u.email) + ' — ' + (ROLE_RU[u.role] || u.role)) + '</option>').join('') + '</select></div><div class="fld"><label>Комментарий (обязательно)</label><textarea name="c" placeholder="Что важно знать тому, кто возьмёт лид" autofocus></textarea></div>',
-      foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Передать', primary: true, run: async (c, r) => { const t = val(r, 'c').trim(); if (!t) return toast('Нужен комментарий', true); await act(async () => { await run(sb.rpc('transfer_lead', { p_lead: l.id, p_to: val(r, 'u'), p_comment: t })); }, 'Лид передан'); c(); } }],
+      title: _('Передать лид'), sub: esc(l.contact_name || ''),
+      body: _('<div class="fld"><label>Кому</label><select class="inp" name="u">') + cands.map((u) => '<option value="' + u.id + '">' + esc((u.full_name || u.email) + ' — ' + (ROLE_RU[u.role] || u.role)) + '</option>').join('') + _('</select></div><div class="fld"><label>Комментарий (обязательно)</label><textarea name="c" placeholder="Что важно знать тому, кто возьмёт лид" autofocus></textarea></div>'),
+      foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Передать'), primary: true, run: async (c, r) => { const t = val(r, 'c').trim(); if (!t) return toast(_('Нужен комментарий'), true); await act(async () => { await run(sb.rpc('transfer_lead', { p_lead: l.id, p_to: val(r, 'u'), p_comment: t })); }, _('Лид передан')); c(); } }],
     });
   }
   function editDialog(l) {
     dialog({
-      title: 'Данные клиента',
-      body: '<div class="fld"><label>Имя</label><input class="inp" name="n" value="' + esc(l.contact_name || '') + '"></div><div class="fld"><label>Телефон</label><input class="inp" type="tel" name="p" value="' + esc(l.phone || '') + '"></div><div class="fld"><label>E-mail</label><input class="inp" type="email" name="e" value="' + esc(l.email || '') + '"></div><div class="fld"><label>Адрес объекта</label><input class="inp" name="a" value="' + esc(l.object_address || '') + '"></div><div class="fld"><label>Индекс</label><input class="inp" name="z" value="' + esc(l.postcode || '') + '"></div>',
-      foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Сохранить', primary: true, run: async (c, r) => { const n = val(r, 'n').trim(), p = val(r, 'p').trim(), e = val(r, 'e').trim(); if (!n && !p && !e) return toast('Нужны имя, телефон или e-mail', true); await act(async () => { await run(sb.from('leads').update({ contact_name: n || null, phone: p || null, email: e || null, object_address: val(r, 'a').trim() || null, postcode: val(r, 'z').trim() || null }).eq('id', l.id)); }, 'Сохранено'); c(); } }],
+      title: _('Данные клиента'),
+      body: _('<div class="fld"><label>Имя</label><input class="inp" name="n" value="') + esc(l.contact_name || '') + _('"></div><div class="fld"><label>Телефон</label><input class="inp" type="tel" name="p" value="') + esc(l.phone || '') + '"></div><div class="fld"><label>E-mail</label><input class="inp" type="email" name="e" value="' + esc(l.email || '') + _('"></div><div class="fld"><label>Адрес объекта</label><input class="inp" name="a" value="') + esc(l.object_address || '') + _('"></div><div class="fld"><label>Индекс</label><input class="inp" name="z" value="') + esc(l.postcode || '') + '"></div>',
+      foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Сохранить'), primary: true, run: async (c, r) => { const n = val(r, 'n').trim(), p = val(r, 'p').trim(), e = val(r, 'e').trim(); if (!n && !p && !e) return toast(_('Нужны имя, телефон или e-mail'), true); await act(async () => { await run(sb.from('leads').update({ contact_name: n || null, phone: p || null, email: e || null, object_address: val(r, 'a').trim() || null, postcode: val(r, 'z').trim() || null }).eq('id', l.id)); }, _('Сохранено')); c(); } }],
     });
   }
   function handoff(l, q) {
@@ -441,24 +462,24 @@
     if (act0 === 'newlead') return newLeadDialog();
     if (act0 === 'bell') return;
     if (!l) return;
-    if (act0 === 'take') return act(async () => { await run(sb.rpc('assign_lead', { p_lead: l.id, p_to: me.id, p_comment: 'Взял в работу' })); }, 'Лид теперь ваш');
+    if (act0 === 'take') return act(async () => { await run(sb.rpc('assign_lead', { p_lead: l.id, p_to: me.id, p_comment: _('Взял в работу') })); }, _('Лид теперь ваш'));
     if (act0 === 'transfer') return transferDialog(l);
     if (act0 === 'lose') return loseDialog(l);
-    if (act0 === 'reopen') return act(async () => { await run(sb.from('leads').update({ stage: 'processing', lost_reason: null }).eq('id', l.id)); }, 'Лид снова в работе');
+    if (act0 === 'reopen') return act(async () => { await run(sb.from('leads').update({ stage: 'processing', lost_reason: null }).eq('id', l.id)); }, _('Лид снова в работе'));
     if (act0 === 'advance') {
       const to = NEXT_STAGE[STAGE_IDX[l.stage]];
-      const go = () => act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, 'Стадия: ' + STAGE_RU[to]);
-      if (to === 'won') return dialog({ title: 'Оформить заказ?', sub: 'Лид станет клиентом, а в «Заказах» появится карточка.', foot: [{ label: 'Нет', run: (c) => c() }, { label: 'Оформить заказ', primary: true, run: async (c) => { await go(); c(); } }] });
+      const go = () => act(async () => { await run(sb.from('leads').update({ stage: to }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[to]);
+      if (to === 'won') return dialog({ title: _('Оформить заказ?'), sub: _('Лид станет клиентом, а в «Заказах» появится карточка.'), foot: [{ label: _('Нет'), run: (c) => c() }, { label: _('Оформить заказ'), primary: true, run: async (c) => { await go(); c(); } }] });
       return go();
     }
     if (act0 === 'setnext') return nextDialog(l);
     if (act0 === 'done') return act(async () => {
-      const txt = 'Шаг выполнен: ' + (l.next_action || 'шаг');
+      const txt = _('Шаг выполнен: ') + (l.next_action || _('шаг'));
       await run(sb.rpc('comment_lead', { p_lead: l.id, p_comment: txt }));
       await run(sb.from('leads').update({ next_action: null, next_action_at: null }).eq('id', l.id));
-    }, 'Готово. Назначьте следующий шаг').then(() => { const nl = curLead(); if (nl && isOpen(nl)) nextDialog(nl); });
+    }, _('Готово. Назначьте следующий шаг')).then(() => { const nl = curLead(); if (nl && isOpen(nl)) nextDialog(nl); });
     if (act0 === 'edit') return editDialog(l);
-    if (act0 === 'comment') { const t = ($('#noteTxt') || {}).value || ''; if (!t.trim()) return toast('Напишите заметку', true); return act(async () => { await run(sb.rpc('comment_lead', { p_lead: l.id, p_comment: t.trim() })); }, 'Заметка добавлена'); }
+    if (act0 === 'comment') { const t = ($('#noteTxt') || {}).value || ''; if (!t.trim()) return toast(_('Напишите заметку'), true); return act(async () => { await run(sb.rpc('comment_lead', { p_lead: l.id, p_comment: t.trim() })); }, _('Заметка добавлена')); }
     if (act0 === 'newq') return handoff(l, null);
     if (act0 === 'openq') { const q = ((detail[l.id] || {}).quotes || []).find((x) => x.id === a.dataset.q); return handoff(l, q || null); }
   });
@@ -473,23 +494,23 @@
     pre = pre || {};
     let srcSel = 'Звонок', wantSel = [];
     const d = dialog({
-      title: 'Новый лид', sub: 'Достаточно телефона или имени — остальное можно дописать позже.',
-      body: '<div class="fld"><label>Телефон</label><input class="inp" type="tel" inputmode="tel" name="p" autocomplete="off" placeholder="+43 660 …" value="' + esc(pre.phone || '') + '" autofocus></div><div id="dupBox"></div>'
-        + '<div class="fld"><label>Имя</label><input class="inp" name="n" autocomplete="off" value="' + esc(pre.name || '') + '"></div>'
-        + '<div class="fld"><label>Что интересует</label><div class="chips2" data-want>' + WANTS.map((w) => '<button type="button">' + w + '</button>').join('') + '</div></div>'
-        + '<div class="fld"><label>Заметка</label><textarea name="note" rows="2" placeholder="Что сказал клиент, когда удобно звонить…"></textarea></div>'
-        + '<div class="fld"><label>Откуда клиент</label><div class="chips2" data-src>' + SOURCES.map((s) => '<button type="button" class="' + (s === srcSel ? 'on' : '') + '">' + s + '</button>').join('') + '</div></div>'
-        + '<details class="jr"><summary>Ещё: e-mail, адрес, следующий шаг</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">'
-        + '<div class="fld"><label>E-mail</label><input class="inp" type="email" name="e" autocomplete="off"></div><div class="fld"><label>Адрес объекта</label><input class="inp" name="a" autocomplete="off"></div><div class="fld"><label>Индекс</label><input class="inp" name="z" inputmode="numeric" autocomplete="off"></div>'
-        + '<div class="fld"><label>Следующий шаг</label><input class="inp" name="t" value="Позвонить"></div><div class="fld"><label>Когда</label><input class="inp" type="date" name="d" value="' + plusDays(1) + '"></div></div></details>',
+      title: _('Новый лид'), sub: _('Достаточно телефона или имени — остальное можно дописать позже.'),
+      body: _('<div class="fld"><label>Телефон</label><input class="inp" type="tel" inputmode="tel" name="p" autocomplete="off" placeholder="+43 660 …" value="') + esc(pre.phone || '') + '" autofocus></div><div id="dupBox"></div>'
+        + _('<div class="fld"><label>Имя</label><input class="inp" name="n" autocomplete="off" value="') + esc(pre.name || '') + '"></div>'
+        + _('<div class="fld"><label>Что интересует</label><div class="chips2" data-want>') + WANTS.map((w) => '<button type="button">' + _(w) + '</button>').join('') + '</div></div>'
+        + _('<div class="fld"><label>Заметка</label><textarea name="note" rows="2" placeholder="Что сказал клиент, когда удобно звонить…"></textarea></div>')
+        + _('<div class="fld"><label>Откуда клиент</label><div class="chips2" data-src>') + SOURCES.map((s) => '<button type="button" data-v="' + s + '" class="' + (s === srcSel ? 'on' : '') + '">' + _(s) + '</button>').join('') + '</div></div>'
+        + _('<details class="jr"><summary>Ещё: e-mail, адрес, следующий шаг</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">')
+        + _('<div class="fld"><label>E-mail</label><input class="inp" type="email" name="e" autocomplete="off"></div><div class="fld"><label>Адрес объекта</label><input class="inp" name="a" autocomplete="off"></div><div class="fld"><label>Индекс</label><input class="inp" name="z" inputmode="numeric" autocomplete="off"></div>')
+        + _('<div class="fld"><label>Следующий шаг</label><input class="inp" name="t" value="Позвонить"></div><div class="fld"><label>Когда</label><input class="inp" type="date" name="d" value="') + plusDays(1) + '"></div></div></details>',
       onOpen: (r) => {
         r.querySelector('[data-want]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; b.classList.toggle('on'); wantSel = $$('[data-want] .on', r).map((x) => x.textContent); });
-        r.querySelector('[data-src]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('[data-src] button', r).forEach((x) => x.classList.remove('on')); b.classList.add('on'); srcSel = b.textContent; });
+        r.querySelector('[data-src]').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('[data-src] button', r).forEach((x) => x.classList.remove('on')); b.classList.add('on'); srcSel = b.dataset.v; });
         const check = () => {
           const p = normPhone(val(r, 'p')), em = val(r, 'e').trim().toLowerCase();
           const hit = leads.find((x) => (p.length >= 7 && normPhone(x.phone) === p) || (em && (x.email || '').toLowerCase() === em));
           const box = r.querySelector('#dupBox');
-          box.innerHTML = hit ? '<div class="dup"><div><b>Такой клиент уже есть:</b> ' + esc(hit.contact_name || hit.phone) + ' · ' + esc(STAGE_RU[hit.stage]) + (hit.assignee_name ? ' · ' + esc(hit.assignee_name) : '') + '</div><div class="a"><button type="button" class="btn sm primary" data-existing="' + hit.id + '">Открыть его карточку</button><span class="muted" style="align-self:center">или нажмите «Создать» — это будет новое обращение</span></div></div>' : '';
+          box.innerHTML = hit ? _('<div class="dup"><div><b>Такой клиент уже есть:</b> ') + esc(hit.contact_name || hit.phone) + ' · ' + esc(STAGE_RU[hit.stage]) + (hit.assignee_name ? ' · ' + esc(hit.assignee_name) : '') + '</div><div class="a"><button type="button" class="btn sm primary" data-existing="' + hit.id + _('">Открыть его карточку</button><span class="muted" style="align-self:center">или нажмите «Создать» — это будет новое обращение</span></div></div>') : '';
         };
         r.querySelector('[name=p]').addEventListener('input', check); r.querySelector('[name=e]').addEventListener('input', check);
         r.addEventListener('click', (e) => { const x = e.target.closest('[data-existing]'); if (x) { d.close(); openLead(x.dataset.existing); } });
@@ -497,22 +518,22 @@
         check();
       },
       foot: [
-        { label: 'Отмена', run: (c) => c() },
-        { label: 'Создать', primary: true, run: (c, r) => saveNew(c, r, false) },
-        { label: 'Создать и рассчитать КП', run: (c, r) => saveNew(c, r, true) },
+        { label: _('Отмена'), run: (c) => c() },
+        { label: _('Создать'), primary: true, run: (c, r) => saveNew(c, r, false) },
+        { label: _('Создать и рассчитать КП'), run: (c, r) => saveNew(c, r, true) },
       ],
     });
     async function saveNew(close, r, withQuote) {
       const name = val(r, 'n').trim(), phone = val(r, 'p').trim(), email = val(r, 'e').trim();
-      if (!name && !phone && !email) { toast('Введите телефон или имя', true); return; }
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('Проверьте e-mail', true); return; }
+      if (!name && !phone && !email) { toast(_('Введите телефон или имя'), true); return; }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast(_('Проверьте e-mail'), true); return; }
       const addr = val(r, 'a').trim(), zip = val(r, 'z').trim() || ((addr.match(/\b\d{4}\b/) || [null])[0]);
-      const note = [wantSel.length ? 'Интересует: ' + wantSel.join(', ') : '', val(r, 'note').trim()].filter(Boolean).join('\n');
+      const note = [wantSel.length ? _('Интересует: ') + wantSel.join(', ') : '', val(r, 'note').trim()].filter(Boolean).join('\n');
       const step = val(r, 't').trim();
       try {
         const row = await run(sb.from('leads').insert({ created_by: me.id, source: me.role === 'dealer' ? 'dealer' : me.role === 'manager' ? 'manager' : me.role === 'seller' ? 'seller' : 'office', utm: { source: srcSel }, contact_name: name || null, phone: phone || null, email: email || null, object_address: addr || null, postcode: zip || null, note: note || null, next_action: step || null, next_action_at: step ? (val(r, 'd') || plusDays(1)) : null }).select('id').single());
-        if (sees()) { try { await run(sb.rpc('assign_lead', { p_lead: row.id, p_to: me.id, p_comment: 'Создал вручную' })); } catch (e) { /* stays unassigned: "Взять себе" is on the card */ } }
-        close(); toast('Лид создан');
+        if (sees()) { try { await run(sb.rpc('assign_lead', { p_lead: row.id, p_to: me.id, p_comment: _('Создал вручную') })); } catch (e) { /* stays unassigned: "Взять себе" is on the card */ } }
+        close(); toast(_('Лид создан'));
         curLid = row.id; await refresh(row.id); chip = 'all'; renderChips(); C.rerender();
         const i = C.deals.findIndex((x) => x.lid === row.id); if (i >= 0) C.open(i);
         if (withQuote) handoff({ id: row.id, contact_name: name, phone }, null);
@@ -524,11 +545,11 @@
   function orderDialog(o) {
     if (!o) return;
     dialog({
-      title: 'Заказ: ' + ((o.leads && o.leads.contact_name) || ''),
-      body: '<div class="fld"><label>Этап</label><select class="inp" name="s">' + Object.keys(ORDER_RU).map((k) => '<option value="' + k + '"' + (k === o.stage ? ' selected' : '') + '>' + ORDER_RU[k] + '</option>').join('') + '</select></div>'
-        + '<div class="fld"><label>Дата замера</label><input class="inp" type="date" name="m" value="' + esc(o.measured_at || '') + '"></div><div class="fld"><label>Ожидаемая поставка</label><input class="inp" type="date" name="dl" value="' + esc(o.delivery_eta || '') + '"></div>'
-        + '<div class="fld"><label><input type="checkbox" name="pd"' + (o.paid ? ' checked' : '') + '> Оплачен</label></div><div class="fld"><label>Заметка</label><textarea name="nt">' + esc(o.note || '') + '</textarea></div>',
-      foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Открыть лид', run: (c) => { c(); openLead(o.lead_id); } }, { label: 'Сохранить', primary: true, run: async (c, r) => { try { await run(sb.from('orders').update({ stage: val(r, 's'), measured_at: val(r, 'm') || null, delivery_eta: val(r, 'dl') || null, paid: r.querySelector('[name=pd]').checked, note: val(r, 'nt').trim() || null }).eq('id', o.id)); toast('Заказ сохранён'); c(); await refresh(); } catch (e) { toast(humanError(e), true); } } }],
+      title: _('Заказ: ') + ((o.leads && o.leads.contact_name) || ''),
+      body: _('<div class="fld"><label>Этап</label><select class="inp" name="s">') + Object.keys(ORDER_RU).map((k) => '<option value="' + k + '"' + (k === o.stage ? ' selected' : '') + '>' + ORDER_RU[k] + '</option>').join('') + '</select></div>'
+        + _('<div class="fld"><label>Дата замера</label><input class="inp" type="date" name="m" value="') + esc(o.measured_at || '') + _('"></div><div class="fld"><label>Ожидаемая поставка</label><input class="inp" type="date" name="dl" value="') + esc(o.delivery_eta || '') + '"></div>'
+        + '<div class="fld"><label><input type="checkbox" name="pd"' + (o.paid ? ' checked' : '') + _('> Оплачен</label></div><div class="fld"><label>Заметка</label><textarea name="nt">') + esc(o.note || '') + '</textarea></div>',
+      foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Открыть лид'), run: (c) => { c(); openLead(o.lead_id); } }, { label: _('Сохранить'), primary: true, run: async (c, r) => { try { await run(sb.from('orders').update({ stage: val(r, 's'), measured_at: val(r, 'm') || null, delivery_eta: val(r, 'dl') || null, paid: r.querySelector('[name=pd]').checked, note: val(r, 'nt').trim() || null }).eq('id', o.id)); toast(_('Заказ сохранён')); c(); await refresh(); } catch (e) { toast(humanError(e), true); } } }],
     });
   }
 
@@ -542,9 +563,9 @@
     const revised = new Set(quotes.map((q) => q.revises).filter(Boolean)), t = today();
     const isAct = (q) => q.valid_until >= t && !revised.has(q.id);
     const list = quotes.filter((q) => (qTab === 'act' ? isAct(q) : !isAct(q))).filter((q) => !qSearch || [q.number, q.leads && q.leads.contact_name, q.leads && q.leads.phone].some((x) => String(x || '').toLowerCase().includes(qSearch.toLowerCase())));
-    setScreen('quotes', '<div class="h1" style="margin-bottom:12px">Коммерческие предложения</div><div class="bar"><div class="seg2"><button class="' + (qTab === 'act' ? 'on' : '') + '" data-qt="act">Действующие</button><button class="' + (qTab === 'arc' ? 'on' : '') + '" data-qt="arc">Архив</button></div><input class="inp" id="qSearch" placeholder="Поиск: номер, клиент…" value="' + esc(qSearch) + '"><div class="sp"></div><button class="btn primary sm" data-act="configurator">＋ Новое КП</button></div>'
-      + (list.length ? '<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>№ КП</th><th>Клиент</th><th class="num">Сумма, нетто</th><th>Создано</th><th>Действует до</th></tr></thead><tbody>' + list.map((q) => '<tr class="click" data-qrow="' + q.id + '"><td><b>' + esc(q.number) + '</b>' + apprTag(q.id) + '</td><td>' + esc((q.leads && (q.leads.contact_name || q.leads.phone)) || '—') + '</td><td class="num">' + money(q.total_net) + '</td><td>' + dmy(q.created_at) + '</td><td class="' + (q.valid_until < t ? 'late' : '') + '">' + dmy(q.valid_until) + '</td></tr>').join('') + '</tbody></table></div></div>'
-        : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">❏</div><div>' + (qTab === 'act' ? 'Действующих КП нет.<br><span class="muted">Рассчитайте первое в конфигураторе или из карточки лида.</span>' : 'Архив пуст.') + '</div></div>'));
+    setScreen('quotes', _('<div class="h1" style="margin-bottom:12px">Коммерческие предложения</div><div class="bar"><div class="seg2"><button class="') + (qTab === 'act' ? 'on' : '') + _('" data-qt="act">Действующие</button><button class="') + (qTab === 'arc' ? 'on' : '') + _('" data-qt="arc">Архив</button></div><input class="inp" id="qSearch" placeholder="Поиск: номер, клиент…" value="') + esc(qSearch) + _('"><div class="sp"></div><button class="btn primary sm" data-act="configurator">＋ Новое КП</button></div>')
+      + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>№ КП</th><th>Клиент</th><th class="num">Сумма, нетто</th><th>Создано</th><th>Действует до</th></tr></thead><tbody>') + list.map((q) => '<tr class="click" data-qrow="' + q.id + '"><td><b>' + esc(q.number) + '</b>' + apprTag(q.id) + '</td><td>' + esc((q.leads && (q.leads.contact_name || q.leads.phone)) || '—') + '</td><td class="num">' + money(q.total_net) + '</td><td>' + dmy(q.created_at) + '</td><td class="' + (q.valid_until < t ? 'late' : '') + '">' + dmy(q.valid_until) + '</td></tr>').join('') + '</tbody></table></div></div>'
+        : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">❏</div><div>' + (qTab === 'act' ? _('Действующих КП нет.<br><span class="muted">Рассчитайте первое в конфигураторе или из карточки лида.</span>') : _('Архив пуст.')) + '</div></div>'));
     const si = $('#qSearch'); if (si) { si.oninput = () => { qSearch = si.value; renderQuotesLocal(); }; }
   }
   function renderQuotesLocal() { const pos = ($('#qSearch') || {}).selectionStart; renderQuotes().then(() => { const s = $('#qSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } }); }
@@ -557,9 +578,9 @@
     }
     const q = cSearch.toLowerCase(), dg = cSearch.replace(/\D/g, '');
     const list = cust.filter((c) => !q || [c.name, c.email, c.object_address].some((x) => String(x || '').toLowerCase().includes(q)) || (dg.length >= 3 && String(c.phone || '').replace(/\D/g, '').includes(dg)));
-    setScreen('customers', '<div class="h1" style="margin-bottom:12px">Клиенты</div><div class="bar"><input class="inp" id="cSearch" placeholder="Поиск: имя, телефон, e-mail…" value="' + esc(cSearch) + '"><div class="sp"></div><button class="btn primary sm" data-act="newlead">＋ Новый клиент</button></div>'
-      + (list.length ? '<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>Клиент</th><th>Телефон</th><th>Адрес</th><th class="num">Обращений</th><th class="num">Заказов</th><th>Последний контакт</th></tr></thead><tbody>' + list.map((c) => '<tr class="click" data-cust="' + esc(c.key) + '"><td><b>' + esc(c.name || c.email || c.phone) + '</b></td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.object_address || '—') + '</td><td class="num">' + c.leads + '</td><td class="num">' + c.won + '</td><td>' + ago(c.last_activity_at) + '</td></tr>').join('') + '</tbody></table></div></div>'
-        : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">◍</div><div>' + (cust.length ? 'Никого не найдено.' : 'Клиентов пока нет.<br><span class="muted">Они появятся из лидов — с сайта или созданных вручную.</span>') + '</div><button class="btn primary" data-act="newlead">＋ Новый клиент</button></div>'));
+    setScreen('customers', _('<div class="h1" style="margin-bottom:12px">Клиенты</div><div class="bar"><input class="inp" id="cSearch" placeholder="Поиск: имя, телефон, e-mail…" value="') + esc(cSearch) + _('"><div class="sp"></div><button class="btn primary sm" data-act="newlead">＋ Новый клиент</button></div>')
+      + (list.length ? _('<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>Клиент</th><th>Телефон</th><th>Адрес</th><th class="num">Обращений</th><th class="num">Заказов</th><th>Последний контакт</th></tr></thead><tbody>') + list.map((c) => '<tr class="click" data-cust="' + esc(c.key) + '"><td><b>' + esc(c.name || c.email || c.phone) + '</b></td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.object_address || '—') + '</td><td class="num">' + c.leads + '</td><td class="num">' + c.won + '</td><td>' + ago(c.last_activity_at) + '</td></tr>').join('') + '</tbody></table></div></div>'
+        : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">◍</div><div>' + (cust.length ? _('Никого не найдено.') : _('Клиентов пока нет.<br><span class="muted">Они появятся из лидов — с сайта или созданных вручную.</span>')) + _('</div><button class="btn primary" data-act="newlead">＋ Новый клиент</button></div>')));
     const si = $('#cSearch'); if (si) si.oninput = () => { cSearch = si.value; const pos = si.selectionStart; renderCustomers().then(() => { const s = $('#cSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } }); };
   }
   function customerDialog(key) {
@@ -567,11 +588,11 @@
     const mine = leads.filter((l) => (normPhone(l.phone) || (l.email || '').toLowerCase()) === key).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     dialog({
       title: c.name || c.email || c.phone, sub: esc([c.phone, c.email].filter(Boolean).join(' · ')),
-      body: '<div class="contact">' + (c.phone ? '<a href="tel:' + esc(tel(c.phone)) + '">📞 Позвонить</a>' : '') + (waNum(c.phone) ? '<a href="https://wa.me/' + waNum(c.phone) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (c.email ? '<a href="mailto:' + esc(c.email) + '">✉ Написать</a>' : '') + '</div>'
-        + (c.object_address ? '<div class="kv"><span class="k">Адрес</span><span class="v">' + esc(c.object_address) + '</span></div>' : '')
-        + '<h4 class="ovhead">Обращения (' + mine.length + ')</h4>' + mine.map((l) => '<div class="vrow" style="cursor:pointer" data-lead="' + l.id + '"><span>' + dmy(l.created_at) + '</span><span class="d">' + esc(STAGE_RU[l.stage]) + (l.last_quote ? ' · КП ' + esc(l.last_quote) : '') + '</span><span class="s tab-num">' + money(l.last_total_net) + '</span></div>').join(''),
+      body: '<div class="contact">' + (c.phone ? '<a href="tel:' + esc(tel(c.phone)) + _('">📞 Позвонить</a>') : '') + (waNum(c.phone) ? '<a href="https://wa.me/' + waNum(c.phone) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + (c.email ? '<a href="mailto:' + esc(c.email) + _('">✉ Написать</a>') : '') + '</div>'
+        + (c.object_address ? _('<div class="kv"><span class="k">Адрес</span><span class="v">') + esc(c.object_address) + '</span></div>' : '')
+        + _('<h4 class="ovhead">Обращения (') + mine.length + ')</h4>' + mine.map((l) => '<div class="vrow" style="cursor:pointer" data-lead="' + l.id + '"><span>' + dmy(l.created_at) + '</span><span class="d">' + esc(STAGE_RU[l.stage]) + (l.last_quote ? _(' · КП ') + esc(l.last_quote) : '') + '</span><span class="s tab-num">' + money(l.last_total_net) + '</span></div>').join(''),
       onOpen: (r, close) => r.addEventListener('click', (e) => { const x = e.target.closest('[data-lead]'); if (x) { close(); openLead(x.dataset.lead); } }),
-      foot: [{ label: 'Закрыть', run: (cl) => cl() }, { label: '＋ Новое обращение', primary: true, run: (cl) => { cl(); newLeadDialog({ name: c.name, phone: c.phone }); } }],
+      foot: [{ label: _('Закрыть'), run: (cl) => cl() }, { label: _('＋ Новое обращение'), primary: true, run: (cl) => { cl(); newLeadDialog({ name: c.name, phone: c.phone }); } }],
     });
   }
 
@@ -586,31 +607,31 @@
     const per = {}; leads.forEach((l) => { if (l.assigned_to) { const p = per[l.assigned_to] || (per[l.assigned_to] = { n: 0, open: 0, sum: 0, late: 0, won: 0, lost: 0 }); p.n++; if (isOpen(l)) { p.open++; p.sum += Number(l.last_total_net) || 0; } if (overdue(l)) p.late++; if (l.stage === 'won') p.won++; if (l.stage === 'lost') p.lost++; } });
     const un = open.filter((l) => !l.assigned_to).length;
     const kpi = (l, v, sub) => '<div class="kpi"><div class="l">' + l + '</div><div class="v tab-num">' + v + '</div>' + (sub ? '<div class="delta">' + sub + '</div>' : '') + '</div>';
-    setScreen('admin', '<div class="h1" style="margin-bottom:4px">Обзор</div><p class="muted" style="margin:0 0 16px">Цифры считаются по лидам, которые вы видите.</p>'
-      + '<div class="kpis">' + kpi('В работе (сумма КП)', money(pipe), open.length + ' лидов') + kpi('Доля побед', wr == null ? '—' : wr + '%', won.length + ' из ' + (won.length + lost.length)) + kpi('Средний чек', money(avg)) + kpi('Без ответственного', un, un ? 'раздайте в работу' : 'всё разобрано') + '</div>'
-      + '<div class="panel"><div class="ph"><h3>Менеджеры</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Лидов</th><th class="num">В работе</th><th class="num">Сумма</th><th class="num">Просрочено</th><th class="num">Побед</th></tr></thead><tbody>'
-      + (Object.keys(per).map((id) => { const p = per[id], u = users.find((x) => x.id === id) || {}; return '<tr><td>' + esc(userName(id)) + '</td><td>' + esc(ROLE_RU[u.role] || '') + '</td><td class="num">' + p.n + '</td><td class="num">' + p.open + '</td><td class="num">' + money(p.sum) + '</td><td class="num' + (p.late ? ' late' : '') + '">' + p.late + '</td><td class="num">' + p.won + '</td></tr>'; }).join('') || '<tr><td colspan="7" class="muted">Пока нет назначенных лидов</td></tr>') + '</tbody></table></div></div>'
-      + '<div class="panel"><div class="ph"><h3>Откуда приходят клиенты</h3></div><div class="tblwrap"><table class="tbl"><tbody>' + (Object.entries(bySrc).sort((a, b) => b[1] - a[1]).map(([k, n]) => '<tr><td>' + esc(k) + '</td><td class="num">' + n + '</td></tr>').join('') || '<tr><td class="muted">Данных пока нет</td></tr>') + '</tbody></table></div></div>');
+    setScreen('admin', _('<div class="h1" style="margin-bottom:4px">Обзор</div><p class="muted" style="margin:0 0 16px">Цифры считаются по лидам, которые вы видите.</p>')
+      + '<div class="kpis">' + kpi(_('В работе (сумма КП)'), money(pipe), open.length + _(' лидов')) + kpi(_('Доля побед'), wr == null ? '—' : wr + '%', won.length + _(' из ') + (won.length + lost.length)) + kpi(_('Средний чек'), money(avg)) + kpi(_('Без ответственного'), un, un ? _('раздайте в работу') : _('всё разобрано')) + '</div>'
+      + _('<div class="panel"><div class="ph"><h3>Менеджеры</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Сотрудник</th><th>Роль</th><th class="num">Лидов</th><th class="num">В работе</th><th class="num">Сумма</th><th class="num">Просрочено</th><th class="num">Побед</th></tr></thead><tbody>')
+      + (Object.keys(per).map((id) => { const p = per[id], u = users.find((x) => x.id === id) || {}; return '<tr><td>' + esc(userName(id)) + '</td><td>' + esc(ROLE_RU[u.role] || '') + '</td><td class="num">' + p.n + '</td><td class="num">' + p.open + '</td><td class="num">' + money(p.sum) + '</td><td class="num' + (p.late ? ' late' : '') + '">' + p.late + '</td><td class="num">' + p.won + '</td></tr>'; }).join('') || _('<tr><td colspan="7" class="muted">Пока нет назначенных лидов</td></tr>')) + '</tbody></table></div></div>'
+      + _('<div class="panel"><div class="ph"><h3>Откуда приходят клиенты</h3></div><div class="tblwrap"><table class="tbl"><tbody>') + (Object.entries(bySrc).sort((a, b) => b[1] - a[1]).map(([k, n]) => '<tr><td>' + esc(k) + '</td><td class="num">' + n + '</td></tr>').join('') || _('<tr><td class="muted">Данных пока нет</td></tr>')) + '</tbody></table></div></div>');
   }
 
   /* approvals: discount above the personal limit waits for the superadmin */
   let apprTab = 'pending';
-  function discText(d, lim) { const k = { pergola: 'Пергола', sides: 'Боковые', extras: 'Прочее' }; return Object.keys(d || {}).map((x) => (k[x] || x) + ' ' + d[x] + '%').join(', ') + (lim != null ? ' · лимит ' + lim + '%' : ''); }
+  function discText(d, lim) { const k = { pergola: _('Пергола'), sides: _('Боковые'), extras: _('Прочее') }; return Object.keys(d || {}).map((x) => (k[x] || x) + ' ' + d[x] + '%').join(', ') + (lim != null ? _(' · лимит ') + lim + '%' : ''); }
   function renderApprovals() {
     const list = approvals.filter((a) => (apprTab === 'pending' ? a.status === 'pending' : a.status !== 'pending'));
     const row = (a) => {
       const q = a.quotes || {}, u = users.find((x) => x.id === q.owner) || {};
-      return '<div class="appr"><div class="t"><b>' + esc((q.leads && q.leads.contact_name) || 'КП ' + q.number) + ' · ' + money(q.total_net) + '</b><div class="reasons"><span class="tag">КП ' + esc(q.number) + '</span><span class="tag warn">' + esc(discText(q.discount, u.discount_limit)) + '</span><span class="tag">' + esc(userName(q.owner)) + '</span>' + (a.status !== 'pending' ? '<span class="tag ' + APPR_RU[a.status][1] + '">' + APPR_RU[a.status][0] + (a.comment ? ': ' + esc(a.comment) : '') + '</span>' : '') + '</div></div>'
-        + '<div class="acts">' + (q.lead_id ? '<button class="btn sm" data-lead="' + q.lead_id + '">Открыть</button>' : '') + (a.status === 'pending' ? '<button class="btn sm" data-reject="' + a.quote_id + '">Отклонить</button><button class="btn primary sm" data-approve="' + a.quote_id + '">Утвердить</button>' : '') + '</div></div>';
+      return '<div class="appr"><div class="t"><b>' + esc((q.leads && q.leads.contact_name) || _('КП ') + q.number) + ' · ' + money(q.total_net) + _('</b><div class="reasons"><span class="tag">КП ') + esc(q.number) + '</span><span class="tag warn">' + esc(discText(q.discount, u.discount_limit)) + '</span><span class="tag">' + esc(userName(q.owner)) + '</span>' + (a.status !== 'pending' ? '<span class="tag ' + APPR_RU[a.status][1] + '">' + _(APPR_RU[a.status][0]) + (a.comment ? ': ' + esc(a.comment) : '') + '</span>' : '') + '</div></div>'
+        + '<div class="acts">' + (q.lead_id ? '<button class="btn sm" data-lead="' + q.lead_id + _('">Открыть</button>') : '') + (a.status === 'pending' ? '<button class="btn sm" data-reject="' + a.quote_id + _('">Отклонить</button><button class="btn primary sm" data-approve="') + a.quote_id + _('">Утвердить</button>') : '') + '</div></div>';
     };
-    setScreen('approvals', '<div class="h1" style="margin-bottom:4px">Утверждения</div><p class="muted" style="margin:0 0 14px">Скидка выше личного лимита сотрудника ждёт вашего решения. Решение необратимо, сотрудник получит уведомление.</p><div class="bar"><div class="seg2"><button class="' + (apprTab === 'pending' ? 'on' : '') + '" data-at="pending">Ждут</button><button class="' + (apprTab === 'done' ? 'on' : '') + '" data-at="done">Решённые</button></div></div>'
-      + (list.length ? '<div class="panel">' + list.map(row).join('') + '</div>' : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">✓</div><div>' + (apprTab === 'pending' ? 'Нет заявок на утверждение' : 'Решений пока нет') + '</div></div>'));
+    setScreen('approvals', _('<div class="h1" style="margin-bottom:4px">Утверждения</div><p class="muted" style="margin:0 0 14px">Скидка выше личного лимита сотрудника ждёт вашего решения. Решение необратимо, сотрудник получит уведомление.</p><div class="bar"><div class="seg2"><button class="') + (apprTab === 'pending' ? 'on' : '') + _('" data-at="pending">Ждут</button><button class="') + (apprTab === 'done' ? 'on' : '') + _('" data-at="done">Решённые</button></div></div>')
+      + (list.length ? '<div class="panel">' + list.map(row).join('') + '</div>' : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">✓</div><div>' + (apprTab === 'pending' ? _('Нет заявок на утверждение') : _('Решений пока нет')) + '</div></div>'));
   }
   document.addEventListener('click', (e) => {
     const at = e.target.closest('[data-at]'); if (at) { apprTab = at.dataset.at; renderApprovals(); return; }
-    const ap = e.target.closest('[data-approve]'); if (ap) { run(sb.rpc('decide_approval', { p_quote: ap.dataset.approve, p_approve: true })).then(() => { toast('Скидка утверждена'); return refresh(); }).catch((er) => toast(humanError(er), true)); return; }
+    const ap = e.target.closest('[data-approve]'); if (ap) { run(sb.rpc('decide_approval', { p_quote: ap.dataset.approve, p_approve: true })).then(() => { toast(_('Скидка утверждена')); return refresh(); }).catch((er) => toast(humanError(er), true)); return; }
     const rj = e.target.closest('[data-reject]');
-    if (rj) dialog({ title: 'Отклонить скидку', sub: 'Сотрудник увидит ваш комментарий.', body: '<div class="fld"><label>Комментарий (обязательно)</label><textarea name="c" autofocus placeholder="Какая скидка допустима…"></textarea></div>', foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Отклонить', primary: true, run: async (c, r) => { const t = val(r, 'c').trim(); if (!t) return toast('Нужен комментарий', true); try { await run(sb.rpc('decide_approval', { p_quote: rj.dataset.reject, p_approve: false, p_comment: t })); toast('Скидка отклонена'); c(); await refresh(); } catch (er) { toast(humanError(er), true); } } }] });
+    if (rj) dialog({ title: _('Отклонить скидку'), sub: _('Сотрудник увидит ваш комментарий.'), body: _('<div class="fld"><label>Комментарий (обязательно)</label><textarea name="c" autofocus placeholder="Какая скидка допустима…"></textarea></div>'), foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отклонить'), primary: true, run: async (c, r) => { const t = val(r, 'c').trim(); if (!t) return toast(_('Нужен комментарий'), true); try { await run(sb.rpc('decide_approval', { p_quote: rj.dataset.reject, p_approve: false, p_comment: t })); toast(_('Скидка отклонена')); c(); await refresh(); } catch (er) { toast(humanError(er), true); } } }] });
   });
 
   /* settings: real users, invites, discount groups, service rates */
@@ -623,26 +644,26 @@
     if (inv && !invGroupsReady) {
       const sel = $('#invGroup'); if (sel && groups.length) sel.innerHTML = groups.map((g) => '<option value="' + g.id + '">' + esc(g.title) + '</option>').join('');
       const gen = $('#invGen'); if (gen) { const g2 = gen.cloneNode(true); gen.replaceWith(g2); g2.addEventListener('click', createInvite); }
-      const ct = $('#invCopy'); if (ct) { const c2 = ct.cloneNode(true); ct.replaceWith(c2); c2.addEventListener('click', () => { const i = $('#invLink'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) { document.execCommand('copy'); } toast('Ссылка скопирована'); }); }
+      const ct = $('#invCopy'); if (ct) { const c2 = ct.cloneNode(true); ct.replaceWith(c2); c2.addEventListener('click', () => { const i = $('#invLink'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) { document.execCommand('copy'); } toast(_('Ссылка скопирована')); }); }
       invGroupsReady = true;
     }
     const panels = usersPane.querySelectorAll('.panel'), up = panels[1];
-    if (up) up.innerHTML = '<div class="ph"><h3>Пользователи</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Имя</th><th>E-mail</th><th>Роль</th><th class="num">Личная скидка %</th><th>Статус</th></tr></thead><tbody>' + users.filter((u) => u.role !== 'client').map((u) => '<tr><td>' + esc(u.full_name || '—') + '</td><td class="muted">' + esc(u.email || '') + '</td><td>' + esc(ROLE_RU[u.role] || u.role) + '</td><td class="num">' + (u.discount_limit != null ? u.discount_limit : '—') + '</td><td><span class="tag ' + (u.active === false ? 'bad' : 'ok') + '">' + (u.active === false ? 'отключён' : 'активен') + '</span></td></tr>').join('') + '</tbody></table></div>';
+    if (up) up.innerHTML = _('<div class="ph"><h3>Пользователи</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Имя</th><th>E-mail</th><th>Роль</th><th class="num">Личная скидка %</th><th>Статус</th></tr></thead><tbody>') + users.filter((u) => u.role !== 'client').map((u) => '<tr><td>' + esc(u.full_name || '—') + '</td><td class="muted">' + esc(u.email || '') + '</td><td>' + esc(ROLE_RU[u.role] || u.role) + '</td><td class="num">' + (u.discount_limit != null ? u.discount_limit : '—') + '</td><td><span class="tag ' + (u.active === false ? 'bad' : 'ok') + '">' + (u.active === false ? _('отключён') : _('активен')) + '</span></td></tr>').join('') + '</tbody></table></div>';
     let rp = $('#reqPanel'); if (!rp) { rp = document.createElement('div'); rp.id = 'reqPanel'; rp.className = 'panel'; usersPane.appendChild(rp); }
-    rp.innerHTML = '<div class="ph"><h3>Заявки на доступ</h3><span class="muted" style="font-size:12px">пригласите нужных кнопкой выше</span></div>' + (reqs.length ? '<div class="tblwrap"><table class="tbl"><thead><tr><th>Компания</th><th>Имя</th><th>Город</th><th>E-mail</th><th>Дата</th></tr></thead><tbody>' + reqs.map((r) => '<tr><td>' + esc(r.company) + '</td><td>' + esc((r.first_name || '') + ' ' + (r.last_name || '')) + '</td><td>' + esc(r.location) + '</td><td>' + esc(r.email) + '</td><td>' + dmy(r.created_at) + '</td></tr>').join('') + '</tbody></table></div>' : '<div style="padding:14px 15px" class="muted">Новых заявок нет</div>');
+    rp.innerHTML = _('<div class="ph"><h3>Заявки на доступ</h3><span class="muted" style="font-size:12px">пригласите нужных кнопкой выше</span></div>') + (reqs.length ? _('<div class="tblwrap"><table class="tbl"><thead><tr><th>Компания</th><th>Имя</th><th>Город</th><th>E-mail</th><th>Дата</th></tr></thead><tbody>') + reqs.map((r) => '<tr><td>' + esc(r.company) + '</td><td>' + esc((r.first_name || '') + ' ' + (r.last_name || '')) + '</td><td>' + esc(r.location) + '</td><td>' + esc(r.email) + '</td><td>' + dmy(r.created_at) + '</td></tr>').join('') + '</tbody></table></div>' : _('<div style="padding:14px 15px" class="muted">Новых заявок нет</div>'));
     // discount groups: real
     const dp = $('.setpane[data-set="disc"] .panel');
-    if (dp) dp.innerHTML = '<div class="ph"><h3>Группы скидок</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Группа</th><th class="num">Макс. скидка %</th></tr></thead><tbody>' + groups.map((g) => '<tr><td>' + esc(g.title) + '</td><td class="num">' + Number(g.max_discount) + '</td></tr>').join('') + '</tbody></table></div><div style="padding:12px 15px" class="muted">Скидка выше личного лимита блокируется системой при сохранении КП.</div>';
+    if (dp) dp.innerHTML = _('<div class="ph"><h3>Группы скидок</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Группа</th><th class="num">Макс. скидка %</th></tr></thead><tbody>') + groups.map((g) => '<tr><td>' + esc(g.title) + '</td><td class="num">' + Number(g.max_discount) + '</td></tr>').join('') + _('</tbody></table></div><div style="padding:12px 15px" class="muted">Скидка выше личного лимита блокируется системой при сохранении КП.</div>');
     // roles: plain text instead of fake switches
     const rl = $('.setpane[data-set="roles"]');
-    if (rl) rl.innerHTML = '<div class="panel"><div class="ph"><h3>Кто что видит</h3></div><div style="padding:14px 15px;line-height:1.7"><p style="margin:0 0 8px"><b>Суперадмин, суперДилер</b> — все лиды и КП.</p><p style="margin:0 0 8px"><b>Дилер</b> — свои лиды и лиды своей компании.</p><p style="margin:0 0 8px"><b>Продавец</b> — только те, что создал сам или получил.</p><p class="muted" style="margin:0">Права закреплены в базе данных и не зависят от этой страницы.</p></div></div>';
+    if (rl) rl.innerHTML = _('<div class="panel"><div class="ph"><h3>Кто что видит</h3></div><div style="padding:14px 15px;line-height:1.7"><p style="margin:0 0 8px"><b>Суперадмин, суперДилер</b> — все лиды и КП.</p><p style="margin:0 0 8px"><b>Дилер</b> — свои лиды и лиды своей компании.</p><p style="margin:0 0 8px"><b>Продавец</b> — только те, что создал сам или получил.</p><p class="muted" style="margin:0">Права закреплены в базе данных и не зависят от этой страницы.</p></div></div>');
     const pp = $('.setpane[data-set="pipe"]');
     if (pp) {
       let rate = null; try { rate = await run(sb.from('pricing_config').select('install_pct, delivery_pct').eq('id', 1).single()); } catch (e) {}
-      pp.innerHTML = '<div class="panel"><div class="ph"><h3>Наценки на услуги</h3></div><div style="padding:14px 15px;display:flex;flex-direction:column;gap:12px;max-width:360px"><div class="fld"><label>Монтаж, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rIns" value="' + (rate ? Number(rate.install_pct) : '') + '"></div><div class="fld"><label>Доставка, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rDel" value="' + (rate ? Number(rate.delivery_pct) : '') + '"></div><button class="btn primary sm" id="rSave" style="align-self:flex-start">Сохранить</button><p class="muted" style="margin:0">Применяется в новых расчётах сразу, без обновления сайта.</p></div></div>';
-      const sv = $('#rSave'); if (sv) sv.onclick = async () => { try { await run(sb.from('pricing_config').update({ install_pct: Number($('#rIns').value), delivery_pct: Number($('#rDel').value), updated_at: new Date().toISOString() }).eq('id', 1)); toast('Сохранено'); } catch (e) { toast(humanError(e), true); } };
+      pp.innerHTML = _('<div class="panel"><div class="ph"><h3>Наценки на услуги</h3></div><div style="padding:14px 15px;display:flex;flex-direction:column;gap:12px;max-width:360px"><div class="fld"><label>Монтаж, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rIns" value="') + (rate ? Number(rate.install_pct) : '') + _('"></div><div class="fld"><label>Доставка, % от суммы</label><input class="inp" type="number" step="0.1" min="0" id="rDel" value="') + (rate ? Number(rate.delivery_pct) : '') + _('"></div><button class="btn primary sm" id="rSave" style="align-self:flex-start">Сохранить</button><p class="muted" style="margin:0">Применяется в новых расчётах сразу, без обновления сайта.</p></div></div>');
+      const sv = $('#rSave'); if (sv) sv.onclick = async () => { try { await run(sb.from('pricing_config').update({ install_pct: Number($('#rIns').value), delivery_pct: Number($('#rDel').value), updated_at: new Date().toISOString() }).eq('id', 1)); toast(_('Сохранено')); } catch (e) { toast(humanError(e), true); } };
     }
-    const tabNames = { pipe: 'Наценки', roles: 'Роли и доступ', disc: 'Группы скидок' };
+    const tabNames = { pipe: _('Наценки'), roles: _('Роли и доступ'), disc: _('Группы скидок') };
     $$('.subnav .t').forEach((t) => { if (tabNames[t.dataset.set]) { t.removeAttribute('data-i18n'); t.textContent = tabNames[t.dataset.set]; } });
   }
   async function createInvite() {
@@ -650,8 +671,8 @@
     const role = ($('#invRole') || {}).value, gid = ($('#invGroup') || {}).value;
     try {
       const res = await fetch(BACKEND.url + '/functions/v1/create-invite', { method: 'POST', headers: { 'content-type': 'application/json', apikey: BACKEND.anonKey, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify({ role, discount_group_id: gid || null }) });
-      const j = await res.json(); if (!res.ok || !j.link) throw new Error(j.message || j.error || 'Ошибка');
-      $('#invLink').value = j.link; $('#invOut').hidden = false; toast('Ссылка действует 14 дней');
+      const j = await res.json(); if (!res.ok || !j.link) throw new Error(j.message || j.error || _('Ошибка'));
+      $('#invLink').value = j.link; $('#invOut').hidden = false; toast(_('Ссылка действует 14 дней'));
     } catch (e) { toast(humanError(e), true); }
   }
 
@@ -667,7 +688,7 @@
     if (!bell) return;
     if (open) { open.remove(); return; }
     const box = document.createElement('div'); box.id = 'ntfBox'; box.className = 'ntf';
-    box.innerHTML = notes.length ? notes.map((n) => '<div class="it' + (n.read ? '' : ' un') + '" data-n="' + n.id + '" data-lead="' + (n.lead_id || '') + '">' + esc(n.text) + '<small>' + ago(n.at) + '</small></div>').join('') + '<div class="it" style="text-align:center;color:var(--accent)" data-allread="1">Отметить всё прочитанным</div>' : '<div class="it muted">Уведомлений нет</div>';
+    box.innerHTML = notes.length ? notes.map((n) => '<div class="it' + (n.read ? '' : ' un') + '" data-n="' + n.id + '" data-lead="' + (n.lead_id || '') + '">' + esc(ntfText(n.text)) + '<small>' + ago(n.at) + '</small></div>').join('') + _('<div class="it" style="text-align:center;color:var(--accent)" data-allread="1">Отметить всё прочитанным</div>') : _('<div class="it muted">Уведомлений нет</div>');
     bell.appendChild(box);
     box.addEventListener('click', async (ev) => {
       ev.stopPropagation();
@@ -768,16 +789,16 @@
     if (!l || idx === STAGE_IDX[l.stage]) return;
     DRAG.landed = l.id;
     if (idx === 4) {
-      return dialog({ title: 'Итог по лиду', sub: esc(l.contact_name || ''), body: '<div class="muted">Лид закрыт как заказ или как отказ.</div>',
-        foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Отказ', run: (c) => { c(); curLid = l.id; loseDialog(l); } }, { label: 'Оформить заказ', primary: true, run: async (c) => { c(); curLid = l.id; await act(async () => { await run(sb.from('leads').update({ stage: 'won', next_action: null, next_action_at: null }).eq('id', l.id)); }, 'Заказ оформлен'); landed(); } }] });
+      return dialog({ title: _('Итог по лиду'), sub: esc(l.contact_name || ''), body: _('<div class="muted">Лид закрыт как заказ или как отказ.</div>'),
+        foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Отказ'), run: (c) => { c(); curLid = l.id; loseDialog(l); } }, { label: _('Оформить заказ'), primary: true, run: async (c) => { c(); curLid = l.id; await act(async () => { await run(sb.from('leads').update({ stage: 'won', next_action: null, next_action_at: null }).eq('id', l.id)); }, _('Заказ оформлен')); landed(); } }] });
     }
     curLid = l.id;
-    act(async () => { await run(sb.from('leads').update({ stage: STAGE_AT[idx] }).eq('id', l.id)); }, 'Стадия: ' + STAGE_RU[STAGE_AT[idx]]).then(landed);
+    act(async () => { await run(sb.from('leads').update({ stage: STAGE_AT[idx] }).eq('id', l.id)); }, _('Стадия: ') + STAGE_RU[STAGE_AT[idx]]).then(landed);
   }
   async function moveOrder(o, idx) {
     if (!o || !ORDER_COL[idx] || ORDER_COL[idx][1] === o.stage) return;
     DRAG.landed = o.id;
-    try { await run(sb.from('orders').update({ stage: ORDER_COL[idx][1] }).eq('id', o.id)); toast('Этап: ' + ORDER_RU[ORDER_COL[idx][1]]); await refresh(); landed(); } catch (e) { toast(humanError(e), true); }
+    try { await run(sb.from('orders').update({ stage: ORDER_COL[idx][1] }).eq('id', o.id)); toast(_('Этап: ') + ORDER_RU[ORDER_COL[idx][1]]); await refresh(); landed(); } catch (e) { toast(humanError(e), true); }
   }
   function landed() {
     const id = DRAG.landed; DRAG.landed = null; if (!id) return;
@@ -819,6 +840,14 @@
   });
   $$('.rail a').forEach((a) => { const l = a.querySelector('span:nth-child(2)'); if (l) a.title = l.textContent; });
 
+  C.onLang = () => {
+    if (!booted) return;
+    chrome(); rebuild(curLid);      // the deals and boards carry translated texts: build them again
+    const sc = curScreen();
+    if (sc === 'quotes') renderQuotes(); if (sc === 'customers') renderCustomers(); if (sc === 'admin') renderAdmin();
+    if (sc === 'approvals') renderApprovals(); if (sc === 'settings') renderSettings();
+    const nb = $('#ntfBox'); if (nb) nb.remove();
+  };
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || !e.data || e.data.type !== 'db-crm-back') return;
     refresh().then(() => { C.show(curLid ? 'today' : 'leads'); }).catch(() => {});

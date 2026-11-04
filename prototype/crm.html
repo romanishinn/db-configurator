@@ -138,7 +138,7 @@
   details.jr pre{white-space:pre-wrap;word-break:break-word;margin:8px 0 0;font:inherit;font-size:12.5px;color:var(--fg2)}
   .late{color:var(--bad)!important}
   .task .go{cursor:pointer;border:0;background:transparent;font:inherit;padding:6px 8px}
-  .ntf{position:absolute;right:0;top:44px;width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 50px -18px #000;z-index:60;max-height:70vh;overflow:auto}
+  .ntf{text-align:left;font-weight:400;cursor:default;position:absolute;right:0;top:44px;width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 50px -18px #000;z-index:60;max-height:70vh;overflow:auto}
   .ntf .it{padding:10px 12px;border-bottom:1px solid var(--line2);font-size:12.5px;cursor:pointer}
   .ntf .it.un{background:rgba(240,182,103,.07)}
   .ntf .it small{display:block;color:var(--faint);margin-top:2px}
@@ -534,19 +534,20 @@
     <div class="me"><span class="av">NR</span><div><div style="font-size:12.5px">Nick R.</div><small data-i18n="me.role">Суперадмин · EUR</small></div></div>
   </aside>
   <div class="scrim" id="scrim"></div>
-  <nav class="tabbar" id="tabbar" aria-label="Быстрая навигация">
-    <a data-t="today" tabindex="0"><span class="ic" aria-hidden="true">◎</span>Сегодня</a>
-    <a data-t="leads" tabindex="0"><span class="ic" aria-hidden="true">▦</span>Лиды</a>
-    <a data-t="new" class="plus" tabindex="0" aria-label="Новый лид"><span class="ic" aria-hidden="true">＋</span></a>
-    <a data-t="customers" tabindex="0"><span class="ic" aria-hidden="true">◍</span>Клиенты</a>
-    <a data-t="more" tabindex="0"><span class="ic" aria-hidden="true">☰</span>Ещё</a>
+  <nav class="tabbar" id="tabbar" aria-label="Быстрая навигация" data-i18n-aria="tb.nav">
+    <a data-t="today" tabindex="0"><span class="ic" aria-hidden="true">◎</span><span data-i18n="tb.today">Сегодня</span></a>
+    <a data-t="leads" tabindex="0"><span class="ic" aria-hidden="true">▦</span><span data-i18n="tb.leads">Лиды</span></a>
+    <a data-t="new" class="plus" tabindex="0" aria-label="Новый лид" data-i18n-aria="tb.new"><span class="ic" aria-hidden="true">＋</span></a>
+    <a data-t="customers" tabindex="0"><span class="ic" aria-hidden="true">◍</span><span data-i18n="tb.customers">Клиенты</span></a>
+    <a data-t="more" tabindex="0"><span class="ic" aria-hidden="true">☰</span><span data-i18n="tb.more">Ещё</span></a>
   </nav>
 
   <div class="main">
     <div class="topbar">
       <button class="iconbtn menubtn" id="menubtn" aria-label="Меню">☰</button>
-      <label class="srch"><span class="q0" aria-hidden="true">⌕</span><input id="gsearch" type="search" autocomplete="off" placeholder="Поиск: имя, телефон, e-mail, №КП…" data-i18n-ph="top.searchPh" aria-label="Поиск"><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></label>
+      <label class="srch"><span class="q0" aria-hidden="true">⌕</span><input id="gsearch" type="search" autocomplete="off" placeholder="Поиск: имя, телефон, e-mail, №КП…" data-i18n-ph="top.searchPh" aria-label="Поиск" data-i18n-aria="top.searchPh"><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></label>
       <div class="sp"></div>
+      <div class="lang" id="lang" style="position:relative"><button class="langbtn" id="langBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="lang.title" aria-label="Язык"><span class="gl" aria-hidden="true">🌐</span><span id="langLbl">RU</span><span style="opacity:.6" aria-hidden="true">▾</span></button><div class="langmenu" id="langMenuTop" role="menu"></div></div>
       <button class="btn primary sm newbtn" id="newCalcBtn">＋<span class="lbl" data-i18n="top.newCalc"> Новый расчёт</span></button>
       <button class="iconbtn" id="bellBtn" aria-label="Уведомления"><span aria-hidden="true">🔔</span><span class="d" id="bellDot" hidden></span></button>
     </div>
@@ -977,9 +978,21 @@
     "os.installation":{ru:"Монтаж",en:"Installation",de:"Montage",hr:"Montaža"},
     "os.done":{ru:"Выполнено",en:"Done",de:"Erledigt",hr:"Završeno"}
   };
+  /* every language the interface offers: [code, native name]. Add a language here and its texts in T and in crm-i18n.js;
+     anything not translated yet falls back to English, then to Russian. */
+  var LANGS=[["ru","Русский"],["en","English"],["de","Deutsch"],["hr","Hrvatski"]];
+  var langOK=function(c){return LANGS.some(function(x){return x[0]===c;});};
   var lang="ru";
-  function tr(k){var m=T[k];return m&&m[lang]!=null?m[lang]:(k||"");}
+  function tr(k){var m=T[k];if(!m)return k||"";return m[lang]!=null?m[lang]:(m.en!=null?m.en:(m.ru!=null?m.ru:(k||"")));}
   window.__t=tr;
+  T["top.searchPh"]={ru:"Поиск: имя, телефон, e-mail, №КП…",en:"Search: name, phone, e-mail, quote no.…",de:"Suche: Name, Telefon, E-Mail, Angebots-Nr.…",hr:"Pretraga: ime, telefon, e-mail, br. ponude…"};
+  T["lang.title"]={ru:"Язык",en:"Language",de:"Sprache",hr:"Jezik"};
+  T["tb.today"]={ru:"Сегодня",en:"Today",de:"Heute",hr:"Danas"};
+  T["tb.leads"]={ru:"Лиды",en:"Leads",de:"Leads",hr:"Upiti"};
+  T["tb.new"]={ru:"Новый лид",en:"New lead",de:"Neuer Lead",hr:"Novi upit"};
+  T["tb.customers"]={ru:"Клиенты",en:"Customers",de:"Kunden",hr:"Klijenti"};
+  T["tb.more"]={ru:"Ещё",en:"More",de:"Mehr",hr:"Više"};
+  T["tb.nav"]={ru:"Быстрая навигация",en:"Quick navigation",de:"Schnellnavigation",hr:"Brza navigacija"};
 
   var STAGE_KEYS=["st.new","st.processing","st.proposal","st.negotiation","st.winlose"];
 
@@ -1181,7 +1194,10 @@
     $$("[data-i18n-ph]").forEach(function(el){var m=T[el.getAttribute("data-i18n-ph")]; if(m&&m[l]!=null) el.setAttribute("placeholder",m[l]);});
     document.documentElement.lang=l;
     var _ll=$("#langLbl"); if(_ll)_ll.textContent=l.toUpperCase();
-    $$("#langMenu button").forEach(function(b){b.setAttribute("aria-current",b.dataset.l===l?"true":"false");});
+    var _gl=$("#gLangLbl"); if(_gl)_gl.textContent=l.toUpperCase();
+    $$("#langMenu button, #langMenuTop button, #gLangMenu button").forEach(function(b){b.setAttribute("aria-current",b.dataset.l===l?"true":"false");});
+    $$("[data-i18n-aria]").forEach(function(el){el.setAttribute("aria-label",tr(el.getAttribute("data-i18n-aria")));});
+    if(CRM.onLang) CRM.onLang(l);
     renderRows(); renderBoards(); renderRecord(DEALS[selIdx]);
     try{localStorage.setItem("dbp_lang",l);}catch(e){}
   }
@@ -1219,14 +1235,25 @@
   });
   $("#scrim").addEventListener("click",function(){$("#rail").classList.remove("open");$("#scrim").classList.remove("on");});
 
-  $$("#langMenu button").forEach(function(b){b.addEventListener("click",function(){applyLang(b.dataset.l);});});
+  /* the same list in three places: login screen, top bar, Settings */
+  function langItems(){return LANGS.map(function(x){return '<button type="button" role="menuitem" data-l="'+x[0]+'"><b>'+x[0].toUpperCase()+'</b> '+x[1]+'</button>';}).join("");}
+  ["gLangMenu","langMenuTop","langMenu"].forEach(function(id){var m=document.getElementById(id);if(m)m.innerHTML=langItems();});
+  $$("#langMenu button, #langMenuTop button").forEach(function(b){b.addEventListener("click",function(){applyLang(b.dataset.l);closeTopLang();});});
+  var topBtn=$("#langBtn"),topMenu=$("#langMenuTop");
+  function closeTopLang(){if(topMenu){topMenu.classList.remove("open");topBtn.setAttribute("aria-expanded","false");}}
+  if(topBtn){
+    topBtn.addEventListener("click",function(e){e.stopPropagation();var o=topMenu.classList.toggle("open");topBtn.setAttribute("aria-expanded",o?"true":"false");});
+    document.addEventListener("click",closeTopLang);
+    document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTopLang();});
+  }
 
   var saved="ru"; try{saved=localStorage.getItem("dbp_lang")||"ru";}catch(e){}
-  if(["ru","en","de","hr"].indexOf(saved)<0) saved="ru";
+  if(!langOK(saved)) saved="ru";
   applyLang(saved);
   window.__setLang=applyLang;window.__lang=function(){return lang;};
 })();
 </script>
+<script>/*CRM_I18N*/</script>
 <script>/*CRM_LIVE*/</script>
 <script>/*THREE_MIN*/</script>
 <script>

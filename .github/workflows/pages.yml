@@ -32,7 +32,7 @@ jobs:
           # configurator.html — same app, plain head (no auto-reload), used by the CRM iframe and for direct embedding
           { printf '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'; cat prototype/dist/terrace-3d.html; printf '</body></html>'; } > _site/configurator.html
           # crm.html — Pro CRM; THREE.js self-hosted (inlined) so a blocked CDN cannot blank it
-          python3 -c "open('_site/crm.html','w').write(open('prototype/crm.html').read().replace('/*CRM_LIVE*/', open('prototype/crm-live.js').read()).replace('/*THREE_MIN*/', open('prototype/vendor/three.min.js').read()))"
+          python3 -c "open('_site/crm.html','w').write(open('prototype/crm.html').read().replace('/*CRM_I18N*/', open('prototype/crm-i18n.js').read()).replace('/*CRM_LIVE*/', open('prototype/crm-live.js').read()).replace('/*THREE_MIN*/', open('prototype/vendor/three.min.js').read()))"
           # cabinet.html — retired: the old staff-cabinet prototype is replaced by a redirect to the Pro CRM,
           # so existing links (configurator "Pro" button, partner activation) keep working and land on crm.html
           printf '<!doctype html><meta charset="utf-8"><title>D&B Pergola CRM</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=crm.html"><script>location.replace("crm.html"+location.search+location.hash)</script><p style="font:15px system-ui;margin:2rem">Переход в D&amp;B Pergola CRM… <a href="crm.html">Открыть</a></p>' > _site/cabinet.html
