@@ -314,6 +314,12 @@
 
   .rbody{flex:1;overflow:auto;display:grid;grid-template-columns:1fr 336px;gap:0}
   @media(max-width:1180px){.rbody{grid-template-columns:1fr}.rbody .qpanel{border-left:0;border-top:1px solid var(--line2)}}
+  /* phones and tablets held upright: the whole card scrolls as one page (a fixed header left two lines for the content) */
+  @media(max-width:1000px){
+    .split.show-rec .record{display:block;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+    .rhead{position:static}
+    .rbody{overflow:visible;display:block;flex:none}
+  }
   .rmain{padding:16px 18px;min-width:0}
   .upnext{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;margin-bottom:16px}
   .upnext .uh{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
