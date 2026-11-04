@@ -10,7 +10,7 @@
   const C = window.CRM;
   if (!C || !BACKEND.url || !BACKEND.anonKey) return;
   const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
-  const STAFF = ['seller', 'dealer', 'superdealer', 'superadmin'];
+  const STAFF = ['seller', 'manager', 'dealer', 'superdealer', 'superadmin', 'architect'];
   const { $, $$, esc } = C;
   document.documentElement.classList.add('live');
 
@@ -22,7 +22,7 @@
   const NEXT_STAGE = { 0: 'contacted', 1: 'quote_issued', 2: 'negotiation', 3: 'won' };
   const ORDER_RU = { inbox: 'Входящие', measurement: 'Замер', awaiting_payment: 'Ожидает оплаты', delivery: 'Поставка', in_stock: 'На складе', installation: 'Монтаж', done: 'Выполнено' };
   const ORDER_COL = [['os.inbox', 'inbox'], ['os.measurement', 'measurement'], ['os.payment', 'awaiting_payment'], ['os.delivery', 'delivery'], ['os.instock', 'in_stock'], ['os.installation', 'installation'], ['os.done', 'done']];
-  const ROLE_RU = { client: 'клиент', seller: 'продавец', dealer: 'дилер', superdealer: 'суперДилер', superadmin: 'суперадмин', architect: 'архитектор' };
+  const ROLE_RU = { client: 'клиент', seller: 'продавец', manager: 'менеджер', dealer: 'дилер', superdealer: 'суперДилер', superadmin: 'суперадмин', architect: 'архитектор' };
   const HOT = 20; // ASSUMPTION: a lead with 20+ points (quote 10, stage 5, comment 2 …) is "hot"; the points come from the database
   const SOURCES = ['Звонок', 'Сайт', 'Meta', 'Google', 'Рекомендация', 'Выставка', 'Другое'];
   const WANTS = ['Пергола', 'Боковые системы', 'Стекло', 'Пока не знает'];
@@ -51,6 +51,7 @@
   const userName = (id) => { const u = users.find((x) => x.id === id); return u ? (u.full_name || u.email || 'Сотрудник') : (me && id === me.id ? me.full_name || 'Вы' : 'Сотрудник'); };
   const sees = () => !!me && (me.role === 'superadmin' || me.role === 'superdealer');
   const isAdmin = () => !!me && me.role === 'superadmin';
+  const isArch = () => !!me && me.role === 'architect';
   function humanError(e) {
     const m = String((e && (e.message || e.error_description)) || e || '');
     if (/Invalid login/i.test(m)) return 'Неверный e-mail или пароль';
@@ -109,6 +110,11 @@
   const loadLeads = async () => { leads = await run(sb.from('lead_board').select('*').order('last_activity_at', { ascending: false }).limit(2000)); };
   const loadOrders = async () => { try { orders = await run(sb.from('orders').select('id, stage, measured_at, paid, delivery_eta, note, created_at, lead_id, leads(contact_name), quotes(number, total_net)').order('created_at', { ascending: false }).limit(500)); } catch (e) { orders = []; } };
   const loadUsers = async () => { try { users = await run(sb.from('profiles').select('id, role, full_name, email, org_id, discount_limit, active')); } catch (e) { users = []; } };
+  let approvals = [];
+  const loadApprovals = async () => { try { approvals = await run(sb.from('quote_approvals').select('quote_id, status, created_at, decided_at, comment, quotes(number, total_net, discount, owner, lead_id, leads(contact_name))').order('created_at', { ascending: false }).limit(300)); } catch (e) { approvals = []; } };
+  const apprOf = (qid) => approvals.find((a) => a.quote_id === qid);
+  const APPR_RU = { pending: ['ждёт утверждения', 'warn'], approved: ['скидка утверждена', 'ok'], rejected: ['скидка отклонена', 'bad'] };
+  const apprTag = (qid) => { const a = apprOf(qid); return a ? ' <span class="tag ' + APPR_RU[a.status][1] + '">' + APPR_RU[a.status][0] + '</span>' : ''; };
   const loadGroups = async () => { try { groups = await run(sb.from('discount_groups').select('id, code, title, max_discount').order('title')); } catch (e) { groups = []; } };
   async function loadDetail(lid, force) {
     if (detail[lid] && !force) return detail[lid];
@@ -174,9 +180,10 @@
     C.setData(deals, req, ord, sel);
     C.rerender();
     renderChips(); renderBadges();
+    if (curScreen() === 'approvals') renderApprovals();
   }
   async function refresh(keepLid) {
-    await Promise.all([loadLeads(), loadOrders()]);
+    await Promise.all([loadLeads(), loadOrders(), loadApprovals()]);
     rebuild(keepLid === undefined ? curLid : keepLid);
     if (curScreen() === 'quotes') renderQuotes();
     if (curScreen() === 'customers') renderCustomers();
@@ -208,6 +215,8 @@
     const lnk = $('.rail a[data-s="today"]'); if (!lnk) return;
     let b = lnk.querySelector('.badge'); if (!b) { b = document.createElement('span'); b.className = 'badge'; lnk.appendChild(b); }
     b.textContent = n; b.hidden = !n;
+    const al = $('.rail a[data-s="approvals"]');
+    if (al) { let ab = al.querySelector('.badge'); if (!ab) { ab = document.createElement('span'); ab.className = 'badge'; al.appendChild(ab); } const pn = approvals.filter((a) => a.status === 'pending').length; ab.textContent = pn; ab.hidden = !pn; }
   }
   C.emptyList = () => {
     const empty = !leads.length;
@@ -235,7 +244,8 @@
 
   function applyRole() {
     const set = (sel, on) => $$(sel).forEach((e) => { e.hidden = !on; e.style.display = on ? '' : 'none'; });
-    set('.rail a[data-s="approvals"]', false);               // approvals have no data model yet (decision pending)
+    set('.rail a[data-s="approvals"]', isAdmin());
+    set('.rail a[data-s="orders"]', !isArch());              // an architect works with his own projects and quotes only
     set('.rail a[data-s="admin"]', sees());
     set('.rail a[data-s="settings"]', isAdmin());
     const grp = $('.rail .grp'); if (grp) { grp.hidden = !sees(); grp.style.display = sees() ? '' : 'none'; }
@@ -337,7 +347,7 @@
         + '<div id="dupHint"></div><h4 class="ovhead">Недавняя активность</h4><div class="feed">' + (evs ? feedHtml(evs, 5) : '<div class="muted">Загрузка…</div>') + '</div>'
         + '<div style="margin-top:14px"><button class="btn sm" data-act="edit">✎ Править данные клиента</button></div>';
     } else if (tab === 'q') {
-      tabBody = !qs ? '<div class="muted">Загрузка…</div>' : qs.length ? qs.map((q) => '<div class="vrow"><span>' + esc(q.number) + '</span><span class="d">' + dmy(q.created_at) + ' · до ' + dmy(q.valid_until) + '</span><span class="s tab-num">' + money(q.total_net) + '</span><button class="btn sm" data-act="openq" data-q="' + q.id + '">Открыть</button></div>').join('') : '<div class="muted">КП ещё нет. Нажмите «Рассчитать КП».</div>';
+      tabBody = !qs ? '<div class="muted">Загрузка…</div>' : qs.length ? qs.map((q) => '<div class="vrow"><span>' + esc(q.number) + '</span><span class="d">' + dmy(q.created_at) + ' · до ' + dmy(q.valid_until) + apprTag(q.id) + '</span><span class="s tab-num">' + money(q.total_net) + '</span><button class="btn sm" data-act="openq" data-q="' + q.id + '">Открыть</button></div>').join('') : '<div class="muted">КП ещё нет. Нажмите «Рассчитать КП».</div>';
     } else if (tab === 'hist') {
       tabBody = '<div class="feed">' + (evs ? feedHtml(evs) : '<div class="muted">Загрузка…</div>') + '</div>';
     } else {
@@ -347,7 +357,7 @@
 
     const lq = qs && qs[0];
     const qpanel = '<div class="qpanel"><div class="qcard"><div class="b">'
-      + (lq ? '<div class="tot"><span class="big tab-num">' + money(lq.total_net) + '</span><small>нетто · КП ' + esc(lq.number) + '</small></div><div class="qmeta"><div class="l"><span>Создано</span><b>' + dmy(lq.created_at) + '</b></div><div class="l"><span>Действует</span><b>до ' + dmy(lq.valid_until) + '</b></div>' + (qs.length > 1 ? '<div class="l"><span>Версий</span><b>' + qs.length + '</b></div>' : '') + '</div>'
+      + (lq ? '<div class="tot"><span class="big tab-num">' + money(lq.total_net) + '</span><small>нетто · КП ' + esc(lq.number) + '</small></div>' + (apprOf(lq.id) ? '<div style="margin:-4px 0 8px">' + apprTag(lq.id) + '</div>' : '') + '<div class="qmeta"><div class="l"><span>Создано</span><b>' + dmy(lq.created_at) + '</b></div><div class="l"><span>Действует</span><b>до ' + dmy(lq.valid_until) + '</b></div>' + (qs.length > 1 ? '<div class="l"><span>Версий</span><b>' + qs.length + '</b></div>' : '') + '</div>'
         + '<div class="qbtns"><button class="btn primary sm wide" data-act="openq" data-q="' + lq.id + '">Открыть / исправить КП</button></div>'
         : '<div class="tot"><span class="big tab-num">—</span><small>' + (qs ? 'КП ещё не рассчитано' : 'Загрузка…') + '</small></div>')
       + '<div class="qbtns"><button class="btn ' + (lq ? '' : 'primary ') + 'sm wide" data-act="newq">＋ Рассчитать ' + (lq ? 'новое ' : '') + 'КП</button></div>'
@@ -391,7 +401,7 @@
     });
   }
   function transferDialog(l) {
-    const cands = users.filter((u) => ['seller', 'dealer'].includes(u.role) && u.active !== false && u.id !== (me && me.id));
+    const cands = users.filter((u) => ['seller', 'manager', 'dealer'].includes(u.role) && u.active !== false && u.id !== (me && me.id));
     if (!cands.length) return toast('Нет сотрудников, которым можно передать лид', true);
     dialog({
       title: 'Передать лид', sub: esc(l.contact_name || ''),
@@ -500,7 +510,7 @@
       const note = [wantSel.length ? 'Интересует: ' + wantSel.join(', ') : '', val(r, 'note').trim()].filter(Boolean).join('\n');
       const step = val(r, 't').trim();
       try {
-        const row = await run(sb.from('leads').insert({ created_by: me.id, source: me.role === 'dealer' ? 'dealer' : me.role === 'seller' ? 'seller' : 'office', utm: { source: srcSel }, contact_name: name || null, phone: phone || null, email: email || null, object_address: addr || null, postcode: zip || null, note: note || null, next_action: step || null, next_action_at: step ? (val(r, 'd') || plusDays(1)) : null }).select('id').single());
+        const row = await run(sb.from('leads').insert({ created_by: me.id, source: me.role === 'dealer' ? 'dealer' : me.role === 'manager' ? 'manager' : me.role === 'seller' ? 'seller' : 'office', utm: { source: srcSel }, contact_name: name || null, phone: phone || null, email: email || null, object_address: addr || null, postcode: zip || null, note: note || null, next_action: step || null, next_action_at: step ? (val(r, 'd') || plusDays(1)) : null }).select('id').single());
         if (sees()) { try { await run(sb.rpc('assign_lead', { p_lead: row.id, p_to: me.id, p_comment: 'Создал вручную' })); } catch (e) { /* stays unassigned: "Взять себе" is on the card */ } }
         close(); toast('Лид создан');
         curLid = row.id; await refresh(row.id); chip = 'all'; renderChips(); C.rerender();
@@ -533,14 +543,18 @@
     const isAct = (q) => q.valid_until >= t && !revised.has(q.id);
     const list = quotes.filter((q) => (qTab === 'act' ? isAct(q) : !isAct(q))).filter((q) => !qSearch || [q.number, q.leads && q.leads.contact_name, q.leads && q.leads.phone].some((x) => String(x || '').toLowerCase().includes(qSearch.toLowerCase())));
     setScreen('quotes', '<div class="h1" style="margin-bottom:12px">Коммерческие предложения</div><div class="bar"><div class="seg2"><button class="' + (qTab === 'act' ? 'on' : '') + '" data-qt="act">Действующие</button><button class="' + (qTab === 'arc' ? 'on' : '') + '" data-qt="arc">Архив</button></div><input class="inp" id="qSearch" placeholder="Поиск: номер, клиент…" value="' + esc(qSearch) + '"><div class="sp"></div><button class="btn primary sm" data-act="configurator">＋ Новое КП</button></div>'
-      + (list.length ? '<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>№ КП</th><th>Клиент</th><th class="num">Сумма, нетто</th><th>Создано</th><th>Действует до</th></tr></thead><tbody>' + list.map((q) => '<tr class="click" data-qrow="' + q.id + '"><td><b>' + esc(q.number) + '</b></td><td>' + esc((q.leads && (q.leads.contact_name || q.leads.phone)) || '—') + '</td><td class="num">' + money(q.total_net) + '</td><td>' + dmy(q.created_at) + '</td><td class="' + (q.valid_until < t ? 'late' : '') + '">' + dmy(q.valid_until) + '</td></tr>').join('') + '</tbody></table></div></div>'
+      + (list.length ? '<div class="panel"><div class="tblwrap"><table class="tbl"><thead><tr><th>№ КП</th><th>Клиент</th><th class="num">Сумма, нетто</th><th>Создано</th><th>Действует до</th></tr></thead><tbody>' + list.map((q) => '<tr class="click" data-qrow="' + q.id + '"><td><b>' + esc(q.number) + '</b>' + apprTag(q.id) + '</td><td>' + esc((q.leads && (q.leads.contact_name || q.leads.phone)) || '—') + '</td><td class="num">' + money(q.total_net) + '</td><td>' + dmy(q.created_at) + '</td><td class="' + (q.valid_until < t ? 'late' : '') + '">' + dmy(q.valid_until) + '</td></tr>').join('') + '</tbody></table></div></div>'
         : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">❏</div><div>' + (qTab === 'act' ? 'Действующих КП нет.<br><span class="muted">Рассчитайте первое в конфигураторе или из карточки лида.</span>' : 'Архив пуст.') + '</div></div>'));
     const si = $('#qSearch'); if (si) { si.oninput = () => { qSearch = si.value; renderQuotesLocal(); }; }
   }
   function renderQuotesLocal() { const pos = ($('#qSearch') || {}).selectionStart; renderQuotes().then(() => { const s = $('#qSearch'); if (s) { s.focus(); try { s.setSelectionRange(pos, pos); } catch (e) {} } }); }
   let cust = [], cSearch = '';
   async function renderCustomers() {
-    try { cust = await run(sb.from('customers').select('*').order('last_activity_at', { ascending: false }).limit(1000)); } catch (e) { toast(humanError(e), true); cust = []; }
+    try { cust = await run(sb.from('customers').select('*').order('last_activity_at', { ascending: false }).limit(1000)); }
+    catch (e) { // the view comes with migration 0008; until then group the leads here (same rule: last 9 digits of the phone, else e-mail)
+      const g = {}; leads.forEach((l) => { const k = normPhone(l.phone) || (l.email || '').toLowerCase(); if (!k) return; const c = g[k] || (g[k] = { key: k, name: l.contact_name, phone: l.phone, email: l.email, object_address: l.object_address, leads: 0, won: 0, last_activity_at: l.last_activity_at }); c.leads++; if (l.stage === 'won') c.won++; if (l.last_activity_at > c.last_activity_at) c.last_activity_at = l.last_activity_at; });
+      cust = Object.values(g).sort((a, b) => (a.last_activity_at < b.last_activity_at ? 1 : -1));
+    }
     const q = cSearch.toLowerCase(), dg = cSearch.replace(/\D/g, '');
     const list = cust.filter((c) => !q || [c.name, c.email, c.object_address].some((x) => String(x || '').toLowerCase().includes(q)) || (dg.length >= 3 && String(c.phone || '').replace(/\D/g, '').includes(dg)));
     setScreen('customers', '<div class="h1" style="margin-bottom:12px">Клиенты</div><div class="bar"><input class="inp" id="cSearch" placeholder="Поиск: имя, телефон, e-mail…" value="' + esc(cSearch) + '"><div class="sp"></div><button class="btn primary sm" data-act="newlead">＋ Новый клиент</button></div>'
@@ -578,6 +592,26 @@
       + (Object.keys(per).map((id) => { const p = per[id], u = users.find((x) => x.id === id) || {}; return '<tr><td>' + esc(userName(id)) + '</td><td>' + esc(ROLE_RU[u.role] || '') + '</td><td class="num">' + p.n + '</td><td class="num">' + p.open + '</td><td class="num">' + money(p.sum) + '</td><td class="num' + (p.late ? ' late' : '') + '">' + p.late + '</td><td class="num">' + p.won + '</td></tr>'; }).join('') || '<tr><td colspan="7" class="muted">Пока нет назначенных лидов</td></tr>') + '</tbody></table></div></div>'
       + '<div class="panel"><div class="ph"><h3>Откуда приходят клиенты</h3></div><div class="tblwrap"><table class="tbl"><tbody>' + (Object.entries(bySrc).sort((a, b) => b[1] - a[1]).map(([k, n]) => '<tr><td>' + esc(k) + '</td><td class="num">' + n + '</td></tr>').join('') || '<tr><td class="muted">Данных пока нет</td></tr>') + '</tbody></table></div></div>');
   }
+
+  /* approvals: discount above the personal limit waits for the superadmin */
+  let apprTab = 'pending';
+  function discText(d, lim) { const k = { pergola: 'Пергола', sides: 'Боковые', extras: 'Прочее' }; return Object.keys(d || {}).map((x) => (k[x] || x) + ' ' + d[x] + '%').join(', ') + (lim != null ? ' · лимит ' + lim + '%' : ''); }
+  function renderApprovals() {
+    const list = approvals.filter((a) => (apprTab === 'pending' ? a.status === 'pending' : a.status !== 'pending'));
+    const row = (a) => {
+      const q = a.quotes || {}, u = users.find((x) => x.id === q.owner) || {};
+      return '<div class="appr"><div class="t"><b>' + esc((q.leads && q.leads.contact_name) || 'КП ' + q.number) + ' · ' + money(q.total_net) + '</b><div class="reasons"><span class="tag">КП ' + esc(q.number) + '</span><span class="tag warn">' + esc(discText(q.discount, u.discount_limit)) + '</span><span class="tag">' + esc(userName(q.owner)) + '</span>' + (a.status !== 'pending' ? '<span class="tag ' + APPR_RU[a.status][1] + '">' + APPR_RU[a.status][0] + (a.comment ? ': ' + esc(a.comment) : '') + '</span>' : '') + '</div></div>'
+        + '<div class="acts">' + (q.lead_id ? '<button class="btn sm" data-lead="' + q.lead_id + '">Открыть</button>' : '') + (a.status === 'pending' ? '<button class="btn sm" data-reject="' + a.quote_id + '">Отклонить</button><button class="btn primary sm" data-approve="' + a.quote_id + '">Утвердить</button>' : '') + '</div></div>';
+    };
+    setScreen('approvals', '<div class="h1" style="margin-bottom:4px">Утверждения</div><p class="muted" style="margin:0 0 14px">Скидка выше личного лимита сотрудника ждёт вашего решения. Решение необратимо, сотрудник получит уведомление.</p><div class="bar"><div class="seg2"><button class="' + (apprTab === 'pending' ? 'on' : '') + '" data-at="pending">Ждут</button><button class="' + (apprTab === 'done' ? 'on' : '') + '" data-at="done">Решённые</button></div></div>'
+      + (list.length ? '<div class="panel">' + list.map(row).join('') + '</div>' : '<div class="empty" style="height:auto;padding:50px 0"><div class="ic">✓</div><div>' + (apprTab === 'pending' ? 'Нет заявок на утверждение' : 'Решений пока нет') + '</div></div>'));
+  }
+  document.addEventListener('click', (e) => {
+    const at = e.target.closest('[data-at]'); if (at) { apprTab = at.dataset.at; renderApprovals(); return; }
+    const ap = e.target.closest('[data-approve]'); if (ap) { run(sb.rpc('decide_approval', { p_quote: ap.dataset.approve, p_approve: true })).then(() => { toast('Скидка утверждена'); return refresh(); }).catch((er) => toast(humanError(er), true)); return; }
+    const rj = e.target.closest('[data-reject]');
+    if (rj) dialog({ title: 'Отклонить скидку', sub: 'Сотрудник увидит ваш комментарий.', body: '<div class="fld"><label>Комментарий (обязательно)</label><textarea name="c" autofocus placeholder="Какая скидка допустима…"></textarea></div>', foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Отклонить', primary: true, run: async (c, r) => { const t = val(r, 'c').trim(); if (!t) return toast('Нужен комментарий', true); try { await run(sb.rpc('decide_approval', { p_quote: rj.dataset.reject, p_approve: false, p_comment: t })); toast('Скидка отклонена'); c(); await refresh(); } catch (er) { toast(humanError(er), true); } } }] });
+  });
 
   /* settings: real users, invites, discount groups, service rates */
   let invGroupsReady = false;
@@ -654,7 +688,7 @@
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); if (si) si.focus(); return; }
     const tag = (document.activeElement || {}).tagName;
     if (e.key === 'n' && !e.metaKey && !e.ctrlKey && !/INPUT|TEXTAREA|SELECT/.test(tag || '') && !$('.dlgback') && booted) { e.preventDefault(); newLeadDialog(); }
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.rail a, .tabs .t, .cchip, .row')) { e.preventDefault(); e.target.click(); }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.rail a, .tabs .t, .cchip, .row, #tabbar a')) { e.preventDefault(); e.target.click(); }
   });
   $$('.rail a').forEach((a) => { a.setAttribute('role', 'link'); a.tabIndex = 0; });
   $$('.rail a').forEach((a) => a.addEventListener('keydown', (e) => { if (e.key === 'Enter') a.click(); }));
@@ -667,16 +701,124 @@
   });
 
   C.onShow = (id) => {
+    markTab(id);
     if (!booted) return;
     if (id === 'quotes') renderQuotes();
     if (id === 'customers') renderCustomers();
     if (id === 'admin') renderAdmin();
     if (id === 'settings') renderSettings();
+    if (id === 'approvals') renderApprovals();
     if (id === 'configurator') {
       const f = $('#cfgFrame');
       if (f && !/[?&]model/.test(f.getAttribute('src') || '')) { try { localStorage.removeItem('db.handoff'); } catch (e) {} f.setAttribute('data-lang', C.lang()); f.setAttribute('src', 'configurator.html?model&lang=' + C.lang()); }
     }
   };
+
+  /* ---------- drag and drop on the boards ----------
+   * Mouse: grab and move. Touch: press and hold (~0.3 s) so scrolling stays natural. The card follows the finger,
+   * the column under it lights up, the board scrolls at the edges; a drop moves the lead / order, otherwise the card glides back. */
+  const DRAG = { st: null, justDragged: false, landed: null };
+  const colOf = (el) => el && el.closest && el.closest('.kanban .col');
+  const colIndex = (col) => Array.prototype.indexOf.call(col.parentNode.children, col);
+  function cardInfo(card) {
+    if (card.dataset.oid) return { kind: 'order', id: card.dataset.oid };
+    const m = /openDeal\((\d+)\)/.exec(card.getAttribute('onclick') || ''); if (!m) return null;
+    const d = C.deals[+m[1]]; if (!d || !isOpen(d.raw)) return null;       // won / lost cards stay where they are
+    return { kind: 'lead', id: d.lid };
+  }
+  function dragStart(st, x, y) {
+    st.active = true; document.body.classList.add('dragmode');
+    const r = st.card.getBoundingClientRect(); st.rect = r; st.dx = x - r.left; st.dy = y - r.top; st.cx = x; st.cy = y;
+    const g = st.card.cloneNode(true); g.removeAttribute('onclick'); g.classList.add('ghost'); g.classList.remove('dragging', 'landed');
+    g.style.width = r.width + 'px'; g.style.left = '0'; g.style.top = '0'; document.body.appendChild(g); st.ghost = g;
+    st.card.classList.add('dragging');
+    try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
+    dragMove(st);
+    st.raf = requestAnimationFrame(function tick() { if (!st.active) return; const kb = st.card.closest('.kanban'); if (kb) { const kr = kb.getBoundingClientRect(), edge = 70; const v = st.cx < kr.left + edge ? -(kr.left + edge - st.cx) / 5 : st.cx > kr.right - edge ? (st.cx - (kr.right - edge)) / 5 : 0; if (v) { kb.scrollLeft += v; dragMove(st); } } st.raf = requestAnimationFrame(tick); });
+  }
+  function dragMove(st) {
+    st.ghost.style.transform = 'translate3d(' + (st.cx - st.dx) + 'px,' + (st.cy - st.dy) + 'px,0) rotate(1.4deg) scale(1.03)';
+    const el = document.elementFromPoint(st.cx, st.cy), col = colOf(el);
+    $$('.kanban .col.drop').forEach((c) => { if (c !== col) c.classList.remove('drop'); });
+    if (col && col.closest('.kanban') === st.card.closest('.kanban')) col.classList.add('drop');
+  }
+  function dragCleanup(st) {
+    clearTimeout(st.timer); cancelAnimationFrame(st.raf); st.active = false; DRAG.st = null;
+    document.body.classList.remove('dragmode'); $$('.kanban .col.drop').forEach((c) => c.classList.remove('drop'));
+  }
+  function glideBack(st) {
+    const g = st.ghost; if (!g) return;
+    const a = g.animate([{ transform: g.style.transform }, { transform: 'translate3d(' + st.rect.left + 'px,' + st.rect.top + 'px,0)' }], { duration: 260, easing: 'cubic-bezier(.22,.8,.3,1)' });
+    a.onfinish = () => { g.remove(); st.card.classList.remove('dragging'); };
+  }
+  async function dragEnd(st, cancelled) {
+    if (!st) return;
+    if (!st.active) { clearTimeout(st.timer); DRAG.st = null; return; }
+    const el = document.elementFromPoint(st.cx, st.cy), col = colOf(el), same = col && col === st.card.closest('.col');
+    const kb = st.card.closest('.kanban');
+    dragCleanup(st); DRAG.justDragged = true; setTimeout(() => { DRAG.justDragged = false; }, 400);
+    if (cancelled || !col || same || col.closest('.kanban') !== kb) { glideBack(st); return; }
+    const g = st.ghost; g.animate([{ opacity: 0.96 }, { opacity: 0, transform: g.style.transform.replace('scale(1.03)', 'scale(.94)') }], { duration: 180, easing: 'ease-out' }).onfinish = () => g.remove();
+    const idx = colIndex(col);
+    st.card.classList.remove('dragging');
+    if (st.info.kind === 'lead') moveLead(leads.find((x) => x.id === st.info.id), idx); else moveOrder(orders.find((x) => x.id === st.info.id), idx);
+  }
+  const STAGE_AT = ['new', 'contacted', 'quote_issued', 'negotiation'];
+  function moveLead(l, idx) {
+    if (!l || idx === STAGE_IDX[l.stage]) return;
+    DRAG.landed = l.id;
+    if (idx === 4) {
+      return dialog({ title: 'Итог по лиду', sub: esc(l.contact_name || ''), body: '<div class="muted">Лид закрыт как заказ или как отказ.</div>',
+        foot: [{ label: 'Отмена', run: (c) => c() }, { label: 'Отказ', run: (c) => { c(); curLid = l.id; loseDialog(l); } }, { label: 'Оформить заказ', primary: true, run: async (c) => { c(); curLid = l.id; await act(async () => { await run(sb.from('leads').update({ stage: 'won', next_action: null, next_action_at: null }).eq('id', l.id)); }, 'Заказ оформлен'); landed(); } }] });
+    }
+    curLid = l.id;
+    act(async () => { await run(sb.from('leads').update({ stage: STAGE_AT[idx] }).eq('id', l.id)); }, 'Стадия: ' + STAGE_RU[STAGE_AT[idx]]).then(landed);
+  }
+  async function moveOrder(o, idx) {
+    if (!o || !ORDER_COL[idx] || ORDER_COL[idx][1] === o.stage) return;
+    DRAG.landed = o.id;
+    try { await run(sb.from('orders').update({ stage: ORDER_COL[idx][1] }).eq('id', o.id)); toast('Этап: ' + ORDER_RU[ORDER_COL[idx][1]]); await refresh(); landed(); } catch (e) { toast(humanError(e), true); }
+  }
+  function landed() {
+    const id = DRAG.landed; DRAG.landed = null; if (!id) return;
+    const card = $$('.kanban .kc').find((k) => { const i = cardInfo(k); return i && i.id === id; }) || $$('.kanban .kc[data-oid="' + id + '"]')[0];
+    if (card) { card.classList.add('landed'); card.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); }
+  }
+  document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const card = e.target.closest('.kanban .kc'); if (!card) return;
+    const info = cardInfo(card); if (!info) return;
+    const st = { card, info, x0: e.clientX, y0: e.clientY, pid: e.pointerId, type: e.pointerType, active: false, timer: null };
+    DRAG.st = st;
+    if (e.pointerType !== 'mouse') st.timer = setTimeout(() => { if (DRAG.st === st) dragStart(st, st.cx != null ? st.cx : st.x0, st.cy != null ? st.cy : st.y0); }, 300);
+  });
+  document.addEventListener('pointermove', (e) => {
+    const st = DRAG.st; if (!st || e.pointerId !== st.pid) return;
+    st.cx = e.clientX; st.cy = e.clientY;
+    if (!st.active) {
+      const dist = Math.hypot(e.clientX - st.x0, e.clientY - st.y0);
+      if (st.type === 'mouse') { if (dist > 6) dragStart(st, e.clientX, e.clientY); }
+      else if (dist > 10) { clearTimeout(st.timer); DRAG.st = null; }   // the finger is scrolling, not dragging
+      return;
+    }
+    dragMove(st);
+  });
+  document.addEventListener('pointerup', (e) => { const st = DRAG.st; if (st && e.pointerId === st.pid) { st.cx = e.clientX; st.cy = e.clientY; dragEnd(st, false); } });
+  document.addEventListener('pointercancel', (e) => { const st = DRAG.st; if (st && e.pointerId === st.pid) dragEnd(st, true); });
+  document.addEventListener('touchmove', (e) => { if (DRAG.st && DRAG.st.active) e.preventDefault(); }, { passive: false });
+  document.addEventListener('contextmenu', (e) => { if (DRAG.st && DRAG.st.active) e.preventDefault(); });
+  document.addEventListener('click', (e) => { if (DRAG.justDragged && e.target.closest('.kanban .kc')) { e.stopPropagation(); e.preventDefault(); } }, true);
+
+  /* ---------- phone tab bar, rail tooltips ---------- */
+  const tabbar = $('#tabbar');
+  const markTab = (id) => $$('#tabbar a[data-t]').forEach((a) => a.classList.toggle('on', a.dataset.t === id));
+  if (tabbar) tabbar.addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-t]'); if (!a) return;
+    const t = a.dataset.t;
+    if (t === 'new') newLeadDialog(); else if (t === 'more') { $('#rail').classList.add('open'); $('#scrim').classList.add('on'); } else C.show(t);
+  });
+  $$('.rail a').forEach((a) => { const l = a.querySelector('span:nth-child(2)'); if (l) a.title = l.textContent; });
+
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || !e.data || e.data.type !== 'db-crm-back') return;
     refresh().then(() => { C.show(curLid ? 'today' : 'leads'); }).catch(() => {});

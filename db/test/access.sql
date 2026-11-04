@@ -123,11 +123,11 @@ select pg_temp.check(:'ok', 'a client cannot give himself a discount');
 select pg_temp.check((select count(*) from public.quotes) = 0, 'a new client sees no quotes of others');
 select pg_temp.as_user(:'graz1');
 insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 12000, '{"pergola": 10, "sides": 5}');
-select pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net, discount) values (%L, 'c', '{}', 1, '{"pergola": 12}')$q$, :'graz1'), 'DISCOUNT_LIMIT') as ok1 \gset
+select pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net, discount) values (%L, 'c', '{}', 1, '{"pergola": -1}')$q$, :'graz1'), 'DISCOUNT_LIMIT') as ok1 \gset
 select pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net, discount) values (%L, 'c', '{}', 1, '{"options": 5}')$q$, :'graz1'), 'DISCOUNT_SCOPE') as ok2 \gset
 select pg_temp.fails($q$update public.quotes set total_net = 1$q$, 'permission denied') as ok3 \gset
 select pg_temp.fails(format($q$insert into public.quotes (owner, number, catalog, config, total_net) values (%L, 'X-1', 'c', '{}', 1)$q$, :'graz1'), 'permission denied') as ok4 \gset
-select pg_temp.check(:'ok1', 'discount above the personal limit is refused');
+select pg_temp.check(:'ok1', 'a negative discount is refused');
 select pg_temp.check(:'ok2', 'discount only on pergola, sides and text positions');
 select pg_temp.check(:'ok3', 'prices of a saved quote cannot be changed');
 select pg_temp.check(:'ok4', 'the quote number never comes from the browser');
@@ -229,5 +229,61 @@ select pg_temp.as_user(:'admin');
 select pg_temp.check((select count(*) from public.customers where key = '660112020') = 1, 'superadmin sees the customer');
 select pg_temp.as_anon();
 select pg_temp.check(pg_temp.fails($$select * from public.customers$$, 'permission denied'), 'the public site cannot read customers');
+
+
+-- ---------- 14. a discount above the personal limit goes to approval (0009) ----------
+select pg_temp.as_user(:'graz1');   -- dealer, limit 10
+insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 20000, '{"pergola": 12}') returning id as qa \gset
+insert into public.quotes (owner, lead_id, catalog, config, total_net, discount) values (:'graz1', :'lead_maria', 'catalog-2026-07', '{}', 21000, '{"pergola": 15}') returning id as qb \gset
+select pg_temp.check((select count(*) from public.quote_approvals where status = 'pending') = 2, 'a discount above the limit is saved and waits for approval');
+select pg_temp.check((select count(*) from public.quote_approvals where quote_id = (select id from public.quotes where owner = :'graz1' and discount = '{"pergola": 10, "sides": 5}')) = 0, 'a discount within the limit needs no approval');
+select pg_temp.fails(format($q$select public.decide_approval(%L, true)$q$, :'qa'), 'FORBIDDEN') as okd \gset
+select pg_temp.check(:'okd', 'a dealer cannot approve his own discount');
+select pg_temp.as_user(:'graz2');   -- colleague of the same company
+select pg_temp.check((select count(*) from public.quote_approvals) = 0, 'a colleague does not see the approval of another''s quote');
+select pg_temp.as_user(:'linz');
+select pg_temp.check((select count(*) from public.quote_approvals) = 0, 'another dealer does not see approvals');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select count(*) from public.quote_approvals where status = 'pending') = 2, 'superadmin sees the queue');
+select pg_temp.fails(format($q$select public.decide_approval(%L, false)$q$, :'qb'), 'COMMENT_REQUIRED') as okr \gset
+select pg_temp.check(:'okr', 'a rejection needs a comment');
+select public.decide_approval(:'qa', true);
+select public.decide_approval(:'qb', false, 'Слишком большая скидка');
+select pg_temp.check((select status from public.quote_approvals where quote_id = :'qa') = 'approved', 'approved');
+select pg_temp.check((select status from public.quote_approvals where quote_id = :'qb') = 'rejected' and (select decided_by from public.quote_approvals where quote_id = :'qb') = :'admin', 'rejected with the decider recorded');
+select pg_temp.fails(format($q$select public.decide_approval(%L, true)$q$, :'qa'), 'NO_PENDING_APPROVAL') as ok2x \gset
+select pg_temp.check(:'ok2x', 'a decision is final');
+insert into public.quotes (owner, catalog, config, total_net, discount) values (:'admin', 'catalog-2026-07', '{}', 5000, '{"pergola": 40}');
+select pg_temp.check((select count(*) from public.quote_approvals) = 2, 'the superadmin has no limit and no approval');
+select pg_temp.as_user(:'graz1');
+select pg_temp.check((select count(*) from public.notifications where kind = 'approval' and text like 'Скидка отклонена%') = 1, 'the owner is told about the rejection');
+select pg_temp.check((select count(*) from public.quote_approvals) = 2, 'the owner sees the decisions on his quotes');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($$select public.quote_over_limit(null, '{}')$$, 'permission denied'), 'the limit check is not callable from the public API');
+select pg_temp.check(pg_temp.fails($$select public.decide_approval(null, true)$$, 'permission denied'), 'anonymous cannot decide');
+
+-- ---------- 15. architect: only his own projects and quotes (0009) ----------
+select pg_temp.as_root();
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000000009', 'arch@db.test');
+update public.profiles set role = 'architect', discount_limit = 0 where id = '00000000-0000-0000-0000-000000000009';
+\set arch '00000000-0000-0000-0000-000000000009'
+select pg_temp.as_user(:'arch');
+insert into public.leads (created_by, source, contact_name, phone) values (:'arch', 'office', 'Arch Project', '+43 1 777');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) select :'arch', id, 'catalog-2026-07', '{}', 8000 from public.leads where contact_name = 'Arch Project';
+select pg_temp.check((select count(*) from public.leads) = 1, 'an architect sees only the project he entered');
+select pg_temp.check((select count(*) from public.quotes) = 1, 'an architect sees only his own quotes');
+select pg_temp.check((select count(*) from public.lead_board) = 1 and (select count(*) from public.customers) = 1, 'the board and customers show only his own');
+select pg_temp.check((select count(*) from public.lead_events) >= 1 and (select count(distinct lead_id) from public.lead_events) = 1, 'history only of his own project');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.leads (created_by, source, contact_name) values (%L, 'office', 'Fake')$q$, :'seller'), 'row-level'), 'an architect cannot enter a lead in somebody else''s name');
+update public.leads set note = 'mine' where contact_name = 'Arch Project';
+update public.leads set note = 'hacked' where contact_name = 'Anna';
+select pg_temp.check((select note from public.leads where contact_name = 'Arch Project') = 'mine', 'an architect edits his own project');
+select pg_temp.check(pg_temp.fails(format($q$select public.assign_lead(%L, %L)$q$, (select id from public.leads limit 1), :'arch'), 'FORBIDDEN'), 'an architect cannot assign leads');
+select pg_temp.check((select count(*) from public.orders) = 0 and (select count(*) from public.notifications) = 0, 'an architect sees no orders and no notifications of others');
+select pg_temp.as_user(:'admin');
+select pg_temp.check((select note from public.leads where contact_name = 'Anna') is distinct from 'hacked', 'a lead of somebody else is untouched');
+select pg_temp.check((select score from public.lead_board limit 1) is not null, 'the board carries the score');
+select pg_temp.as_user(:'seller');
+select pg_temp.check((select count(*) from public.leads where contact_name = 'Arch Project') = 0, 'a seller does not see an architect''s project');
 
 select 'access tests passed' as result;

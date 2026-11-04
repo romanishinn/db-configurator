@@ -40,7 +40,13 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
 - Lead card: source badge (Meta / Google / site …), the customer's message, the configurator journey, UTM details, contact buttons (call, WhatsApp, e-mail, map), next step with date, stage move, refusal with a reason, transfer / "take", notes, history, quotes of the lead and hand-off to the configurator (`db.handoff`, `?model`).
 - New lead form (phone or name is enough) with a duplicate warning that matches phone formats (last 9 digits).
 - Migration `0008`: `leads.next_action` (what to do at `next_action_at`) and the view `customers` (one row per person, built from leads; same visibility as leads).
-- Not built yet: approvals of discounts above the limit (needs a decision, see below), the `architect` role in the CRM (row level security does not yet let it create or read leads), drag and drop on boards.
+- Migration `0009`:
+  - **Approvals.** A discount above the personal limit no longer fails for staff: the quote is saved and queued in `quote_approvals` (`pending`); only the superadmin decides (`decide_approval`, a rejection needs a comment); the owner is notified. A client still cannot give a discount. ASSUMPTION: the database cannot stop someone from showing an unapproved price to a customer, the CRM shows the status on the quote and in the queue. The configurator does not send `quotes.discount` yet, so the queue fills only once it does.
+  - **Architect** works with his own projects and quotes only (he sees what he entered himself and his own quotes; no orders, no other people's leads).
+  - `lead_board` is rebuilt so it carries `score` and `next_action` (a view freezes the columns it had when it was created).
+  - Trigger functions are no longer callable through the public API.
+- Boards: drag a card to another column (mouse, or press and hold on a touch screen); a slim icon rail on tablets; a bottom tab bar on phones.
+- Role names: the live database calls the sales role `manager`, a fresh rebuild from these migrations `seller`. The CRM accepts both. The repository migrations should be synchronised with the live schema (`manager`) in a separate step.
 
 ## Not yet (next phases)
 Customer accounts in the customer view (save up to 3), dealer discount and branding in the quote, the superadmin board
