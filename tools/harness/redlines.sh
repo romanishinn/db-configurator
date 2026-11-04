@@ -5,7 +5,7 @@
 # Names to block: env REDLINE_TERMS (comma separated; in CI the GitHub secret of the same name) and/or the git-ignored
 # file .redlines.local (one name per line, spaces allowed). Matching is plain text, case-insensitive.
 # Without a list the check cannot see names: it says so loudly (CI: ::warning::); REDLINE_REQUIRE_TERMS=1 makes it a failure.
-# Commit messages are checked from $REDLINE_BASE (default origin/main) to HEAD.
+# Commit messages are checked from $REDLINE_BASE (default origin/main) to HEAD. REDLINE_HISTORY=1 also scans the whole history (hashes only).
 cd "$(dirname "$0")/../.." || exit 1
 fail=0
 say() { echo "REDLINE: $1"; fail=1; }
@@ -49,6 +49,18 @@ hits=$($G -i -E -e 'margin|marge|маржа|маржи|маржу|break-?even|б
 # 4. files that must never be committed (the transferred HANDOFF with the economics, price lists, env files)
 bad=$(git ls-files -co --exclude-standard | grep -Ei '(^|/)handoff[^/]*\.md$|\.(pdf|xlsx|xls)$|(^|/)\.env($|\.)|^founder/|(^|/)numbers\.json$' | grep -v '\.env\.example$' | tr '\n' ' ')
 [ -n "$bad" ] && say "нельзя коммитить: $bad"
+
+# 5. history (REDLINE_HISTORY=1): the repository is public, so old commits count too. Prints commit hashes only.
+if [ "${REDLINE_HISTORY:-}" = 1 ]; then
+  h=$(git log --all -E -G'sb_secret_|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}' --format=%h -- . ':(exclude)tools/harness/redlines.sh' | tr '\n' ' ')
+  [ -n "$h" ] && say "возможный секрет в истории, коммиты: $h"
+  if [ -n "$terms" ]; then
+    f=$(printf '%s\n' "$terms" | while IFS= read -r t; do git log --all -i -F -S"$t" --format=%h -- . ':(exclude)tools/harness/redlines.sh' | tr '\n' ' '; done)
+    [ -n "$(echo $f)" ] && say "запрещённое имя в истории, коммиты: $f"
+    m=$(printf '%s\n' "$terms" | while IFS= read -r t; do git log --all -i -F --grep="$t" --format=%h | tr '\n' ' '; done)
+    [ -n "$(echo $m)" ] && say "запрещённое имя в сообщениях коммитов: $m"
+  fi
+fi
 
 [ "$fail" = 0 ] && echo "redlines: ok"
 exit $fail
