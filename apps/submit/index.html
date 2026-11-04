@@ -167,11 +167,11 @@
     var box = $('objs'); box.textContent = '';
     return Promise.all([
       sb.from('orders').select('id,stage,lead_id,leads(contact_name,postcode)').eq('stage', 'done'),
-      sb.from('project_private').select('order_id')
+      sb.from('project_private').select('order_id,rejected_reason')
     ]).then(function (rs) {
       var err = rs[0].error || rs[1].error;
       if (err) { box.appendChild(el('p', 'sub', humanError(err))); return; }
-      var used = {}; (rs[1].data || []).forEach(function (p) { if (p.order_id) used[p.order_id] = 1; });
+      var used = {}; (rs[1].data || []).forEach(function (p) { if (p.order_id && (!p.rejected_reason || p.rejected_reason === 'consent_withdrawn')) used[p.order_id] = 1; }); // matches the DB: a quality rejection frees the order, a withdrawn consent does not
       var list = (rs[0].data || []).filter(function (o) { return !used[o.id]; });
       if (!list.length) { box.appendChild(el('p', 'sub', 'Пока нет смонтированных объектов. Когда офис отметит монтаж, объект появится здесь')); return; }
       list.forEach(function (o) {

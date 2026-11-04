@@ -1,5 +1,5 @@
 #!/bin/sh
-# Upgrade path: 0001-0008 with "seller" data, then 0009 in one transaction (as db/migrate.sh does), then the access tests.
+# Upgrade path: 0001-0008 with "seller" data, then 0009 and 0010 each in one transaction (as db/migrate.sh does), then the access tests.
 # Own database "upgrade_test" on $PGURL's server (or a throw-away local Postgres). UPGRADE_HOOK = extra SQL run before 0009 (mutation test).
 set -eu
 cd "$(dirname "$0")/.."
@@ -63,6 +63,20 @@ do $$ begin
   end;
 end $$;
 select 'upgrade checks passed' as result;
+SQL
+# stage 3: 0010 applies on top of the migrated data; its table and functions exist
+$P -1 -f migrations/0010_project_submissions.sql >/dev/null || { echo 'FAILED: 0010 did not apply'; exit 1; }
+$P <<'SQL'
+do $$ declare f text; begin
+  if to_regclass('public.project_private') is null then raise exception 'FAILED: project_private missing after 0010'; end if;
+  foreach f in array array['submit_project(uuid,text,boolean)', 'attach_photos(uuid,text[])', 'reject_project(uuid,text,text)', 'unpublish_project(uuid,text)',
+      'record_consent(uuid,text,text,boolean,boolean)', 'complete_installation(uuid)', 'notify_managers(text,uuid,text)'] loop
+    if to_regprocedure('public.' || f) is null then raise exception 'FAILED: function % missing after 0010', f; end if;
+  end loop;
+  if not exists (select 1 from pg_trigger where tgname = 'projects_consent_guard') then raise exception 'FAILED: consent trigger missing after 0010'; end if;
+  if (select count(*) from public.orders) <> 1 then raise exception 'FAILED: order lost by 0010'; end if;
+end $$;
+select 'migration 0010 applied' as result;
 SQL
 $P -c 'truncate public.leads, public.profiles, public.lead_events, public.notifications cascade; delete from auth.users' >/dev/null
 $P -f test/access.sql

@@ -386,7 +386,7 @@
   }
 
   var REASONS = { light: 'мало света', people: 'люди в кадре', plate: 'виден номер машины или дома', no_consent: 'нет согласия владельца', no_order: 'нет заказа', wrong_project: 'не тот проект', consent_withdrawn: 'владелец отозвал согласие' };
-  Object.keys(REASONS).forEach(function (k) { var o = el('option', null, REASONS[k]); o.value = k; $('rvReason').appendChild(o); });
+  Object.keys(REASONS).filter(function (k) { return k !== 'consent_withdrawn'; }).forEach(function (k) { var o = el('option', null, REASONS[k]); o.value = k; $('rvReason').appendChild(o); });
   var RVO = $('rvOptions');
   Object.keys(OPTIONS).forEach(function (k) {
     var l = el('label'), c = document.createElement('input'); c.type = 'checkbox'; c.value = k;

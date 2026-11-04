@@ -37,6 +37,24 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   when the database is off, unreachable or has no published project, the static placeholder cards stay. `noindex` until the placeholders
   (photos, address, phone) are replaced with real data. The request form there is still a preview (not yet wired to `submit_request`).
 
+## Projects sent by dealers (migration 0010)
+- Table `project_private` (1:1 with `projects`; the public never reads it): order, sender (null = office), dealer note, rejection reason and note,
+  consent (time, who confirmed, channel call/form/paper, text version, district may be shown). No status column: published = `projects.published`,
+  rejected = `rejected_reason` is set, under review = sent by a dealer and neither. Date of the request = `projects.created_at`.
+  One active project per order (partial unique index): after a rejection for quality (`light` etc.) the dealer may send again, after `consent_withdrawn` not.
+- Rules in SQL: publishing ANY project needs a recorded consent (trigger, `CONSENT_REQUIRED`; also for projects added by the office, also a rejected one stays unpublishable);
+  title and district are required only when published (a dealer's request starts empty).
+- Functions (all `security definer`, error code first in the message): `submit_project` (dealer only; assurance; own order by the lead_read rule; order `done` AND the last
+  `done` event written by a manager, superadmin or superdealer, because a dealer can set `done` himself; one active project per order), `attach_photos` (author, max 12,
+  paths `<project id>/<uuid>.jpg`), `reject_project`, `unpublish_project` (sets `consent_withdrawn`), `record_consent`, `complete_installation` (manager/superadmin; the
+  existing trigger logs the author). Notifications: `notify_managers` (managers and superadmins) on a request; the dealer on rejection or withdrawal.
+- Who can do what: the dealer sees only his own requests (`projects` and `project_private`), writes nothing directly, uploads only `<own open project id>/<uuid>.jpg`
+  and cannot read, change or delete files. A manager deletes files only of unpublished projects (files of published ones: superadmin only); update of files: superadmin only.
+- Known limits: the test stub does not check real Storage (path helper `storage.foldername` is copied, upload/mime/size limits are not exercised);
+  `attach_photos` does not check that the files exist; photos of a project must live in the folder named by the project id for the manager's delete rule to apply;
+  EXIF/GPS is not stripped in SQL (the browser must do it); a staff `update` of `project_private` can still edit consent fields directly (staff are trusted);
+  country is set to AT on a request (the office corrects it); not run on the production database yet.
+
 ## Switching it on (D&B)
 1. supabase.com → New project, region **Frankfurt (eu-central-1)**, free plan.
 2. GitHub → repository Settings → Secrets and variables → Actions → `SUPABASE_DB_URL` = Project Settings → Database →
