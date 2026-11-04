@@ -103,7 +103,9 @@
   var REASONS = { light: 'мало света', people: 'люди в кадре', plate: 'виден номер машины или дома', no_consent: 'нет согласия владельца',
     no_order: 'нет заказа', wrong_project: 'не тот проект', consent_withdrawn: 'владелец отозвал согласие' };
   var ERRORS = { FORBIDDEN: 'Нет прав на это действие', ASSURANCE_REQUIRED: 'Нужно подтвердить заверение (галочка)', ORDER_NOT_FOUND: 'Заказ не найден',
-    NOT_INSTALLED: 'Монтаж по этому заказу ещё не отмечен офисом', ALREADY_SUBMITTED: 'По этому заказу заявка уже отправлена',
+    NOT_INSTALLED: 'Монтаж по этому заказу ещё не отмечен офисом', ALREADY_SUBMITTED: 'Заявка уже отправлена',
+    PROJECT_LOCKED: 'Заявка уже на проверке или опубликована, фото добавить нельзя', PROJECT_HAS_PHOTOS: 'К заявке уже прикреплены фото',
+    TOO_FEW_PHOTOS: 'Нужно хотя бы одно фото',
     TOO_MANY_PHOTOS: 'Слишком много фото (максимум 12)', BAD_PATH: 'Ошибка загрузки фото, попробуйте ещё раз' };
   var $ = function (id) { return document.getElementById(id); };
   var sb = null, order = null, files = [], retry = null; // retry: {id} - project that exists but has no photos yet
@@ -111,10 +113,12 @@
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function show(id, on) { $(id).hidden = !on; }
   function say(id, text, ok) { var m = $(id); m.textContent = text || ''; m.className = 'msg' + (text ? (ok ? ' ok' : ' err') : ''); }
+  function isDup(e) { var m = String((e && e.message) || ''); return /^\s*ALREADY_SUBMITTED\b/.test(m) || (e && e.code === '23505') || /duplicate key|23505/i.test(m); }
   function humanError(e) {
     var m = String((e && (e.message || e.error_description)) || e || '');
-    var c = m.match(/\b(FORBIDDEN|ASSURANCE_REQUIRED|ORDER_NOT_FOUND|NOT_INSTALLED|ALREADY_SUBMITTED|TOO_MANY_PHOTOS|BAD_PATH)\b/);
+    var c = m.match(/\b(FORBIDDEN|ASSURANCE_REQUIRED|ORDER_NOT_FOUND|NOT_INSTALLED|ALREADY_SUBMITTED|PROJECT_LOCKED|PROJECT_HAS_PHOTOS|TOO_FEW_PHOTOS|TOO_MANY_PHOTOS|BAD_PATH)\b/);
     if (c) return ERRORS[c[1]];
+    if (isDup(e)) return ERRORS.ALREADY_SUBMITTED;
     if (/Invalid login/i.test(m)) return 'Неверный e-mail или пароль';
     if (/row-level|permission denied/i.test(m)) return 'Нет прав на это действие';
     if (/Failed to fetch|network|NetworkError/i.test(m)) return 'Нет связи с сервером, попробуйте ещё раз';
@@ -217,7 +221,7 @@
     e.preventDefault();
     if ($('send').disabled) return;
     $('send').disabled = true; $('cancel').disabled = true; say('msg', 'Отправляю…', true);
-    var step = retry ? Promise.resolve(retry.id) : sb.rpc('submit_project', { p_order: order.id, p_note: $('note').value.trim(), p_assured: $('assured').checked })
+    var step = retry ? Promise.resolve(retry.id) : sb.rpc('submit_project', { p_order: order.id, p_note: $('note').value.trim() || null, p_assured: $('assured').checked })
       .then(function (r) { if (r.error) throw r.error; if (!r.data) throw new Error('empty'); return r.data; });
     step.then(function (id) {
       if (!retry) retry = { id: id, title: $('formSub').textContent, created: true };
@@ -228,6 +232,7 @@
       $('cancel').disabled = false; retry = null; tab('mine').then(function () { say('mineMsg', 'Отправлено. Офис проверит фото.', true); });
     }).catch(function (err) {
       $('cancel').disabled = false;
+      if (!retry && isDup(err)) { tab('mine').then(function () { say('mineMsg', ERRORS.ALREADY_SUBMITTED); }); return; }
       if (err && err.afterSubmit) {
         // the application exists, only photos are missing: it stays in "Мои заявки" with an "add photos" button
         say('msg', 'Заявка создана, но фото загрузились не полностью (' + humanError(err) + '). Откройте «Мои заявки» и нажмите «Добавить фото».');
