@@ -13,7 +13,7 @@ if [ -z "${PGURL:-}" ]; then
   PGURL="postgresql://postgres@localhost:$PORT/postgres"
 fi
 P="psql $PGURL -X -q -v ON_ERROR_STOP=1"
-$P -c 'drop schema if exists public cascade; drop schema if exists auth cascade; create schema public;' >/dev/null
+$P -c 'drop schema if exists public cascade; drop schema if exists auth cascade; drop schema if exists storage cascade; create schema public;' >/dev/null
 $P -c 'drop role if exists anon; drop role if exists authenticated;' >/dev/null 2>&1 || true
 $P -f test/supabase_stub.sql >/dev/null
 for f in migrations/*.sql; do $P -f "$f" >/dev/null; done

@@ -37,6 +37,9 @@ jobs:
           # so existing links (configurator "Pro" button, partner activation) keep working and land on crm.html
           printf '<!doctype html><meta charset="utf-8"><title>D&B Pergola CRM</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=crm.html"><script>location.replace("crm.html"+location.search+location.hash)</script><p style="font:15px system-ui;margin:2rem">Переход в D&amp;B Pergola CRM… <a href="crm.html">Открыть</a></p>' > _site/cabinet.html
           cp apps/join/index.html _site/join.html
+          # landing.html — German B2C landing, reads the published projects; projects.html — superadmin form that adds them
+          cp apps/landing/index.html _site/landing.html
+          cp apps/projects/index.html _site/projects.html
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:

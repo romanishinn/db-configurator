@@ -20,3 +20,16 @@
   Add a golden test (value read from the catalogue page) for every new table or rule.
 - Mark unconfirmed interpretations with `ASSUMPTION` comments.
 - UI language for internal users: Russian; quote output: German and English first.
+
+## Harness (how every task is done)
+- Every main session starts from `docs/STATE.md` only (a hook prints it); do not read the whole archive. If it was not loaded, say so first and stop. Subagents do not get the hook: they read `docs/STATE.md` themselves.
+- Tasks go through `/task` and the agents in `.claude/agents/` (protocol: `docs/harness/README.md`). A subagent cannot ask the owner; the main session does.
+- The owner's decisions are logged verbatim in `docs/decisions.md` (scribe). Never paraphrase them. Unconfirmed vision and promises are hypotheses.
+- "Done" means working in production through every path (client UI, CRM, quote DE/EN, no-backend mode, access rules). Tests and a screenshot are only "implemented". State the level honestly.
+- "It does not work" only after listing what was checked, what was learned and what is still a guess. Look for a ready solution before building one.
+- Hand-off note at about 80% of the context, not later. Max two review rounds, then change the approach.
+- Merging to `main` deploys the site and applies migrations to the production database: only on the owner's word. There is no stage environment yet. Other irreversible steps (deleting data, paid services, mail to real people, promises to customers) also only on the owner's word.
+- Run `sh tools/harness/redlines.sh` before saying "done".
+- For important decisions offer the owner the outside view (`/founder`, `docs/harness/README.md`): only on the owner's word, never automatically. Its finance output goes only to the owner's private Google Doc (and the chat), never to the repository, never shared; its conclusions are hypotheses, not decisions.
+- **This repository and the site are PUBLIC.** Never put in them (files, commit messages, branch names, PR text): the financial model or any figure of it (margins, purchase terms, commissions, ad budgets, agency promises, unit economics), the list of forbidden names, or the name of a manufacturer. Finance lives only in the owner's private Google Doc; the forbidden-names list only in the GitHub secret `REDLINE_TERMS` (and a local `.redlines.local`). Pushing is publishing: git history is public too, so check before you commit, not after.
+
