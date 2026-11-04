@@ -43,7 +43,7 @@ drop index if exists public.quotes_owner;
 create index if not exists notifications_user_at on public.notifications (user_id, at desc);
 drop index if exists public.notifications_user;
 create index if not exists notifications_unread on public.notifications (user_id) where not read;
-drop index if exists public.leads_last_activity;   -- leads_activity (0012) covers it
+drop index if exists public.leads_last_activity;   -- leads_activity (0013) covers it
 analyze public.quotes, public.notifications;
 
 -- C. norm_phone as one expression: Postgres inlines it (no function call per row); the result is the same for every input

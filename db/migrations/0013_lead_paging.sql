@@ -95,3 +95,17 @@ $$;
 
 revoke all on function public.lead_page(text, text, integer, integer), public.lead_counts(), public.crm_stats() from public, anon;
 grant execute on function public.lead_page(text, text, integer, integer), public.lead_counts(), public.crm_stats() to authenticated;
+
+-- An architect works on the projects he entered himself (lead_update_architect, 0011): "may edit this lead" of 0012 has to
+-- say so too, or his quotes and orders on his own project would be refused. Same function, one more role in the creator line.
+create or replace function public.can_edit_lead(p_lead uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.leads l where l.id = p_lead and (
+      public.sees_all()
+      or l.assigned_to = auth.uid()
+      or (l.created_by = auth.uid() and public.my_role() in ('manager', 'dealer', 'architect'))
+      or (public.my_role() = 'dealer' and public.my_org() is not null and public.org_of(l.assigned_to) = public.my_org())
+    )
+  )
+$$;

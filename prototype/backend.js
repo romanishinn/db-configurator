@@ -174,20 +174,23 @@
   }
 
   /* ---------- public request form: store as a lead with its quote (via the Edge Function) ---------- */
+  // Always resolves to { ok, number, error }. error: a code of the Edge Function (turnstile_missing, turnstile_failed,
+  // too_many_requests, contact_required, invalid_payload, server_error) or 'network' (no connection / not JSON).
   async function submitRequest(contact, journey) {
-    const A = window.DBApp; if (!A) return null;
-    const quote = { catalog: A.catalog, config: A.snapshot(), lines: A.lines(), total_net: Math.round(A.totalNet() * 100) / 100 };
+    const A = window.DBApp; if (!A) return { ok: false, number: null, error: 'server_error' };
+    const quote = { catalog: A.catalog, config: A.snapshot(), lines: A.requestLines ? A.requestLines() : A.lines(), total_net: Math.round((A.requestTotal ? A.requestTotal() : A.totalNet()) * 100) / 100 }; // what the customer sees (net, with services)
     const token = await turnstileToken();
+    if (!token) return { ok: false, number: null, error: 'turnstile_missing' }; // blocker or timeout: tell the visitor, never lose it silently
     try {
       const res = await fetch(SUBMIT_FN, {
         method: 'POST',
         headers: { 'content-type': 'application/json', apikey: BACKEND.anonKey, Authorization: 'Bearer ' + BACKEND.anonKey },
         body: JSON.stringify({ token, contact, quote, utm: A.utm(), journey }),
       });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data && data.number ? data.number : null;
-    } catch (e) { return null; }
+      let data = null; try { data = await res.json(); } catch (e) { return { ok: false, number: null, error: 'network' }; }
+      if (data && data.ok === true && data.number) return { ok: true, number: String(data.number), error: null };
+      return { ok: false, number: null, error: (data && typeof data.error === 'string' && data.error) || 'server_error' };
+    } catch (e) { return { ok: false, number: null, error: 'network' }; }
   }
 
   window.Backend = {

@@ -1,4 +1,4 @@
--- 0013: access hardening after the security review (done on a local copy) (deactivated users, org columns, org_of, discount groups, API grants).
+-- 0014: access hardening after the security review (done on a local copy) (deactivated users, org columns, org_of, discount groups, API grants).
 
 -- 1. a deactivated login (profiles.active = false) loses all access to CRM data
 do $$

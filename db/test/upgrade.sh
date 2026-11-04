@@ -1,5 +1,6 @@
 #!/bin/sh
-# Upgrade path: 0001-0008 with "seller" data, then 0009 in one transaction (as db/migrate.sh does), then every later migration, then the access tests.
+# Upgrade path: 0001-0008 with "seller" data, then 0009 in one transaction (as db/migrate.sh does), then every later
+# migration in file-name order (as migrate.sh does), then the access tests.
 # Own database "upgrade_test" on $PGURL's server (or a throw-away local Postgres). UPGRADE_HOOK = extra SQL run before 0009 (mutation test).
 set -eu
 cd "$(dirname "$0")/.."
