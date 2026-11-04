@@ -306,7 +306,7 @@
   const pick = (d) => (d && (d[lang] || d.en)) || '';
   function artSlat(x, y, w, h, rot) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.6" transform="rotate(${rot} ${(x + w / 2).toFixed(1)} ${(y + h / 2).toFixed(1)})" class="art-slat"/>`; }
   function prodArt(id) {
-    const sun = `<circle cx="135" cy="24" r="11" class="art-sun"/>`;
+    const sun = `<circle cx="146" cy="15" r="6.5" class="art-sun"/>`;
     const frame = `<path class="art-frame" d="M24 37v45M136 37v45"/><rect x="15" y="30" width="130" height="7" rx="2" class="art-beam"/><line x1="9" y1="83" x2="151" y2="83" class="art-ground"/>`;
     if (id === 'louvered') {
       let s = ''; for (let i = 0; i < 9; i++) s += artSlat(22 + i * 13.4, 14, 6, 17, 26);
@@ -316,8 +316,10 @@
       let s = ''; for (let i = 0; i < 6; i++) s += artSlat(21 + i * 5.4, 14, 4.4, 17, 0);
       return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g><line class="art-open" x1="56" y1="22" x2="128" y2="22" stroke-dasharray="3 6"/>${frame}</svg>`;
     }
-    // carport: a flat canopy over a simple car
-    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true"><rect x="13" y="26" width="134" height="9" rx="2" class="art-beam"/><path class="art-frame" d="M26 35v47M134 35v47"/><path class="art-car" d="M46 74c0-7 6-12 13-12h18l12 10h13c6 0 10 4 10 10v2H46z"/><circle cx="64" cy="80" r="6" class="art-wheel"/><circle cx="104" cy="80" r="6" class="art-wheel"/><line class="art-ground" x1="9" y1="86" x2="151" y2="86"/></svg>`;
+    // carport: the same frame and floor line as the other cards; the car stands on the floor between the posts
+    // (floor y=83, wheels r=6.5 centred at y=76 touch it; the body is outlined, so the roof clears the beam)
+    const car = `<path class="art-car" d="M38 75v-6c0-3 2-5 5-6l11-3 9-10c2-2 4-3 7-3h19c3 0 5 1 7 3l9 10 12 2c3 1 5 3 5 6v7z"/><circle cx="54" cy="76" r="6.5" class="art-wheel"/><circle cx="106" cy="76" r="6.5" class="art-wheel"/>`;
+    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${frame}${car}</svg>`;
   }
   function catalogHTML(t) {
     const cards = PRODUCTS.map((pr) => {
