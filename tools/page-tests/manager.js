@@ -1,0 +1,66 @@
+const { chromium } = require('playwright'); const fs=require('fs');
+const path=require('path'), os=require('os'); const S=__dirname, R=path.resolve(__dirname,'../..'); const O=n=>path.join(process.env.OUT||os.tmpdir(),n); const stub=fs.readFileSync(S+'/manager-stub.txt','utf8');
+const ok=(n,c)=>console.log((c?'PASS ':'FAIL ')+n);
+async function open(b,role,w,opts={}){
+ const ctx=await b.newContext({viewport:{width:w,height:844}}); const page=await ctx.newPage(); page.errs=[];
+ page.on('pageerror',e=>console.log('PAGEERROR',e.message)); page.on('dialog',d=>d.accept());
+ await page.addInitScript(r=>{window.__role=r},role);
+ await page.route('**/supabase.js',r=>r.fulfill({contentType:'application/javascript',body:stub}));
+ await page.route('https://*.supabase.co/storage/**',r=>opts.failFetch?r.abort():r.fulfill({contentType:'image/jpeg',headers:{'access-control-allow-origin':'*'},body:fs.readFileSync(S+'/fixtures/photo.jpg')}));
+ await page.goto('file://'+R+'/apps/projects/index.html'); await page.waitForSelector('#login:not([hidden])');
+ await page.fill('#em','a@b.c'); await page.fill('#pw','ok'); await page.click('#login button.primary'); await page.waitForTimeout(300);
+ return page;}
+const log=p=>p.evaluate(()=>window.__log);
+(async()=>{const b=await chromium.launch();
+ for (const w of [390,1100]) {
+  console.log('== width',w);
+  let p=await open(b,'manager',w);
+  ok('tab counter', (await p.textContent('#tabQueue'))==='Ждут решения (1)');
+  ok('manager: published has unpublish', (await p.textContent('#list')).includes('Снять с публикации'));
+  await p.click('#tabQueue'); ok('queue lists dealer note', (await p.textContent('#queue')).includes('Dealer says hi'));
+  await p.click('#queue button'); await p.waitForSelector('#review:not([hidden])');
+  ok('3 photos grid', (await p.$$('#rvPhotos .ph')).length===3);
+  ok('title prefilled+lang de', (await p.inputValue('#rvTitle'))==='Villa' && (await p.getAttribute('#rvTitle','lang'))==='de');
+  ok('publish disabled w/o consent + hint', (await p.$eval('#rvPublish',e=>e.disabled)) && !(await p.$eval('#rvHint',e=>e.hidden)));
+  await p.click('#rvPhotos .ph:nth-child(2) img'); ok('tap deselects', (await p.$$('#rvPhotos .ph.off')).length===1);
+  await p.click('#rvPhotos .ph:nth-child(3) .tools button'); ok('star moves cover first', (await p.$eval('#rvPhotos .ph:first-child img',e=>e.src)).includes('c.jpg'));
+  await p.screenshot({path:O(`r-review-${w}.png`),fullPage:true});
+  await p.click('#rvConsent button'); ok('consent needs version', (await p.textContent('#rvMsg')).includes('версию'));
+  await p.fill('#rvConsent input[type=text]','v1'); await p.click('#rvConsent button'); await p.waitForTimeout(100);
+  ok('publish enabled after consent', !(await p.$eval('#rvPublish',e=>e.disabled)));
+  await p.fill('#rvTitle','Villa mit Glasdach'); await p.click('#rvPublish'); await p.waitForSelector('#queueCard:not([hidden])');
+  let l=await log(p); const kinds=l.map(x=>x.rpc?'rpc:'+x.rpc:x.upload?'upload':x.update?(x.update.published?'published':'photos'):x.remove?'remove':'?');
+  console.log(kinds.join(' > '));
+  ok('order rpc>upload*2>photos>remove>published', kinds.join(',')==='rpc:record_consent,upload,upload,photos,?,remove,published');
+  const rm=l.find(x=>x.remove).remove, up=l.filter(x=>x.upload).map(x=>x.upload), ph=l.find(x=>x.update&&x.update.photos).update;
+  ok('remove old 3 + stray zz from list, none new', rm.length===4 && rm.includes('q1/zz.jpg') && rm.every(x=>!up.includes(x)));
+  ok('photos=new, title saved', ph.photos.join()===up.join() && ph.title==='Villa mit Glasdach');
+  ok('uploads non-empty', l.filter(x=>x.upload).every(x=>x.bytes>0));
+  await p.close();
+  p=await open(b,'manager',w); await p.click('#tabQueue'); await p.click('#queue button'); await p.selectOption('#rvReason','plate'); await p.fill('#rvRejNote','n');
+  await p.evaluate(()=>{window.__rmErr=1}); await p.click('#rvReject'); await p.waitForSelector('#queueCard:not([hidden])');
+  l=await log(p); const rj=l.find(x=>x.rpc==='reject_project');
+  ok('reject args', rj.args.p_reason==='plate'&&rj.args.p_note==='n'&&rj.args.p_project==='q1');
+  const rr=l.find(x=>x.remove).remove; ok('folder cleaned incl. stray; remove error ignored', rr.includes('q1/zz.jpg')&&rr.includes('q1/b.jpg')&&(await p.textContent('#queue')).includes('нет'));
+  await p.close();
+  p=await open(b,'manager',w); await p.click('#list .item button.danger'); await p.fill('#unpubNote','owner asked'); await p.click('#unpubGo'); await p.waitForSelector('#listCard:not([hidden])');
+  l=await log(p); ok('unpublish rpc', l.some(x=>x.rpc==='unpublish_project'&&x.args.p_note==='owner asked'&&x.args.p_project==='p1'));
+  await p.click('#tabOrders'); ok('orders listed, stage ru, escaped', (await p.textContent('#orders')).includes('монтаж')&&(await p.$$('#orders b b')).length===0&&(await p.textContent('#orders')).includes('<b>X</b>'));
+  await p.screenshot({path:O(`r-orders-${w}.png`)});
+  await p.click('#orders .item button'); await p.waitForTimeout(200);
+  ok('complete_installation & row gone', (await log(p)).some(x=>x.rpc==='complete_installation'&&x.args.p_order==='o1') && (await p.$$('#orders .item')).length===1);
+  await p.click('#orders .item button'); await p.waitForTimeout(200); ok('empty text', (await p.textContent('#orders')).includes('Заказов пока нет'));
+  await p.click('#tabList'); await p.click('#list .item button:not(.danger)'); ok('manager no Удалить', await p.$eval('#del',e=>e.hidden));
+  await p.check('#published'); await p.click('#save'); ok('form: published w/o consent blocked', (await p.textContent('#msg')).includes('Сначала запишите'));
+  await p.fill('#fConsent input[type=text]','v2'); await p.click('#save'); await p.waitForSelector('#listCard:not([hidden])');
+  l=await log(p); const k2=l.filter(x=>x.upsert||x.rpc==='record_consent'||(x.update&&x.update.published)).map(x=>x.upsert?'upsert pub='+x.upsert.published:x.rpc||'published');
+  ok('form order upsert(false)>consent>published', k2.join(',')==='upsert pub=false,record_consent,published');
+  await p.close();
+  p=await open(b,'superadmin',w); await p.click('#list .item button:not(.danger)'); ok('superadmin has Удалить', !(await p.$eval('#del',e=>e.hidden))); await p.screenshot({path:O(`r-form-${w}.png`),fullPage:true}); await p.close();
+  p=await open(b,'manager',w,{failFetch:true}); await p.click('#tabQueue'); await p.click('#queue button'); await p.fill('#rvConsent input[type=text]','v'); await p.click('#rvConsent button'); await p.waitForTimeout(100);
+  await p.click('#rvPublish'); await p.waitForTimeout(500); l=await log(p);
+  ok('encode failure stops, nothing published/uploaded', (await p.textContent('#rvMsg')).includes('не публикуется') && !l.some(x=>x.upload||x.remove||x.update));
+  await p.close();
+ }
+ for (const r of ['dealer','client']) { const p=await open(b,r,390); ok(r+' denied', !(await p.$eval('#denied',e=>e.hidden)) && (await p.$eval('#tabs',e=>e.hidden))); await p.close(); }
+ await b.close();})();
