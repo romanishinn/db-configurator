@@ -161,14 +161,15 @@
   /* the first page is kept on the device: the next start shows it at once, then the server answers.
    * Personal data of customers: one user, 7 days, removed on sign-out (see docs/backend.md). */
   const CK = 'crm.cache.v1';
+  let leaving = false;               // once a sign-out has begun nothing may be written to the device again
   function cacheSave() {
-    if (!me || chip !== 'need' || query) return;
+    if (leaving || !me || chip !== 'need' || query) return;
     try { localStorage.setItem(CK, JSON.stringify({ uid: me.id, ts: Date.now(), me: { id: me.id, role: me.role, full_name: me.full_name, email: me.email, org_id: me.org_id, discount_limit: me.discount_limit }, counts, rows: T0.rows.map((id) => byId.get(id)).filter(Boolean).map((r) => Object.assign({}, r, { journey: null })) })); } catch (e) {}
   }
   function cacheLoad() {
     try {
       const c = JSON.parse(localStorage.getItem(CK) || 'null');
-      if (!c || !me || c.uid !== me.id || Date.now() - c.ts > 7 * 864e5 || !Array.isArray(c.rows)) return false;
+      if (!c || !me || c.uid !== me.id || Date.now() - c.ts > 864e5 || !Array.isArray(c.rows)) return false;
       T0.rows = remember(c.rows); T0.done = c.rows.length < PAGE; counts = c.counts || null; return true;
     } catch (e) { return false; }
   }
@@ -345,7 +346,7 @@
     if (error) { status.textContent = humanError(error); status.className = 'gstatus warn'; return; }
     done();
   };
-  async function signOut() { cacheClear(); try { await sb.auth.signOut(); } catch (e) {} location.reload(); }
+  async function signOut() { leaving = true; cacheClear(); try { await sb.auth.signOut(); } catch (e) {} cacheClear(); location.reload(); }
 
   function chrome() {
     if (!me) return;
@@ -398,17 +399,17 @@
     if (!ok) { unrestore(); return; }
     // a warm start: the stored session and the saved first page are enough to draw the app at once; the server confirms in the background
     let early = null;
-    try { const { data: { session } } = await sb.auth.getSession(); const c = JSON.parse(localStorage.getItem(CK) || 'null'); if (session && c && c.me && c.uid === session.user.id && Date.now() - c.ts < 7 * 864e5 && STAFF.includes(c.me.role)) early = c.me; } catch (e) {}
+    try { const { data: { session } } = await sb.auth.getSession(); const c = JSON.parse(localStorage.getItem(CK) || 'null'); if (session && c && c.me && c.uid === session.user.id && Date.now() - c.ts < 864e5 && STAFF.includes(c.me.role)) early = c.me; } catch (e) {}
     if (early) {
       me = early; unrestore(); document.body.classList.add('authed'); boot();
       loadMe().then((m) => { if (!m || !STAFF.includes(m.role) || m.role !== early.role) { cacheClear(); location.reload(); } else me = m; }, () => {});
-      sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { cacheClear(); location.reload(); } });
+      sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { leaving = true; cacheClear(); location.reload(); } });
       return;
     }
     me = await loadMe();
     unrestore();
     if (me && STAFF.includes(me.role)) { document.body.classList.add('authed'); await boot(); }
-    sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { cacheClear(); if (booted) location.reload(); } });
+    sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { leaving = true; cacheClear(); if (booted) location.reload(); } });
   });
 
   /* ---------- lead card ---------- */
@@ -843,7 +844,7 @@
       invGroupsReady = true;
     }
     const panels = usersPane.querySelectorAll('.panel'), up = panels[1];
-    if (up) up.innerHTML = _('<div class="ph"><h3>Пользователи</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Имя</th><th>E-mail</th><th>Роль</th><th class="num">Личная скидка %</th><th>Статус</th></tr></thead><tbody>') + users.filter((u) => u.role !== 'client').map((u) => '<tr><td>' + esc(u.full_name || '—') + '</td><td class="muted">' + esc(u.email || '') + '</td><td>' + esc(ROLE_RU[u.role] || u.role) + '</td><td class="num">' + (u.discount_limit != null ? u.discount_limit : '—') + '</td><td><span class="tag ' + (u.active === false ? 'bad' : 'ok') + '">' + (u.active === false ? _('отключён') : _('активен')) + '</span></td></tr>').join('') + '</tbody></table></div>';
+    if (up) up.innerHTML = _('<div class="ph"><h3>Пользователи</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Имя</th><th>E-mail</th><th>Роль</th><th class="num">Личная скидка %</th><th>Статус</th></tr></thead><tbody>') + users.filter((u) => u.role !== 'client').map((u) => '<tr><td>' + esc(u.full_name || '—') + '</td><td class="muted">' + esc(u.email || '') + '</td><td>' + esc(ROLE_RU[u.role] || u.role) + '</td><td class="num">' + (u.discount_limit != null ? esc(u.discount_limit) : '—') + '</td><td><span class="tag ' + (u.active === false ? 'bad' : 'ok') + '">' + (u.active === false ? _('отключён') : _('активен')) + '</span></td></tr>').join('') + '</tbody></table></div>';
     let rp = $('#reqPanel'); if (!rp) { rp = document.createElement('div'); rp.id = 'reqPanel'; rp.className = 'panel'; usersPane.appendChild(rp); }
     rp.innerHTML = _('<div class="ph"><h3>Заявки на доступ</h3><span class="muted" style="font-size:12px">пригласите нужных кнопкой выше</span></div>') + (reqs.length ? _('<div class="tblwrap"><table class="tbl"><thead><tr><th>Компания</th><th>Имя</th><th>Город</th><th>E-mail</th><th>Дата</th></tr></thead><tbody>') + reqs.map((r) => '<tr><td>' + esc(r.company) + '</td><td>' + esc((r.first_name || '') + ' ' + (r.last_name || '')) + '</td><td>' + esc(r.location) + '</td><td>' + esc(r.email) + '</td><td>' + dmy(r.created_at) + '</td></tr>').join('') + '</tbody></table></div>' : _('<div style="padding:14px 15px" class="muted">Новых заявок нет</div>'));
     // discount groups: real

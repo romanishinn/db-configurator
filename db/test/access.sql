@@ -442,4 +442,27 @@ select pg_temp.check(not exists (select 1 from pg_class c join pg_namespace n on
   where c.relkind in ('r', 'v') and (has_table_privilege('anon', c.oid, 'truncate') or has_table_privilege('authenticated', c.oid, 'truncate')
      or (c.relname not in ('pricing_config', 'projects') and has_table_privilege('anon', c.oid, 'select')))), 'the API roles have no grants beyond the intended ones');
 
+
+-- ---------- 20. input limits and negative quote lines (0014) ----------
+select pg_temp.as_service();
+select pg_temp.check(pg_temp.fails($q$select public.submit_request('{"name":"x","phone":"+43 660 9"}', '{"catalog":"c","config":{},"lines":[{"a":-99999}],"total_net":1}')$q$, 'NEGATIVE_LINE'), 'the public site cannot send a quote with a negative line');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_request(jsonb_build_object('name', %L, 'phone', '+43 660 8'), '{"catalog":"c","config":{},"total_net":1}')$q$, repeat('x', 5000)), 'leads_input_limits'), 'a name of 5000 characters is refused');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_request('{"name":"x","phone":"+43 660 7"}', '{"catalog":"c","config":{},"total_net":1}', '{}', %L)$q$, repeat('j', 30000)), 'leads_input_limits'), 'a journey text of 30000 characters is refused');
+select public.submit_request('{"name":"Normal Person","phone":"+43 660 6000"}', '{"catalog":"catalog-2026-07","config":{"width":4000},"lines":[{"t":"S400","a":13891},{"t":"Montage","a":1390}],"total_net":15281}') as nq \gset
+select pg_temp.check(:'nq' is not null, 'a normal request still goes through');
+select pg_temp.as_user(:'manager');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, lines, total_net) values (%L, 'c', '{}', '[{"a":1000},{"a":-900}]', 100)$q$, :'manager'), 'NEGATIVE_LINE'), 'a manager cannot hide a price cut in a negative line');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net) values (%L, 'c', '{}', 9999999)$q$, :'manager'), 'quotes_input_limits'), 'an absurd total is refused');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, catalog, config, total_net) values (%L, 'c', %L, 1)$q$, :'manager', ('{"x":"' || repeat('a', 300000) || '"}')), 'quotes_input_limits'), 'a configuration of 300 KB is refused');
+insert into public.quotes (owner, catalog, config, lines, total_net) values (:'manager', 'catalog-2026-07', '{}', '[{"a":1000},{"a":50}]', 1050);
+select pg_temp.as_user(:'admin');
+insert into public.quotes (owner, catalog, config, lines, total_net) values (:'admin', 'catalog-2026-07', '{}', '[{"a":1000},{"a":-100}]', 900);
+select pg_temp.check(true, 'the superadmin may enter a negative line');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$insert into public.access_requests (company, first_name, last_name, location, email) values ('Co', 'A', 'B', 'Graz', 'not-an-email')$q$, 'access_requests_input_limits'), 'an access request needs a real e-mail');
+select pg_temp.check(pg_temp.fails(format($q$insert into public.access_requests (company, first_name, last_name, location, email) values (%L, 'A', 'B', 'Graz', 'a@b.at')$q$, repeat('c', 600)), 'access_requests_input_limits'), 'an access request with a 600 character company is refused');
+insert into public.access_requests (company, first_name, last_name, location, email) values ('Fine Co', 'A', 'B', 'Graz', 'fine@co.at');
+select pg_temp.as_user(:'admin');
+select pg_temp.check(pg_temp.fails(format($q$select public.comment_lead(%L, %L)$q$, :'lead_anna', repeat('c', 5000)), 'lead_events_comment_limit'), 'a comment of 5000 characters is refused');
+
 select 'access tests passed' as result;

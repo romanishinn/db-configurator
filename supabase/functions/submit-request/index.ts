@@ -45,12 +45,16 @@ Deno.serve(async (req) => {
     (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
   const form = new URLSearchParams({ secret, response: token });
   if (ip) form.set("remoteip", ip);
-  let outcome: { success?: boolean; "error-codes"?: string[] } = {};
+  let outcome: { success?: boolean; hostname?: string; "error-codes"?: string[] } = {};
   try {
     const vr = await fetch(SITEVERIFY, { method: "POST", body: form });
     outcome = await vr.json();
   } catch { return json({ error: "turnstile_unreachable" }, 502, h); }
   if (!outcome.success) return json({ error: "turnstile_failed", codes: outcome["error-codes"] ?? [] }, 403, h);
+  // the token must have been issued on one of our sites (a token from another site that uses the same widget is refused);
+  // when the site moves to another address, set TURNSTILE_HOSTNAMES (comma separated) next to the secret
+  const okHosts = (Deno.env.get("TURNSTILE_HOSTNAMES") ?? "romanishinn.github.io").split(",").map((x) => x.trim()).filter(Boolean);
+  if (outcome.hostname && !okHosts.includes(outcome.hostname)) return json({ error: "turnstile_failed", codes: ["hostname"] }, 403, h);
 
   // 2) create the lead + quote, server-side, as service_role
   const url = Deno.env.get("SUPABASE_URL");
@@ -67,7 +71,8 @@ Deno.serve(async (req) => {
   if (error) {
     const m = error.message || "";
     const status = /CONTACT_REQUIRED|TOO_MANY_REQUESTS/.test(m) ? 400 : 500;
-    return json({ error: "rpc_failed", message: m }, status, h);
+    if (status === 500) console.error("submit_request failed:", m);   // details stay in the function log, not in the answer
+    return json({ error: status === 400 ? (/TOO_MANY_REQUESTS/.test(m) ? "too_many_requests" : "contact_required") : "rpc_failed" }, status, h);
   }
   return json({ ok: true, number: data }, 200, h);
 });

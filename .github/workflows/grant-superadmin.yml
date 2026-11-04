@@ -7,6 +7,8 @@ on:
       email:
         description: E-mail of the user to make superadmin
         required: true
+permissions:
+  contents: read
 jobs:
   grant:
     runs-on: ubuntu-latest
@@ -18,6 +20,7 @@ jobs:
           EMAIL: ${{ inputs.email }}
         run: |
           [ -n "$DATABASE_URL" ] || { echo "::error::SUPABASE_DB_URL secret not set"; exit 1; }
-          n=$(psql "$DATABASE_URL" -X -tAc "update public.profiles set role = 'superadmin', active = true where email = '$EMAIL'; select count(*) from public.profiles where email = '$EMAIL' and role = 'superadmin'")
+          # the e-mail goes in as a psql variable (:'email' is quoted by psql), so no input can change the statement
+          n=$(printf '%s\n' "update public.profiles set role = 'superadmin', active = true where email = :'email';" "select count(*) from public.profiles where email = :'email' and role = 'superadmin';" | psql "$DATABASE_URL" -X -q -tA -v email="$EMAIL" | tail -n 1)
           if [ "$n" = 1 ]; then echo "::notice::$EMAIL is now superadmin";
           else echo "::error::No profile for $EMAIL — the user must sign up once first (Supabase → Authentication → Users), then re-run"; exit 1; fi
