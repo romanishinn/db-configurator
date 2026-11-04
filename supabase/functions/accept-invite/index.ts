@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
   const { data: inv } = await sb.from("invites")
     .update({ used_at: nowIso })
     .eq("token", token).is("used_at", null).gt("expires_at", nowIso)
-    .select("id, role, discount_group_id, org_id, email").maybeSingle();
+    .select("id, role, account_type_id, discount_group_id, org_id, email").maybeSingle();
   if (!inv) {
     // say why: unknown, already used or expired
     const { data: old } = await sb.from("invites").select("used_at, expires_at").eq("token", token).maybeSingle();
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
   // 3) the auth_user_created trigger made a client profile — promote it to the invited role (and company, if the invite names one)
   const { error: pErr } = await sb.from("profiles")
-    .update({ role: inv.role, discount_limit: discountLimit, full_name: `${firstName} ${lastName}`, active: true, ...(inv.org_id ? { org_id: inv.org_id } : {}) })
+    .update({ role: inv.role, discount_limit: discountLimit, full_name: `${firstName} ${lastName}`, active: true, ...(inv.account_type_id ? { account_type_id: inv.account_type_id } : {}), ...(inv.org_id ? { org_id: inv.org_id } : {}) })
     .eq("id", uid);
   if (pErr) return json({ error: "profile_failed", message: pErr.message }, 500, h);
 

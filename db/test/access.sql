@@ -616,4 +616,39 @@ select pg_temp.check(pg_temp.fails($q$select count(*) from public.pipeline_stage
 select pg_temp.as_user(:'admin');
 select public.set_pipeline(array['Новый', 'В работе', 'Предложение', 'Переговоры', 'Итог']);
 
+-- ---------- 24. account types the superadmin adds (0018) ----------
+select pg_temp.as_root();
+select pg_temp.check((select count(*) from public.account_types) = 5, 'five account types to start with');
+select pg_temp.check((select base_role::text from public.account_types where title = 'Менеджер') = 'manager', 'the manager type works as the manager role');
+insert into public.invites (role, discount_group_id) values ('manager', null), ('superadmin', null);
+select pg_temp.check((select count(*) from public.invites where role in ('manager', 'superadmin')) = 2, 'an invite can name any role except the client');
+select pg_temp.check(pg_temp.fails($q$insert into public.invites (role) values ('client')$q$, 'invites_role_check'), 'an invite for the client role is refused');
+select pg_temp.as_user(:'admin');
+insert into public.account_types (title, base_role) values ('Монтажник', 'manager');
+select pg_temp.check((select count(*) from public.account_types where title = 'Монтажник') = 1, 'the superadmin adds a type');
+select pg_temp.check(pg_temp.fails($q$insert into public.account_types (title, base_role) values ('  монтажник ', 'dealer')$q$, 'account_types_title'), 'a name that exists is refused (case and spaces ignored)');
+select pg_temp.check(pg_temp.fails($q$insert into public.account_types (title, base_role) values ('Клиент', 'client')$q$, 'account_types_base_role_check'), 'a type cannot work as the client role');
+select pg_temp.check(pg_temp.fails($q$insert into public.account_types (title, base_role) values ('', 'dealer')$q$, 'account_types_title_check'), 'an empty name is refused');
+select id as t_inst from public.account_types where title = 'Монтажник' \gset
+select public.set_user_type(:'newbie', :'t_inst');
+select pg_temp.check((select role::text from public.profiles where id = :'newbie') = 'manager' and (select account_type_id from public.profiles where id = :'newbie') = :'t_inst', 'setting a type gives the role of the type');
+select pg_temp.check(pg_temp.fails(format($q$update public.account_types set base_role = 'dealer' where id = %L$q$, :'t_inst'), 'TYPE_IN_USE'), 'the role of a type in use cannot change');
+select pg_temp.check(pg_temp.fails(format($q$delete from public.account_types where id = %L$q$, :'t_inst'), 'violates foreign key'), 'a type in use cannot be deleted');
+update public.account_types set title = 'Монтажник Вена' where id = :'t_inst';
+select pg_temp.check((select title from public.account_types where id = :'t_inst') = 'Монтажник Вена', 'the name of a type can change');
+select public.set_user_role(:'newbie', 'dealer');
+select pg_temp.check((select account_type_id from public.profiles where id = :'newbie') is null, 'a role set by other means drops the type that no longer fits');
+select public.set_user_type(:'newbie', (select id from public.account_types where title = 'Дилер'));
+select pg_temp.check((select role::text from public.profiles where id = :'newbie') = 'dealer', 'the dealer type gives the dealer role');
+select pg_temp.check(pg_temp.fails($q$select public.set_user_type('00000000-0000-0000-0000-000000000008', gen_random_uuid())$q$, 'TYPE_UNKNOWN'), 'an unknown type is refused');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(*) from public.account_types) = 6, 'a manager reads the types');
+select pg_temp.check(pg_temp.fails($q$insert into public.account_types (title, base_role) values ('Хак', 'superadmin')$q$, 'row-level security'), 'a manager cannot add a type');
+select pg_temp.check(pg_temp.fails($q$select public.set_user_type('00000000-0000-0000-0000-000000000008', (select id from public.account_types where title = 'Суперадмин'))$q$, 'FORBIDDEN'), 'a manager cannot set a type');
+select pg_temp.as_user(:'client');
+select pg_temp.check((select count(*) from public.account_types) = 0, 'a client does not read the types');
+select pg_temp.as_anon();
+select pg_temp.check(pg_temp.fails($q$select count(*) from public.account_types$q$, 'permission denied'), 'the public site reads no types');
+select pg_temp.as_root();
+
 select 'access tests passed' as result;

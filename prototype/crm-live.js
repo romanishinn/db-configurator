@@ -179,7 +179,11 @@
   }
   const cacheClear = () => { try { localStorage.removeItem(CK); } catch (e) {} };
   const loadOrders = async () => { ordersLoaded = true; try { orders = await run(sb.from('orders').select('id, stage, measured_at, paid, delivery_eta, note, created_at, lead_id, leads(contact_name), quotes(number, total_net)').order('created_at', { ascending: false }).limit(500)); } catch (e) { orders = []; } };
-  const loadUsers = async () => { try { users = await run(sb.from('profiles').select('id, role, full_name, email, org_id, discount_limit, active')); } catch (e) { users = []; } };
+  let atypes = [];                                    // account types: a name plus the role it works as
+  const BASE_ROLES = ['superadmin', 'superdealer', 'manager', 'dealer', 'architect'];
+  const loadTypes = async () => { try { atypes = await run(sb.from('account_types').select('id, title, base_role').order('created_at')); } catch (e) { atypes = []; } };
+  const typeName = (u) => { const t = atypes.find((x) => x.id === u.account_type_id); return t ? _(t.title) : (ROLE_RU[u.role] || u.role); };
+  const loadUsers = async () => { try { users = await run(sb.from('profiles').select('id, role, full_name, email, org_id, discount_limit, active, account_type_id')); } catch (e) { users = []; } };
   let approvals = [];
   const loadApprovals = async () => { try { approvals = await run(sb.from('quote_approvals').select('quote_id, status, created_at, decided_at, comment, quotes(number, total_net, discount, owner, lead_id, leads(contact_name))').order('created_at', { ascending: false }).limit(300)); } catch (e) { approvals = []; } };
   const apprOf = (qid) => approvals.find((a) => a.quote_id === qid);
@@ -846,19 +850,52 @@
 
   /* settings: real users, invites, discount groups, service rates */
   let invGroupsReady = false;
+  const userTypeCell = (u) => {
+    if (!isAdmin() || (me && u.id === me.id)) return esc(typeName(u));
+    return '<select class="inp" data-utype="' + u.id + '" style="min-width:150px">' + (u.account_type_id ? '' : '<option value="">' + esc(typeName(u)) + '</option>') + atypes.map((t) => '<option value="' + t.id + '"' + (t.id === u.account_type_id ? ' selected' : '') + '>' + esc(_(t.title)) + '</option>').join('') + '</select>';
+  };
+  function renderTypesPanel(rl) {
+    let box = $('#typesPanel'); if (!box) { box = document.createElement('div'); box.id = 'typesPanel'; box.className = 'panel'; rl.insertBefore(box, rl.firstChild); }
+    const ed = isAdmin(), used = (t) => users.some((u) => u.account_type_id === t.id);
+    box.innerHTML = _('<div class="ph"><h3>Типы аккаунтов</h3>') + (ed ? _('<button class="btn sm primary" data-tadd>＋ Добавить тип</button>') : '') + '</div><div class="tblwrap"><table class="tbl"><thead><tr><th>' + esc(_('Название')) + '</th><th>' + esc(_('Ведёт себя как')) + '</th>' + (ed ? '<th></th>' : '') + '</tr></thead><tbody>'
+      + atypes.map((t) => ed
+        ? '<tr data-t="' + t.id + '"><td><input class="inp" data-tf="title" maxlength="40" value="' + esc(_(t.title)) + '"></td><td><select class="inp" data-tf="base">' + BASE_ROLES.map((r) => '<option value="' + r + '"' + (r === t.base_role ? ' selected' : '') + '>' + esc(ROLE_RU[r]) + '</option>').join('') + '</select></td><td class="num">' + (used(t) ? '' : '<button class="btn sm ghost" data-tdel title="' + esc(_('Удалить')) + '">✕</button>') + '</td></tr>'
+        : '<tr><td>' + esc(_(t.title)) + '</td><td>' + esc(ROLE_RU[t.base_role]) + '</td></tr>').join('')
+      + _('</tbody></table></div><div class="muted" style="padding:12px 15px;font-size:12px;line-height:1.5">Права берутся у роли, как которая ведёт себя тип. Роль у типа, которым уже пользуются, менять нельзя. Права отдельно для каждого типа — позже.</div>');
+    if (box._wired) return; box._wired = true;
+    const reload = async () => { await Promise.all([loadTypes(), loadUsers()]); invGroupsReady = false; renderSettings(); };
+    box.addEventListener('change', async (e) => {
+      const f = e.target.dataset.tf, tr = e.target.closest('tr[data-t]'); if (!f || !tr) return;
+      const patch = f === 'title' ? { title: e.target.value.trim() } : { base_role: e.target.value };
+      if (f === 'title' && !patch.title) { toast(_('Название не может быть пустым'), true); return reload(); }
+      try { await run(sb.from('account_types').update(patch).eq('id', tr.dataset.t)); toast(_('Сохранено')); await reload(); } catch (er) { toast(/TYPE_IN_USE/.test(String(er && er.message)) ? _('Роль типа, которым уже пользуются, менять нельзя') : /account_types_title/.test(String(er && er.message)) ? _('Такой тип уже есть') : humanError(er), true); reload(); }
+    });
+    box.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-tadd]')) {
+        let n = _('Новый тип'), k = 2; while (atypes.some((t) => t.title.toLowerCase() === n.toLowerCase())) n = _('Новый тип') + ' ' + k++;
+        try { await run(sb.from('account_types').insert({ title: n, base_role: 'manager' })); await reload(); } catch (er) { toast(humanError(er), true); }
+        return;
+      }
+      const d = e.target.closest('[data-tdel]'); if (!d) return;
+      const t = atypes.find((x) => x.id === d.closest('tr[data-t]').dataset.t); if (!t) return;
+      dialog({ title: _('Удалить тип?'), sub: esc(t.title), body: '', foot: [{ label: _('Отмена'), run: (c) => c() }, { label: _('Удалить'), primary: true, run: async (c) => { try { await run(sb.from('account_types').delete().eq('id', t.id)); c(); toast(_('Тип удалён')); await reload(); } catch (er) { c(); toast(_('Тип нельзя удалить: он уже используется'), true); } } }] });
+    });
+  }
   async function renderSettings() {
     const usersPane = $('.setpane[data-set="users"]'); if (!usersPane) return;
-    await Promise.all([loadUsers(), loadGroups()]);
+    await Promise.all([loadUsers(), loadGroups(), loadTypes()]);
     let reqs = []; try { reqs = await run(sb.from('access_requests').select('*').order('created_at', { ascending: false }).limit(30)); } catch (e) {}
     const inv = usersPane.querySelector('.panel');
     if (inv && !invGroupsReady) {
+      const ir = $('#invRole'); if (ir && atypes.length) ir.innerHTML = atypes.map((t) => '<option value="' + t.id + '">' + esc(_(t.title)) + '</option>').join('');
       const sel = $('#invGroup'); if (sel && groups.length) sel.innerHTML = groups.map((g) => '<option value="' + g.id + '">' + esc(g.title) + '</option>').join('');
       const gen = $('#invGen'); if (gen) { const g2 = gen.cloneNode(true); gen.replaceWith(g2); g2.addEventListener('click', createInvite); }
       const ct = $('#invCopy'); if (ct) { const c2 = ct.cloneNode(true); ct.replaceWith(c2); c2.addEventListener('click', () => { const i = $('#invLink'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) { document.execCommand('copy'); } toast(_('Ссылка скопирована')); }); }
       invGroupsReady = true;
     }
     const panels = usersPane.querySelectorAll('.panel'), up = panels[1];
-    if (up) up.innerHTML = _('<div class="ph"><h3>Пользователи</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Имя</th><th>E-mail</th><th>Роль</th><th class="num">Личная скидка %</th><th>Статус</th></tr></thead><tbody>') + users.filter((u) => u.role !== 'client').map((u) => '<tr><td>' + esc(u.full_name || '—') + '</td><td class="muted">' + esc(u.email || '') + '</td><td>' + esc(ROLE_RU[u.role] || u.role) + '</td><td class="num">' + (u.discount_limit != null ? esc(u.discount_limit) : '—') + '</td><td><span class="tag ' + (u.active === false ? 'bad' : 'ok') + '">' + (u.active === false ? _('отключён') : _('активен')) + '</span></td></tr>').join('') + '</tbody></table></div>';
+    if (up) up.innerHTML = _('<div class="ph"><h3>Пользователи</h3></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Имя</th><th>E-mail</th><th>Роль</th><th class="num">Личная скидка %</th><th>Статус</th></tr></thead><tbody>') + users.filter((u) => u.role !== 'client').map((u) => '<tr><td>' + esc(u.full_name || '—') + '</td><td class="muted">' + esc(u.email || '') + '</td><td>' + userTypeCell(u) + '</td><td class="num">' + (u.discount_limit != null ? esc(u.discount_limit) : '—') + '</td><td><span class="tag ' + (u.active === false ? 'bad' : 'ok') + '">' + (u.active === false ? _('отключён') : _('активен')) + '</span></td></tr>').join('') + '</tbody></table></div>';
+    if (!usersPane._typeWired) { usersPane._typeWired = true; usersPane.addEventListener('change', async (e) => { const uid = e.target.dataset && e.target.dataset.utype; if (!uid || !e.target.value) return; try { await run(sb.rpc('set_user_type', { p_user: uid, p_type: e.target.value })); toast(_('Сохранено')); await loadUsers(); renderSettings(); } catch (er) { toast(humanError(er), true); } }); }
     let rp = $('#reqPanel'); if (!rp) { rp = document.createElement('div'); rp.id = 'reqPanel'; rp.className = 'panel'; usersPane.appendChild(rp); }
     rp.innerHTML = _('<div class="ph"><h3>Заявки на доступ</h3><span class="muted" style="font-size:12px">пригласите нужных кнопкой выше</span></div>') + (reqs.length ? _('<div class="tblwrap"><table class="tbl"><thead><tr><th>Компания</th><th>Имя</th><th>Город</th><th>E-mail</th><th>Дата</th></tr></thead><tbody>') + reqs.map((r) => '<tr><td>' + esc(r.company) + '</td><td>' + esc((r.first_name || '') + ' ' + (r.last_name || '')) + '</td><td>' + esc(r.location) + '</td><td>' + esc(r.email) + '</td><td>' + dmy(r.created_at) + '</td></tr>').join('') + '</tbody></table></div>' : _('<div style="padding:14px 15px" class="muted">Новых заявок нет</div>'));
     // discount groups: real
@@ -891,7 +928,8 @@
     }
     // roles: plain text instead of fake switches
     const rl = $('.setpane[data-set="roles"]');
-    if (rl) rl.innerHTML = _('<div class="panel"><div class="ph"><h3>Кто что видит</h3></div><div style="padding:14px 15px;line-height:1.7"><p style="margin:0 0 8px"><b>Суперадмин, суперДилер</b> — все лиды и КП.</p><p style="margin:0 0 8px"><b>Дилер</b> — свои лиды и лиды своей компании.</p><p style="margin:0 0 8px"><b>Продавец</b> — только те, что создал сам или получил.</p><p class="muted" style="margin:0">Права закреплены в базе данных и не зависят от этой страницы.</p></div></div>');
+    if (rl) rl.innerHTML = _('<div class="panel"><div class="ph"><h3>Кто что видит</h3></div><div style="padding:14px 15px;line-height:1.7"><p style="margin:0 0 8px"><b>Суперадмин, суперДилер</b> — все лиды и КП.</p><p style="margin:0 0 8px"><b>Менеджер</b> — свои и назначенные лиды, новые заявки с сайта; ведёт проекты на сайте.</p><p style="margin:0 0 8px"><b>Дилер</b> — свои лиды и лиды своей компании.</p><p style="margin:0 0 8px"><b>Архитектор</b> — только свои проекты и КП.</p><p class="muted" style="margin:0">Права закреплены в базе данных и не зависят от этой страницы.</p></div></div>');
+    if (rl) renderTypesPanel(rl);
     const pp = $('.setpane[data-set="pipe"]');
     if (pp) {
       let rate = null; try { rate = await run(sb.from('pricing_config').select('install_pct, delivery_pct').eq('id', 1).single()); } catch (e) {}
@@ -933,9 +971,9 @@
   }
   async function createInvite() {
     const { data: { session } } = await sb.auth.getSession();
-    const role = ($('#invRole') || {}).value, gid = ($('#invGroup') || {}).value;
+    const roleV = ($('#invRole') || {}).value, gid = ($('#invGroup') || {}).value, isType = /^[0-9a-f-]{36}$/.test(roleV || ''), role = isType ? undefined : roleV, account_type_id = isType ? roleV : undefined;
     try {
-      const res = await fetch(BACKEND.url + '/functions/v1/create-invite', { method: 'POST', headers: { 'content-type': 'application/json', apikey: BACKEND.anonKey, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify({ role, discount_group_id: gid || null }) });
+      const res = await fetch(BACKEND.url + '/functions/v1/create-invite', { method: 'POST', headers: { 'content-type': 'application/json', apikey: BACKEND.anonKey, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify({ role, account_type_id, discount_group_id: gid || null }) });
       const j = await res.json(); if (!res.ok || !j.link) throw new Error(j.message || j.error || _('Ошибка'));
       $('#invLink').value = j.link; $('#invOut').hidden = false; toast(_('Ссылка действует 14 дней'));
     } catch (e) { toast(humanError(e), true); }

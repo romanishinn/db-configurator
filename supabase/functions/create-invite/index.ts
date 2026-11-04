@@ -1,4 +1,4 @@
-// create-invite — the superadmin issues an invite link for a dealer or architect.
+// create-invite — the superadmin issues an invite link for an account type (any role except the client).
 // Deployed with verify_jwt = true: only a signed-in user reaches it; we additionally require that
 // the caller is the superadmin. The invite carries the role and discount group; the invitee fills
 // the rest and sets their own password on the join page (accept-invite).
@@ -46,14 +46,23 @@ Deno.serve(async (req) => {
   // 2) validate input
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return json({ error: "bad_json" }, 400, h); }
-  const role = body.role;
-  if (role !== "dealer" && role !== "architect") return json({ error: "bad_role" }, 400, h);
+  // the invite names an account type (the role follows it) or, as before, a plain role
+  const sb = createClient(url, serviceKey, { auth: { persistSession: false } });
+  let role: string | null = null;
+  let accountTypeId: string | null = null;
+  if (typeof body.account_type_id === "string" && body.account_type_id) {
+    const { data: t } = await sb.from("account_types").select("id, base_role").eq("id", body.account_type_id).maybeSingle();
+    if (!t || t.base_role === "client") return json({ error: "bad_type" }, 400, h);
+    role = t.base_role; accountTypeId = t.id;
+  } else if (body.role === "dealer" || body.role === "architect") {
+    role = body.role;
+  }
+  if (!role) return json({ error: "bad_role" }, 400, h);
   const discountGroupId = typeof body.discount_group_id === "string" ? body.discount_group_id : null;
 
   // 3) create the invite as service_role (audited with the superadmin's id)
-  const sb = createClient(url, serviceKey, { auth: { persistSession: false } });
   const { data, error } = await sb.from("invites")
-    .insert({ role, discount_group_id: discountGroupId, created_by: me.user.id })
+    .insert({ role, account_type_id: accountTypeId, discount_group_id: discountGroupId, created_by: me.user.id })
     .select("token, expires_at").single();
   if (error) return json({ error: "insert_failed", message: error.message }, 500, h);
 
