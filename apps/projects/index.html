@@ -72,6 +72,8 @@
     <div class="bar"><button class="primary" type="submit">Войти</button></div>
   </form>
 
+  <div class="card" id="unavail" hidden>Недоступно</div>
+
   <div class="card" id="denied" hidden>Нет доступа: страницу открывают суперадмин и менеджер. <button type="button" id="out1">Выйти</button></div>
 
   <nav class="tabs" id="tabs" hidden aria-label="Разделы">
@@ -89,6 +91,7 @@
   <section class="card" id="queueCard" hidden>
     <h2>Ждут решения</h2>
     <div id="queue"></div>
+    <div class="msg" id="queueMsg" aria-live="polite"></div>
   </section>
 
   <section class="card" id="ordersCard" hidden>
@@ -108,6 +111,7 @@
     <input id="rvTitle" type="text" lang="de" spellcheck="true">
     <label for="rvDistrict">Район</label>
     <input id="rvDistrict" type="text" lang="de" spellcheck="true">
+    <p class="sub" id="rvDistHint" hidden>Район встречается в названии, а «район можно указать в подписи» не отмечено. Уберите район из названия или отметьте разрешение в блоке согласия.</p>
     <label>Что установлено</label>
     <div class="checks" id="rvOptions"></div>
     <div id="rvConsent"></div>
@@ -185,6 +189,10 @@
     if (/published_needs_photo/.test(m)) return 'Чтобы показать проект на сайте, нужно хотя бы одно фото';
     if (/CONSENT_REQUIRED/.test(m)) return 'Нельзя опубликовать без записанного согласия владельца';
     if (/CONSENT_WITHDRAWN/.test(m)) return 'Владелец отозвал согласие: публиковать нельзя';
+    if (/DISTRICT_NOT_ALLOWED/.test(m)) return 'Район нельзя указывать в названии без согласия владельца. Уберите район из названия или отметьте разрешение в блоке согласия';
+    if (/PROJECT_HAS_PHOTOS/.test(m)) return 'У проекта уже есть фото: заказ нельзя использовать для новой заявки';
+    if (/TOO_FEW_PHOTOS/.test(m)) return 'Слишком мало фото для публикации';
+    if (/ALREADY_SUBMITTED/.test(m)) return 'Заявка по этому заказу уже отправлена';
     if (/BAD_REASON/.test(m)) return 'Недопустимая причина';
     if (/ORDER_NOT_FOUND/.test(m)) return 'Заказ не найден';
     if (/FORBIDDEN/.test(m)) return 'Нет прав на это действие';
@@ -238,12 +246,22 @@
 
   /* ---------- list ---------- */
   function loadList() {
+    // unpublished dealer submissions are opened only through "Ждут решения" (that path re-encodes the photos)
+    var lb = $('list');
+    return sb.from('project_private').select('project_id').not('submitted_by', 'is', null).then(function (pr) {
+      if (pr.error) { lb.textContent = ''; lb.appendChild(el('p', 'sub', humanError(pr.error))); return; }
+      var hide = {}; pr.data.forEach(function (x) { hide[x.project_id] = true; });
+      return loadProjects(hide);
+    });
+  }
+  function loadProjects(hide) {
     return sb.from('projects').select('id,title,district,country,options,installed_on,photos,video_url,reference_available,published,sort')
       .order('sort', { ascending: true }).order('installed_on', { ascending: false, nullsFirst: false }).then(function (r) {
         var box = $('list'); box.textContent = '';
         if (r.error) { box.appendChild(el('p', 'sub', humanError(r.error))); return; }
-        if (!r.data.length) box.appendChild(el('p', 'sub', 'Пока нет проектов.'));
-        r.data.forEach(function (p) {
+        var rows = r.data.filter(function (p) { return p.published || !hide[p.id]; });
+        if (!rows.length) box.appendChild(el('p', 'sub', 'Пока нет проектов.'));
+        rows.forEach(function (p) {
           var it = el('div', 'item');
           if (p.photos.length) { var im = el('img'); im.src = publicUrl(p.photos[0]); im.alt = ''; it.appendChild(im); } else it.appendChild(el('div', 'noimg'));
           var t = el('div', 't'); t.appendChild(el('b', null, p.title)); t.appendChild(el('span', null, p.district + ' · ' + p.country + ' · ' + p.photos.length + ' фото'));
@@ -335,7 +353,7 @@
     Object.keys(TABS).forEach(function (n) { $(TABS[n][0]).setAttribute('aria-selected', n === k ? 'true' : 'false'); show(TABS[n][1], n === k); });
     if (k === 'list') loadList(); else if (k === 'queue') loadQueue(); else loadOrders();
   }
-  Object.keys(TABS).forEach(function (k) { $(TABS[k][0]).addEventListener('click', function () { showTab(k); }); });
+  Object.keys(TABS).forEach(function (k) { $(TABS[k][0]).addEventListener('click', function () { say('queueMsg', ''); showTab(k); }); });
   function queueQuery(opts) { // submitted, not published, not rejected
     return sb.from('project_private').select('project_id,dealer_note,consent_at,projects!inner(id,title,district,country,options,photos,published,created_at)', opts)
       .not('submitted_by', 'is', null).is('rejected_reason', null).eq('projects.published', false);
@@ -357,11 +375,12 @@
     dist.type = 'checkbox'; ref.type = 'checkbox';
     var a = el('label'); a.appendChild(dist); a.appendChild(document.createTextNode('район можно указать в подписи')); checks.appendChild(a);
     if (!o.noRef) { var b = el('label'); b.appendChild(ref); b.appendChild(document.createTextNode('можно давать телефон владельца покупателям')); checks.appendChild(b); }
+    if (o.onDistrict) dist.addEventListener('change', o.onDistrict);
     box.appendChild(checks);
     var st = el('p', 'sub'); box.appendChild(st); var btn = null;
     if (!o.noBtn) { btn = el('button', null, 'Записать согласие'); btn.type = 'button'; var bar = el('div', 'bar'); bar.appendChild(btn); box.appendChild(bar); }
     host.appendChild(box);
-    return { button: btn, note: function (t) { st.textContent = t; },
+    return { button: btn, district: function () { return dist.checked; }, note: function (t) { st.textContent = t; },
       filled: function () { return !!ver.value.trim(); },
       args: function () { return { p_channel: ch.value, p_version: ver.value.trim(), p_district: dist.checked, p_reference: ref.checked }; } };
   }
@@ -409,6 +428,11 @@
     var ready = rv.consented && rv.items.some(function (x) { return x.on; });
     $('rvPublish').disabled = !ready; $('rvHint').hidden = rv.consented;
   }
+  function distHint() {
+    var d = $('rvDistrict').value.trim().toLowerCase();
+    $('rvDistHint').hidden = !(rv && d && $('rvTitle').value.toLowerCase().indexOf(d) >= 0 && !rv.consent.district());
+  }
+  $('rvTitle').addEventListener('input', distHint); $('rvDistrict').addEventListener('input', distHint);
   function openReview(q) {
     var p = q.projects;
     rv = { id: p.id, old: p.photos.slice(), items: p.photos.map(function (path) { return { path: path, on: true }; }), consented: !!q.consent_at };
@@ -416,7 +440,7 @@
     $('rvNote').textContent = q.dealer_note || '—';
     $('rvTitle').value = p.title || ''; $('rvDistrict').value = p.district || '';
     Array.prototype.forEach.call(RVO.querySelectorAll('input'), function (c) { c.checked = (p.options || []).indexOf(c.value) >= 0; });
-    rv.consent = makeConsent($('rvConsent'), {});
+    rv.consent = makeConsent($('rvConsent'), { onDistrict: distHint });
     rv.consent.note(rv.consented ? 'Согласие уже записано.' : '');
     rv.consent.button.addEventListener('click', function () {
       var a = rv.consent.args(); if (!a.p_version) { say('rvMsg', 'Укажите версию текста согласия'); return; }
@@ -426,7 +450,7 @@
         rv.consented = true; rv.consent.note('Согласие записано.'); say('rvMsg', 'Согласие записано', true); renderReview();
       }).then(function () { rv.consent.button.disabled = false; });
     });
-    say('rvMsg', ''); $('rvRejNote').value = ''; $('rvReason').selectedIndex = 0; renderReview();
+    say('rvMsg', ''); $('rvRejNote').value = ''; $('rvReason').selectedIndex = 0; renderReview(); distHint();
     show('review', true); show('queueCard', false); show('tabs', false); $('review').scrollIntoView();
   }
   function closeReview() { rv = null; show('review', false); show('tabs', true); showTab('queue'); return refreshCount(); }
@@ -437,7 +461,7 @@
     var chosen = rv.items.filter(function (x) { return x.on; }), title = $('rvTitle').value.trim(), district = $('rvDistrict').value.trim();
     if (!chosen.length) { say('rvMsg', 'Выберите хотя бы одно фото'); return; }
     if (!title || !district) { say('rvMsg', 'Заполните название и район'); return; }
-    var fresh = [], id = rv.id, old = rv.old.slice(), linked = false;
+    var fresh = [], id = rv.id, old = rv.old.slice(), linked = false, warn = false;
     busy(true); say('rvMsg', 'Обрабатываю фото…', true);
     // (a) re-encode through canvas: drops EXIF/GPS even if the dealer bypassed his own page
     chosen.reduce(function (chain, x) {
@@ -457,13 +481,22 @@
     }).then(function (r) {
       if (r.error) throw r.error;
       linked = true;
-      return sb.storage.from(BUCKET).remove(old); // (d) every old file; none of them is linked any more
-    }).then(function (r) {
-      if (r && r.error) throw new Error('Не удалось удалить старые файлы, не публикуется: ' + humanError(r.error));
+      // (d) everything in the project folder except the new files (also strays the dealer left); none of them is linked any more
+      return sb.storage.from(BUCKET).list(id).then(function (l) { return l && l.data ? l.data : []; }, function () { return []; }).then(function (files) {
+        var names = files.map(function (f) { return id + '/' + f.name; });
+        old.forEach(function (k) { if (names.indexOf(k) < 0) names.push(k); });
+        names = names.filter(function (n) { return fresh.indexOf(n) < 0; });
+        if (!names.length) return null;
+        return sb.storage.from(BUCKET).remove(names).then(function (x) {
+          if (x && x.error) throw new Error('Не удалось удалить старые файлы, не публикуется: ' + humanError(x.error));
+          warn = !x || !x.data || x.data.length < names.length; // a refused delete (RLS) comes back as an empty list, not an error
+        });
+      });
+    }).then(function () {
       return sb.from('projects').update({ published: true }).eq('id', id); // (e)
     }).then(function (r) {
       if (r.error) throw r.error;
-      return closeReview();
+      return closeReview().then(function () { if (warn) say('queueMsg', 'Опубликовано, но часть файлов не удалена, сообщите суперадмину'); });
     }).catch(function (err) {
       if (fresh.length && !linked) sb.storage.from(BUCKET).remove(fresh); // unlinked copies; best effort
       say('rvMsg', humanError(err)); busy(false);
@@ -505,19 +538,19 @@
   var STAGES = { inbox: 'новый', measurement: 'замер', awaiting_payment: 'ждёт оплаты', delivery: 'доставка', in_stock: 'на складе', installation: 'монтаж', done: 'готово' };
   function loadOrders() {
     var box = $('orders'); box.textContent = '';
-    return sb.from('orders').select('id,stage,lead_id,leads(contact_name,postcode)').neq('stage', 'done').then(function (r) {
+    return sb.rpc('list_orders_for_installation').then(function (r) {
       if (r.error) { box.appendChild(el('p', 'sub', humanError(r.error))); return; }
-      if (!r.data.length) { box.appendChild(el('p', 'sub', 'Заказов пока нет')); return; }
+      if (!r.data || !r.data.length) { box.appendChild(el('p', 'sub', 'Заказов пока нет')); return; }
       r.data.forEach(function (o) {
-        var l = o.leads || {}, it = el('div', 'item'), t = el('div', 't');
-        t.appendChild(el('b', null, l.contact_name || '—'));
-        t.appendChild(el('span', null, (l.postcode || '') + ' · ' + (STAGES[o.stage] || o.stage)));
+        var it = el('div', 'item'), t = el('div', 't');
+        t.appendChild(el('b', null, o.contact_name || '—'));
+        t.appendChild(el('span', null, (o.postcode || '') + ' · ' + (STAGES[o.stage] || o.stage) + (o.needs_confirmation ? ' · ждёт подтверждения офиса' : '')));
         it.appendChild(t);
-        var b = el('button', null, 'Монтаж завершён'); b.type = 'button';
+        var b = el('button', o.needs_confirmation ? 'primary' : null, o.needs_confirmation ? 'Подтвердить монтаж' : 'Монтаж завершён'); b.type = 'button';
         b.addEventListener('click', function () {
-          if (!confirm('Отметить монтаж завершённым: ' + (l.contact_name || 'заказ') + '?')) return;
+          if (!confirm((o.needs_confirmation ? 'Подтвердить монтаж: ' : 'Отметить монтаж завершённым: ') + (o.contact_name || 'заказ') + '?')) return;
           b.disabled = true; say('ordersMsg', '');
-          sb.rpc('complete_installation', { p_order: o.id }).then(function (x) {
+          sb.rpc('complete_installation', { p_order: o.order_id }).then(function (x) {
             if (x.error) { say('ordersMsg', humanError(x.error)); b.disabled = false; return; }
             loadOrders();
           });
@@ -550,6 +583,7 @@
   var out = function () { sb.auth.signOut().then(start); };
   $('out1').addEventListener('click', out); $('out2').addEventListener('click', out);
 
+  if (!BACKEND.url) { show('unavail', true); return; }
   var s = document.createElement('script'); s.src = SDK; s.async = true;
   s.onload = function () { sb = window.supabase.createClient(BACKEND.url, BACKEND.anonKey); start(); };
   s.onerror = function () { document.querySelector('main').appendChild(el('div', 'card', 'Сервер недоступен. Обновите страницу.')); };
