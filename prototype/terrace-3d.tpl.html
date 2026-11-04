@@ -1462,7 +1462,9 @@ function endTr() {
   camera.position.copy(t.pos); controls.target.copy(t.tgt); controls.update();
 }
 /** the user grabbed the camera mid-glide: stop where it is (final limits back, pose untouched) */
-function stopTr() { if (!camTr) return; const g = camTr; camTr = null; controls.minDistance = 3; controls.maxPolarAngle = g.maxPolar; controls.maxDistance = g.maxDist; }
+function stopTr() { if (!camTr) return; const g = camTr; camTr = null; // keep the limits wide enough for the pose the camera is in right now, otherwise update() pushes it (a jump)
+  const v = camera.position.clone().sub(controls.target), d = v.length(), pol = Math.acos(Math.min(1, Math.max(-1, v.y / (d || 1)))); // not getPolarAngle(): it is stale while update() is skipped during the glide
+  controls.minDistance = Math.min(3, d); controls.maxPolarAngle = Math.max(g.maxPolar, pol); controls.maxDistance = Math.max(g.maxDist, d); }
 function glideTo(pos, tgt, maxPolar, maxDist, ms) {
   const instant = !camReady || window.__camInstant;
   if (instant || (camera.position.distanceTo(pos) < 1e-3 && controls.target.distanceTo(tgt) < 1e-3)) {

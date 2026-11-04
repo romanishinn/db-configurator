@@ -380,11 +380,19 @@ select pg_temp.check((select paid is false and seller_id is null from public.ord
 select pg_temp.as_user(:'manager');
 select pg_temp.check(pg_temp.fails(format('insert into public.orders (lead_id) values (%L)', (select id from public.leads where contact_name = 'Journey Test')), 'row-level security'), 'a manager cannot create an order for a site request');
 select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, lead_id, catalog, config, total_net) values (%L, %L, 'c', '{}', 1)$q$, :'manager', (select id from public.leads where contact_name = 'Journey Test')), 'row-level security'), 'a manager cannot attach a quote to a site request');
+-- ... nor re-link an existing own quote to it by UPDATE
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'manager', null, 'c', '{}', 999999);
+select pg_temp.check(pg_temp.fails(format($q$update public.quotes set lead_id = %L where owner = %L and total_net = 999999$q$, (select id from public.leads where contact_name = 'Journey Test'), :'manager'), 'row-level security'), 'a manager cannot re-link a quote to a site request by UPDATE');
 -- dealer leads are not editable either (the assigned dealer's colleague of another org, a manager)
 select pg_temp.as_user(:'linz');
 select pg_temp.check(pg_temp.fails(format($q$insert into public.quotes (owner, lead_id, catalog, config, total_net) values (%L, %L, 'c', '{}', 1)$q$, :'linz', :'lead_maria'), 'row-level security'), 'a dealer of another organisation cannot attach a quote to a foreign lead');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'linz', null, 'c', '{}', 3);
+select pg_temp.check(pg_temp.fails(format($q$update public.quotes set lead_id = %L where owner = %L and total_net = 3$q$, :'lead_maria', :'linz'), 'row-level security'), 'a dealer of another organisation cannot re-link a quote to a foreign lead by UPDATE');
 -- unchanged: the assigned dealer, a colleague of his organisation and the superadmin write as before
 select pg_temp.as_user(:'graz1');
+insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'graz1', null, 'c', '{}', 2);
+update public.quotes set lead_id = :'lead_maria' where owner = :'graz1' and lead_id is null and total_net = 2;
+select pg_temp.check((select count(*) from public.quotes where owner = :'graz1' and lead_id = :'lead_maria' and total_net = 2) = 1, 'the assigned dealer re-links his own quote to his lead');
 insert into public.quotes (owner, lead_id, catalog, config, total_net) values (:'graz1', :'lead_maria', 'c', '{}', 1);
 insert into public.orders (lead_id) values (:'lead_maria');
 update public.orders set paid = true, seller_id = :'graz1' where lead_id = :'lead_maria';

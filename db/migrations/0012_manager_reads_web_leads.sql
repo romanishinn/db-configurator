@@ -39,3 +39,10 @@ drop policy quote_insert on public.quotes;
 create policy quote_insert on public.quotes for insert to authenticated with check (
   owner = auth.uid() and (lead_id is null or public.can_edit_lead(lead_id))
 );
+
+-- quotes: re-linking an existing quote (UPDATE of lead_id) needs the same right; the 0001 policy had no WITH CHECK, so a
+-- user could attach his own quote (with any total) to any lead whose id he can see
+drop policy quote_link_lead on public.quotes;
+create policy quote_link_lead on public.quotes for update to authenticated
+  using (owner = auth.uid() or public.sees_all())
+  with check (public.sees_all() or lead_id is null or public.can_edit_lead(lead_id));

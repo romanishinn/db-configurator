@@ -258,6 +258,7 @@
   let dbSig = '';
   const sigNow = () => JSON.stringify([snapshot(), svcOn('install'), svcOn('deliv')]);
   const dbNoNow = () => (dbNo && dbSig === sigNow() ? dbNo : '');
+  const sentCur = () => sentOk && !!dbNoNow(); // after the configuration changes the request can be sent again
   function notInclNote(t) { const m = []; if (!svcOn('deliv')) m.push(t.deliveryLc); if (!svcOn('install')) m.push(t.montLc); return t.qExclPre + [...m, t.qExclBase].join(', ') + '.'; }
 
   /* ---------- rendering ---------- */
@@ -369,8 +370,8 @@
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
     const to = step < 3 ? nextStep() : 3;
     const noBE = !window.Backend; // without the database there is no request form: the offer step ends with the PDF
-    const nextLabel = step === 3 ? (noBE ? 'PDF' : sending ? esc(t.sending) : sentOk ? esc(t.sentB(reqNo)) : esc(t.send)) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
-    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" ${step === 3 ? (noBE ? 'data-act="print"' : 'data-go="form"') : 'data-go="1"'} ${ok && !sending && !(step === 3 && sentOk && !noBE) ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
+    const nextLabel = step === 3 ? (noBE ? 'PDF' : sending ? esc(t.sending) : sentCur() ? esc(t.sentB(reqNo)) : esc(t.send)) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
+    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" ${step === 3 ? (noBE ? 'data-act="print"' : 'data-go="form"') : 'data-go="1"'} ${ok && !sending && !(step === 3 && sentCur() && !noBE) ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
   }
 
   /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
@@ -699,7 +700,7 @@
   function formHtml(t) {
     const more = `<p class="f-more"><button type="button" class="f-link" data-act="print">${t.printS}</button> · <button type="button" class="f-link" data-act="share">${t.share}</button></p>`;
     if (!window.Backend) return more; // no database: no request form, only PDF and link
-    if (sentOk) return `<div class="f-done" id="f-form" role="status"><b>${t.sentT(esc(reqNo))}</b><p style="margin:6px 0 0">${t.sent}</p></div>${more}`;
+    if (sentCur()) return `<div class="f-done" id="f-form" role="status"><b>${t.sentT(esc(reqNo))}</b><p style="margin:6px 0 0">${t.sent}</p></div>${more}`;
     const err = (k) => formErr[k] ? `<span class="err">${formErr[k]}</span>` : '';
     // one action on this step: "Send request" in the bar; the form keeps an invisible submit so Enter works
     return `<form class="f-form" id="f-form" novalidate><div class="f-h3" style="margin:22px 0 0"><span>${t.formT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.requestS}</span></div>
@@ -897,7 +898,7 @@
     syncForm();
     const t = L(); formErr = {};
     if (!form.name.trim()) formErr.name = t.required;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
     // postcode / town: optional for now
     if (Object.keys(formErr).length) { render(); const f = F.querySelector('#f-form'); if (f) f.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
     sending = true; reqErr = ''; logEv('отправляет заявку'); render();
@@ -912,7 +913,7 @@
       A.track('request_failed', { code: reqErr });
       if (reqErr === 'contact_required' || reqErr === 'invalid_payload') { // mark the field that fails the same check as the form's
         if (!form.name.trim()) formErr.name = t.required;
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
       }
     }
     render();
@@ -1090,9 +1091,9 @@
     if (d.go) {
       if (d.go === 'form') { // "Send request" in the bar: send when the form is filled, otherwise go to the first missing field
         syncForm();
-        const okMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+        const okMail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim());
         const missing = !form.name.trim() ? 'name' : !okMail ? 'email' : null;
-        if (!missing && !sentOk) { sendRequest(); return; }
+        if (!missing && !sentCur()) { sendRequest(); return; }
         const f = F.querySelector('#f-form'); if (f) { const i = f.querySelector(`[name="${missing || 'name'}"]`) || f; i.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (missing && i !== f) setTimeout(() => i.focus(), 400); }
         return;
       } go(Number(d.go)); return; }
