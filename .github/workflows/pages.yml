@@ -32,10 +32,10 @@ jobs:
           # configurator.html — same app, plain head (no auto-reload), used by the CRM iframe and for direct embedding
           { printf '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'; cat prototype/dist/terrace-3d.html; printf '</body></html>'; } > _site/configurator.html
           # crm.html — the new Pro CRM on live data (a CSS-only login backdrop: no 3D library). Without BACKEND.url it shows its demo data.
-          # It sits next to the working staff cabinet below; which one the managers use is the owner's call (STATE.md).
+          # The owner chose it (04.11): "Pro" and the partner activation lead here.
           python3 -c "open('_site/crm.html','w').write(open('prototype/crm.html').read().replace('/*CRM_I18N*/', open('prototype/crm-i18n.js').read()).replace('/*CRM_LIVE*/', open('prototype/crm-live.js').read()))"
           # cabinet.html — the working staff cabinet (reads lead_board / lead_events / quotes from the database; access is enforced by row level security).
-          # The configurator "Pro" button and partner activation (backend.js, join.html) route here.
+          # Kept as a fallback only: the configurator "Pro" button and partner activation (backend.js, join.html) now go to crm.html.
           cp apps/cabinet/cabinet.html _site/cabinet.html
           cp apps/join/index.html _site/join.html
           # landing.html — German B2C landing, reads the published projects; projects.html — superadmin form that adds them

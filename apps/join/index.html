@@ -218,7 +218,7 @@
         if (res.ok && res.j.ok) {
           $('f').querySelectorAll('input,button').forEach(function (el) { el.disabled = true; });
           show('ok', L.created);
-          var a = document.createElement('a'); a.href = 'cabinet.html'; a.textContent = L.goLogin; $('msg').appendChild(a);
+          var a = document.createElement('a'); a.href = 'crm.html'; a.textContent = L.goLogin; $('msg').appendChild(a);
         } else {
           var map = {
             invite_invalid: L.invite_invalid, invite_used: L.invite_used,
