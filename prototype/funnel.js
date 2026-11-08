@@ -380,7 +380,7 @@
       <details class="f-lang" aria-label="Language"><summary>${lang.toUpperCase()}<span class="f-lang-car" aria-hidden="true">▾</span></summary><div class="f-lang-menu">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${esc(LANGNAME[k] || k.toUpperCase())}</button>`).join('')}</div></details>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
     if (product === null) { F.innerHTML = head + `<div class="f-body">${catalogHTML(t)}</div>`; return; }
-    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
+    const steps = `<ol class="f-steps" style="--n:${t.steps.length}">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
     const body = [stepSize, stepKit, stepColours, stepOffer][step](t, o);
     // keep the tapped control where the finger is: re-rendering the panel must not move the page
     const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
@@ -479,7 +479,7 @@
   function stepSize(t, o) {
     const wall = state.mount === 'wall';
     let h = resumeOffer ? `<div class="f-resume"><span>${t.resume}</span><span><button type="button" class="f-link" data-resume="yes">${t.resumeYes}</button> · <button type="button" class="f-link" data-resume="no">${t.resumeNo}</button></span></div>` : '';
-    h += `<p class="f-lead" style="margin-top:0">${t.intro}</p><h2>${t.s1}</h2><p class="f-lead">${t.s1l}</p>`;
+    h += `<p class="f-lead" style="margin-top:0">${t.intro.replace('5', t.steps.length)}</p><h2>${t.s1}</h2><p class="f-lead">${t.s1l}</p>`;
     h += `<div class="f-cards">
       <button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${t.wall}</b><span class="d">${t.wallD}</span></button>
       <button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${t.free}</b><span class="d">${t.freeD}</span></button></div>`;
