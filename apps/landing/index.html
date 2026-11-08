@@ -130,6 +130,10 @@ label{font-size:.82rem;font-weight:600;color:var(--ink-2);display:flex;flex-dire
 input,textarea{font-family:var(--sans);font-size:1rem;padding:.75em .85em;border:1px solid var(--line);border-radius:3px;background:var(--paper);color:var(--ink);width:100%}
 textarea{resize:vertical;min-height:84px}
 .form-ok{background:color-mix(in srgb,var(--ok) 14%,var(--card));border:1px solid color-mix(in srgb,var(--ok) 45%,var(--line));border-radius:6px;padding:1.4rem;color:var(--ink)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+label.consent{flex-direction:row;align-items:flex-start;gap:.6rem;font-weight:400;line-height:1.45}
+label.consent input{width:auto;margin-top:.2rem;flex:none}
+.btn[disabled]{opacity:.6;cursor:progress}
 .contact-line{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:.95rem}
 .copy{border:1px solid var(--line);background:var(--paper);border-radius:3px;padding:.3em .7em;font-size:.8rem;cursor:pointer;color:var(--ink)}
 
@@ -336,8 +340,11 @@ dialog.gal .top{display:flex;justify-content:space-between;align-items:center;ga
             <label>Ort / PLZ<input name="ort" autocomplete="postal-code" placeholder="z. B. 1130 Wien" required></label>
             <label>Telefon oder E-Mail<input name="kontakt" autocomplete="tel" required></label>
             <label>Nachricht (optional)<textarea name="msg" placeholder="Größe der Terrasse, Wünsche …"></textarea></label>
-            <button class="btn btn-primary" type="submit" style="justify-content:center">Rückruf in 2 Stunden anfordern</button>
-            <p class="ph-note">Formular ist eine Vorschau — an Ihr CRM / Ihre Mailadresse anbinden.</p>
+            <input class="hp" name="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent"><input type="checkbox" name="consent" required><span>Ich bin damit einverstanden, dass D&amp;B Pergolen meine Angaben zur Bearbeitung meiner Anfrage speichert und mich dazu kontaktiert. Hinweise zum Datenschutz: <span class="ph-note">[Datenschutzerklärung einsetzen]</span> <span class="ph-note">[PRÜFEN: Jurist]</span></span></label>
+            <div id="ts-host"></div>
+            <p id="lead-msg" role="alert" hidden style="color:#b3402a;font-size:.9rem"></p>
+            <button class="btn btn-primary" type="submit" style="justify-content:center">Rückruf anfordern</button>
           </form>
         </div>
       </div>
@@ -357,16 +364,88 @@ dialog.gal .top{display:flex;justify-content:space-between;align-items:center;ga
 
 <script>
 (function(){
+  var BACKEND={url:'https://zypujyrvbegilvtvqras.supabase.co',anonKey:'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9'};
+  var TURNSTILE={siteKey:'0x4AAAAAAFlRMtBteuJ_-n1B',api:'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'};
   var form=document.getElementById('lead');
-  if(form){form.addEventListener('submit',function(e){
-    e.preventDefault();
-    if(!form.reportValidity())return;
-    var card=document.createElement('div');
-    card.className='form-ok';
-    card.setAttribute('role','status');
-    card.innerHTML='<strong>Danke!</strong><br>Ihre Anfrage ist angekommen. In der echten Version meldet sich das Team innerhalb von 2 Stunden. <span class="ph-note">(Vorschau — bitte an CRM anbinden.)</span>';
-    form.replaceWith(card);
-  });}
+  var ERR={
+    too_many_requests:'Zu viele Anfragen. Bitte versuchen Sie es später erneut.',
+    turnstile_failed:'Die Sicherheitsprüfung ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
+    turnstile_missing:'Die Sicherheitsprüfung konnte nicht geladen werden. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+    consent_required:'Bitte stimmen Sie der Speicherung Ihrer Angaben zu.',
+    contact_required:'Bitte geben Sie Ihren Namen und eine gültige Telefonnummer oder E-Mail-Adresse an.',
+    server_error:'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.',
+    network:'Keine Verbindung. Bitte versuchen Sie es erneut.'
+  };
+  var tsReady=null,tsWidget=null,tsResolve=null;
+  function loadTs(){
+    if(tsReady)return tsReady;
+    tsReady=new Promise(function(res){var s=document.createElement('script');s.src=TURNSTILE.api;s.async=true;s.defer=true;s.onload=function(){res(true);};s.onerror=function(){res(false);};document.head.appendChild(s);});
+    return tsReady;
+  }
+  function settle(v){if(tsResolve){var r=tsResolve;tsResolve=null;r(v);}}
+  function token(){
+    return loadTs().then(function(ok){
+      if(!ok||!window.turnstile)return '';
+      if(tsWidget==null){
+        try{tsWidget=window.turnstile.render(document.getElementById('ts-host'),{sitekey:TURNSTILE.siteKey,execution:'execute',appearance:'interaction-only',
+          callback:function(t){settle(t);},'error-callback':function(){settle('');},'timeout-callback':function(){settle('');}});}catch(e){return '';}
+      }
+      return new Promise(function(resolve){
+        tsResolve=resolve;
+        try{window.turnstile.reset(tsWidget);}catch(e){}
+        try{window.turnstile.execute(tsWidget);}catch(e){tsResolve=null;resolve('');}
+        setTimeout(function(){if(tsResolve===resolve){tsResolve=null;resolve('');}},12000);
+      });
+    });
+  }
+  function utm(){
+    var o={},q=new URLSearchParams(location.search);
+    q.forEach(function(v,k){if(/^utm_/.test(k)||k==='fbclid'||k==='gclid')o[k]=String(v).slice(0,200);});
+    if(document.referrer)o.referrer=document.referrer.slice(0,300);
+    return o;
+  }
+  function contactOf(f){
+    var ort=f.ort.value.trim(),k=f.kontakt.value.trim(),m=ort.match(/\b\d{4,5}\b/);
+    var c={name:f.name.value.trim(),address:ort,postcode:m?m[0]:'',note:f.msg.value.trim()};
+    if(k.indexOf('@')>=0)c.email=k;else c.phone=k;
+    return c;
+  }
+  if(form){
+    var msg=document.getElementById('lead-msg'),btn=form.querySelector('button[type=submit]');
+    var show=function(t){msg.textContent=t;msg.hidden=!t;};
+    if(!BACKEND.url||!BACKEND.anonKey||!window.fetch){
+      form.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});
+      show('Derzeit nicht verfügbar, bitte rufen Sie uns an: [Telefonnummer]');
+    }
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+      if(btn.disabled)return;
+      show('');
+      if(!form.consent.checked){show(ERR.consent_required);return;}
+      var contact=contactOf(form);
+      if(!contact.name||!(contact.email||contact.phone)){show(ERR.contact_required);return;}
+      var hp=form.hp.value;
+      btn.disabled=true;
+      var fail=function(code){show(ERR[code]||ERR.server_error);btn.disabled=false;};
+      token().then(function(tok){
+        if(!tok){fail('turnstile_missing');return;}
+        return fetch(BACKEND.url+'/functions/v1/submit-request',{method:'POST',
+          headers:{'content-type':'application/json',apikey:BACKEND.anonKey,Authorization:'Bearer '+BACKEND.anonKey},
+          body:JSON.stringify({kind:'callback',token:tok,consent:true,contact:contact,utm:utm(),journey:'Landing page '+location.pathname,hp:hp})})
+        .then(function(r){return r.json().then(function(d){return d;},function(){return null;});})
+        .then(function(d){
+          if(d&&d.ok===true){
+            var card=document.createElement('div');
+            card.className='form-ok';card.setAttribute('role','status');
+            var b=document.createElement('strong');b.textContent='Danke!';
+            card.appendChild(b);card.appendChild(document.createElement('br'));
+            card.appendChild(document.createTextNode('Ihre Anfrage ist eingegangen. Wir melden uns bei Ihnen.'));
+            form.replaceWith(card);
+          }else fail(d&&typeof d.error==='string'?d.error:'server_error');
+        },function(){fail('network');});
+      }).catch(function(){fail('network');});
+    });
+  }
   document.querySelectorAll('.copy').forEach(function(b){
     b.addEventListener('click',function(){
       var el=document.getElementById(b.dataset.copy);
