@@ -8,7 +8,7 @@
   const BACKEND = { url: 'https://zypujyrvbegilvtvqras.supabase.co', anonKey: 'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9', cabinet: 'crm.html' }; // the Pro CRM on live data (cabinet.html stays deployed, but nothing links to it)
   if (!BACKEND.url || !BACKEND.anonKey) return;
   const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
-  const STAFF = ['manager', 'seller', 'dealer', 'superdealer', 'superadmin']; // 'seller' stays until migration 0011
+  const STAFF = ['manager', 'seller', 'dealer', 'superdealer', 'superadmin']; // 'seller' stays until migration 0018
   // Bot protection: a public request is only accepted with a valid Cloudflare Turnstile token,
   // checked server-side by the submit-request Edge Function. Public site key for the "D&B configurator"
   // widget (hostname romanishinn.github.io); the matching secret lives in the function's TURNSTILE_SECRET env.

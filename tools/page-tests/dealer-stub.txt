@@ -1,0 +1,12 @@
+window.__log=[]; var session=null; window.__projects=window.__projects||[]; window.__priv=window.__priv||[];
+function q(t){var o={};var b={select:function(){return b},order:function(){return b},eq:function(k,v){o.f=[k,v];return b},single:function(){o.s=1;return b},
+ then:function(res,rej){var out;
+  if(t==='profiles')out={data:{role:window.__role||'dealer'}};
+  else if(t==='project_private')out={data:window.__priv,error:null};
+  else out={data:window.__projects,error:null};
+  return Promise.resolve(out).then(res,rej)}};return b}
+window.supabase={createClient:function(){return{
+ auth:{getSession:function(){return Promise.resolve({data:{session:session}})},signInWithPassword:function(){session={user:{id:'u1'}};return Promise.resolve({error:null})},signOut:function(){session=null;return Promise.resolve({})}},
+ from:q,
+ rpc:function(n,a){window.__log.push({rpc:n,args:a});if(n==='list_my_installed_orders')return Promise.resolve({data:window.__orders||[{order_id:'o1',contact_name:window.__name||'Anna Muster',postcode:'1130'}],error:null});if(n==='submit_project'){if(window.__subErr)return Promise.resolve({error:window.__subErr});window.__projects=[{id:'p1',title:'Neu',district:'W',published:false,photos:[],created_at:''}];window.__priv=[{project_id:'p1'}];return Promise.resolve({data:'p1',error:null})}return Promise.resolve({error:window.__attErr||null})},
+ storage:{from:function(){return{upload:function(p,b,o){window.__log.push({up:p,upsert:o.upsert});window.__n=(window.__n||0)+1;if(window.__failAt&&window.__n===window.__failAt)return Promise.resolve({error:{message:'Failed to fetch'}});return Promise.resolve({error:null})}}}}}}};

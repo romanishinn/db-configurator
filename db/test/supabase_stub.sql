@@ -23,3 +23,11 @@ grant select, insert, update, delete on storage.objects to anon, authenticated;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+
+-- as in Supabase: the folders of an object path (all parts but the file name)
+create function storage.foldername(name text) returns text[] language plpgsql as $$
+declare _parts text[];
+begin
+  select string_to_array(name, '/') into _parts;
+  return _parts[1:array_length(_parts, 1) - 1];
+end $$;

@@ -4,7 +4,8 @@
  * Texts are in T below (DE / EN / RU); the printable quote and the request e-mail use the same language.
  */
 (() => {
-  // ASSUMPTION: private customers in Austria, standard VAT 20 %. Catalogue prices are net suggested retail prices.
+  // Owner's decision (2026-11-04, docs/decisions.md): Austrian VAT 20 % for every language and country; for now every offer comes from the Austrian company.
+  // Catalogue prices are net suggested retail prices.
   const VAT = 0.2;
   // TODO(office): office e-mail and phone for requests and the quote footer. While empty, the mail opens without a recipient.
   // Brand hidden for a demo video: put the company name back into name to show it again (header, quote, tab title).
