@@ -154,7 +154,34 @@ dialog.gal::backdrop{background:rgba(0,0,0,.6)}
 dialog.gal .in{padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem;max-height:90vh;overflow:auto}
 dialog.gal img{width:100%;height:auto;border-radius:3px;display:block}
 dialog.gal .top{display:flex;justify-content:space-between;align-items:center;gap:1rem}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+/* Motion: soft section snapping (proximity, never traps the reader), reveal on scroll, small hover life. All off for reduced motion. */
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+@media (min-width:860px) and (prefers-reduced-motion:no-preference){
+  html{scroll-snap-type:y proximity}
+  main>section,main>.wrap:first-child{scroll-snap-align:start}
+}
+.bar{transition:box-shadow .3s,background-color .3s}
+.bar.stuck{box-shadow:0 6px 24px rgba(0,0,0,.14)}
+.btn:hover{transform:translateY(-1px)}
+.proj{transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.proj:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,.14)}
+.proj .ph img{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.proj:hover .ph img{transform:scale(1.05)}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:no-preference){
+  .hero>div:first-child>*{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+  .hero>div:first-child>*:nth-child(2){animation-delay:.08s}
+  .hero>div:first-child>*:nth-child(3){animation-delay:.16s}
+  .hero>div:first-child>*:nth-child(4){animation-delay:.24s}
+  .hero>div:first-child>*:nth-child(5){animation-delay:.32s}
+  .hero .ph{animation:rise 1s .2s cubic-bezier(.2,.7,.2,1) both}
+  .hero .ph svg{animation:drift 7s ease-in-out infinite}
+  .js .rv{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+  .js .rv.in{opacity:1;transform:none}
+}
+
 </style>
 </head>
 <body>
@@ -362,6 +389,22 @@ dialog.gal .top{display:flex;justify-content:space-between;align-items:center;ga
   </div>
 </footer>
 
+<script>
+/* motion: reveal blocks on scroll, header shadow; content stays visible without JS or with reduced motion */
+(function(){
+  var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var bar=document.querySelector('.bar');
+  function st(){if(bar)bar.classList.toggle('stuck',window.scrollY>8)}
+  addEventListener('scroll',st,{passive:true});st();
+  if(rm||!('IntersectionObserver' in window))return;
+  var els=document.querySelectorAll('main section:not(.hero) h2, main section:not(.hero) .eyebrow, main section:not(.hero) .grid > *, main section:not(.hero) .faq > *, main section:not(.hero) form, main section:not(.hero) .steps > *');
+  document.documentElement.classList.add('js');
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+  els.forEach(function(el,i){el.classList.add('rv');el.style.setProperty('--d',((i%4)*0.08)+'s');io.observe(el)});
+  /* projects load later: reveal them as they appear */
+  new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.nodeType===1&&n.classList&&n.classList.contains('proj')&&!n.classList.contains('rv')){n.classList.add('rv');io.observe(n)}})})}).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 <script>
 (function(){
   var BACKEND={url:'https://zypujyrvbegilvtvqras.supabase.co',anonKey:'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9'};
