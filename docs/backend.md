@@ -76,7 +76,7 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
 - The migration ends with the 0009 safety net: no function, policy, check, view, default or trigger mentions the old label (`orders.seller_id` is a different word and stays).
 
 ## Callback request without a calculation (migration 0019)
-- `submit_callback(p_contact jsonb, p_utm jsonb, p_journey text) returns void`: for the Edge Function only (`service_role`; anon and authenticated are revoked explicitly). Creates a lead with source `web`, no quote.
+- `submit_callback(p_contact jsonb, p_utm jsonb, p_journey text, p_consent boolean) returns void`: requires `p_consent = true` (else `CONSENT_REQUIRED`) and stores the date in `leads.consent_at` (null for older leads; not writable by authenticated). For the Edge Function only (`service_role`; anon and authenticated are revoked explicitly). Creates a lead with source `web`, no quote.
 - Needs a phone or an e-mail (`CONTACT_REQUIRED`); at most 5 leads per day with the same phone or e-mail, any source (`TOO_MANY_REQUESTS`); empty strings become null; the input limits of 0015 apply.
 - The superadmin notification comes from the existing trigger on `leads`; a manager sees the new unassigned web lead by the rule of 0012.
 - Known limits: the limit counts all leads of that contact, not only callbacks; the rate limit is per contact, not per IP (Turnstile in the Edge Function is the bot protection); not yet run against a real Supabase.

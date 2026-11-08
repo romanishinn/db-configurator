@@ -942,13 +942,13 @@ select pg_temp.check(length(:'r_graz1') > 0 and :'r_graz1' <> :'r_linz', 'the co
 select pg_temp.as_root();
 select pg_temp.check((select title from public.discount_groups where code = 'agent') = 'Агенты', 'discount group agent is called Агенты');
 select pg_temp.check(not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prokind = 'f' and p.prosrc ~ '\mseller\M'), 'no function body mentions the old role label');
-select pg_temp.check(not has_function_privilege('anon', 'public.submit_callback(jsonb,jsonb,text)', 'execute'), 'anon cannot call submit_callback');
-select pg_temp.check(not has_function_privilege('authenticated', 'public.submit_callback(jsonb,jsonb,text)', 'execute'), 'authenticated cannot call submit_callback');
-select pg_temp.check(has_function_privilege('service_role', 'public.submit_callback(jsonb,jsonb,text)', 'execute'), 'service_role may call submit_callback');
+select pg_temp.check(not has_function_privilege('anon', 'public.submit_callback(jsonb,jsonb,text,boolean)', 'execute'), 'anon cannot call submit_callback');
+select pg_temp.check(not has_function_privilege('authenticated', 'public.submit_callback(jsonb,jsonb,text,boolean)', 'execute'), 'authenticated cannot call submit_callback');
+select pg_temp.check(has_function_privilege('service_role', 'public.submit_callback(jsonb,jsonb,text,boolean)', 'execute'), 'service_role may call submit_callback');
 select count(*) as q_before from public.quotes \gset
 select count(*) as n_before from public.notifications where kind = 'lead_new' \gset
 select pg_temp.as_service();
-select public.submit_callback('{"name":"  Rita Call ","phone":"+43 660 7001","email":"","address":"  ","postcode":"8020","note":""}', '{"utm_source":"g"}', '  ');
+select public.submit_callback('{"name":"  Rita Call ","phone":"+43 660 7001","email":"","address":"  ","postcode":"8020","note":""}', '{"utm_source":"g"}', '  ', true);
 select pg_temp.as_root();
 select pg_temp.check((select count(*) from public.leads where contact_name = 'Rita Call' and source = 'web' and phone = '+43 660 7001' and email is null
   and object_address is null and note is null and journey is null and postcode = '8020' and created_by is null and utm ->> 'utm_source' = 'g') = 1, 'callback creates a web lead, empty strings become null');
@@ -961,15 +961,27 @@ select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"phone":"+
 select pg_temp.as_user(:'admin');
 select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"phone":"+43 1"}')$q$, 'permission denied'), 'authenticated call of submit_callback is refused');
 select pg_temp.as_service();
-select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"name":"x"}')$q$, 'CONTACT_REQUIRED'), 'callback needs a phone or an e-mail');
-select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"phone":" ","email":" "}')$q$, 'CONTACT_REQUIRED'), 'blank contact is no contact');
-select public.submit_callback('{"email":"Limit@X.at"}');
-select public.submit_callback('{"email":"limit@x.at"}');
-select public.submit_callback('{"email":"LIMIT@x.at"}');
-select public.submit_callback('{"email":"limit@x.at"}');
-select public.submit_callback('{"email":"limit@x.at"}');
-select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"email":"limit@x.at"}')$q$, 'TOO_MANY_REQUESTS'), 'the sixth callback in a day is refused');
-select pg_temp.check(pg_temp.fails(format($q$select public.submit_callback(jsonb_build_object('phone', '+43 660 7002', 'name', %L))$q$, repeat('x', 5000)), 'leads_input_limits'), 'callback keeps the input limits of 0015');
+select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"name":"x"}', '{}', null, true)$q$, 'CONTACT_REQUIRED'), 'callback needs a phone or an e-mail');
+select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"phone":" ","email":" "}', '{}', null, true)$q$, 'CONTACT_REQUIRED'), 'blank contact is no contact');
+select public.submit_callback('{"email":"Limit@X.at"}', '{}', null, true);
+select public.submit_callback('{"email":"limit@x.at"}', '{}', null, true);
+select public.submit_callback('{"email":"LIMIT@x.at"}', '{}', null, true);
+select public.submit_callback('{"email":"limit@x.at"}', '{}', null, true);
+select public.submit_callback('{"email":"limit@x.at"}', '{}', null, true);
+select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"email":"limit@x.at"}', '{}', null, true)$q$, 'TOO_MANY_REQUESTS'), 'the sixth callback in a day is refused');
+select pg_temp.check(pg_temp.fails(format($q$select public.submit_callback(jsonb_build_object('phone', '+43 660 7002', 'name', %L), '{}', null, true)$q$, repeat('x', 5000)), 'leads_input_limits'), 'callback keeps the input limits of 0015');
+select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"phone":"+43 660 7003"}')$q$, 'CONSENT_REQUIRED'), 'callback without consent (default) is refused');
+select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"phone":"+43 660 7003"}', '{}', null, false)$q$, 'CONSENT_REQUIRED'), 'callback with consent false is refused');
+select pg_temp.check(pg_temp.fails($q$select public.submit_callback('{"phone":"+43 660 7003"}', '{}', null, null)$q$, 'CONSENT_REQUIRED'), 'callback with consent null is refused');
+select pg_temp.as_root();
+select pg_temp.check(not exists (select 1 from public.leads where phone = '+43 660 7003'), 'a refused callback leaves no lead');
+select pg_temp.check((select consent_at from public.leads where contact_name = 'Rita Call') between now() - interval '1 minute' and now(), 'consent date is recorded with the callback');
+select pg_temp.as_user(:'manager');
+select pg_temp.check((select count(consent_at) from public.leads where contact_name = 'Rita Call') = 1, 'a manager who sees the lead sees its consent date');
+select pg_temp.check(pg_temp.fails($q$update public.leads set consent_at = null where contact_name = 'Rita Call'$q$, 'permission denied'), 'a manager cannot change consent_at');
+select pg_temp.as_user(:'admin');
+select pg_temp.check(pg_temp.fails($q$update public.leads set consent_at = now()$q$, 'permission denied'), 'a superadmin cannot change consent_at directly');
+select pg_temp.check(pg_temp.fails($q$insert into public.leads (contact_name, phone, consent_at) values ('Fake', '+43 1', now())$q$, 'permission denied'), 'a client cannot insert consent_at directly');
 select pg_temp.as_root();
 
 select 'access tests passed' as result;

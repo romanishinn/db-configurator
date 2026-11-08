@@ -80,7 +80,7 @@ async function handleCallback(req: Request, body: Record<string, unknown>, token
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !key) return fail("server_error", 500, h);
   const sb = createClient(url, key, { auth: { persistSession: false } });
-  const { error } = await sb.rpc("submit_callback", { p_contact: v.contact, p_utm: v.utm, p_journey: limitJourney(body.journey) });
+  const { error } = await sb.rpc("submit_callback", { p_contact: v.contact, p_utm: v.utm, p_journey: limitJourney(body.journey), p_consent: true });
   if (error) {
     const m = error.message || ""; // not logged or returned: it may echo personal data
     if (/TOO_MANY_REQUESTS/.test(m)) return fail("too_many_requests", 429, h);
