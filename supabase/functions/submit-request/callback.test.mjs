@@ -12,7 +12,7 @@ assert.equal(v({ consent: true, contact: { name: "A" } }).error, "contact_requir
 assert.equal(v({ consent: true, contact: { name: "A", email: "nope" } }).error, "contact_required");
 assert.equal(v({ consent: true, contact: { name: "A", phone: "12345" } }).error, "contact_required");
 assert.equal(v({ consent: true, contact: { name: "A", phone: "+43 1 234 56" } }).contact.phone, "+43 1 234 56");
-assert.equal(v({ consent: true, contact: { name: "A", phone: "1".repeat(60) } }).contact.phone.length, 50);
+assert.equal(v({ consent: true, contact: { name: "A", phone: "1".repeat(60) } }).contact.phone.length, 40);
 const long = v({ consent: true, contact: { name: "n".repeat(300), email: "a@b.at", address: "a".repeat(400), postcode: "1".repeat(30), note: "x".repeat(5000) }, utm: [1] });
 assert.deepEqual([long.contact.name.length, long.contact.address.length, long.contact.postcode.length, long.contact.note.length], [200, 300, 20, 4000]);
 assert.deepEqual(long.utm, {});

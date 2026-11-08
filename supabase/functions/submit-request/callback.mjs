@@ -16,7 +16,7 @@ export function validateCallback(body) {
   const name = str(c.name, 200);
   if (!name) return { error: "contact_required" };
   const email = str(c.email, 254).toLowerCase();
-  const phone = str(c.phone, 50);
+  const phone = str(c.phone, 40); // the leads.phone limit is 40 (0015)
   const okEmail = EMAIL.test(email);
   const okPhone = (phone.match(/\d/g) || []).length >= 6;
   if (!okEmail && !okPhone) return { error: "contact_required" };
