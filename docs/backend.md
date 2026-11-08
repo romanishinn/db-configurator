@@ -69,6 +69,18 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   EXIF/GPS is not stripped in SQL (the browser must do it); consent fields change only through `record_consent` (the manager has no direct write);
   country is set to AT on a request (the office corrects it); not run on the production database yet.
 
+## Clean-up after the manager rename (migration 0018)
+- `leads_before_insert` no longer turns source `seller` into `manager`; the old value is refused by `leads_source_check`. Browser tabs opened before 0009 must be reloaded.
+- `transfer_lead` is recreated (definition of 0014) without the old role label; `assign_lead` (0009) already had none.
+- Discount group `agent` is renamed from "Агенты / продавцы" to "Агенты" (idempotent update).
+- The migration ends with the 0009 safety net: no function, policy, check, view, default or trigger mentions the old label (`orders.seller_id` is a different word and stays).
+
+## Callback request without a calculation (migration 0019)
+- `submit_callback(p_contact jsonb, p_utm jsonb, p_journey text, p_consent boolean) returns void`: requires `p_consent = true` (else `CONSENT_REQUIRED`) and stores the date in `leads.consent_at` (null for older leads; not writable by authenticated). For the Edge Function only (`service_role`; anon and authenticated are revoked explicitly). Creates a lead with source `web`, no quote.
+- Needs a phone or an e-mail (`CONTACT_REQUIRED`); at most 5 leads per day with the same phone or e-mail, any source (`TOO_MANY_REQUESTS`); empty strings become null; the input limits of 0015 apply.
+- The superadmin notification comes from the existing trigger on `leads`; a manager sees the new unassigned web lead by the rule of 0012.
+- Known limits: the limit counts all leads of that contact, not only callbacks; the rate limit is per contact, not per IP (Turnstile in the Edge Function is the bot protection); not yet run against a real Supabase.
+
 ## Switching it on (D&B)
 1. supabase.com → New project, region **Frankfurt (eu-central-1)**, free plan.
 2. GitHub → repository Settings → Secrets and variables → Actions → `SUPABASE_DB_URL` = Project Settings → Database →
