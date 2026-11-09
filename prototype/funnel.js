@@ -757,11 +757,11 @@
     const key = ANALYTICS.posthogKey, on = () => !!key && Store.get('db.consent') === 'yes';
     let started = false;
     const AT = {
-      de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', yes: 'Einverstanden', no: 'Ablehnen' },
-      en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', yes: 'Accept', no: 'Decline' },
-      hr: { t: 'Smijemo li anonimno analizirati kako koristite konfigurator kako bismo ga poboljšali? Unosi poput imena ili telefona nikada se ne bilježe.', yes: 'Prihvaćam', no: 'Odbij' },
-      es: { t: '¿Podemos analizar de forma anónima cómo utiliza el configurador para mejorarlo? Datos como su nombre o su teléfono no se registran nunca.', yes: 'Aceptar', no: 'Rechazar' },
-      ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', yes: 'Согласен', no: 'Отказаться' },
+      de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', s: 'Anonyme Analyse erlauben?', yes: 'Einverstanden', no: 'Ablehnen' },
+      en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', s: 'Allow anonymous analytics?', yes: 'Accept', no: 'Decline' },
+      hr: { t: 'Smijemo li anonimno analizirati kako koristite konfigurator kako bismo ga poboljšali? Unosi poput imena ili telefona nikada se ne bilježe.', s: 'Dopustiti anonimnu analitiku?', yes: 'Prihvaćam', no: 'Odbij' },
+      es: { t: '¿Podemos analizar de forma anónima cómo utiliza el configurador para mejorarlo? Datos como su nombre o su teléfono no se registran nunca.', s: '¿Permitir análisis anónimo?', yes: 'Aceptar', no: 'Rechazar' },
+      ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', s: 'Разрешить анонимную аналитику?', yes: 'Согласен', no: 'Отказаться' },
     };
     function load() {
       if (started || !on() || !isCust()) return; started = true;
@@ -788,7 +788,7 @@
         if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); if (matchMedia('(max-width: 1100px), (orientation: landscape) and (max-height: 560px)').matches && document.querySelector('.app')) { b.classList.add('in-flow'); document.querySelector('.app').before(b); } else $('view').parentElement.appendChild(b);
           b.addEventListener('click', (e) => { const x = e.target.closest('[data-consent]'); if (!x) return; Store.set('db.consent', x.dataset.consent); b.remove(); if (x.dataset.consent === 'yes') { load(); A.track('consent_given'); } }); }
         const t = AT[lang] || AT.de;
-        b.innerHTML = `<p>${esc(t.t)}</p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;
+        b.innerHTML = `<p title="${esc(t.t)}"><span class="cl">${esc(t.t)}</span><span class="cs">${esc(t.s)}</span></p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;
       },
       /** the manager view is never recorded */
       mode(cust) { if (!loaded()) return; try { if (cust) window.posthog.startSessionRecording(); else window.posthog.stopSessionRecording(); } catch (e) { /* older loader */ } },

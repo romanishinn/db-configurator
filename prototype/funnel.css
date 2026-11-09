@@ -135,7 +135,7 @@ body.cust #hint { max-width: 340px; }
 @media (max-width: 760px) {
   body.cust .app { grid-template-columns: 1fr; padding: 0; gap: 0; }
   body.cust .stage { position: sticky; top: 0; height: auto; min-height: 0; border-radius: 0; border-width: 0 0 1px; z-index: 4; }
-  body.cust .stage .vp { height: 34vh; min-height: 200px; flex: none; } /* the toolbar panels add height below instead of covering the picture */
+  body.cust .stage .vp { height: 31vh; min-height: 200px; flex: none; } /* the toolbar panels add height below instead of covering the picture */
   body.cust .toolbar { padding: 6px 10px; }
   body.cust .funnel { border-radius: 0; border-width: 0; padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
   body.cust .f-bar { grid-template-columns: minmax(0, 1fr) auto auto; padding-left: 12px; padding-right: 12px; }
@@ -307,7 +307,7 @@ body.cust #hint { display: none !important; }
    whole screen; the price bar stays above everything */
 @media (max-width: 760px) {
   /* an open panel uses all the room between the 3D and the price bar (3D 34vh, icon row ~56px, bar ~76px) */
-  body.cust .toolbar .tb-pop { max-height: calc(100vh - 34vh - 100px - 84px - 6px); max-height: calc(100dvh - 34vh - 100px - 84px - 6px); overflow-y: auto; }
+  body.cust .toolbar .tb-pop { max-height: calc(100vh - 31vh - 100px - 84px - 6px); max-height: calc(100dvh - 31vh - 100px - 84px - 6px); overflow-y: auto; }
   /* compact chips in the colour / light panels */
   body.cust .toolbar :is(#tb-colors, #tb-vertos) .row button { font-size: 12px; padding: 4px 8px 4px 4px; }
   body.cust .toolbar #tb-vertos .vt button { font-size: 12px; padding: 3px 4px 5px; flex-basis: 96px; }
@@ -344,6 +344,13 @@ body.cust #hint { display: none !important; }
 #f-consent.in-flow { position: static; max-width: none; margin: 0; border-radius: 0; box-shadow: none; border-width: 0 0 1px; display: flex; gap: 10px; align-items: center; padding: 6px 12px; font-size: 12.5px; line-height: 1.3; z-index: 10; }
 #f-consent.in-flow p { margin: 0; flex: 1; }
 #f-consent.in-flow div { flex: none; }
+#f-consent .cs { display: none; }
+@media (max-width: 760px), (orientation: landscape) and (max-height: 560px) {
+  #f-consent.in-flow { padding: 2px 12px; min-height: 48px; max-height: 48px; overflow: hidden; }
+  #f-consent.in-flow p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  #f-consent.in-flow .cl { display: none; } #f-consent.in-flow .cs { display: inline; }
+  #f-consent.in-flow button { min-height: 44px; padding: 0 10px; }
+}
 @media print { #f-consent { display: none !important; } }
 
 /* partner login (backend.js): login card over the page, partner block at the top of the Pro panel */
@@ -681,17 +688,17 @@ summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-v
 @media (orientation: landscape) and (max-height: 560px) {
   html, body { overflow: hidden; height: 100dvh; }
   body.cust { display: flex; flex-direction: column; }
-  body.cust .app { grid-template-columns: minmax(0, 1fr) clamp(320px, 40vw, 400px); grid-template-rows: minmax(0, 1fr); flex: 1; height: auto; min-height: 0; padding: 0; gap: 0; }
+  body.cust .app { grid-template-columns: minmax(0, 1fr) clamp(300px, 40vw, 400px); grid-template-rows: minmax(0, 1fr); flex: 1; height: auto; min-height: 0; padding: 0; gap: 0; }
   body.cust .stage { align-self: stretch; position: relative; top: 0; height: auto; min-height: 0; border-radius: 0; border-width: 0 1px 0 0; z-index: 1; order: 0; }
   body.cust .stage .vp, body.cust .vp { height: auto !important; min-height: 0 !important; flex: 1; }
   body.cust .fold, body.cust #fold-left, body.cust #fold-right, body.cust #fold-bottom { display: none; }
-  body.cust .toolbar { position: relative; order: -1; flex: none; display: grid; align-content: end; width: auto; gap: 0; padding: 3px; background: #fff; border-top: 0; border-right: 1px solid var(--line); z-index: 5; }
-  body.cust .toolbar .tb-row { flex: none; display: grid; grid-template-columns: repeat(var(--tc, 1), 44px); gap: 2px; align-content: end; }
+  body.cust .toolbar { position: relative; order: -1; flex: none; display: grid; align-content: end; width: auto; gap: 0; padding: 2px; background: #fff; border-top: 0; border-right: 1px solid var(--line); z-index: 5; }
+  body.cust .toolbar .tb-row { flex: none; display: grid; grid-template-columns: repeat(var(--tc, 1), 44px); gap: 0; align-content: end; }
   body.cust .toolbar .ib { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: center; }
   body.cust .toolbar .ib .cap { display: none; }
   body.cust .toolbar .tb-row { --tc: 1; }
   body.cust .toolbar #louv-info { display: none !important; }
-  body.cust .toolbar .tb-pop:not([hidden]), body.cust .toolbar .clr-pop:not([hidden]) { position: absolute; left: calc(100% + 8px); right: auto; bottom: 0; width: min(380px, calc(100vw - clamp(320px, 40vw, 400px) - 90px)); max-height: calc(100dvh - 60px); overflow-y: auto; }
+  body.cust .toolbar .tb-pop:not([hidden]), body.cust .toolbar .clr-pop:not([hidden]) { position: absolute; left: calc(100% + 8px); right: auto; bottom: 0; width: min(380px, calc(100vw - clamp(300px, 40vw, 400px) - 90px)); max-height: calc(100dvh - 60px); overflow-y: auto; }
   body.cust .funnel { align-self: stretch; height: auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 0; border-radius: 0; border-width: 0; }
   body.cust .f-head { padding: 4px 12px 0; }
   body.cust .f-steps { position: sticky; top: 0; z-index: 2; background: var(--panel); margin: 0; padding: 6px 12px 4px; }
