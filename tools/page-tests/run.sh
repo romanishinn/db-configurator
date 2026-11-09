@@ -12,4 +12,6 @@ for f in manager.js manager-extra.js dealer.js landing.js hub.js; do
   echo "$out" | grep -E '^(PASS|FAIL)' | sort | uniq -c | sort -rn | head -3
   echo "$out" | grep -qE '^FAIL|pageerror|Error:' && { echo "$out" | grep -E '^FAIL|pageerror|Error:' | head -5; fail=1; }
 done
+# optional responsive audit (about 6 minutes): RESPONSIVE=1 sh run.sh; report only (exit 0) unless RESPONSIVE_STRICT=1, see responsive-README.md
+[ "${RESPONSIVE:-0}" = 1 ] && { echo "== responsive.js"; node responsive.js 2>&1 | tail -4 || fail=1; }
 [ "$fail" = 0 ] && echo "page tests: ok" || { echo "page tests: FAILED"; exit 1; }

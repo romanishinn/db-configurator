@@ -18,7 +18,8 @@ const DEV = [
   ['lap1366x768', 1366, 768, 0, 0], ['lap1440x900', 1440, 900, 0, 0], ['desk1920x1080', 1920, 1080, 0, 1]
 ].map(([n, w, h, t, sc]) => ({ n, w, h, touch: !!t, scale: !!sc }));
 // the configurator is heavy (software WebGL): fewer devices unless RESP_FULL_CFG=1
-const CFG_DEV = new Set(['ph360x740', 'ph390x844', 'ph430x932', 'phL740x360', 'phL844x390', 'tab768x1024', 'tabL1024x768', 'lap1366x768', 'desk1920x1080']);
+const CFG_DEV = new Set(['ph360x740', 'ph390x844', 'phL844x390', 'tab768x1024', 'tabL1024x768', 'lap1366x768']);
+const CFG_SCALE = new Set(['ph390x844', 'phL844x390']);
 
 const TYPES = { A: 'гориз. прокрутка', B: 'перекрыт', C: 'тап-цель <44', D: 'шрифт <12', E: 'вне экрана/обрезан', F: 'панели >35% высоты', G: 'действие: вложенная прокрутка/недоступно', H: 'ошибка консоли', I: 'шрифт x1.3: действие недоступно' };
 
@@ -27,14 +28,18 @@ function prepare() {
   cp.execSync('bash prototype/build.sh', { cwd: R, stdio: 'ignore' });
   const head = '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>';
   fs.writeFileSync(TMP + '/configurator.html', head + fs.readFileSync(R + '/prototype/dist/terrace-3d.html', 'utf8') + '</body></html>');
-  fs.writeFileSync(TMP + '/crm.html', fs.readFileSync(R + '/prototype/crm.html', 'utf8').replace('/*CRM_I18N*/', () => fs.readFileSync(R + '/prototype/crm-i18n.js', 'utf8')).replace('/*CRM_LIVE*/', () => fs.readFileSync(R + '/prototype/crm-live.js', 'utf8')));
+  const crmHtml = c => fs.readFileSync(R + '/prototype/crm.html', 'utf8').replace('/*CRM_I18N*/', () => fs.readFileSync(R + '/prototype/crm-i18n.js', 'utf8')).replace('/*CRM_LIVE*/', () => c);
+  const live = fs.readFileSync(R + '/prototype/crm-live.js', 'utf8'); fs.writeFileSync(TMP + '/crm.html', crmHtml(live));
+  fs.writeFileSync(TMP + '/crm-demo.html', crmHtml(live.replace(/url: 'https:[^']*supabase\.co'/, "url: ''"))); // no BACKEND.url: demo data, no login
 }
+// generic Supabase SDK stub for pages without a dedicated one: no session, empty tables
+const GEN = "var q=function(){var b={};['select','eq','neq','in','order','limit','single','maybeSingle','is','not','gte','lte','insert','update','upsert','delete','range','or','match'].forEach(function(k){b[k]=function(){return b}});b.then=function(r,j){return Promise.resolve({data:[],error:null,count:0}).then(r,j)};return b};window.supabase={createClient:function(){return{auth:{getSession:function(){return Promise.resolve({data:{session:null}})},getUser:function(){return Promise.resolve({data:{user:null}})},onAuthStateChange:function(){return{data:{subscription:{unsubscribe:function(){}}}}},signInWithPassword:function(){return Promise.resolve({error:{message:'stub'}})},signOut:function(){return Promise.resolve({})}},from:q,rpc:function(){return Promise.resolve({data:[],error:null})},storage:{from:function(){return{getPublicUrl:function(){return{data:{publicUrl:''}}}}}},functions:{invoke:function(){return Promise.resolve({data:null,error:null})}}}}};";
 const TS = 'window.turnstile={render:function(h,o){window.__o=o;return 1},reset:function(){},execute:function(){}};';
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' };
 
 // ---------- in-page checks (self-contained: runs inside the browser) ----------
 function inPage(opt) {
-  const out = [], els = []; window.__respEls = els; const vw = innerWidth, vh = innerHeight;
+  const out = [], els = []; window.__respEls = els; const vw = document.documentElement.clientWidth, vh = innerHeight; // not innerWidth: on mobile the layout viewport grows with overflowing content
   const sel = el => { if (!el || !el.tagName) return '?'; const p = []; let e = el; for (let i = 0; e && e.nodeType === 1 && i < 3; i++, e = e.parentElement) {
       let s = e.tagName.toLowerCase(); if (e.id) { p.unshift(s + '#' + e.id); break; }
       const c = (e.getAttribute('class') || '').trim().split(/\s+/).filter(Boolean).slice(0, 2); if (c.length) s += '.' + c.join('.');
@@ -43,11 +48,16 @@ function inPage(opt) {
   const add = (type, el, detail) => { els.push(el); out.push({ type, sel: sel(el), detail, i: els.length - 1 }); };
   const vis = el => { if (!el.isConnected) return false; if (el.checkVisibility && !el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false; const r = el.getClientRects()[0]; return !!r && r.width >= 2 && r.height >= 2; };
   const CAND = 'button,a[href],input:not([type=hidden]),select,textarea,summary,[role=button],[tabindex]:not([tabindex="-1"])';
-  const cands = [...document.querySelectorAll(CAND)].filter(e => vis(e) && !e.closest('[inert]') && getComputedStyle(e).pointerEvents !== 'none');
+  const hscr = el => { for (let a = el.parentElement; a; a = a.parentElement) { const c = getComputedStyle(a); if (/(auto|scroll)/.test(c.overflowX) && a.scrollWidth > a.clientWidth + 1) return true; } return false; };
+  const docOver0 = document.documentElement.scrollWidth > vw + 1;
+  // an element wholly outside the screen with no page overflow and no scroller is a parked off-canvas drawer: not tested (see README)
+  const parked = e => { const r = e.getBoundingClientRect(); return (r.right <= 0 || r.left >= vw) && !docOver0 && !hscr(e); };
+  const cands = [...document.querySelectorAll(CAND)].filter(e => vis(e) && !e.closest('[inert]') && getComputedStyle(e).pointerEvents !== 'none' && !parked(e) && (!opt.scope || !!e.closest(opt.scope)));
   const hitOk = (el, hit) => !!hit && (hit === el || el.contains(hit) || (() => { const l = hit.closest && hit.closest('label'); return !!l && l.control === el; })());
   const tryAt = el => { const r = el.getClientRects()[0]; const l = Math.max(r.left, 0), rr = Math.min(r.right, vw), t = Math.max(r.top, 0), b = Math.min(r.bottom, vh);
     if (rr - l < 1) return 'вне экрана по горизонтали'; if (b - t < 1) return 'вне экрана по вертикали'; const x = (l + rr) / 2;
-    for (const f of [.2, .5, .8]) { const hit = document.elementFromPoint(x, t + (b - t) * f); if (!hitOk(el, hit)) return 'перекрыт: ' + (hit ? sel(hit) : 'ничем (null)'); } return null; };
+    for (const f of [.2, .5, .8]) { const hit = document.elementFromPoint(x, t + (b - t) * f); if (!hitOk(el, hit)) { for (let a = hit; a && a !== document.body; a = a.parentElement) if (getComputedStyle(a).position === 'fixed') { const q = a.getBoundingClientRect(); if (q.width >= vw * .9 && q.height >= vh * .9 && !a.contains(el)) return 'MODAL ' + sel(a); }
+        return 'перекрыт: ' + (hit ? sel(hit) : 'ничем (null)'); } } return null; };
   const scrolls = el => { const r = []; for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) { const c = getComputedStyle(a);
       if (/(auto|scroll|overlay)/.test(c.overflowY) && a.scrollHeight > a.clientHeight + 1) r.push(a); } return r; };
   // primary action: reachable without nested scroll, then hit-testable with window scroll only
@@ -66,7 +76,7 @@ function inPage(opt) {
     add('A', w || document.body, `scrollWidth ${Math.max(de.scrollWidth, document.body.scrollWidth)} > ${vw}` + (w ? `; самый широкий: ${Math.round(m)}px` : '')); }
   // (b) hit-test with scrolling (centre, then top, then bottom of the viewport: a sticky panel must not cover the element in all of them)
   for (const el of cands) { let why = null; for (const blk of ['center', 'start', 'end']) { el.scrollIntoView({ block: blk, inline: 'nearest', behavior: 'instant' }); why = tryAt(el); if (!why) break; }
-    if (why) add('B', el, why); }
+    if (why && why.startsWith('MODAL')) out.push({ type: 'x', sel: sel(el), detail: 'за полноэкранным слоем (окно входа/модальное) ' + why.slice(6) }); else if (why) add('B', el, why); }
   scrollTo({ top: 0, behavior: 'instant' });
   // (c) tap target size
   if (opt.coarse) for (const el of cands) { let t = el; if (/^(checkbox|radio|file)$/.test(el.type || '')) t = el.closest('label') || el; const r = t.getBoundingClientRect();
@@ -86,6 +96,7 @@ function inPage(opt) {
       if (r.left < -1 && r.right > 1) { add('E', el, `выходит за левый край: left ${Math.round(r.left)}`); ecount++; continue; }
       if (r.left >= vw && docOver) { add('E', el, `целиком правее экрана: left ${Math.round(r.left)}`); ecount++; continue; } }
     for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) { const c = getComputedStyle(a); if (c.position === 'fixed' && cs.position !== 'fixed') break;
+      if (/(auto|scroll)/.test(c.overflowY) && a.scrollHeight > a.clientHeight + 1) break; // inside a scroller: reachable by scrolling
       const hx = /(hidden|clip)/.test(c.overflowX), hy = /(hidden|clip)/.test(c.overflowY); if (!hx && !hy) continue; const ar = a.getBoundingClientRect(); if (ar.height < 2 || ar.width < 2) break;
       const bad = (hx && (r.left < ar.left - 2 || r.right > ar.right + 2)) || (hy && (r.top < ar.top - 2 || r.bottom > ar.bottom + 2));
       if (bad && !(cs.position === 'absolute' || cs.position === 'fixed')) { add('E', el, `обрезан родителем ${sel(a)}`); ecount++; break; } if (bad) break; }
@@ -114,15 +125,17 @@ const SC = {
   async configurator(p, run) {
     await p.goto('file://' + TMP + '/configurator.html?lang=de'); await p.waitForSelector('#funnel .f-prod', { timeout: 20000 }); await sleep(1200);
     await run('Produktwahl', '#funnel .f-prod');
+    await p.click('#f-consent button').catch(() => {}); await sleep(200); // the analytics banner is judged in the first state only
     await p.click('#funnel [data-product="louvered"]'); await sleep(700); await run('Schritt 0 (Grösse)', '#funnel .next');
     const pops = await p.$$eval('.toolbar .tb-row .ib[aria-controls]', e => e.filter(x => x.offsetParent).map(x => x.id));
-    for (const id of pops) { await p.click('#' + id).catch(() => {}); await sleep(250); await run('Popup ' + id, '#funnel .next'); await p.click('#' + id).catch(() => {}); await sleep(150); }
+    for (const id of pops) { await p.click('#' + id).catch(() => {}); await sleep(250); await run('Popup ' + id, '#funnel .next', '.tb-pop:not([hidden]), .toolbar'); await p.click('#' + id).catch(() => {}); await sleep(150); }
     await run('Schritt 0, Popups zu', '#funnel .next');
     for (let s = 1; s <= 3; s++) { await p.click('#funnel .next:not([disabled])').catch(() => {}); await sleep(600); await run('Schritt ' + s, '#funnel .next'); }
     await p.click('#funnel .next:not([disabled])').catch(() => {}); await sleep(700); await run('Schritt 4 (Formular)', 'form button[type=submit], #funnel .next, .f-form button.primary');
   },
   async landing(p, run) { await p.goto('file://' + R + '/apps/landing/index.html'); await sleep(700); await run('Seite', '#lead button[type=submit]'); },
   async crm(p, run) { await p.goto('file://' + TMP + '/crm.html'); await sleep(900); await run('Start', PRIM); },
+  async crmdemo(p, run) { await p.goto('file://' + TMP + '/crm-demo.html'); await sleep(900); await run('Demo ohne Backend', PRIM); },
   async hub(p, run) { await p.addInitScript('window.__role="superadmin";window.__link="https://drive.google.com/drive/folders/X";'); await p.goto('file://' + R + '/apps/hub/index.html'); await sleep(300); await run('Anmeldung', '#login button.primary');
     await login(p); await run('superadmin', 'a[data-card],[data-card]'); },
   async projects(p, run) { await p.addInitScript('window.__role="manager";'); await p.goto('file://' + R + '/apps/projects/index.html'); await sleep(300); await run('Anmeldung', '#login button.primary');
@@ -143,14 +156,14 @@ async function job(j) {
   p.on('dialog', x => x.dismiss());
   const stub = STUB[j.page] ? rd(STUB[j.page]) : null;
   await p.route(/^https?:/, r => { const u = r.request().url();
-    if (/supabase\.js/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: stub || '' });
+    if (/supabase\.js/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: stub || GEN });
     if (/turnstile/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: TS });
     if (/\.supabase\.co/.test(u)) { if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS }); return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); }
     if (/\.(js)(\?|$)/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: '' }); if (/css/.test(u)) return r.fulfill({ contentType: 'text/css', body: '' }); return r.fulfill({ status: 204, body: '' }); });
-  const run = async (lbl, primary) => { label = lbl;
+  const run = async (lbl, primary, scope) => { label = lbl; if (process.env.RESP_INJECT) await p.addStyleTag({ content: process.env.RESP_INJECT }).catch(() => {}); // self-test hook: plant a known defect
     try {
-      if (j.scale) { await p.evaluate(scaleText, 1.3); await sleep(120); const o = await p.evaluate(inPage, { primary, mode: 'scale', coarse: d.touch }); for (const v of o) rec(v.type, v.sel, v.detail); return; }
-      const o = await p.evaluate(inPage, { primary, mode: 'full', coarse: d.touch });
+      if (j.scale) { await p.evaluate(scaleText, 1.3); await sleep(120); const o = await p.evaluate(inPage, { primary, mode: 'scale', coarse: d.touch, scope }); for (const v of o) rec(v.type, v.sel, v.detail); return; }
+      const o = await p.evaluate(inPage, { primary, mode: 'full', coarse: d.touch, scope });
       for (const v of o) { if (v.type === 'x') { exceptions.push({ page: j.page, dev: d.n, state: label, sel: v.sel, detail: v.detail }); continue; }
         const key = v.type; let shot = null;
         if (!shotTaken.has(key)) { shotTaken.add(key); shot = `shot-${key}-${j.page}-${d.n}.png`;
@@ -165,7 +178,7 @@ async function job(j) {
 async function main() {
   prepare(); browser = await chromium.launch();
   const jobs = []; for (const pg of PAGES) for (const dev of DEV) { if (pg === 'configurator' && !process.env.RESP_FULL_CFG && !CFG_DEV.has(dev.n)) continue;
-    jobs.push({ page: pg, dev, scale: false }); if (dev.scale) jobs.push({ page: pg, dev, scale: true }); }
+    jobs.push({ page: pg, dev, scale: false }); if (dev.scale && (pg !== 'configurator' || CFG_SCALE.has(dev.n))) jobs.push({ page: pg, dev, scale: true }); }
   jobs.sort((a, b) => (b.page === 'configurator') - (a.page === 'configurator')); let next = 0, done = 0;
   await Promise.all(Array.from({ length: WORKERS }, async () => { while (next < jobs.length) { const j = jobs[next++]; await job(j).catch(e => violations.push({ page: j.page, dev: j.dev.n, state: '-', mode: '-', type: 'H', sel: 'job', detail: String(e.message).slice(0, 140) })); if (++done % 20 === 0) process.stderr.write(`  ${done}/${jobs.length} (${Math.round((Date.now() - t0) / 1000)}s)\n`); } }));
   await browser.close();

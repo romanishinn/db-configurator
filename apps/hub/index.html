@@ -115,6 +115,13 @@
   .tile b { font-size:15px; color:var(--accent); } .tile span { font-size:13px; color:var(--muted); }
   .tile.off { border-style:dashed; } .tile.off:hover { border-color:var(--line); }
   .gal { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; } .gal > div { flex:1 1 220px; }
+  /* responsive: 44 px tap targets on touch screens, text >= 12 px */
+  label, .hint, .pill, .cover, .mark { font-size:12px; }
+  @media (pointer:coarse) {
+    button, select, summary, .top .menu, input:not([type=checkbox]):not([type=radio]):not([type=file]) { min-height:44px; min-width:44px; }
+    .top .menu { display:inline-flex; align-items:center; justify-content:center; }
+    .ph .tools button { min-height:44px; }
+  }
 </style>
 </head>
 <body>
