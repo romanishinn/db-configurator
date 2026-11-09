@@ -181,7 +181,25 @@ html{scroll-behavior:smooth;scroll-padding-top:64px}
   .js .rv{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
   .js .rv.in{opacity:1;transform:none}
 }
-
+/* responsive: text >= 12 px, 44 px tap targets on touch, compact header in low landscape */
+.eyebrow{font-size:.75rem}
+.ph-note{font-size:.75rem}
+.ph .lab{font-size:.75rem}
+.trust span{font-size:.75rem}
+.badge{font-size:.75rem}
+@media (pointer:coarse){
+  .btn,.copy,summary{min-height:44px}
+  .copy{min-width:44px}
+  label.consent{min-height:44px}
+  label.consent input{width:24px;height:24px;margin-top:.1rem}
+  input,textarea{min-height:44px}
+}
+@media (max-height:480px) and (orientation:landscape){
+  html{scroll-padding-top:84px}
+  header.bar{position:static}
+  .bar-in{padding-block:.25rem}
+  .brand{font-size:1rem}
+}
 </style>
 </head>
 <body>
