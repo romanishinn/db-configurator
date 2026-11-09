@@ -28,8 +28,12 @@ function prepare() {
   cp.execSync('bash prototype/build.sh', { cwd: R, stdio: 'ignore' });
   const head = '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>';
   fs.writeFileSync(TMP + '/configurator.html', head + fs.readFileSync(R + '/prototype/dist/terrace-3d.html', 'utf8') + '</body></html>');
-  fs.writeFileSync(TMP + '/crm.html', fs.readFileSync(R + '/prototype/crm.html', 'utf8').replace('/*CRM_I18N*/', () => fs.readFileSync(R + '/prototype/crm-i18n.js', 'utf8')).replace('/*CRM_LIVE*/', () => fs.readFileSync(R + '/prototype/crm-live.js', 'utf8')));
+  const crmHtml = c => fs.readFileSync(R + '/prototype/crm.html', 'utf8').replace('/*CRM_I18N*/', () => fs.readFileSync(R + '/prototype/crm-i18n.js', 'utf8')).replace('/*CRM_LIVE*/', () => c);
+  const live = fs.readFileSync(R + '/prototype/crm-live.js', 'utf8'); fs.writeFileSync(TMP + '/crm.html', crmHtml(live));
+  fs.writeFileSync(TMP + '/crm-demo.html', crmHtml(live.replace(/url: 'https:[^']*supabase\.co'/, "url: ''"))); // no BACKEND.url: demo data, no login
 }
+// generic Supabase SDK stub for pages without a dedicated one: no session, empty tables
+const GEN = "var q=function(){var b={};['select','eq','neq','in','order','limit','single','maybeSingle','is','not','gte','lte','insert','update','upsert','delete','range','or','match'].forEach(function(k){b[k]=function(){return b}});b.then=function(r,j){return Promise.resolve({data:[],error:null,count:0}).then(r,j)};return b};window.supabase={createClient:function(){return{auth:{getSession:function(){return Promise.resolve({data:{session:null}})},getUser:function(){return Promise.resolve({data:{user:null}})},onAuthStateChange:function(){return{data:{subscription:{unsubscribe:function(){}}}}},signInWithPassword:function(){return Promise.resolve({error:{message:'stub'}})},signOut:function(){return Promise.resolve({})}},from:q,rpc:function(){return Promise.resolve({data:[],error:null})},storage:{from:function(){return{getPublicUrl:function(){return{data:{publicUrl:''}}}}}},functions:{invoke:function(){return Promise.resolve({data:null,error:null})}}}}};";
 const TS = 'window.turnstile={render:function(h,o){window.__o=o;return 1},reset:function(){},execute:function(){}};';
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' };
 
@@ -52,7 +56,8 @@ function inPage(opt) {
   const hitOk = (el, hit) => !!hit && (hit === el || el.contains(hit) || (() => { const l = hit.closest && hit.closest('label'); return !!l && l.control === el; })());
   const tryAt = el => { const r = el.getClientRects()[0]; const l = Math.max(r.left, 0), rr = Math.min(r.right, vw), t = Math.max(r.top, 0), b = Math.min(r.bottom, vh);
     if (rr - l < 1) return 'вне экрана по горизонтали'; if (b - t < 1) return 'вне экрана по вертикали'; const x = (l + rr) / 2;
-    for (const f of [.2, .5, .8]) { const hit = document.elementFromPoint(x, t + (b - t) * f); if (!hitOk(el, hit)) return 'перекрыт: ' + (hit ? sel(hit) : 'ничем (null)'); } return null; };
+    for (const f of [.2, .5, .8]) { const hit = document.elementFromPoint(x, t + (b - t) * f); if (!hitOk(el, hit)) { for (let a = hit; a && a !== document.body; a = a.parentElement) if (getComputedStyle(a).position === 'fixed') { const q = a.getBoundingClientRect(); if (q.width >= vw * .9 && q.height >= vh * .9 && !a.contains(el)) return 'MODAL ' + sel(a); }
+        return 'перекрыт: ' + (hit ? sel(hit) : 'ничем (null)'); } } return null; };
   const scrolls = el => { const r = []; for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) { const c = getComputedStyle(a);
       if (/(auto|scroll|overlay)/.test(c.overflowY) && a.scrollHeight > a.clientHeight + 1) r.push(a); } return r; };
   // primary action: reachable without nested scroll, then hit-testable with window scroll only
@@ -71,7 +76,7 @@ function inPage(opt) {
     add('A', w || document.body, `scrollWidth ${Math.max(de.scrollWidth, document.body.scrollWidth)} > ${vw}` + (w ? `; самый широкий: ${Math.round(m)}px` : '')); }
   // (b) hit-test with scrolling (centre, then top, then bottom of the viewport: a sticky panel must not cover the element in all of them)
   for (const el of cands) { let why = null; for (const blk of ['center', 'start', 'end']) { el.scrollIntoView({ block: blk, inline: 'nearest', behavior: 'instant' }); why = tryAt(el); if (!why) break; }
-    if (why) add('B', el, why); }
+    if (why && why.startsWith('MODAL')) out.push({ type: 'x', sel: sel(el), detail: 'за полноэкранным слоем (окно входа/модальное) ' + why.slice(6) }); else if (why) add('B', el, why); }
   scrollTo({ top: 0, behavior: 'instant' });
   // (c) tap target size
   if (opt.coarse) for (const el of cands) { let t = el; if (/^(checkbox|radio|file)$/.test(el.type || '')) t = el.closest('label') || el; const r = t.getBoundingClientRect();
@@ -128,6 +133,7 @@ const SC = {
   },
   async landing(p, run) { await p.goto('file://' + R + '/apps/landing/index.html'); await sleep(700); await run('Seite', '#lead button[type=submit]'); },
   async crm(p, run) { await p.goto('file://' + TMP + '/crm.html'); await sleep(900); await run('Start', PRIM); },
+  async crmdemo(p, run) { await p.goto('file://' + TMP + '/crm-demo.html'); await sleep(900); await run('Demo ohne Backend', PRIM); },
   async hub(p, run) { await p.addInitScript('window.__role="superadmin";window.__link="https://drive.google.com/drive/folders/X";'); await p.goto('file://' + R + '/apps/hub/index.html'); await sleep(300); await run('Anmeldung', '#login button.primary');
     await login(p); await run('superadmin', 'a[data-card],[data-card]'); },
   async projects(p, run) { await p.addInitScript('window.__role="manager";'); await p.goto('file://' + R + '/apps/projects/index.html'); await sleep(300); await run('Anmeldung', '#login button.primary');
@@ -148,7 +154,7 @@ async function job(j) {
   p.on('dialog', x => x.dismiss());
   const stub = STUB[j.page] ? rd(STUB[j.page]) : null;
   await p.route(/^https?:/, r => { const u = r.request().url();
-    if (/supabase\.js/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: stub || rd('hub-stub.txt') });
+    if (/supabase\.js/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: stub || GEN });
     if (/turnstile/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: TS });
     if (/\.supabase\.co/.test(u)) { if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS }); return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); }
     if (/\.(js)(\?|$)/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: '' }); if (/css/.test(u)) return r.fulfill({ contentType: 'text/css', body: '' }); return r.fulfill({ status: 204, body: '' }); });
