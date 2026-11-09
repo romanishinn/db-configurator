@@ -39,7 +39,7 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers
 
 // ---------- in-page checks (self-contained: runs inside the browser) ----------
 function inPage(opt) {
-  const out = [], els = []; window.__respEls = els; const vw = innerWidth, vh = innerHeight;
+  const out = [], els = []; window.__respEls = els; const vw = document.documentElement.clientWidth, vh = innerHeight; // not innerWidth: on mobile the layout viewport grows with overflowing content
   const sel = el => { if (!el || !el.tagName) return '?'; const p = []; let e = el; for (let i = 0; e && e.nodeType === 1 && i < 3; i++, e = e.parentElement) {
       let s = e.tagName.toLowerCase(); if (e.id) { p.unshift(s + '#' + e.id); break; }
       const c = (e.getAttribute('class') || '').trim().split(/\s+/).filter(Boolean).slice(0, 2); if (c.length) s += '.' + c.join('.');
@@ -52,7 +52,7 @@ function inPage(opt) {
   const docOver0 = document.documentElement.scrollWidth > vw + 1;
   // an element wholly outside the screen with no page overflow and no scroller is a parked off-canvas drawer: not tested (see README)
   const parked = e => { const r = e.getBoundingClientRect(); return (r.right <= 0 || r.left >= vw) && !docOver0 && !hscr(e); };
-  const cands = [...document.querySelectorAll(CAND)].filter(e => vis(e) && !e.closest('[inert]') && getComputedStyle(e).pointerEvents !== 'none' && !parked(e));
+  const cands = [...document.querySelectorAll(CAND)].filter(e => vis(e) && !e.closest('[inert]') && getComputedStyle(e).pointerEvents !== 'none' && !parked(e) && (!opt.scope || !!e.closest(opt.scope)));
   const hitOk = (el, hit) => !!hit && (hit === el || el.contains(hit) || (() => { const l = hit.closest && hit.closest('label'); return !!l && l.control === el; })());
   const tryAt = el => { const r = el.getClientRects()[0]; const l = Math.max(r.left, 0), rr = Math.min(r.right, vw), t = Math.max(r.top, 0), b = Math.min(r.bottom, vh);
     if (rr - l < 1) return 'вне экрана по горизонтали'; if (b - t < 1) return 'вне экрана по вертикали'; const x = (l + rr) / 2;
@@ -96,6 +96,7 @@ function inPage(opt) {
       if (r.left < -1 && r.right > 1) { add('E', el, `выходит за левый край: left ${Math.round(r.left)}`); ecount++; continue; }
       if (r.left >= vw && docOver) { add('E', el, `целиком правее экрана: left ${Math.round(r.left)}`); ecount++; continue; } }
     for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) { const c = getComputedStyle(a); if (c.position === 'fixed' && cs.position !== 'fixed') break;
+      if (/(auto|scroll)/.test(c.overflowY) && a.scrollHeight > a.clientHeight + 1) break; // inside a scroller: reachable by scrolling
       const hx = /(hidden|clip)/.test(c.overflowX), hy = /(hidden|clip)/.test(c.overflowY); if (!hx && !hy) continue; const ar = a.getBoundingClientRect(); if (ar.height < 2 || ar.width < 2) break;
       const bad = (hx && (r.left < ar.left - 2 || r.right > ar.right + 2)) || (hy && (r.top < ar.top - 2 || r.bottom > ar.bottom + 2));
       if (bad && !(cs.position === 'absolute' || cs.position === 'fixed')) { add('E', el, `обрезан родителем ${sel(a)}`); ecount++; break; } if (bad) break; }
@@ -124,9 +125,10 @@ const SC = {
   async configurator(p, run) {
     await p.goto('file://' + TMP + '/configurator.html?lang=de'); await p.waitForSelector('#funnel .f-prod', { timeout: 20000 }); await sleep(1200);
     await run('Produktwahl', '#funnel .f-prod');
+    await p.click('#f-consent button').catch(() => {}); await sleep(200); // the analytics banner is judged in the first state only
     await p.click('#funnel [data-product="louvered"]'); await sleep(700); await run('Schritt 0 (Grösse)', '#funnel .next');
     const pops = await p.$$eval('.toolbar .tb-row .ib[aria-controls]', e => e.filter(x => x.offsetParent).map(x => x.id));
-    for (const id of pops) { await p.click('#' + id).catch(() => {}); await sleep(250); await run('Popup ' + id, '#funnel .next'); await p.click('#' + id).catch(() => {}); await sleep(150); }
+    for (const id of pops) { await p.click('#' + id).catch(() => {}); await sleep(250); await run('Popup ' + id, '#funnel .next', '.tb-pop:not([hidden]), .toolbar'); await p.click('#' + id).catch(() => {}); await sleep(150); }
     await run('Schritt 0, Popups zu', '#funnel .next');
     for (let s = 1; s <= 3; s++) { await p.click('#funnel .next:not([disabled])').catch(() => {}); await sleep(600); await run('Schritt ' + s, '#funnel .next'); }
     await p.click('#funnel .next:not([disabled])').catch(() => {}); await sleep(700); await run('Schritt 4 (Formular)', 'form button[type=submit], #funnel .next, .f-form button.primary');
@@ -158,10 +160,10 @@ async function job(j) {
     if (/turnstile/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: TS });
     if (/\.supabase\.co/.test(u)) { if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS }); return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); }
     if (/\.(js)(\?|$)/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: '' }); if (/css/.test(u)) return r.fulfill({ contentType: 'text/css', body: '' }); return r.fulfill({ status: 204, body: '' }); });
-  const run = async (lbl, primary) => { label = lbl;
+  const run = async (lbl, primary, scope) => { label = lbl; if (process.env.RESP_INJECT) await p.addStyleTag({ content: process.env.RESP_INJECT }).catch(() => {}); // self-test hook: plant a known defect
     try {
-      if (j.scale) { await p.evaluate(scaleText, 1.3); await sleep(120); const o = await p.evaluate(inPage, { primary, mode: 'scale', coarse: d.touch }); for (const v of o) rec(v.type, v.sel, v.detail); return; }
-      const o = await p.evaluate(inPage, { primary, mode: 'full', coarse: d.touch });
+      if (j.scale) { await p.evaluate(scaleText, 1.3); await sleep(120); const o = await p.evaluate(inPage, { primary, mode: 'scale', coarse: d.touch, scope }); for (const v of o) rec(v.type, v.sel, v.detail); return; }
+      const o = await p.evaluate(inPage, { primary, mode: 'full', coarse: d.touch, scope });
       for (const v of o) { if (v.type === 'x') { exceptions.push({ page: j.page, dev: d.n, state: label, sel: v.sel, detail: v.detail }); continue; }
         const key = v.type; let shot = null;
         if (!shotTaken.has(key)) { shotTaken.add(key); shot = `shot-${key}-${j.page}-${d.n}.png`;
