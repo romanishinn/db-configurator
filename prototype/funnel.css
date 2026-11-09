@@ -18,7 +18,7 @@ body.cust .app { grid-template-columns: minmax(0, 1fr) 440px; }
 .f-lang-menu button:hover { background: rgba(0,0,0,.05); }
 .f-lang-menu button[aria-pressed="true"] { background: #f7efdd; font-weight: 600; }
 .f-pro { font: inherit; font-size: 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 4px; padding: 3px 7px; cursor: pointer; }
-.f-steps { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 12px 16px 0; padding: 0; counter-reset: st; }
+.f-steps { list-style: none; display: grid; grid-template-columns: repeat(var(--n, 4), 1fr); gap: 4px; margin: 12px 16px 0; padding: 0; counter-reset: st; }
 .f-steps button { width: 100%; font: inherit; font-size: 11.5px; color: var(--muted); background: none; border: 0; border-top: 3px solid var(--line); padding: 6px 0 0; text-align: left; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .f-steps button .n { font-family: var(--f-mono); margin-right: 3px; }
 /* step number above the name: five equal columns stay readable on phones */
@@ -592,3 +592,84 @@ body.cust.cat-only .f-lead { font-size: 14px; color: var(--muted); }
 /* section labels: quiet sentence-case signposts, not tracked all-caps */
 .f-h3 { text-transform: none; letter-spacing: -0.005em; }
 .fc-q, label.l, .f-sum tr.g td, .f-kit-h .f-h3 { text-transform: none; letter-spacing: 0; }
+
+/* ---------- accessibility: text accent (>= 4.5:1 on light panels), focus ring ---------- */
+:root { --accent-text: #8a5f0c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --accent-text: var(--accent); } }
+:root[data-theme="dark"] { --accent-text: var(--accent); }
+.f-link, details.f-more > summary, .f-steps button[aria-current="step"], #bk-pro .bk-n, .align, .f-lay button[aria-pressed="true"] .m { color: var(--accent-text); }
+details.f-more > summary::marker { color: var(--accent-text); }
+summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- touch screens: tap targets >= 44 px ---------- */
+@media (pointer: coarse) {
+  .f-lang > summary, .f-pro { min-height: 44px; min-width: 44px; padding: 0 12px; justify-content: center; font-size: 13px; }
+  .f-lang-menu button { min-height: 44px; font-size: 14px; }
+  .f-steps button { min-height: 44px; }
+  .toolbar .ib { min-height: 44px; height: 44px; }
+  .toolbar button { min-height: 44px; }
+  .f-chip, .f-link, details.f-more > summary, .f-faq summary { min-height: 44px; }
+  .f-link, details.f-more > summary, .f-faq summary { display: inline-flex; align-items: center; }
+  .f-faq summary { display: flex; }
+  .f-step { grid-template-columns: 44px 1fr 44px; }
+  .f-step button { min-height: 44px; }
+  /* the bigger touch targets must not eat panel height: tighter padding round them */
+  .f-head { padding-top: 4px; margin-bottom: -6px; }
+  .f-steps { margin-top: 6px; }
+  body.cust .toolbar { padding-top: 2px; padding-bottom: 2px; }
+  .f-form input[type=text], .f-form input[type=email], .f-form input[type=tel], .f-form select { min-height: 46px; }
+  .f-form .chk { min-height: 44px; gap: 10px; }
+  .f-form .chk input { width: 22px; height: 22px; flex: none; }
+  .f-fills button, .f-lay button { min-height: 44px; }
+  .hs::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; }
+  #f-consent button { min-height: 44px; padding: 0 16px; }
+  .f-btn, .f-bar .back, .f-bar .next { min-height: 48px; font-size: 16px; }
+}
+
+/* ---------- tablet, portrait (761-1100 px): one column, scene on top, panel below ---------- */
+@media (min-width: 761px) and (max-width: 1100px) and (orientation: portrait) {
+  /* focus()/scrollIntoView must not leave a field under the sticky scene or the price bar */
+  html { scroll-padding-top: calc(max(46vh, 380px) + 12px); scroll-padding-bottom: 110px; }
+  .f-lang-car { font-size: 12px; }
+  .f-quote td, .f-form td, table td { font-size: max(12px, 1em); }
+  body.cust { font-size: 15px; }
+  body.cust .app { grid-template-columns: minmax(0, 1fr); padding: 0; gap: 0; }
+  body.cust .stage { position: sticky; top: 0; height: auto; min-height: 0; border-radius: 0; border-width: 0 0 1px; z-index: 4; order: -1; }
+  body.cust .stage .vp { height: 46vh; min-height: 380px; flex: none; }
+  body.cust .toolbar { flex-wrap: wrap; padding: 6px 12px; }
+  body.cust .toolbar .tb-row { flex-wrap: wrap; }
+  body.cust .toolbar .tb-pop:not([hidden]) { max-height: calc(max(46vh, 380px) - 24px); }
+  body.cust .fold, body.cust #fold-left, body.cust #fold-right, body.cust #fold-bottom { display: none; }
+  body.cust .funnel { border-radius: 0; border-width: 0; padding-bottom: 104px; --gx: max(20px, calc((100% - 700px) / 2)); }
+  body.cust .f-head { padding: 12px var(--gx) 0; }
+  body.cust .f-steps { margin: 12px var(--gx) 0; }
+  body.cust .f-body { padding: 16px var(--gx) 18px; font-size: 16px; }
+  body.cust .f-body h2 { font-size: 22px; }
+  body.cust .f-lead { font-size: 15px; }
+  body.cust .f-h3 { font-size: 13px; margin-top: 22px; }
+  body.cust .f-h3 > span:nth-child(2) { font-size: 13px; }
+  body.cust .f-steps button { font-size: 13px; }
+  body.cust .f-steps button .n { font-size: 12px; }
+  body.cust .f-cards, body.cust .f-prods { grid-template-columns: 1fr 1fr; }
+  body.cust .f-card .d, body.cust .f-note, body.cust .f-tip, body.cust .f-link, body.cust .f-side .sub2, body.cust .f-legend, body.cust .f-incl, body.cust .f-form label, body.cust .f-priv, body.cust .f-more { font-size: 14px; }
+  body.cust .f-card .pr, body.cust .f-chip .pr, body.cust .f-seg .pr, body.cust .f-lay .m, body.cust .f-lay .pr, body.cust .f-list .f-chip .lbl small, body.cust .f-sw button, body.cust .f-sw button .pr, body.cust .f-sw.f-sw-sm button, body.cust .f-fills button, body.cust .f-side .nm small, body.cust .f-sum .s, body.cust .f-bar .p span, body.cust .f-vt button .pr, body.cust .f-ctl button small { font-size: 13px; }
+  body.cust .f-chip, body.cust .f-seg, body.cust .f-lay button, body.cust .f-sum, body.cust .f-faq summary, body.cust .f-faq p, body.cust details.f-more > summary { font-size: 15px; }
+  body.cust .f-badge { font-size: 12px; }
+  body.cust .f-chips.f-list { grid-template-columns: 1fr 1fr; }
+  body.cust .f-chips:not(.f-list) .f-chip { padding: 8px 14px; }
+  body.cust .f-lay { grid-template-columns: 1fr 1fr; }
+  body.cust .f-form input[type=text], body.cust .f-form input[type=email], body.cust .f-form input[type=tel], body.cust .f-form select, body.cust .f-form textarea { font-size: 16px; min-height: 46px; }
+  body.cust .f-bar { position: fixed; left: 0; right: 0; bottom: 0; border-radius: 0; padding-left: var(--gx, 20px); padding-right: var(--gx, 20px); box-shadow: 0 -4px 14px rgba(0,0,0,.08); }
+  body.cust .f-bar { --gx: max(20px, calc((100vw - 700px) / 2)); }
+  body.cust .f-bar .p b { font-size: 22px; }
+  body.cust .f-bar .p span { white-space: normal; display: block; font-size: 13px; }
+  body.cust .f-bar .back, body.cust .f-bar .next, body.cust .f-btn { min-height: 48px; font-size: 16px; }
+  #f-card { position: fixed; left: 0; right: 0; bottom: 0; width: auto; max-width: 720px; margin: 0 auto; max-height: 72vh; border-radius: 16px 16px 0 0; z-index: 70; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+  #f-consent { position: fixed; left: 0; right: 0; bottom: 92px; max-width: 700px; margin: 0 auto; width: calc(100% - 32px); z-index: 8; display: flex; gap: 12px; align-items: center; font-size: 13px; line-height: 1.35; padding: 8px 12px; }
+  body:has(#f-consent) .funnel { padding-bottom: 190px; } /* room for the banner while it is shown: it never covers fields or buttons */
+  body.cust .f-prod-feats i, body.cust .fc-h small, body.cust .fc-q, body.cust .fc-fills button, body.cust .f-ctl button small, body.cust #tb-louv .tl-h, body.cust .f-sw button .pr, body.cust .f-sw.f-sw-sm button, body.cust .f-vt button .pr { font-size: 12.5px; }
+  #f-consent p { margin: 0; flex: 1; }
+  #f-consent div { flex: none; }
+  .dim { font-size: 12.5px; }
+  body.cust.typing .stage { position: relative; }
+}

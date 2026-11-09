@@ -517,9 +517,10 @@ function buildEnv(W, D) {
 }
 function fadeFence(dt) { // a side fades out while the camera stands outside of it (between the viewer and the pergola)
   for (const f of fenceSides) {
-    const out = f.sg * (camera.position[f.ax] - f.at) > -1; // camera beyond (or near) this side
+    const d = f.sg * (camera.position[f.ax] - f.at), out = d > -1; // camera beyond (or near) this side
     const goal = out ? 0 : 1, o = f.mesh.material.opacity;
-    f.mesh.material.opacity = o + Math.max(-dt / 300, Math.min(dt / 300, goal - o));
+    if (goal < o && d > 0) f.mesh.material.opacity = 0; // side already between camera and pergola: hide at once, never overlap
+    else f.mesh.material.opacity = o + Math.max(-dt / 50, Math.min(dt / 300, goal - o)); // fade out fast, back in smoothly
     f.mesh.visible = !PHOTO.url && f.mesh.material.opacity > 0.02;
   }
 }
@@ -1538,10 +1539,11 @@ function applyView(kind) {
   const pts = [];
   for (const x of [-0.9, W + 0.3]) for (const y of [0, H + 0.25]) for (const z of [-0.2, D + 1.35]) pts.push(new THREE.Vector3(x, y, z));
   let d = dist;
-  for (let i = 0; i < 30; i++) {
+  const lim = matchMedia('(min-width: 761px) and (max-width: 1100px) and (orientation: portrait)').matches ? 0.66 : 0.86; // tablet portrait: the pergola takes ~60% of the scene width
+  for (let i = 0; i < 60; i++) {
     camera.position.copy(c).addScaledVector(dir, d); camera.lookAt(c); camera.updateMatrixWorld();
     const m = Math.max(...pts.map((p) => { const v = p.clone().project(camera); return Math.max(Math.abs(v.x), Math.abs(v.y)); }));
-    if (m <= 0.86) break;
+    if (m <= lim) break;
     d *= 1.06;
   }
   sun.position.set(W / 2 - 6, 14, D + 8); sun.target.position.copy(c);
@@ -1557,10 +1559,10 @@ function underView() {
   for (const x of [-0.1, W + 0.1]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z));
   for (const x of [0, W]) pts.push(new THREE.Vector3(x, 0.3, D));
   let d = D * 0.6 + 1.5;
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 60; i++) {
     camera.position.set(W / 2, 1.5, D + d); camera.lookAt(t); camera.updateMatrixWorld();
     const m = Math.max(...pts.map((p) => { const v = p.clone().project(camera); return Math.max(Math.abs(v.x), Math.abs(v.y)); }));
-    if (m <= 0.9) break;
+    if (m <= (matchMedia('(min-width: 761px) and (max-width: 1100px) and (orientation: portrait)').matches ? 0.66 : 0.9)) break; // tablet portrait: ~60% of the scene width
     d *= 1.08;
   }
   controls.target.copy(t);

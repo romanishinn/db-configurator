@@ -8,8 +8,8 @@
 <meta name="robots" content="noindex">
 <title>Проекты для сайта — D&B Pergola</title>
 <style>
-  :root { --bg:#eef0f1; --panel:#fff; --ink:#1c2226; --muted:#5b666e; --line:#d6dadd; --accent:#2c6a86; --good:#2f7d4f; --bad:#b2402f; --f:"Helvetica Neue",Arial,sans-serif; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#14181b; --panel:#1c2125; --ink:#e6e9eb; --muted:#9aa5ad; --line:#30373e; --accent:#72b6d6; --good:#6cc592; --bad:#e2795f; } }
+  :root { --bg:#f4f6f8; --panel:#ffffff; --ink:#171a1f; --muted:#697079; --line:#e7e9ed; --accent:#a87714; --accent-soft:#f7efdd; --good:#2f7d4f; --bad:#a3621b; --bad-soft:#fbf0e2; --f:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; color-scheme:light dark; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --panel:#161c2a; --ink:#e9edf6; --muted:#9aa5b8; --line:#2a3242; --accent:#efb860; --accent-soft:#2a2316; --good:#6cc592; --bad:#e2a65c; --bad-soft:#3a2c1a; } }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--f); padding:16px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left)); }
   main { max-width:640px; margin:0 auto; display:grid; gap:14px; }
@@ -57,9 +57,75 @@
   .ro { white-space:pre-wrap; font-size:14px; background:var(--bg); border-radius:8px; padding:8px 10px; margin:0; }
   textarea { width:100%; font:inherit; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:var(--bg); color:var(--ink); }
   [hidden] { display:none !important; }
+  /* ---- design language of the client configurator (prototype/funnel.css): colours, radii, buttons, cards, header, motion ---- */
+  html { -webkit-text-size-adjust:100%; }
+  body { font-size:14px; line-height:1.45; overflow-x:hidden; }
+  main { max-width:min(640px,100%); }
+  .top { display:flex; align-items:center; gap:8px; max-width:640px; margin:0 auto 14px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  .top .brand { font-weight:700; font-size:15px; letter-spacing:-.01em; }
+  .top .brand i { font-style:normal; color:var(--accent); }
+  h1 { font-size:20px; line-height:1.2; font-weight:700; letter-spacing:-.01em; }
+  h2 { font-size:14px; font-weight:700; letter-spacing:-.01em; }
+  .sub { font-size:13px; color:var(--muted); }
+  .card { border-radius:8px; padding:16px; min-width:0; }
+  label { font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:600; color:var(--muted); margin:14px 0 5px; }
+  .checks label, label.chk, .chk { text-transform:none; letter-spacing:0; font-weight:400; }
+  input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], input[type=url], select, textarea { border-radius:6px; padding:9px 10px; max-width:100%; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  button { border-radius:8px; font-weight:600; font-size:14px; padding:11px 14px; transition:border-color .12s, background-color .12s, box-shadow .12s, transform .12s; }
+  button:hover:not(:disabled) { border-color:var(--accent); }
+  button.primary { color:#fff; } button.primary:hover:not(:disabled) { filter:brightness(1.06); }
+  @media (prefers-color-scheme: dark) { button.primary { color:#171a1f; } .ph .cover, .sel .ph .mark { color:#171a1f; } }
+  button.danger { color:var(--bad); }
+  .tabs button { font-size:13px; border-radius:6px; }
+  .tabs button.on, .tabs button[aria-selected=true] { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; box-shadow:inset 0 0 0 1px var(--accent); }
+  .tabs button[aria-selected=true] { color:var(--accent); }
+  .msg { border-radius:4px; border-width:0 0 0 3px !important; border-style:solid; }
+  .msg.err { background:var(--bad-soft); } .msg.ok { background:color-mix(in srgb, var(--good) 10%, transparent); }
+  .pill { font-size:11px; font-weight:600; }
+  .item { overflow-wrap:anywhere; }
+  .item .t { min-width:0; }
+  .ph { border-radius:8px; } .photos img { border-radius:6px; }
+  .consent { border-radius:8px; }
+  .ro { border-radius:6px; }
+  img { max-width:100%; }
+  progress { accent-color:var(--accent); }
+  @media (max-width:430px) { .item { flex-wrap:wrap; } .bar button { flex:1 1 auto; } }
+  @media (min-width:900px) { main { max-width:720px; } .top { max-width:720px; } }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    .card:not([hidden]), .tabs:not([hidden]), main > div:first-child, .item { animation:rise .28s cubic-bezier(.22,.8,.3,1) both; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+  /* ---- form alignment: one field height, top-aligned columns, chips, upload zone ---- */
+  .row { align-items:flex-start; gap:12px; } .row input, .row select { width:100%; }
+  label { min-height:16px; line-height:1.3; }
+  input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], input[type=url], select { height:46px; min-height:46px; }
+  input[type=date] { appearance:none; -webkit-appearance:none; display:block; line-height:1.2; }
+  input[type=date]::-webkit-date-and-time-value { text-align:left; }
+  select { appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:32px; }
+  .hint { margin:4px 0 0; font-size:11.5px; line-height:1.3; color:var(--muted); }
+  .vh { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; clip:rect(0 0 0 0); }
+  .drop { display:grid; gap:2px; justify-items:center; text-align:center; margin:0; padding:16px 12px; min-height:72px; border:1.5px dashed var(--accent); border-radius:8px; background:var(--accent-soft); color:var(--ink); text-transform:none; letter-spacing:0; cursor:pointer; transition:background-color .12s, border-color .12s; }
+  .drop b { font-size:15px; color:var(--accent); } .drop span { font-size:12px; font-weight:400; color:var(--muted); }
+  .vh:focus-visible + .drop { outline:2px solid var(--accent); outline-offset:2px; }
+  .checks { gap:8px; }
+  .checks label { display:inline-flex; align-items:center; gap:8px; margin:0; min-height:44px; padding:0 14px; border:1px solid var(--line); border-radius:8px; font-size:14px; color:var(--ink); cursor:pointer; transition:border-color .12s, background-color .12s; }
+  .checks label:has(input:checked) { border-color:var(--accent); background:var(--accent-soft); font-weight:600; }
+  .checks.stack { display:grid; grid-template-columns:1fr; }
+  .checks.stack label { display:flex; }
+  input[type=checkbox] { width:20px; height:20px; flex:none; margin:0; accent-color:var(--accent); }
+  .chk { min-height:44px; align-items:center; }
+  .chk input { width:20px; height:20px; }
+  .consent { padding:6px 14px 14px; }
+  .consent h3 { font-size:14px; font-weight:700; margin:10px 0 0; }
+  .bar { margin-top:18px; } .bar button { min-height:46px; }
+  .bar button.primary { min-width:160px; }
+  @media (max-width:430px) { .bar button.primary { flex:1 1 100%; order:-1; } }
 </style>
 </head>
 <body>
+<header class="top"><span class="brand">D&amp;B <i>Solutions</i></span></header>
 <main>
   <div>
     <h1>Проекты для сайта</h1>
@@ -145,21 +211,21 @@
     <label for="title">Название (по-немецки, как на сайте)</label>
     <input id="title" type="text" placeholder="Villa mit Glasdach, Wien 13." required>
     <div class="row">
-      <div><label for="district">Район / город (не точный адрес)</label><input id="district" type="text" placeholder="Wien 13" required></div>
+      <div><label for="district">Район / город</label><input id="district" type="text" placeholder="Wien 13" required><p class="hint">Не точный адрес</p></div>
       <div><label for="country">Страна</label><select id="country"><option value="AT">Австрия</option><option value="HR">Хорватия</option></select></div>
     </div>
     <label>Что установлено</label>
     <div class="checks" id="options"></div>
     <div class="row">
-      <div><label for="installed_on">Дата монтажа</label><input id="installed_on" type="date"></div>
-      <div><label for="sort">Порядок (меньше — выше)</label><input id="sort" type="number" step="1" value="0"></div>
+      <div><label for="installed_on">Дата монтажа</label><input id="installed_on" type="date"><p class="hint">Необязательно</p></div>
+      <div><label for="sort">Порядок</label><input id="sort" type="number" step="1" value="0"><p class="hint">Меньше число — выше в списке</p></div>
     </div>
-    <label for="video_url">Ссылка на видео (необязательно, https://…)</label>
-    <input id="video_url" type="url" placeholder="https://">
+    <label for="video_url">Ссылка на видео</label>
+    <input id="video_url" type="url" placeholder="https://"><p class="hint">Необязательно, только https://</p>
     <label>Фото (первое — обложка)</label>
-    <input id="files" type="file" accept="image/*" multiple>
+    <input id="files" type="file" accept="image/*" multiple class="vh"><label for="files" class="drop"><b>Выбрать фото</b><span>Можно несколько. Первое станет обложкой</span></label>
     <div class="photos" id="photos"></div>
-    <div class="checks" style="margin-top:12px">
+    <div class="checks stack" style="margin-top:14px">
       <label><input type="checkbox" id="reference_available"> Владелец согласен дать рекомендацию (звонок)</label>
       <label><input type="checkbox" id="published"> Показывать на сайте</label>
     </div>
