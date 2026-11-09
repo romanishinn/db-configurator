@@ -81,6 +81,13 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
 - The superadmin notification comes from the existing trigger on `leads`; a manager sees the new unassigned web lead by the rule of 0012.
 - Known limits: the limit counts all leads of that contact, not only callbacks; the rate limit is per contact, not per IP (Turnstile in the Edge Function is the bot protection); not yet run against a real Supabase.
 
+## Internal tool links (migration 0020)
+- `app_links(key, title, url, updated_at, updated_by)`: links shown in the internal tool; the first is the object gallery (Google Drive folder). The link itself is not in the repository: the superadmin enters it in the interface.
+- Read: manager, superadmin, dealer, superdealer (policy with `(select my_role())`); client and anon see nothing (anon has no grant at all). Write: superadmin only (RLS).
+- Column grants: insert `key, title, url`, update `title, url`; `updated_at` and `updated_by` are set by a trigger (`now()`, `auth.uid()`) and cannot be forged. `updated_by` references `profiles` (like `created_by` elsewhere).
+- Checks: key `^[a-z][a-z0-9_]{1,40}$`; title 1-80 characters after trim; url is https on drive.google.com, docs.google.com, photos.google.com, photos.app.goo.gl or goo.gl, no whitespace, at most 500 characters.
+- ASSUMPTION: the URL check limits the host only; it does not prove the folder exists or is shared correctly. Not yet run against a real Supabase.
+
 ## Switching it on (D&B)
 1. supabase.com → New project, region **Frankfurt (eu-central-1)**, free plan.
 2. GitHub → repository Settings → Secrets and variables → Actions → `SUPABASE_DB_URL` = Project Settings → Database →

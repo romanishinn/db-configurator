@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>D&B Solutions — меню</title>
+<style>
+  :root { --bg:#f4f6f8; --panel:#ffffff; --ink:#171a1f; --muted:#697079; --line:#e7e9ed; --accent:#a87714; --accent-soft:#f7efdd; --good:#2f7d4f; --bad:#a3621b; --bad-soft:#fbf0e2; --f:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; color-scheme:light dark; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --panel:#161c2a; --ink:#e9edf6; --muted:#9aa5b8; --line:#2a3242; --accent:#efb860; --accent-soft:#2a2316; --good:#6cc592; --bad:#e2a65c; --bad-soft:#3a2c1a; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--f); padding:16px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left)); }
+  main { max-width:640px; margin:0 auto; display:grid; gap:14px; }
+  h1 { font-size:20px; margin:0; letter-spacing:-.01em; }
+  h2 { font-size:16px; margin:0 0 10px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .sub { color:var(--muted); font-size:13.5px; margin:2px 0 0; }
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 4px; }
+  input[type=email], input[type=password], textarea { width:100%; font:inherit; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:var(--bg); color:var(--ink); }
+  textarea { min-height:84px; resize:vertical; }
+  input:focus, textarea:focus, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  button { font:inherit; font-size:15px; padding:11px 14px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--ink); cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .tabs { display:flex; gap:8px; } .tabs button { flex:1; } .tabs button.on { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .msg { margin-top:12px; font-size:13.5px; padding:9px 11px; border-radius:8px; display:none; }
+  .msg.err { display:block; color:var(--bad); border:1px solid var(--bad); }
+  .msg.ok { display:block; color:var(--good); border:1px solid var(--good); }
+  .item { display:flex; gap:12px; align-items:center; padding:12px 0; border-top:1px solid var(--line); }
+  .item:first-child { border-top:0; }
+  .item .t { flex:1; min-width:0; }
+  .item .t b { display:block; overflow-wrap:anywhere; }
+  .item .t span { display:block; font-size:12.5px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere; }
+  .pill { font-size:11.5px; padding:2px 8px; border-radius:20px; border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
+  .pill.on { color:var(--good); border-color:var(--good); } .pill.bad { color:var(--bad); border-color:var(--bad); }
+  .photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-top:8px; }
+  .photos img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; border-radius:8px; border:1px solid var(--line); }
+  .chk { display:flex; gap:10px; align-items:flex-start; font-size:14px; color:var(--ink); margin:16px 0 0; }
+  .chk input { width:22px; height:22px; flex:none; margin:0; }
+  progress { width:100%; margin-top:12px; }
+  a { color:var(--accent); }
+  [hidden] { display:none !important; }
+  /* ---- design language of the client configurator (prototype/funnel.css): colours, radii, buttons, cards, header, motion ---- */
+  html { -webkit-text-size-adjust:100%; }
+  body { font-size:14px; line-height:1.45; overflow-x:hidden; }
+  main { max-width:min(640px,100%); }
+  .top { display:flex; align-items:center; gap:8px; max-width:640px; margin:0 auto 14px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  .top .brand { font-weight:700; font-size:15px; letter-spacing:-.01em; }
+  .top .brand i { font-style:normal; color:var(--accent); }
+  h1 { font-size:20px; line-height:1.2; font-weight:700; letter-spacing:-.01em; }
+  h2 { font-size:14px; font-weight:700; letter-spacing:-.01em; }
+  .sub { font-size:13px; color:var(--muted); }
+  .card { border-radius:8px; padding:16px; min-width:0; }
+  label { font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:600; color:var(--muted); margin:14px 0 5px; }
+  .checks label, label.chk, .chk { text-transform:none; letter-spacing:0; font-weight:400; }
+  input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], input[type=url], select, textarea { border-radius:6px; padding:9px 10px; max-width:100%; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  button { border-radius:8px; font-weight:600; font-size:14px; padding:11px 14px; transition:border-color .12s, background-color .12s, box-shadow .12s, transform .12s; }
+  button:hover:not(:disabled) { border-color:var(--accent); }
+  button.primary { color:#fff; } button.primary:hover:not(:disabled) { filter:brightness(1.06); }
+  @media (prefers-color-scheme: dark) { button.primary { color:#171a1f; } .ph .cover, .sel .ph .mark { color:#171a1f; } }
+  button.danger { color:var(--bad); }
+  .tabs button { font-size:13px; border-radius:6px; }
+  .tabs button.on, .tabs button[aria-selected=true] { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; box-shadow:inset 0 0 0 1px var(--accent); }
+  .tabs button[aria-selected=true] { color:var(--accent); }
+  .msg { border-radius:4px; border-width:0 0 0 3px !important; border-style:solid; }
+  .msg.err { background:var(--bad-soft); } .msg.ok { background:color-mix(in srgb, var(--good) 10%, transparent); }
+  .pill { font-size:11px; font-weight:600; }
+  .item { overflow-wrap:anywhere; }
+  .item .t { min-width:0; }
+  .ph { border-radius:8px; } .photos img { border-radius:6px; }
+  .consent { border-radius:8px; }
+  .ro { border-radius:6px; }
+  img { max-width:100%; }
+  progress { accent-color:var(--accent); }
+  @media (max-width:430px) { .item { flex-wrap:wrap; } .bar button { flex:1 1 auto; } }
+  @media (min-width:900px) { main { max-width:720px; } .top { max-width:720px; } }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    .card:not([hidden]), .tabs:not([hidden]), main > div:first-child, .item { animation:rise .28s cubic-bezier(.22,.8,.3,1) both; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+  /* ---- form alignment: one field height, top-aligned columns, chips, upload zone ---- */
+  .row { align-items:flex-start; gap:12px; } .row input, .row select { width:100%; }
+  label { min-height:16px; line-height:1.3; }
+  input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], input[type=url], select { height:46px; min-height:46px; }
+  input[type=date] { appearance:none; -webkit-appearance:none; display:block; line-height:1.2; }
+  input[type=date]::-webkit-date-and-time-value { text-align:left; }
+  select { appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:32px; }
+  .hint { margin:4px 0 0; font-size:11.5px; line-height:1.3; color:var(--muted); }
+  .vh { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; clip:rect(0 0 0 0); }
+  .drop { display:grid; gap:2px; justify-items:center; text-align:center; margin:0; padding:16px 12px; min-height:72px; border:1.5px dashed var(--accent); border-radius:8px; background:var(--accent-soft); color:var(--ink); text-transform:none; letter-spacing:0; cursor:pointer; transition:background-color .12s, border-color .12s; }
+  .drop b { font-size:15px; color:var(--accent); } .drop span { font-size:12px; font-weight:400; color:var(--muted); }
+  .vh:focus-visible + .drop { outline:2px solid var(--accent); outline-offset:2px; }
+  .checks { gap:8px; }
+  .checks label { display:inline-flex; align-items:center; gap:8px; margin:0; min-height:44px; padding:0 14px; border:1px solid var(--line); border-radius:8px; font-size:14px; color:var(--ink); cursor:pointer; transition:border-color .12s, background-color .12s; }
+  .checks label:has(input:checked) { border-color:var(--accent); background:var(--accent-soft); font-weight:600; }
+  .checks.stack { display:grid; grid-template-columns:1fr; }
+  .checks.stack label { display:flex; }
+  input[type=checkbox] { width:20px; height:20px; flex:none; margin:0; accent-color:var(--accent); }
+  .chk { min-height:44px; align-items:center; }
+  .chk input { width:20px; height:20px; }
+  .consent { padding:6px 14px 14px; }
+  .consent h3 { font-size:14px; font-weight:700; margin:10px 0 0; }
+  .bar { margin-top:18px; } .bar button { min-height:46px; }
+  .bar button.primary { min-width:160px; }
+  @media (max-width:430px) { .bar button.primary { flex:1 1 100%; order:-1; } }
+
+  .top .menu { margin-left:auto; font-size:13px; font-weight:600; text-decoration:none; padding:10px 4px; }
+  .grid { display:grid; gap:10px; grid-template-columns:1fr; }
+  @media (min-width:700px) { .grid { grid-template-columns:1fr 1fr; } }
+  .tile { display:flex; flex-direction:column; gap:4px; min-height:84px; padding:14px 16px; background:var(--panel); border:1px solid var(--line); border-radius:8px; color:var(--ink); text-decoration:none; transition:border-color .12s; }
+  .tile:hover { border-color:var(--accent); }
+  .tile b { font-size:15px; color:var(--accent); } .tile span { font-size:13px; color:var(--muted); }
+  .tile.off { border-style:dashed; } .tile.off:hover { border-color:var(--line); }
+  .gal { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; } .gal > div { flex:1 1 220px; }
+</style>
+</head>
+<body>
+<header class="top"><span class="brand">D&amp;B <i>Solutions</i></span></header>
+<main>
+  <div>
+    <h1>D&amp;B Solutions</h1>
+    <p class="sub" id="who">Выберите раздел</p>
+  </div>
+  <div class="grid" id="tiles"></div>
+
+  <section class="card" id="adm" hidden>
+    <h2>Ссылка на галерею (Google Drive)</h2>
+    <form id="galForm">
+      <label for="galUrl">Ссылка на папку</label>
+      <input id="galUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://drive.google.com/…">
+      <p class="hint" id="galState"></p>
+      <div class="msg" id="galMsg" aria-live="polite"></div>
+      <div class="bar"><button class="primary" type="submit" id="galSave">Сохранить</button></div>
+    </form>
+  </section>
+
+  <form class="card" id="login" hidden>
+    <h2>Вход для сотрудников и дилеров</h2>
+    <label for="em">E-mail</label><input id="em" type="email" autocomplete="username" required>
+    <label for="pw">Пароль</label><input id="pw" type="password" autocomplete="current-password" required>
+    <div class="msg" id="loginMsg" aria-live="polite"></div>
+    <div class="bar"><button class="primary" type="submit">Войти</button></div>
+  </form>
+  <div class="bar" id="outBar" hidden><button type="button" id="out">Выйти</button></div>
+</main>
+<script>
+(function () {
+  // same public Supabase project and session as the CRM and the project pages; visibility of cards is a convenience, access is enforced by SQL
+  var BACKEND = { url: 'https://zypujyrvbegilvtvqras.supabase.co', anonKey: 'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9' };
+  var SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
+  var HOSTS = ['drive.google.com', 'docs.google.com', 'photos.google.com'];
+  var C = {
+    landing: ['Лендинг', 'Сайт для клиентов', 'landing.html'],
+    conf: ['Конфигуратор', 'Расчёт пергол с ценой', 'index.html'],
+    submit: ['Отправить проект', 'Фото смонтированного объекта', 'submit.html'],
+    crm: ['CRM', 'Лиды, заказы, КП', 'crm.html'],
+    projects: ['Проекты для сайта', 'Проверка и публикация', 'projects.html'],
+    gallery: ['Галерея объектов', 'Папка с фото в Google Drive', null]
+  };
+  var BY = {
+    anon: ['landing', 'conf'], client: ['landing', 'conf'],
+    dealer: ['submit', 'gallery', 'conf', 'crm'], superdealer: ['submit', 'gallery', 'conf', 'crm'],
+    manager: ['crm', 'projects', 'gallery', 'landing', 'conf'],
+    superadmin: ['crm', 'projects', 'submit', 'gallery', 'landing', 'conf']
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var sb = null;
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function say(id, text, ok) { var m = $(id); m.textContent = text || ''; m.className = 'msg' + (text ? (ok ? ' ok' : ' err') : ''); }
+  function goodUrl(v) {
+    try { var u = new URL(v); return u.protocol === 'https:' && HOSTS.indexOf(u.hostname) >= 0 && !u.username && !u.password; } catch (e) { return false; }
+  }
+  function humanError(e) {
+    var m = String((e && (e.message || e.error_description)) || e || '');
+    if (/Invalid login/i.test(m)) return 'Неверный e-mail или пароль';
+    if (/row-level|permission denied/i.test(m)) return 'Нет прав на это действие';
+    if (/Failed to fetch|network|NetworkError/i.test(m)) return 'Нет связи с сервером, попробуйте ещё раз';
+    return 'Ошибка. Попробуйте ещё раз';
+  }
+
+  // url === undefined: unknown/not requested; '' : not set; string: set (used only as href)
+  function render(role, url) {
+    var box = $('tiles'); box.textContent = '';
+    (BY[role] || BY.anon).forEach(function (k) {
+      var c = C[k], t;
+      if (k === 'gallery') {
+        if (url && goodUrl(url)) { t = el('a', 'tile'); t.href = url; t.target = '_blank'; t.rel = 'noopener noreferrer'; t.appendChild(el('b', null, c[0])); t.appendChild(el('span', null, c[1])); }
+        else {
+          t = el('div', 'tile off'); t.id = 'galOff'; t.appendChild(el('b', null, c[0]));
+          t.appendChild(el('span', null, 'Ссылка ещё не добавлена' + (role === 'superadmin' ? '. Добавьте её в поле ниже' : '')));
+        }
+        t.id = t.id || 'galTile';
+      } else { t = el('a', 'tile'); t.href = c[2]; t.appendChild(el('b', null, c[0])); t.appendChild(el('span', null, c[1])); }
+      t.setAttribute('data-card', k); box.appendChild(t);
+    });
+  }
+
+  function start() {
+    if (!sb) { render('anon'); return; }
+    sb.auth.getSession().then(function (r) {
+      var s = r.data.session;
+      $('login').hidden = !!s; $('outBar').hidden = !s; $('adm').hidden = true;
+      if (!s) { render('anon'); return; }
+      return sb.from('profiles').select('role').eq('id', s.user.id).single().then(function (p) {
+        var role = p.data && BY[p.data.role] ? p.data.role : 'client';
+        if (BY[role].indexOf('gallery') < 0) { render(role); return; }
+        return sb.from('app_links').select('url').eq('key', 'gallery').maybeSingle().then(function (g) {
+          var url = g && !g.error && g.data && g.data.url ? g.data.url : '';
+          render(role, url);
+          if (role === 'superadmin') { $('adm').hidden = false; $('galState').textContent = url ? 'Ссылка задана. Введите новую, чтобы заменить' : 'Ссылка ещё не добавлена'; $('galUrl').value = ''; }
+        });
+      });
+    });
+  }
+  $('galForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = $('galUrl').value.trim();
+    if (!goodUrl(v)) { say('galMsg', 'Нужна ссылка вида https://drive.google.com/… (допустимы также docs.google.com и photos.google.com)'); return; }
+    $('galSave').disabled = true; say('galMsg', 'Сохраняю…', true);
+    sb.from('app_links').upsert({ key: 'gallery', title: 'Галерея объектов', url: v }, { onConflict: 'key' }).then(function (r) {
+      $('galSave').disabled = false;
+      if (r.error) { say('galMsg', humanError(r.error)); return; }
+      say('galMsg', 'Сохранено', true); start();
+    });
+  });
+  $('login').addEventListener('submit', function (e) {
+    e.preventDefault(); say('loginMsg', '…', true);
+    sb.auth.signInWithPassword({ email: $('em').value.trim(), password: $('pw').value }).then(function (r) {
+      if (r.error) { say('loginMsg', humanError(r.error)); return; }
+      say('loginMsg', ''); start();
+    });
+  });
+  $('out').addEventListener('click', function () { sb.auth.signOut().then(start); });
+
+  render('anon');
+  if (!BACKEND.url) return; // without a backend: public cards only
+  var s = document.createElement('script'); s.src = SDK; s.async = true;
+  s.onload = function () { sb = window.supabase.createClient(BACKEND.url, BACKEND.anonKey); start(); };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>

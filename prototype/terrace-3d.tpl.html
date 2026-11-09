@@ -1559,10 +1559,13 @@ function underView() {
   for (const x of [-0.1, W + 0.1]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z));
   for (const x of [0, W]) pts.push(new THREE.Vector3(x, 0.3, D));
   let d = D * 0.6 + 1.5;
+  const phone = matchMedia('(max-width: 760px)').matches;
   for (let i = 0; i < 60; i++) {
     camera.position.set(W / 2, 1.5, D + d); camera.lookAt(t); camera.updateMatrixWorld();
     const m = Math.max(...pts.map((p) => { const v = p.clone().project(camera); return Math.max(Math.abs(v.x), Math.abs(v.y)); }));
-    if (m <= (matchMedia('(min-width: 761px) and (max-width: 1100px) and (orientation: portrait)').matches ? 0.66 : 0.9)) break; // tablet portrait: ~60% of the scene width
+    // phones: the width label on the ground in front of the pergola must clear the toolbar under the scene (label half-height + ~12 px gap)
+    const lab = phone ? new THREE.Vector3(W / 2, 0.02, D + 1.15).project(camera).y : 0, labOk = !phone || lab >= -(1 - 26 / Math.max(120, view.getBoundingClientRect().height / 2));
+    if (labOk && m <= (matchMedia('(min-width: 761px) and (max-width: 1100px) and (orientation: portrait)').matches ? 0.66 : 0.9)) break; // tablet portrait: ~60% of the scene width
     d *= 1.08;
   }
   controls.target.copy(t);

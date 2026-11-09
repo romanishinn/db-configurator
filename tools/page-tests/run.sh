@@ -7,7 +7,7 @@ set -eu
 cd "$(dirname "$0")"
 export NODE_PATH="${NODE_PATH:-$(npm root -g)}"
 fail=0
-for f in manager.js manager-extra.js dealer.js landing.js; do
+for f in manager.js manager-extra.js dealer.js landing.js hub.js; do
   echo "== $f"; out=$(node "$f" 2>&1) || { echo "$out" | tail -5; fail=1; continue; }
   echo "$out" | grep -E '^(PASS|FAIL)' | sort | uniq -c | sort -rn | head -3
   echo "$out" | grep -qE '^FAIL|pageerror|Error:' && { echo "$out" | grep -E '^FAIL|pageerror|Error:' | head -5; fail=1; }
