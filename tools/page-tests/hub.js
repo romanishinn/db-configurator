@@ -16,14 +16,14 @@ let bad = 0; const ok = (n, c) => { console.log((c ? 'PASS ' : 'FAIL ') + n); if
   const want = { dealer: 'submit,gallery,conf,crm', superdealer: 'submit,gallery,conf,crm', manager: 'crm,projects,gallery,landing,conf', superadmin: 'crm,projects,submit,gallery,landing,conf' };
   for (const w of [390, 1100]) {
     { const { page, errs } = await mk(w, ''); await page.waitForSelector('#login:not([hidden])'); await page.waitForTimeout(200);
-      ok(`${w} anon cards`, (await cards(page)).join() === 'landing,conf'); ok(`${w} anon no gallery/link`, !(await html(page)).includes('drive.google') && !(await page.$('[data-card=gallery]')));
+      ok(`${w} anon cards`, (await cards(page)).join() === 'landing,conf'); ok(`${w} anon no gallery/link`, !(await html(page)).includes('TESTFOLDER') && !(await page.$('[data-card=gallery]')));
       await page.screenshot({ path: O(`hub-anon-${w}.png`), fullPage: true }); ok(`${w} anon no errors`, !errs.length); }
     for (const r of ['dealer', 'manager', 'superadmin']) {
       const { page, errs } = await mk(w, `window.__role="${r}";window.__link="${LINK}";`); await login(page);
       ok(`${w} ${r} cards`, (await cards(page)).join() === want[r]);
       const g = await page.$eval('[data-card=gallery]', e => ({ href: e.getAttribute('href'), t: e.target, rel: e.rel, txt: e.textContent }));
       ok(`${w} ${r} gallery button opens new tab safely`, g.href === LINK && g.t === '_blank' && g.rel === 'noopener noreferrer' && !g.txt.includes('http'));
-      ok(`${w} ${r} link not in page text`, !(await page.innerText('body')).includes('drive.google'));
+      ok(`${w} ${r} link not in page text`, !(await page.innerText('body')).includes('TESTFOLDER'));
       ok(`${w} ${r} admin field only for superadmin`, (await page.$eval('#adm', e => !e.hidden)) === (r === 'superadmin'));
       await page.screenshot({ path: O(`hub-${r}-${w}.png`), fullPage: true }); ok(`${w} ${r} no errors`, !errs.length);
     }
@@ -32,7 +32,7 @@ let bad = 0; const ok = (n, c) => { console.log((c ? 'PASS ' : 'FAIL ') + n); if
   for (const r of ['client', 'weird']) { // not allowed to read: the table is not even requested, link never in DOM
     const { page } = await mk(390, `window.__role="${r}";window.__link="${LINK}";`); await login(page);
     ok(`${r}: public cards only`, (await cards(page)).join() === 'landing,conf');
-    ok(`${r}: no gallery, link not in DOM, app_links not read`, !(await page.$('[data-card=gallery]')) && !(await html(page)).includes('drive.google') && !(await page.evaluate(() => window.__log)).some(l => l.read)); }
+    ok(`${r}: no gallery, link not in DOM, app_links not read`, !(await page.$('[data-card=gallery]')) && !(await html(page)).includes('TESTFOLDER') && !(await page.evaluate(() => window.__log)).some(l => l.read)); }
   { const { page } = await mk(390, 'window.__role="manager";'); await login(page); // not set
     const t = await page.textContent('[data-card=gallery]'); ok('gallery not set: text, no link', t.includes('Ссылка ещё не добавлена') && !t.includes('Добавьте') && !(await page.$('a[data-card=gallery]')));
     await page.screenshot({ path: O('hub-manager-noset-390.png'), fullPage: true }); }
