@@ -611,7 +611,12 @@ summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-v
   .f-chip, .f-link, details.f-more > summary, .f-faq summary { min-height: 44px; }
   .f-link, details.f-more > summary, .f-faq summary { display: inline-flex; align-items: center; }
   .f-faq summary { display: flex; }
+  .f-step { grid-template-columns: 44px 1fr 44px; }
   .f-step button { min-height: 44px; }
+  /* the bigger touch targets must not eat panel height: tighter padding round them */
+  .f-head { padding-top: 4px; margin-bottom: -6px; }
+  .f-steps { margin-top: 6px; }
+  body.cust .toolbar { padding-top: 2px; padding-bottom: 2px; }
   .f-form input[type=text], .f-form input[type=email], .f-form input[type=tel], .f-form select { min-height: 46px; }
   .f-form .chk { min-height: 44px; gap: 10px; }
   .f-form .chk input { width: 22px; height: 22px; flex: none; }
@@ -656,7 +661,9 @@ summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-v
   body.cust .f-bar .p span { white-space: normal; display: block; font-size: 13px; }
   body.cust .f-bar .back, body.cust .f-bar .next, body.cust .f-btn { min-height: 48px; font-size: 16px; }
   #f-card { position: fixed; left: 0; right: 0; bottom: 0; width: auto; max-width: 720px; margin: 0 auto; max-height: 72vh; border-radius: 16px 16px 0 0; z-index: 70; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
-  #f-consent { position: fixed; left: 0; right: 0; bottom: 96px; max-width: 700px; margin: 0 auto; width: calc(100% - 32px); z-index: 8; display: flex; gap: 16px; align-items: center; font-size: 14px; }
+  #f-consent { position: fixed; left: 0; right: 0; bottom: 92px; max-width: 700px; margin: 0 auto; width: calc(100% - 32px); z-index: 8; display: flex; gap: 12px; align-items: center; font-size: 13px; line-height: 1.35; padding: 8px 12px; }
+  body:has(#f-consent) .funnel { padding-bottom: 190px; } /* room for the banner while it is shown: it never covers fields or buttons */
+  body.cust .f-prod-feats i, body.cust .fc-h small, body.cust .fc-q, body.cust .fc-fills button, body.cust .f-ctl button small, body.cust #tb-louv .tl-h, body.cust .f-sw button .pr, body.cust .f-sw.f-sw-sm button, body.cust .f-vt button .pr { font-size: 12.5px; }
   #f-consent p { margin: 0; flex: 1; }
   #f-consent div { flex: none; }
   .dim { font-size: 12.5px; }

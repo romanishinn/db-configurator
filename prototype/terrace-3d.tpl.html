@@ -516,12 +516,11 @@ function buildEnv(W, D) {
   }
 }
 function fadeFence(dt) { // a side fades out while the camera stands outside of it (between the viewer and the pergola)
-  const cp = camera.position, tg = controls.target, low = (cp.y - tg.y) < 0.26 * Math.hypot(cp.x - tg.x, cp.z - tg.z, cp.y - tg.y); // < ~15 deg above the horizon
   for (const f of fenceSides) {
-    const d = f.sg * (camera.position[f.ax] - f.at), out = d > -1 || low; // camera beyond (or near) this side, or looking from a low angle
+    const d = f.sg * (camera.position[f.ax] - f.at), out = d > -1; // camera beyond (or near) this side
     const goal = out ? 0 : 1, o = f.mesh.material.opacity;
-    if (goal < o && (d > 0 || low)) f.mesh.material.opacity = 0; // side already between camera and pergola: hide at once, never overlap
-    else f.mesh.material.opacity = o + Math.max(-dt / 80, Math.min(dt / 300, goal - o)); // fade out fast, back in smoothly
+    if (goal < o && d > 0) f.mesh.material.opacity = 0; // side already between camera and pergola: hide at once, never overlap
+    else f.mesh.material.opacity = o + Math.max(-dt / 50, Math.min(dt / 300, goal - o)); // fade out fast, back in smoothly
     f.mesh.visible = !PHOTO.url && f.mesh.material.opacity > 0.02;
   }
 }
