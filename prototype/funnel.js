@@ -785,7 +785,7 @@
       banner() {
         if (!key || !isCust() || Store.get('db.consent')) { const b = $('f-consent'); if (b) b.remove(); return; }
         let b = $('f-consent');
-        if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); $('view').parentElement.appendChild(b);
+        if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); if (matchMedia('(max-width: 1100px), (orientation: landscape) and (max-height: 560px)').matches && document.querySelector('.app')) { b.classList.add('in-flow'); document.querySelector('.app').before(b); } else $('view').parentElement.appendChild(b);
           b.addEventListener('click', (e) => { const x = e.target.closest('[data-consent]'); if (!x) return; Store.set('db.consent', x.dataset.consent); b.remove(); if (x.dataset.consent === 'yes') { load(); A.track('consent_given'); } }); }
         const t = AT[lang] || AT.de;
         b.innerHTML = `<p>${esc(t.t)}</p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;

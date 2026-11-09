@@ -340,7 +340,10 @@ body.cust #hint { display: none !important; }
 #f-consent div { display: flex; gap: 8px; justify-content: flex-end; }
 #f-consent button { border: 1px solid var(--line); background: #fff; color: inherit; border-radius: 8px; padding: 7px 12px; font: 600 13px/1 var(--f-body); cursor: pointer; }
 #f-consent button.y { background: var(--accent); border-color: var(--accent); color: #fff; }
-@media (max-width: 760px) { #f-consent { position: fixed; left: 8px; right: 8px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); max-width: none; z-index: 46; padding: 8px 10px; font-size: 12.5px; line-height: 1.3; } #f-consent p { margin: 0 0 6px; } body:has(#f-consent) .funnel { padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px)); } }
+/* phones, tablets and landscape phones: the banner is a strip above the page (JS adds .in-flow): it never covers the scene, hotspots or panel and scrolls away with the page */
+#f-consent.in-flow { position: static; max-width: none; margin: 0; border-radius: 0; box-shadow: none; border-width: 0 0 1px; display: flex; gap: 10px; align-items: center; padding: 6px 12px; font-size: 12.5px; line-height: 1.3; z-index: 10; }
+#f-consent.in-flow p { margin: 0; flex: 1; }
+#f-consent.in-flow div { flex: none; }
 @media print { #f-consent { display: none !important; } }
 
 /* partner login (backend.js): login card over the page, partner block at the top of the Pro panel */
@@ -621,6 +624,10 @@ summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-v
   .f-form .chk { min-height: 44px; gap: 10px; }
   .f-form .chk input { width: 22px; height: 22px; flex: none; }
   .f-fills button, .f-lay button { min-height: 44px; }
+  .f-step { min-height: 44px; }
+  .f-chip { min-width: 44px; justify-content: center; }
+  .toolbar #tb-vertos .row button, .toolbar #v-iso, .toolbar #tb-size-pop input { min-width: 44px; min-height: 44px; }
+  .toolbar input[type=range] { min-height: 44px; }
   .hs::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; }
   #f-consent button { min-height: 44px; padding: 0 16px; }
   .f-btn, .f-bar .back, .f-bar .next { min-height: 48px; font-size: 16px; }
@@ -665,11 +672,7 @@ summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-v
   body.cust .f-bar .p span { white-space: normal; display: block; font-size: 13px; }
   body.cust .f-bar .back, body.cust .f-bar .next, body.cust .f-btn { min-height: 48px; font-size: 16px; }
   #f-card { position: fixed; left: 0; right: 0; bottom: 0; width: auto; max-width: 720px; margin: 0 auto; max-height: 72vh; border-radius: 16px 16px 0 0; z-index: 70; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
-  #f-consent { position: fixed; left: 0; right: 0; bottom: 92px; max-width: 700px; margin: 0 auto; width: calc(100% - 32px); z-index: 8; display: flex; gap: 12px; align-items: center; font-size: 13px; line-height: 1.35; padding: 8px 12px; }
-  body:has(#f-consent) .funnel { padding-bottom: 190px; } /* room for the banner while it is shown: it never covers fields or buttons */
   body.cust .f-prod-feats i, body.cust .fc-h small, body.cust .fc-q, body.cust .fc-fills button, body.cust .f-ctl button small, body.cust #tb-louv .tl-h, body.cust .f-sw button .pr, body.cust .f-sw.f-sw-sm button, body.cust .f-vt button .pr { font-size: 12.5px; }
-  #f-consent p { margin: 0; flex: 1; }
-  #f-consent div { flex: none; }
   .dim { font-size: 12.5px; }
   body.cust.typing .stage { position: relative; }
 }
@@ -677,27 +680,25 @@ summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-v
 /* ---------- phone / small screen, landscape (height <= 560 px): scene on the left, panel column on the right, toolbar as an icon column over the scene ---------- */
 @media (orientation: landscape) and (max-height: 560px) {
   html, body { overflow: hidden; height: 100dvh; }
-  body.cust .app { grid-template-columns: minmax(0, 1fr) clamp(320px, 40vw, 400px); height: 100dvh; min-height: 0; padding: 0; gap: 0; }
-  body.cust .stage { position: relative; top: 0; height: 100dvh; min-height: 0; border-radius: 0; border-width: 0 1px 0 0; z-index: 1; order: 0; }
+  body.cust { display: flex; flex-direction: column; }
+  body.cust .app { grid-template-columns: minmax(0, 1fr) clamp(320px, 40vw, 400px); grid-template-rows: minmax(0, 1fr); flex: 1; height: auto; min-height: 0; padding: 0; gap: 0; }
+  body.cust .stage { align-self: stretch; position: relative; top: 0; height: auto; min-height: 0; border-radius: 0; border-width: 0 1px 0 0; z-index: 1; order: 0; }
   body.cust .stage .vp, body.cust .vp { height: auto !important; min-height: 0 !important; flex: 1; }
   body.cust .fold, body.cust #fold-left, body.cust #fold-right, body.cust #fold-bottom { display: none; }
-  body.cust .stage { flex-direction: row; }
   body.cust .toolbar { position: relative; order: -1; flex: none; display: grid; align-content: end; width: auto; gap: 0; padding: 3px; background: #fff; border-top: 0; border-right: 1px solid var(--line); z-index: 5; }
   body.cust .toolbar .tb-row { flex: none; display: grid; grid-template-columns: repeat(var(--tc, 1), 44px); gap: 2px; align-content: end; }
   body.cust .toolbar .ib { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: center; }
   body.cust .toolbar .ib .cap { display: none; }
   body.cust .toolbar .tb-row { --tc: 1; }
   body.cust .toolbar #louv-info { display: none !important; }
-  body.cust .toolbar .tb-pop:not([hidden]), body.cust .toolbar .clr-pop:not([hidden]) { position: absolute; left: calc(100% + 8px); right: auto; bottom: 0; width: min(380px, calc(100vw - clamp(320px, 40vw, 400px) - 90px)); max-height: calc(100dvh - 16px); overflow-y: auto; }
-  body.cust .funnel { height: 100dvh; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 0; border-radius: 0; border-width: 0; }
+  body.cust .toolbar .tb-pop:not([hidden]), body.cust .toolbar .clr-pop:not([hidden]) { position: absolute; left: calc(100% + 8px); right: auto; bottom: 0; width: min(380px, calc(100vw - clamp(320px, 40vw, 400px) - 90px)); max-height: calc(100dvh - 60px); overflow-y: auto; }
+  body.cust .funnel { align-self: stretch; height: auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 0; border-radius: 0; border-width: 0; }
   body.cust .f-head { padding: 4px 12px 0; }
   body.cust .f-steps { position: sticky; top: 0; z-index: 2; background: var(--panel); margin: 0; padding: 6px 12px 4px; }
   body.cust .f-body { padding: 10px 12px 12px; }
   body.cust .f-bar { position: sticky; bottom: 0; left: auto; right: auto; box-shadow: 0 -4px 12px rgba(0,0,0,.08); padding: 8px 12px; z-index: 45; }
   body.cust .f-bar .p b { font-size: 17px; }
-  #f-consent { position: fixed; left: auto; right: 8px; bottom: 70px; width: calc(clamp(320px, 40vw, 400px) - 16px); max-width: none; margin: 0; z-index: 46; padding: 8px 10px; font-size: 12.5px; line-height: 1.3; }
-  #f-consent p { margin: 0 0 6px; }
-  body:has(#f-consent) .f-body { padding-bottom: 130px; }
+  body.cust .stage { flex-direction: row; }
   body.cust.typing .stage { position: relative; }
 }
 @media (orientation: landscape) and (max-height: 449px) { body.cust .toolbar .tb-row { --tc: 2; } }
