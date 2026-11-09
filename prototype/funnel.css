@@ -628,6 +628,10 @@ summary:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-v
 
 /* ---------- tablet, portrait (761-1100 px): one column, scene on top, panel below ---------- */
 @media (min-width: 761px) and (max-width: 1100px) and (orientation: portrait) {
+  /* focus()/scrollIntoView must not leave a field under the sticky scene or the price bar */
+  html { scroll-padding-top: calc(max(46vh, 380px) + 12px); scroll-padding-bottom: 110px; }
+  .f-lang-car { font-size: 12px; }
+  .f-quote td, .f-form td, table td { font-size: max(12px, 1em); }
   body.cust { font-size: 15px; }
   body.cust .app { grid-template-columns: minmax(0, 1fr); padding: 0; gap: 0; }
   body.cust .stage { position: sticky; top: 0; height: auto; min-height: 0; border-radius: 0; border-width: 0 0 1px; z-index: 4; order: -1; }
