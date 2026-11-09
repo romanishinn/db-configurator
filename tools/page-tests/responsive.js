@@ -18,7 +18,8 @@ const DEV = [
   ['lap1366x768', 1366, 768, 0, 0], ['lap1440x900', 1440, 900, 0, 0], ['desk1920x1080', 1920, 1080, 0, 1]
 ].map(([n, w, h, t, sc]) => ({ n, w, h, touch: !!t, scale: !!sc }));
 // the configurator is heavy (software WebGL): fewer devices unless RESP_FULL_CFG=1
-const CFG_DEV = new Set(['ph360x740', 'ph390x844', 'ph430x932', 'phL740x360', 'phL844x390', 'tab768x1024', 'tabL1024x768', 'lap1366x768', 'desk1920x1080']);
+const CFG_DEV = new Set(['ph360x740', 'ph390x844', 'phL844x390', 'tab768x1024', 'tabL1024x768', 'lap1366x768']);
+const CFG_SCALE = new Set(['ph390x844', 'phL844x390']);
 
 const TYPES = { A: 'гориз. прокрутка', B: 'перекрыт', C: 'тап-цель <44', D: 'шрифт <12', E: 'вне экрана/обрезан', F: 'панели >35% высоты', G: 'действие: вложенная прокрутка/недоступно', H: 'ошибка консоли', I: 'шрифт x1.3: действие недоступно' };
 
@@ -43,7 +44,11 @@ function inPage(opt) {
   const add = (type, el, detail) => { els.push(el); out.push({ type, sel: sel(el), detail, i: els.length - 1 }); };
   const vis = el => { if (!el.isConnected) return false; if (el.checkVisibility && !el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false; const r = el.getClientRects()[0]; return !!r && r.width >= 2 && r.height >= 2; };
   const CAND = 'button,a[href],input:not([type=hidden]),select,textarea,summary,[role=button],[tabindex]:not([tabindex="-1"])';
-  const cands = [...document.querySelectorAll(CAND)].filter(e => vis(e) && !e.closest('[inert]') && getComputedStyle(e).pointerEvents !== 'none');
+  const hscr = el => { for (let a = el.parentElement; a; a = a.parentElement) { const c = getComputedStyle(a); if (/(auto|scroll)/.test(c.overflowX) && a.scrollWidth > a.clientWidth + 1) return true; } return false; };
+  const docOver0 = document.documentElement.scrollWidth > vw + 1;
+  // an element wholly outside the screen with no page overflow and no scroller is a parked off-canvas drawer: not tested (see README)
+  const parked = e => { const r = e.getBoundingClientRect(); return (r.right <= 0 || r.left >= vw) && !docOver0 && !hscr(e); };
+  const cands = [...document.querySelectorAll(CAND)].filter(e => vis(e) && !e.closest('[inert]') && getComputedStyle(e).pointerEvents !== 'none' && !parked(e));
   const hitOk = (el, hit) => !!hit && (hit === el || el.contains(hit) || (() => { const l = hit.closest && hit.closest('label'); return !!l && l.control === el; })());
   const tryAt = el => { const r = el.getClientRects()[0]; const l = Math.max(r.left, 0), rr = Math.min(r.right, vw), t = Math.max(r.top, 0), b = Math.min(r.bottom, vh);
     if (rr - l < 1) return 'вне экрана по горизонтали'; if (b - t < 1) return 'вне экрана по вертикали'; const x = (l + rr) / 2;
@@ -143,7 +148,7 @@ async function job(j) {
   p.on('dialog', x => x.dismiss());
   const stub = STUB[j.page] ? rd(STUB[j.page]) : null;
   await p.route(/^https?:/, r => { const u = r.request().url();
-    if (/supabase\.js/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: stub || '' });
+    if (/supabase\.js/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: stub || rd('hub-stub.txt') });
     if (/turnstile/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: TS });
     if (/\.supabase\.co/.test(u)) { if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS }); return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: '[]' }); }
     if (/\.(js)(\?|$)/.test(u)) return r.fulfill({ contentType: 'application/javascript', body: '' }); if (/css/.test(u)) return r.fulfill({ contentType: 'text/css', body: '' }); return r.fulfill({ status: 204, body: '' }); });
@@ -165,7 +170,7 @@ async function job(j) {
 async function main() {
   prepare(); browser = await chromium.launch();
   const jobs = []; for (const pg of PAGES) for (const dev of DEV) { if (pg === 'configurator' && !process.env.RESP_FULL_CFG && !CFG_DEV.has(dev.n)) continue;
-    jobs.push({ page: pg, dev, scale: false }); if (dev.scale) jobs.push({ page: pg, dev, scale: true }); }
+    jobs.push({ page: pg, dev, scale: false }); if (dev.scale && (pg !== 'configurator' || CFG_SCALE.has(dev.n))) jobs.push({ page: pg, dev, scale: true }); }
   jobs.sort((a, b) => (b.page === 'configurator') - (a.page === 'configurator')); let next = 0, done = 0;
   await Promise.all(Array.from({ length: WORKERS }, async () => { while (next < jobs.length) { const j = jobs[next++]; await job(j).catch(e => violations.push({ page: j.page, dev: j.dev.n, state: '-', mode: '-', type: 'H', sel: 'job', detail: String(e.message).slice(0, 140) })); if (++done % 20 === 0) process.stderr.write(`  ${done}/${jobs.length} (${Math.round((Date.now() - t0) / 1000)}s)\n`); } }));
   await browser.close();
