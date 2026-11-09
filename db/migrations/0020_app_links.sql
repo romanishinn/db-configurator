@@ -26,5 +26,6 @@ create policy app_links_write on public.app_links for all to authenticated
 
 revoke all on public.app_links from public, anon, authenticated;
 grant select on public.app_links to authenticated;
-grant insert (key, title, url), update (title, url) on public.app_links to authenticated;
+-- update(key) too: the REST upsert (on conflict do update) sets every sent column, the key included; only the superadmin passes the policy anyway
+grant insert (key, title, url), update (key, title, url) on public.app_links to authenticated;
 grant delete on public.app_links to authenticated;

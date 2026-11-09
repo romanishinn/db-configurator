@@ -1028,6 +1028,9 @@ delete from public.app_links where key = 'ok2';
 select pg_temp.check(pg_temp.fails(format($q$insert into public.app_links (key, title, url, updated_by) values ('bad9', 'X', 'https://docs.google.com/a', %L)$q$, :'client'), 'permission denied'), 'updated_by cannot be written directly');
 select pg_temp.check(pg_temp.fails(format($q$update public.app_links set updated_by = %L$q$, :'client'), 'permission denied'), 'updated_by cannot be updated directly');
 select pg_temp.check(pg_temp.fails($q$update public.app_links set updated_at = '2000-01-01'$q$, 'permission denied'), 'updated_at cannot be written directly');
+-- the page saves through the REST upsert: on conflict do update sets every sent column, the key included
+insert into public.app_links (key, title, url) values ('gallery', 'Galerie 2', 'https://drive.google.com/drive/folders/new') on conflict (key) do update set key = excluded.key, title = excluded.title, url = excluded.url;
+select pg_temp.check((select title from public.app_links where key = 'gallery') = 'Galerie 2' and (select url from public.app_links where key = 'gallery') = 'https://drive.google.com/drive/folders/new', 'the superadmin can save the gallery link with a REST-style upsert');
 update public.app_links set title = 'Galerie 2', url = 'https://photos.app.goo.gl/x' where key = 'gallery';
 select pg_temp.as_root();
 select pg_temp.check((select title from public.app_links where key = 'gallery') = 'Galerie 2' and (select updated_by from public.app_links where key = 'gallery') = :'admin'::uuid, 'the superadmin updates a link; updated_by is the superadmin');
