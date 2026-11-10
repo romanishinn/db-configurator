@@ -898,8 +898,9 @@ function intermediatePositions(opt, sp) {
  *  and mm within [50 .. limit of the engine] (step 50, the limit itself is allowed); nothing left → the option is off. */
 function fixPostShift() {
   const ps = state.po.postShift; if (!ps) return;
+  if (typeof ps !== 'object' || !Array.isArray(ps.corners)) { state.po.postShift = null; return; } // a damaged link must not blank the page
   const o = state.options[state.optIndex], have = o ? DBCore.cornerPostsOf(o) : [];
-  const corners = [...new Set(ps.corners || [])].filter((c) => have.some((h) => h.corner === c));
+  const corners = [...new Set(ps.corners)].filter((c) => have.some((h) => h.corner === c));
   if (!corners.length) { state.po.postShift = null; return; }
   const max = Math.min(...have.filter((h) => corners.includes(h.corner)).map((h) => h.maxShiftMm));
   const v = Math.round((Number(ps.mm) || max) / 50) * 50;
@@ -914,6 +915,7 @@ function shiftedCorners(opt) {
 }
 /** the one place where the option is switched: corners = [] → off; a newly switched-on option starts at the largest allowed shift */
 window.setPostShift = function (corners, mmv) {
+  if (!Array.isArray(corners)) corners = [];
   const o = state.options[state.optIndex], have = o ? DBCore.cornerPostsOf(o) : [];
   const cs = corners.filter((c) => have.some((h) => h.corner === c));
   if (!cs.length) { state.po.postShift = null; return; }

@@ -203,7 +203,12 @@
     if ((side === 'left' || side === 'right') && o && o.rows > 1) s += ' · ' + L().row + ' ' + (n + 1);
     // a Slide side with a required post in the middle is two openings
     const op = o ? opsOf(o).find((x) => x.id === id) : null;
-    if (op && op.part) s += ' · ' + L().part + ' ' + op.part;
+    if (op && op.part) {
+      s += ' · ' + L().part + ' ' + op.part;
+      // the stub between a "free" corner and the moved post of a side that is already split in two (Slide with a required post):
+      // same part number as the main piece, so it says what it is
+      if (/-h[12]$/.test(id)) { const base = opsOf(o).find((x) => x.id === id.replace(/-h[12]$/, '')); if (base && base.part === op.part) s += ' · ' + L().onRequest; }
+    }
     return s;
   }
   // German colour names: the catalogue has English and Russian names; wood décors keep their catalogue names
