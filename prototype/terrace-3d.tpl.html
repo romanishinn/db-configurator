@@ -894,20 +894,11 @@ function intermediatePositions(opt, sp) {
   return out;
 }
 
-/** Corners with a post that can be moved (engine) and the largest shift. ASSUMPTION: the engine's limit is the catalogue projection / 4,
- *  which for louvres running the other way is the width of the pergola, not the length of the side the post moves along; the post moves
- *  along the side (depth of the corner module), so the limit is also kept to depth / 4 (never above the engine's). */
-window.cornerPosts = function (o) {
-  return DBCore.cornerPostsOf(o).map((c) => {
-    const m = o.modules.find((x) => x.row === (c.corner.startsWith('front') ? o.rows - 1 : 0) && x.col === (c.corner.endsWith('left') ? 0 : o.cols - 1));
-    return m ? { ...c, maxShiftMm: Math.min(c.maxShiftMm, DBCore.maxPostShiftMm(m.depth)) } : c;
-  });
-};
 /** Corner post relocation (option): state.po.postShift = { corners, mm }. Keeps only corners that exist in the current layout
  *  and mm within [50 .. limit of the engine] (step 50, the limit itself is allowed); nothing left → the option is off. */
 function fixPostShift() {
   const ps = state.po.postShift; if (!ps) return;
-  const o = state.options[state.optIndex], have = o ? cornerPosts(o) : [];
+  const o = state.options[state.optIndex], have = o ? DBCore.cornerPostsOf(o) : [];
   const corners = [...new Set(ps.corners || [])].filter((c) => have.some((h) => h.corner === c));
   if (!corners.length) { state.po.postShift = null; return; }
   const max = Math.min(...have.filter((h) => corners.includes(h.corner)).map((h) => h.maxShiftMm));
@@ -923,7 +914,7 @@ function shiftedCorners(opt) {
 }
 /** the one place where the option is switched: corners = [] → off; a newly switched-on option starts at the largest allowed shift */
 window.setPostShift = function (corners, mmv) {
-  const o = state.options[state.optIndex], have = o ? cornerPosts(o) : [];
+  const o = state.options[state.optIndex], have = o ? DBCore.cornerPostsOf(o) : [];
   const cs = corners.filter((c) => have.some((h) => h.corner === c));
   if (!cs.length) { state.po.postShift = null; return; }
   const max = Math.min(...have.filter((h) => cs.includes(h.corner)).map((h) => h.maxShiftMm));
@@ -2320,7 +2311,7 @@ function renderPergolaOptions() {
   const spotN = po.spots ? po.spots.louvres : 5, lampN = po.lamps ? po.lamps.louvres : 4, dbl = o.family === 'S500_DOUBLE';
   const pp = state.parapet, pfaces = state.mount === 'free' ? ['front', 'left', 'right', 'back'] : ['front', 'left', 'right'], PF = { front: 'спереди', left: 'слева', right: 'справа', back: 'сзади' };
   fixPostShift();
-  const ps = po.postShift, shiftCorners = cornerPosts(o), PS = { 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' };
+  const ps = po.postShift, shiftCorners = DBCore.cornerPostsOf(o), PS = { 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' };
   $('popts').innerHTML = `
     <label>Парапет (стойки рядом, стекло / ZIP на парапете)<span class="row2">${pfaces.map((f) => `<label class="chk" style="display:inline-flex;gap:4px;margin-right:8px"><input type="checkbox" id="o-pp-${f}" ${pp.sides.includes(f) ? 'checked' : ''}> ${PF[f]}</label>`).join('')}</span></label>
     <label>Высота парапета, мм<input type="number" id="o-pph" min="100" max="1500" step="50" value="${pp.h}"></label>

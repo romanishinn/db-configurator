@@ -107,6 +107,7 @@
   };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const metres = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const metres3 = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 3 }); // 0,875 m (a shift is not always a round number)
   const gross = (n) => n * (1 + VAT);
   const fe = (n) => eur(Math.round(n));
   const plusE = (n) => n > 0.5 ? '+' + fe(n) : L().incl;
@@ -232,7 +233,7 @@
         if (l.code === 'OPT_INTERMEDIATE_POST') d = '× ' + p.qty;
         if (l.code === 'OPT_REQUIRED_POST_HEIGHT') d = `≤ ${metres(p.height)} ${t.m} · × ${p.posts}`;
         if (l.code === 'OPT_LED_GUTTER') d = t.lightI[p.type] || '';
-        if (l.code === 'OPT_CORNER_POST_SHIFT') d = `${String(p.corners).split(',').map((c) => t.shiftCorners[c]).join(', ')} · ${metres(p.mm)} ${t.m}${p.qty > 1 ? ' · × ' + p.qty : ''}${p.includesDrainage ? ' · ' + t.shiftDrain : ''}`;
+        if (l.code === 'OPT_CORNER_POST_SHIFT') d = `${String(p.corners).split(',').map((c) => t.shiftCorners[c]).join(', ')} · ${metres3(p.mm)} ${t.m}${p.qty > 1 ? ' · × ' + p.qty : ''}${p.includesDrainage ? ' · ' + t.shiftDrain : ''}`;
         if (l.code === 'OPT_SPOTS' || l.code === 'OPT_LAMPS') d = `${p.louvres} ${t.roof} × ${p.perLouvre} ${t.perLouvre}`;
         if (l.code === 'OPT_CROWN_SPOTS' || l.code === 'OPT_VERTICAL_LAMPS') d = '× ' + p.points;
         const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST', 'OPT_REQUIRED_POST_HEIGHT', 'OPT_CORNER_POST_SHIFT'].includes(l.code) ? 'pergola' : 'comfort';
@@ -479,7 +480,7 @@
 
   /** corner post relocation (option): chips of the corners that exist, shift field, price per post from the engine */
   function shiftHtml(t, o, idp) {
-    const have = o ? window.cornerPosts(o) : [];
+    const have = o ? DBCore.cornerPostsOf(o) : [];
     if (!have.length) return '';
     window.fixPostShift();
     const ps = state.po.postShift, on = (c) => !!ps && ps.corners.includes(c);
@@ -488,7 +489,7 @@
     h += `<div class="f-chips"><button type="button" class="f-chip" data-psc="none" aria-pressed="${!ps}">${esc(t.shiftNone)}</button>${have.map((c) => `<button type="button" class="f-chip" data-psc="${c.corner}" aria-pressed="${on(c.corner)}">${esc(t.shiftCorners[c.corner])}</button>`).join('')}</div>`;
     if (ps) {
       const max = Math.min(...have.filter((c) => on(c.corner)).map((c) => c.maxShiftMm));
-      h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="${idp}-psm">${esc(t.shiftMm)} · ${esc(t.shiftMax((max / 1000).toLocaleString(lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'de-AT', { maximumFractionDigits: 3 })))}</label><div class="f-step"><button type="button" data-psn="-50" aria-label="−">−</button><input id="${idp}-psm" type="number" inputmode="decimal" step="0.05" min="0.05" max="${max / 1000}" value="${(ps.mm / 1000).toFixed(3).replace(/0$/, '')}" data-psin="1"><button type="button" data-psn="50" aria-label="+">+</button></div></div></div>`;
+      h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="${idp}-psm">${esc(t.shiftMm)} · ${esc(t.shiftMax(metres3(max)))}</label><div class="f-step"><button type="button" data-psn="-50" aria-label="−">−</button><input id="${idp}-psm" type="number" inputmode="decimal" step="0.05" min="0.05" max="${max / 1000}" value="${(ps.mm / 1000).toFixed(3).replace(/0$/, '')}" data-psin="1"><button type="button" data-psn="50" aria-label="+">+</button></div></div></div>`;
       if (o.family === 'S400') h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${esc(t.shiftDrain)}</p>`;
     }
     return h;
@@ -496,7 +497,7 @@
   /** one place for the option's side effects: journal (Russian, for the manager) and analytics without personal data */
   function onShiftSet() {
     const ps = state.po.postShift;
-    logEv(ps ? `перенос стойки: ${ps.corners.map((c) => ({ 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' })[c]).join(', ')}, сдвиг ${(ps.mm / 1000).toFixed(2)} м` : 'перенос стойки: нет');
+    logEv(ps ? `перенос стойки: ${ps.corners.map((c) => ({ 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' })[c]).join(', ')}, сдвиг ${ps.mm} мм` : 'перенос стойки: нет');
     A.track('post_shift', { corners: ps ? ps.corners.length : 0, mm: ps ? ps.mm : 0 });
   }
   window.onPostShift = () => onShiftSet();
