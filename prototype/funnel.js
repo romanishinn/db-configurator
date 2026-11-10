@@ -181,6 +181,7 @@
   function badText(id) {
     const t = L(), l = q().lines.find((x) => x.k === 'unbuilt' && x.id === id);
     if (!l) return t.notMade;
+    if (l.why === 'hang') return t.onRequest; // next to a corner without a post (moved corner post)
     if (l.fill === 'zip' && l.why === 'fabric') return t.zipFabricOnly(l.ok.map((fid) => { const f = cat.fabrics.collections.find((c) => c.id === fid); return `${f.name} (${f.openness} %)`; }).join(', '));
     if (l.fill === 'zip' && l.why === 'size' && l.max) return t.zipMax(metres(l.max), l.axis);
     return t.notMade;
@@ -200,7 +201,7 @@
     if ((side === 'front' || side === 'back') && o && o.cols > 1) s += ' · ' + L().field + ' ' + (n + 1);
     if ((side === 'left' || side === 'right') && o && o.rows > 1) s += ' · ' + L().row + ' ' + (n + 1);
     // a Slide side with a required post in the middle is two openings
-    const op = o && o.family === 'SLIDE' ? opsOf(o).find((x) => x.id === id) : null;
+    const op = o ? opsOf(o).find((x) => x.id === id) : null;
     if (op && op.part) s += ' · ' + L().part + ' ' + op.part;
     return s;
   }
@@ -231,9 +232,10 @@
         if (l.code === 'OPT_INTERMEDIATE_POST') d = '× ' + p.qty;
         if (l.code === 'OPT_REQUIRED_POST_HEIGHT') d = `≤ ${metres(p.height)} ${t.m} · × ${p.posts}`;
         if (l.code === 'OPT_LED_GUTTER') d = t.lightI[p.type] || '';
+        if (l.code === 'OPT_CORNER_POST_SHIFT') d = `${String(p.corners).split(',').map((c) => t.shiftCorners[c]).join(', ')} · ${metres(p.mm)} ${t.m}${p.qty > 1 ? ' · × ' + p.qty : ''}${p.includesDrainage ? ' · ' + t.shiftDrain : ''}`;
         if (l.code === 'OPT_SPOTS' || l.code === 'OPT_LAMPS') d = `${p.louvres} ${t.roof} × ${p.perLouvre} ${t.perLouvre}`;
         if (l.code === 'OPT_CROWN_SPOTS' || l.code === 'OPT_VERTICAL_LAMPS') d = '× ' + p.points;
-        const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST', 'OPT_REQUIRED_POST_HEIGHT'].includes(l.code) ? 'pergola' : 'comfort';
+        const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST', 'OPT_REQUIRED_POST_HEIGHT', 'OPT_CORNER_POST_SHIFT'].includes(l.code) ? 'pergola' : 'comfort';
         out.push({ g, t: t.opt[l.code] || l.code, d, a: l.a });
       } else if (l.k === 'glass') out.push({ g: 'sides', t: `${t.fills.glass} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${l.panels} ${t.panelsW} · ${t.tints[l.glazing]} ${l.thick} mm`, a: l.a });
       else if (l.k === 'zip') { const f = cat.fabrics.collections.find((x) => x.id === l.fabric), f0 = l.swapFrom && cat.fabrics.collections.find((x) => x.id === l.swapFrom); out.push({ g: 'sides', t: `${t.fills.zip} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${f ? f.name + ' (OF ' + f.openness + ' %)' : ''}${f0 ? ' · ' + t.swapped(f.name, f0.name) : ''}`, a: l.a }); }
@@ -475,6 +477,39 @@
   }
   const head = (title, desc) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div>`;
 
+  /** corner post relocation (option): chips of the corners that exist, shift field, price per post from the engine */
+  function shiftHtml(t, o, idp) {
+    const have = o ? DBCore.cornerPostsOf(o) : [];
+    if (!have.length) return '';
+    window.fixPostShift();
+    const ps = state.po.postShift, on = (c) => !!ps && ps.corners.includes(c);
+    const unit = optDelta({ postShift: { corners: [have[0].corner], mm: have[0].maxShiftMm } });
+    let h = `<div class="f-h3"><span>${t.shiftT}${unit > 0.5 ? ` · +${fe(gross(unit))}` : ''}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.shiftD)}</span></div>`;
+    h += `<div class="f-chips"><button type="button" class="f-chip" data-psc="none" aria-pressed="${!ps}">${esc(t.shiftNone)}</button>${have.map((c) => `<button type="button" class="f-chip" data-psc="${c.corner}" aria-pressed="${on(c.corner)}">${esc(t.shiftCorners[c.corner])}</button>`).join('')}</div>`;
+    if (ps) {
+      const max = Math.min(...have.filter((c) => on(c.corner)).map((c) => c.maxShiftMm));
+      h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="${idp}-psm">${esc(t.shiftMm)} · ${esc(t.shiftMax(metres(max).replace(/[.,]?0+$/, '')))}</label><div class="f-step"><button type="button" data-psn="-50" aria-label="−">−</button><input id="${idp}-psm" type="number" inputmode="decimal" step="0.05" min="0.05" max="${max / 1000}" value="${(ps.mm / 1000).toFixed(3).replace(/0$/, '')}" data-psin="1"><button type="button" data-psn="50" aria-label="+">+</button></div></div></div>`;
+      if (o.family === 'S400') h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${esc(t.shiftDrain)}</p>`;
+    }
+    return h;
+  }
+  /** one place for the option's side effects: journal (Russian, for the manager) and analytics without personal data */
+  function onShiftSet() {
+    const ps = state.po.postShift;
+    logEv(ps ? `перенос стойки: ${ps.corners.map((c) => ({ 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' })[c]).join(', ')}, сдвиг ${(ps.mm / 1000).toFixed(2)} м` : 'перенос стойки: нет');
+    A.track('post_shift', { corners: ps ? ps.corners.length : 0, mm: ps ? ps.mm : 0 });
+  }
+  window.onPostShift = () => onShiftSet();
+  function actShift(d) { // returns true when handled
+    if (d.psc === undefined && d.psn === undefined) return false;
+    if (d.psc !== undefined) {
+      const cur = (state.po.postShift && state.po.postShift.corners) || [];
+      if (d.psc === 'none') window.setPostShift([]);
+      else window.setPostShift(cur.includes(d.psc) ? cur.filter((c) => c !== d.psc) : [...cur, d.psc]);
+    } else if (state.po.postShift) window.setPostShift(state.po.postShift.corners, state.po.postShift.mm + Number(d.psn));
+    onShiftSet(); rebuild(); applyAnim(); return true;
+  }
+
   /* step 1: size */
   function stepSize(t, o) {
     const wall = state.mount === 'wall';
@@ -501,6 +536,7 @@
       h += `<div class="f-chips">${`<button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${t.parNone}</button>`}${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${t.sides[f]}</button>`).join('')}</div>`;
       if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="f-ph">${t.parH}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="f-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
     }
+    h += shiftHtml(t, o, 'f');
     // size problems: plain-language fix buttons
     const r = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: famFilter() }, cat);
     for (const s of r.suggestions) h += `<div class="f-note">${t.sugg[s.code] || s.code}${s.params && s.params.suggested ? ` <button type="button" class="f-link" data-fix="${s.code}" data-v="${s.params.suggested}">${t.suggFix(metres(s.params.suggested))}</button>` : ''}</div>`;
@@ -1130,6 +1166,7 @@
     if (d.resume) { const s = resumeOffer; resumeOffer = null; if (d.resume === 'yes' && s) restore(s); else { dirty = true; render(); persist(); } return; }
     if (d.mount) { setMount(d.mount); return; }
     if (d.par) { const pp = state.parapet; if (d.par === 'none') pp.sides = []; else { const st = new Set(pp.sides); if (st.has(d.par)) st.delete(d.par); else st.add(d.par); pp.sides = [...st]; } rebuild(); applyAnim(); return; }
+    if (actShift(d)) return;
     if (d.parh) { state.parapet.h = Math.max(100, Math.min(1500, state.parapet.h + Number(d.parh))); rebuild(); applyAnim(); return; }
     // house-wall opening (door / sliding exit): visual context only
     if (d.openon) { state.opening.on = d.openon === '1'; rebuild(); applyAnim(); return; }
@@ -1219,6 +1256,7 @@
     if (el.dataset.sel) { if (el.value !== '') { dirty = true; lastTap = selOf(el); act({ [el.dataset.sel]: el.value }); } return; } // "More …" dropdown
     if (el.form && el.form.id === 'f-form' && el.name) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
     if (el.dataset.dim) { clearTimeout(dimT); applyDim(el); }
+    if (el.dataset.psin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0 && state.po.postShift) { window.setPostShift(state.po.postShift.corners, v); onShiftSet(); rebuild(); applyAnim(); el.value = (state.po.postShift.mm / 1000).toFixed(3).replace(/0$/, ''); } }
     if (el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } }
     if (el.id === 'f-file' && el.files && el.files[0]) { const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(el.files[0]); }
   });
@@ -1365,6 +1403,7 @@
     h += `<div class="f-h3"><span>${t.parT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.parD)}</span></div>`;
     h += `<div class="f-chips"><button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${esc(t.parNone)}</button>${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${esc(t.sides[f])}</button>`).join('')}</div>`;
     if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="tb-ph">${esc(t.parH)}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="tb-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
+    h += shiftHtml(t, curOpt(), 'tb');
     // house-wall opening (door / sliding exit) — wall-mount only; visual context, not in the price
     if (wall) {
       const op = state.opening, ot = OPEN_T[lang] || OPEN_T.en;
@@ -1404,6 +1443,7 @@
       const el = ev.target;
       if (el.dataset && el.dataset.dim) { applyDim(el); return; } // size field: update model/3D, keep the field focused (no re-render)
       if (el.dataset && el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
+      if (el.dataset && el.dataset.psin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0 && state.po.postShift) { window.setPostShift(state.po.postShift.corners, v); onShiftSet(); rebuild(); applyAnim(); POP_RENDER[id](); } return; }
       if (el.dataset && el.dataset.odim) { const k = el.dataset.odim, v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000), lim = k === 'w' ? [600, 6000] : [600, 3200]; if (v > 0) { state.opening[k] = Math.max(lim[0], Math.min(lim[1], Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
       const s = el.closest && el.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
       act({ [s.dataset.sel]: s.value }); if (!pop.hidden) POP_RENDER[id]();
