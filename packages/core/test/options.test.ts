@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
-import { compose, priceOptions } from '../src';
+import { compose, cornerPostsOf, maxPostShiftMm, priceOptions } from '../src';
 import { loadCatalog } from '../src/node';
 
 const cat = loadCatalog(join(__dirname, '../../../data/catalog/2026-07'), 'catalog-2026-07');
@@ -84,5 +84,70 @@ describe('pergola options — values from the catalogue pages', () => {
     expect(sum(priceOptions(s400, { intermediatePosts: 1, postHeight: 3000 }, cat), 'OPT_INTERMEDIATE_POST')).toBe(500);
     expect(sum(priceOptions(s400, { intermediatePosts: 1, postHeight: 3100 }, cat), 'OPT_INTERMEDIATE_POST')).toBe(549);
     expect(sum(priceOptions(s500, { intermediatePosts: 1, postHeight: 3200 }, cat), 'OPT_INTERMEDIATE_POST')).toBe(633);
+  });
+});
+
+describe('corner post relocation (S400 p.17, S500 p.42, Slide p.11: 239 / 239 / 565 per post)', () => {
+  const pick = (req: Parameters<typeof compose>[0], fam: string) => compose(req, cat).options.find((o) => o.family === fam)!;
+  const free400 = pick({ mount: 'free', width: 4000, depth: 3000 }, 'S400');
+  const free500 = pick({ mount: 'free', width: 4000, depth: 3500 }, 'S500');
+  const wall500 = pick({ mount: 'wall', width: 4000, depth: 3500 }, 'S500');
+  const roof500 = pick({ mount: 'roof', width: 4000, depth: 3500 }, 'S500');
+  const slide = pick({ mount: 'wall', width: 3000, depth: 3500 }, 'SLIDE');
+  const shift = (c: typeof free400, corners: ('front-left' | 'front-right' | 'back-left' | 'back-right')[], mm: number) => priceOptions(c, { postShift: { corners, mm } }, cat);
+  const blocks = (r: { issues: { severity: string; code: string }[] }) => r.issues.filter((i) => i.severity === 'block').map((i) => i.code);
+
+  it('S400: 239 for one corner, 478 for two, duplicates collapse', () => {
+    const one = shift(free400, ['front-left'], 700);
+    expect(sum(one, 'OPT_CORNER_POST_SHIFT')).toBe(239);
+    expect(one.lines[0]!.source).toMatchObject({ page: 17 });
+    expect(one.lines[0]!.params).toMatchObject({ qty: 1, includesDrainage: 1 });
+    expect(sum(shift(free400, ['front-left', 'back-right'], 700), 'OPT_CORNER_POST_SHIFT')).toBe(478);
+    expect(sum(shift(free400, ['front-left', 'front-left'], 700), 'OPT_CORNER_POST_SHIFT')).toBe(239);
+  });
+  it('S500: 239 (p.42), no drainage claim', () => {
+    const r = shift(free500, ['front-right'], 500);
+    expect(sum(r, 'OPT_CORNER_POST_SHIFT')).toBe(239);
+    expect(r.lines[0]!.source).toMatchObject({ page: 42 });
+    expect(r.lines[0]!.params!.includesDrainage).toBe(0);
+  });
+  it('Slide: 565 (p.11)', () => {
+    const r = shift(slide, ['front-left'], 500);
+    expect(sum(r, 'OPT_CORNER_POST_SHIFT')).toBe(565);
+    expect(r.lines[0]!.source).toMatchObject({ page: 11 });
+  });
+  it('maximum: projection 3500 -> 875 (875 ok, 876 blocked); 5000 -> 1000', () => {
+    expect(free500.depth).toBe(3500);
+    expect(maxPostShiftMm(3500)).toBe(875);
+    expect(blocks(shift(free500, ['front-left'], 875))).toEqual([]);
+    const bad = shift(free500, ['front-left'], 876);
+    expect(blocks(bad)).toEqual(['POST_SHIFT_TOO_FAR']);
+    expect(bad.issues[0]!.params).toMatchObject({ max: 875 });
+    expect(bad.lines.length).toBe(0);
+    expect(maxPostShiftMm(5000)).toBe(1000);
+    expect(maxPostShiftMm(8000)).toBe(1000);
+    const deep = pick({ mount: 'free', width: 4000, depth: 5000 }, 'S500');
+    expect(blocks(shift(deep, ['front-left'], 1000))).toEqual([]);
+    expect(blocks(shift(deep, ['front-left'], 1001))).toEqual(['POST_SHIFT_TOO_FAR']);
+  });
+  it('Slide: limit from the total projection', () => {
+    const f = cornerPostsOf(slide)[0]!;
+    expect(f.maxShiftMm).toBe(maxPostShiftMm(slide.depth));
+  });
+  it('invalid mm, roof, wall back corners', () => {
+    expect(blocks(shift(free500, ['front-left'], 0))).toContain('POST_SHIFT_INVALID');
+    expect(blocks(shift(free500, ['front-left'], NaN))).toContain('POST_SHIFT_INVALID');
+    expect(blocks(shift(roof500, ['front-left'], 500))).toEqual(['POST_SHIFT_ROOF']);
+    expect(blocks(shift(wall500, ['back-left'], 500))).toEqual(['POST_SHIFT_NO_CORNER']);
+    expect(cornerPostsOf(wall500).map((x) => x.corner)).toEqual(['front-left', 'front-right']);
+    expect(cornerPostsOf(free500).length).toBe(4);
+    expect(cornerPostsOf(roof500)).toEqual([]);
+  });
+  it('off by default; joint posts are not corners', () => {
+    expect(priceOptions(free500, {}, cat).lines.length).toBe(0);
+    expect(priceOptions(free500, { postShift: null }, cat).lines.length).toBe(0);
+    const wide = pick({ mount: 'free', width: 9000, depth: 3500 }, 'S500');
+    expect(wide.cols).toBeGreaterThan(1);
+    expect(cornerPostsOf(wide).length).toBe(4);
   });
 });

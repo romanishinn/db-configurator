@@ -757,5 +757,23 @@
    "file": "WIN-CLIMATIC-SLIDE-EN-07.2026.pdf",
    "page": 11
   }
+ },
+ "s400.cornerPostToCentre": {
+  "values": [
+   239
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S400-EN-07.2026.pdf",
+   "page": 17
+  }
+ },
+ "s500.cornerPostToCentre": {
+  "values": [
+   239
+  ],
+  "source": {
+   "file": "WIN-CLIMATIC-S500-EN-07.2026.pdf",
+   "page": 42
+  }
  }
 }
