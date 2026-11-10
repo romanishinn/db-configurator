@@ -137,7 +137,7 @@ export function cornerPostsOf(c: Composition): CornerPost[] {
   const wall = c.modules.filter((m) => m.row === 0).every((m) => m.mount === 'wall');
   const out: CornerPost[] = [];
   for (const [corner, row, col] of [['back-left', 0, 0], ['back-right', 0, cols - 1], ['front-left', rows - 1, 0], ['front-right', rows - 1, cols - 1]] as const) {
-    if (row === 0 && wall) continue;
+    if (corner.startsWith('back') && wall) continue; // rows = 1: the front row is row 0 too
     const m = c.modules.find((x) => x.row === row && x.col === col);
     if (!m) continue;
     const projection = c.family === 'SLIDE'

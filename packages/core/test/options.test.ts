@@ -130,6 +130,12 @@ describe('corner post relocation (S400 p.17, S500 p.42, Slide p.11: 239 / 239 / 
     expect(blocks(shift(deep, ['front-left'], 1000))).toEqual([]);
     expect(blocks(shift(deep, ['front-left'], 1001))).toEqual(['POST_SHIFT_TOO_FAR']);
   });
+  it('Slide: projection 3000 -> max 750 (the Slide projection snaps to the louvre grid, 3500 is not buildable)', () => {
+    const s3 = pick({ mount: 'wall', width: 3000, depth: 3000 }, 'SLIDE');
+    expect(s3.depth).toBe(3000);
+    expect(blocks(shift(s3, ['front-left'], 750))).toEqual([]);
+    expect(blocks(shift(s3, ['front-left'], 751))).toEqual(['POST_SHIFT_TOO_FAR']);
+  });
   it('Slide: limit from the total projection', () => {
     const f = cornerPostsOf(slide)[0]!;
     expect(f.maxShiftMm).toBe(maxPostShiftMm(slide.depth));
