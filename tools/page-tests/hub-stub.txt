@@ -1,0 +1,11 @@
+window.__log=[]; var session=null; window.__link=window.__link===undefined?'':window.__link;
+function q(t){var o={};var b={select:function(){return b},eq:function(){return b},single:function(){return b},maybeSingle:function(){return b},
+ upsert:function(row){window.__log.push({upsert:t,row:row});if(window.__upErr)return Promise.resolve({error:window.__upErr});window.__link=row.url;return Promise.resolve({error:null})},
+ then:function(res,rej){var out;
+  if(t==='profiles')out={data:{role:window.__role||'dealer'}};
+  else if(t==='app_links'){window.__log.push({read:t});out={data:window.__link?{url:window.__link}:null,error:null}}
+  else out={data:[],error:null};
+  return Promise.resolve(out).then(res,rej)}};return b}
+window.supabase={createClient:function(){return{
+ auth:{getSession:function(){return Promise.resolve({data:{session:session}})},signInWithPassword:function(){session={user:{id:'u1'}};return Promise.resolve({error:null})},signOut:function(){session=null;return Promise.resolve({})}},
+ from:q}}};

@@ -1,8 +1,8 @@
 // Roles and the current-user helpers, shared by all apps. Authorization itself is
 // enforced in the database (RLS); these helpers only shape the UI.
-export type Role = 'client' | 'manager' | 'seller' | 'dealer' | 'superdealer' | 'superadmin' | 'architect';
+export type Role = 'client' | 'manager' | 'dealer' | 'superdealer' | 'superadmin' | 'architect';
 
-export const STAFF: Role[] = ['manager', 'seller', 'dealer', 'superdealer', 'superadmin']; // 'seller' stays until migration 0011
+export const STAFF: Role[] = ['manager', 'dealer', 'superdealer', 'superadmin'];
 
 export interface Me {
   id: string;

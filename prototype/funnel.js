@@ -4,7 +4,8 @@
  * Texts are in T below (DE / EN / RU); the printable quote and the request e-mail use the same language.
  */
 (() => {
-  // ASSUMPTION: private customers in Austria, standard VAT 20 %. Catalogue prices are net suggested retail prices.
+  // Owner's decision (2026-11-04, docs/decisions.md): Austrian VAT 20 % for every language and country; for now every offer comes from the Austrian company.
+  // Catalogue prices are net suggested retail prices.
   const VAT = 0.2;
   // TODO(office): office e-mail and phone for requests and the quote footer. While empty, the mail opens without a recipient.
   // Brand hidden for a demo video: put the company name back into name to show it again (header, quote, tab title).
@@ -74,6 +75,20 @@
       ctlH: { pergola: 'bez drugog odašiljača – prijemni modul u stupu', remote: 'mali dodatni ručni odašiljač samo za screenove', smart: 'putem aplikacije na pametnom telefonu, i izvan kuće', switch: 'fiksni taster na zidu, samo s YOODA ili Somfy motorima', solar: 'motor sa solarnim panelom, bez strujnog kabela, vlastiti ručni odašiljač' },
       photo: 'Fotografija', photoT: 'Pogledajte pergolu na fotografiji svoje terase', photoHelp: 'Povucite 4 točke tamo gdje će stajati stupovi: 1 i 2 uz zid kuće (lijevo, desno), 3 i 4 sprijeda. Pergola se postavlja u perspektivu fotografije. Fotografija ostaje u vašem pregledniku.', photoBad: 'Točke su zamijenjene: 1 i 2 uz zid lijevo i desno, 3 i 4 sprijeda desno i lijevo.', photoPts: 'Točke', photoHelpS: 'Povucite 4 točke na uglove pergole', photoShot: 'Spremi sliku', photoNew: 'Druga fotografija', photoOff: 'Ukloni fotografiju', photoTip: 'Kako će izgledati kod vas? Učitajte fotografiju svoje terase – pergola se pojavljuje na njoj, i u ponudi.', photoBtn: '📷 Učitaj fotografiju',
     },
+    es: {
+      roofT: 'Cubierta', roofRot: 'Lamas orientables', roofSlide: 'Cubierta corredera',
+      roofRotD: 'Las lamas giran (hasta unos 135°): luz y aire a su gusto, y la cubierta permanece sobre usted.',
+      roofSlideD: 'Las lamas se inclinan y se pliegan juntas hacia un lado: el cielo se abre.',
+      slideStack: (st, rest, side) => `Con la cubierta totalmente abierta, las lamas plegadas quedan ${side}: unos ${st} m; ${rest} m quedan abiertos.`, sideWall: 'junto a la pared de la casa', sideEdge: 'en un lateral',
+      reqPosts: 'Postes adicionales (fondo superior a 6 m)', pergolaSlide: 'Cubierta corredera de lamas', part: 'parte',
+      lightG: { louvre: 'En las lamas', gutter: 'En el canalón, todo el perímetro', crown: 'Focos en el marco', posts: 'En los postes', zipled: 'En las guías ZIP' }, lightI: { none: 'Sin luz', white: 'Tira LED, blanco cálido', rgb: 'Tira LED, RGB', rgbw: 'Tira LED, RGBW', spots: 'Focos LED, 3 por lama', lamps: 'Luminarias LED, 2 por lama', bwhite: 'blanco cálido', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'blanco + RGB', crown8: '8 focos LED', postsAll: 'una luz en cada poste', zipLedOn: 'Luz LED en las guías' }, zipLedT: 'Luz LED en las guías ZIP', zipLedD: 'guías con tira LED, fuente de alimentación e interruptor', crownNote: 'Solo en los lados sin cristal ni screen ZIP', perLouvre: 'por lama', lightsSlide: { none: 'Sin luz', bwhite: 'LED en el canalón, blanco cálido', brgb: 'LED en el canalón, RGB', brgbw: 'LED en el canalón, RGBW', cwhitergb: 'LED en el canalón, blanco + RGB' },
+      heatsSlide: { 's5.single': '1 calefactor de 1,5 kW (~10 m²)', 's5.double': 'Calefactor doble de 4 kW (~25 m²)' },
+      windSun: 'Viento + sol', stackLbl: (v) => `plegado ${v} mm`, tbRoof: 'Cubierta', roofClosed: 'cerrada', roofOpen: 'abierta',
+      reqPostH: 'Postes adicionales más altos',
+      glTypT: 'Apertura', glTyp: { ltr: 'hacia la derecha', rtl: 'hacia la izquierda', center: 'desde el centro' }, glOpen: 'abierto', ctaS: 'Toque ＋ para cerrar un lado', tones: ['antracita', 'grafito', 'gris', 'gris claro', 'blanco', 'beige', 'taupe', 'negro'], tbColor: 'Color', tbColorT: 'Color del cristal y del marco', noGlass: 'Aparece cuando un lado tiene cristal', tbLight: 'Luz', tbUnder: 'Desde abajo', tbInside: 'Desde dentro', tbExit: 'Salida', ctlNa: 'no disponible para este tamaño', ctlS: { pergola: 'Mando a distancia', switch: 'Pulsador de pared', smart: 'Smartphone', solar: 'Solar' },
+      ctlH: { pergola: 'sin segundo mando: módulo receptor en el poste', remote: 'pequeño mando adicional solo para los screens', smart: 'con la aplicación del móvil, también fuera de casa', switch: 'pulsador fijo en la pared, solo con motores YOODA o Somfy', solar: 'motor con panel solar, sin cable de alimentación, con mando propio' },
+      photo: 'Foto', photoT: 'Vea la pérgola en una foto de su terraza', photoHelp: 'Arrastre los 4 puntos a donde irán los postes: 1 y 2 junto a la pared de la casa (izquierda y derecha), 3 y 4 en la parte delantera. La pérgola adopta la perspectiva de la foto. La foto permanece en su navegador.', photoBad: 'Los puntos están cruzados: 1 y 2 junto a la pared, a izquierda y derecha; 3 y 4 delante, a derecha e izquierda.', photoPts: 'Puntos', photoHelpS: 'Arrastre los 4 puntos a las esquinas de la pérgola', photoShot: 'Guardar imagen', photoNew: 'Otra foto', photoOff: 'Quitar la foto', photoTip: '¿Cómo quedará en su casa? Suba una foto de su terraza: la pérgola aparece en ella y también en el presupuesto.', photoBtn: '📷 Subir una foto',
+    },
   };
   for (const [l, x] of Object.entries(EXTRA)) {
     Object.assign(T[l], x);
@@ -91,7 +106,7 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode: ignore */ } },
   };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  const metres = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const metres = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const gross = (n) => n * (1 + VAT);
   const fe = (n) => eur(Math.round(n));
   const plusE = (n) => n > 0.5 ? '+' + fe(n) : L().incl;
@@ -101,7 +116,7 @@
     if (q && T[q]) return q;
     const s = Store.get('db.lang'); if (s && T[s]) return s;
     const n = (navigator.language || 'de').slice(0, 2).toLowerCase();
-    return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : 'de';
+    return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : n === 'es' && T.es ? 'es' : 'de';
   };
   let lang = pickLang();
   let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false, sending = false, reqErr = '', reqNo = '', dbNo = '';
@@ -285,6 +300,9 @@
   T.hr.catT = 'Odaberite model'; T.hr.catL = 'Kakav krov ima vaša pergola. Zatim: veličina, strane, udobnost i boje.'; T.hr.catChange = 'promijeni';
   T.hr.kitT = 'Oprema'; T.hr.kitL = 'Strane, ostakljenje i udobnost — sve što isporučujemo.';
   T.hr.svcT = 'Montaža i dostava'; T.hr.svcHint = 'Uključeno po zadanom — odznačite da uklonite iz ponude.'; T.hr.svcInstallD = '10 % cijene'; T.hr.svcDelivD = '4 % cijene'; T.hr.montLc = 'montaža'; T.hr.deliveryLc = 'dostava'; T.hr.andW = 'i'; T.hr.qExclPre = 'Nije uključeno: '; T.hr.qExclBase = 'temelji, električni priključak, dozvole';
+  T.es.catT = 'Elija un modelo'; T.es.catL = 'Qué cubierta tendrá su pérgola. Después: tamaño, lados, confort y colores.'; T.es.catChange = 'cambiar';
+  T.es.kitT = 'Equipamiento'; T.es.kitL = 'Lados, acristalamiento y confort: todo lo que suministramos.';
+  T.es.svcT = 'Montaje y entrega'; T.es.svcHint = 'Incluidos por defecto: desmárquelos para quitarlos del presupuesto.'; T.es.svcInstallD = '10 % del precio'; T.es.svcDelivD = '4 % del precio'; T.es.montLc = 'montaje'; T.es.deliveryLc = 'entrega'; T.es.andW = 'y'; T.es.qExclPre = 'No incluido: '; T.es.qExclBase = 'cimentación, conexión eléctrica, permisos';
   const prodById = (id) => PRODUCTS.find((pp) => pp.id === id) || null;
   function pickProduct(id) {
     const pr = prodById(id); if (!pr || pr.locked) return;
@@ -298,16 +316,17 @@
     ru: { title: 'Выход в стене', no: 'Нет', yes: 'Есть', slide: 'Слайдинг', door: 'Дверь', hole: 'Проём', width: 'Ширина', height: 'Высота', center: 'По центру', left: 'Левее', right: 'Правее', panels: 'Полотен', opening: 'Открывание', mLeft: 'Влево', mRight: 'Вправо', both: 'Обе', pocket: 'В стену', doorOpen: 'Открывание двери', dIn: 'Внутрь', dOut: 'Наружу', dAside: 'В сторону', leaves: 'Створки', one: 'Одна', two: 'Две' },
     en: { title: 'Exit in the wall', no: 'No', yes: 'Yes', slide: 'Sliding', door: 'Door', hole: 'Opening', width: 'Width', height: 'Height', center: 'Centre', left: 'Left', right: 'Right', panels: 'Panels', opening: 'Opening', mLeft: 'Left', mRight: 'Right', both: 'Both', pocket: 'Into the wall', doorOpen: 'Door opening', dIn: 'Inward', dOut: 'Outward', dAside: 'To the side', leaves: 'Leaves', one: 'One', two: 'Two' },
     de: { title: 'Ausgang in der Wand', no: 'Nein', yes: 'Ja', slide: 'Schiebe', door: 'Tür', hole: 'Öffnung', width: 'Breite', height: 'Höhe', center: 'Mittig', left: 'Links', right: 'Rechts', panels: 'Elemente', opening: 'Öffnung', mLeft: 'Links', mRight: 'Rechts', both: 'Beide', pocket: 'In die Wand', doorOpen: 'Türöffnung', dIn: 'Nach innen', dOut: 'Nach außen', dAside: 'Zur Seite', leaves: 'Flügel', one: 'Eins', two: 'Zwei' },
-    hr: { title: 'Izlaz u zidu', no: 'Ne', yes: 'Da', slide: 'Klizna', door: 'Vrata', hole: 'Otvor', width: 'Širina', height: 'Visina', center: 'U sredini', left: 'Lijevo', right: 'Desno', panels: 'Elementi', opening: 'Otvaranje', mLeft: 'Lijevo', mRight: 'Desno', both: 'Oba', pocket: 'U zid', doorOpen: 'Otvaranje vrata', dIn: 'Prema unutra', dOut: 'Prema van', dAside: 'U stranu', leaves: 'Krila', one: 'Jedno', two: 'Dva' }
+    hr: { title: 'Izlaz u zidu', no: 'Ne', yes: 'Da', slide: 'Klizna', door: 'Vrata', hole: 'Otvor', width: 'Širina', height: 'Visina', center: 'U sredini', left: 'Lijevo', right: 'Desno', panels: 'Elementi', opening: 'Otvaranje', mLeft: 'Lijevo', mRight: 'Desno', both: 'Oba', pocket: 'U zid', doorOpen: 'Otvaranje vrata', dIn: 'Prema unutra', dOut: 'Prema van', dAside: 'U stranu', leaves: 'Krila', one: 'Jedno', two: 'Dva' },
+    es: { title: 'Salida en la pared', no: 'No', yes: 'Sí', slide: 'Corredera', door: 'Puerta', hole: 'Hueco', width: 'Ancho', height: 'Altura', center: 'Centrado', left: 'Izquierda', right: 'Derecha', panels: 'Hojas', opening: 'Apertura', mLeft: 'Izquierda', mRight: 'Derecha', both: 'Ambas', pocket: 'Dentro de la pared', doorOpen: 'Apertura de la puerta', dIn: 'Hacia dentro', dOut: 'Hacia fuera', dAside: 'Hacia un lado', leaves: 'Hojas', one: 'Una', two: 'Dos' }
   };
   const PROD_COPY = {
     louvered: {
-      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.' },
-      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'] }
+      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.', es: 'Cubierta de lamas orientables: inclínelas para obtener sol y sombra o ciérrelas por completo frente a la lluvia.' },
+      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'], es: ['Sol y sombra', 'Estanca a la lluvia', 'Cielo abierto'] }
     },
     slide: {
-      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.' },
-      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'] }
+      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.', es: 'Las lamas se pliegan en paquete hacia un lado: sobre usted, el cielo completamente abierto.' },
+      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'], es: ['Se abre por completo', 'Se pliega a un lado', 'Máxima luz'] }
     }
   };
   const pick = (d) => (d && (d[lang] || d.en)) || '';
@@ -356,12 +375,12 @@
     // catalog screen shows products only — hide the 3D stage/toolbar until a model is picked
     document.body.classList.toggle('cat-only', product === null);
     const t = L(), o = curOpt();
-    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski' };
+    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski', es: 'Español' };
     const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
       <details class="f-lang" aria-label="Language"><summary>${lang.toUpperCase()}<span class="f-lang-car" aria-hidden="true">▾</span></summary><div class="f-lang-menu">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${esc(LANGNAME[k] || k.toUpperCase())}</button>`).join('')}</div></details>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
     if (product === null) { F.innerHTML = head + `<div class="f-body">${catalogHTML(t)}</div>`; return; }
-    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
+    const steps = `<ol class="f-steps" style="--n:${t.steps.length}">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
     const body = [stepSize, stepKit, stepColours, stepOffer][step](t, o);
     // keep the tapped control where the finger is: re-rendering the panel must not move the page
     const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
@@ -460,7 +479,7 @@
   function stepSize(t, o) {
     const wall = state.mount === 'wall';
     let h = resumeOffer ? `<div class="f-resume"><span>${t.resume}</span><span><button type="button" class="f-link" data-resume="yes">${t.resumeYes}</button> · <button type="button" class="f-link" data-resume="no">${t.resumeNo}</button></span></div>` : '';
-    h += `<p class="f-lead" style="margin-top:0">${t.intro}</p><h2>${t.s1}</h2><p class="f-lead">${t.s1l}</p>`;
+    h += `<p class="f-lead" style="margin-top:0">${t.intro.replace('5', t.steps.length)}</p><h2>${t.s1}</h2><p class="f-lead">${t.s1l}</p>`;
     h += `<div class="f-cards">
       <button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${t.wall}</b><span class="d">${t.wallD}</span></button>
       <button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${t.free}</b><span class="d">${t.freeD}</span></button></div>`;
@@ -738,10 +757,11 @@
     const key = ANALYTICS.posthogKey, on = () => !!key && Store.get('db.consent') === 'yes';
     let started = false;
     const AT = {
-      de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', yes: 'Einverstanden', no: 'Ablehnen' },
-      en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', yes: 'Accept', no: 'Decline' },
-      hr: { t: 'Smijemo li anonimno analizirati kako koristite konfigurator kako bismo ga poboljšali? Unosi poput imena ili telefona nikada se ne bilježe.', yes: 'Prihvaćam', no: 'Odbij' },
-      ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', yes: 'Согласен', no: 'Отказаться' },
+      de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', s: 'Anonyme Analyse erlauben?', yes: 'Einverstanden', no: 'Ablehnen' },
+      en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', s: 'Allow anonymous analytics?', yes: 'Accept', no: 'Decline' },
+      hr: { t: 'Smijemo li anonimno analizirati kako koristite konfigurator kako bismo ga poboljšali? Unosi poput imena ili telefona nikada se ne bilježe.', s: 'Dopustiti anonimnu analitiku?', yes: 'Prihvaćam', no: 'Odbij' },
+      es: { t: '¿Podemos analizar de forma anónima cómo utiliza el configurador para mejorarlo? Datos como su nombre o su teléfono no se registran nunca.', s: '¿Permitir análisis anónimo?', yes: 'Aceptar', no: 'Rechazar' },
+      ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', s: 'Разрешить анонимную аналитику?', yes: 'Согласен', no: 'Отказаться' },
     };
     function load() {
       if (started || !on() || !isCust()) return; started = true;
@@ -765,10 +785,10 @@
       banner() {
         if (!key || !isCust() || Store.get('db.consent')) { const b = $('f-consent'); if (b) b.remove(); return; }
         let b = $('f-consent');
-        if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); $('view').parentElement.appendChild(b);
+        if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); if (matchMedia('(max-width: 1100px), (orientation: landscape) and (max-height: 560px)').matches && document.querySelector('.app')) { b.classList.add('in-flow'); document.querySelector('.app').before(b); } else $('view').parentElement.appendChild(b);
           b.addEventListener('click', (e) => { const x = e.target.closest('[data-consent]'); if (!x) return; Store.set('db.consent', x.dataset.consent); b.remove(); if (x.dataset.consent === 'yes') { load(); A.track('consent_given'); } }); }
         const t = AT[lang] || AT.de;
-        b.innerHTML = `<p>${esc(t.t)}</p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;
+        b.innerHTML = `<p title="${esc(t.t)}"><span class="cl">${esc(t.t)}</span><span class="cs">${esc(t.s)}</span></p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;
       },
       /** the manager view is never recorded */
       mode(cust) { if (!loaded()) return; try { if (cust) window.posthog.startSessionRecording(); else window.posthog.stopSessionRecording(); } catch (e) { /* older loader */ } },
@@ -982,7 +1002,7 @@
       [t.qFacts.sides, ops.length ? ops.map((x) => `${sideLabel(x.id, o)}: ${t.fills[state.fills[x.id]]}`).join('; ') : t.open],
       [t.qFacts.colours, `${t.frame}: ${cname(e.construction)}${state.colors.roof ? '; ' + t.roof + ': ' + cname(e.roof) : ''}`],
     ];
-    const img = snapshotImage(), date = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : lang === 'ru' ? 'ru-RU' : 'de-AT');
+    const img = snapshotImage(), date = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : lang === 'ru' ? 'ru-RU' : lang === 'es' ? 'es-ES' : 'de-AT');
     // one line per item (details in grey on the same line), grouped like on the screen — fits one A4 page
     const rows = groupsOrder.map((g) => {
       const ls = lines.filter((l) => l.g === g); if (!ls.length) return '';
@@ -1313,7 +1333,7 @@
   CTA.addEventListener('click', () => { step = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
   // 3D toolbar popups built from the funnel: louvre direction + per-side glass opening, and the comfort equipment
-  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.' };
+  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.', es: 'Primero cierre un lado con cristal: entonces aparecerá la elección de apertura.' };
   function renderLouvPop() {
     const pop = $('tb-louv'); if (!pop) return;
     const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }

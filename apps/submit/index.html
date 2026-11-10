@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Фото объектов — D&B Pergola</title>
+<style>
+  :root { --bg:#f4f6f8; --panel:#ffffff; --ink:#171a1f; --muted:#697079; --line:#e7e9ed; --accent:#a87714; --accent-soft:#f7efdd; --good:#2f7d4f; --bad:#a3621b; --bad-soft:#fbf0e2; --f:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; color-scheme:light dark; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --panel:#161c2a; --ink:#e9edf6; --muted:#9aa5b8; --line:#2a3242; --accent:#efb860; --accent-soft:#2a2316; --good:#6cc592; --bad:#e2a65c; --bad-soft:#3a2c1a; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--f); padding:16px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left)); }
+  main { max-width:640px; margin:0 auto; display:grid; gap:14px; }
+  h1 { font-size:20px; margin:0; letter-spacing:-.01em; }
+  h2 { font-size:16px; margin:0 0 10px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .sub { color:var(--muted); font-size:13.5px; margin:2px 0 0; }
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 4px; }
+  input[type=email], input[type=password], textarea { width:100%; font:inherit; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:var(--bg); color:var(--ink); }
+  textarea { min-height:84px; resize:vertical; }
+  input:focus, textarea:focus, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  button { font:inherit; font-size:15px; padding:11px 14px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--ink); cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .tabs { display:flex; gap:8px; } .tabs button { flex:1; } .tabs button.on { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .msg { margin-top:12px; font-size:13.5px; padding:9px 11px; border-radius:8px; display:none; }
+  .msg.err { display:block; color:var(--bad); border:1px solid var(--bad); }
+  .msg.ok { display:block; color:var(--good); border:1px solid var(--good); }
+  .item { display:flex; gap:12px; align-items:center; padding:12px 0; border-top:1px solid var(--line); }
+  .item:first-child { border-top:0; }
+  .item .t { flex:1; min-width:0; }
+  .item .t b { display:block; overflow-wrap:anywhere; }
+  .item .t span { display:block; font-size:12.5px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere; }
+  .pill { font-size:11.5px; padding:2px 8px; border-radius:20px; border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
+  .pill.on { color:var(--good); border-color:var(--good); } .pill.bad { color:var(--bad); border-color:var(--bad); }
+  .photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-top:8px; }
+  .photos img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; border-radius:8px; border:1px solid var(--line); }
+  .chk { display:flex; gap:10px; align-items:flex-start; font-size:14px; color:var(--ink); margin:16px 0 0; }
+  .chk input { width:22px; height:22px; flex:none; margin:0; }
+  progress { width:100%; margin-top:12px; }
+  a { color:var(--accent); }
+  [hidden] { display:none !important; }
+  /* ---- design language of the client configurator (prototype/funnel.css): colours, radii, buttons, cards, header, motion ---- */
+  html { -webkit-text-size-adjust:100%; }
+  body { font-size:14px; line-height:1.45; overflow-x:hidden; }
+  main { max-width:min(640px,100%); }
+  .top { display:flex; align-items:center; gap:8px; max-width:640px; margin:0 auto 14px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  .top .brand { font-weight:700; font-size:15px; letter-spacing:-.01em; }
+  .top .brand i { font-style:normal; color:var(--accent); }
+  h1 { font-size:20px; line-height:1.2; font-weight:700; letter-spacing:-.01em; }
+  h2 { font-size:14px; font-weight:700; letter-spacing:-.01em; }
+  .sub { font-size:13px; color:var(--muted); }
+  .card { border-radius:8px; padding:16px; min-width:0; }
+  label { font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:600; color:var(--muted); margin:14px 0 5px; }
+  .checks label, label.chk, .chk { text-transform:none; letter-spacing:0; font-weight:400; }
+  input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], input[type=url], select, textarea { border-radius:6px; padding:9px 10px; max-width:100%; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  button { border-radius:8px; font-weight:600; font-size:14px; padding:11px 14px; transition:border-color .12s, background-color .12s, box-shadow .12s, transform .12s; }
+  button:hover:not(:disabled) { border-color:var(--accent); }
+  button.primary { color:#fff; } button.primary:hover:not(:disabled) { filter:brightness(1.06); }
+  @media (prefers-color-scheme: dark) { button.primary { color:#171a1f; } .ph .cover, .sel .ph .mark { color:#171a1f; } }
+  button.danger { color:var(--bad); }
+  .tabs button { font-size:13px; border-radius:6px; }
+  .tabs button.on, .tabs button[aria-selected=true] { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; box-shadow:inset 0 0 0 1px var(--accent); }
+  .tabs button[aria-selected=true] { color:var(--accent); }
+  .msg { border-radius:4px; border-width:0 0 0 3px !important; border-style:solid; }
+  .msg.err { background:var(--bad-soft); } .msg.ok { background:color-mix(in srgb, var(--good) 10%, transparent); }
+  .pill { font-size:11px; font-weight:600; }
+  .item { overflow-wrap:anywhere; }
+  .item .t { min-width:0; }
+  .ph { border-radius:8px; } .photos img { border-radius:6px; }
+  .consent { border-radius:8px; }
+  .ro { border-radius:6px; }
+  img { max-width:100%; }
+  progress { accent-color:var(--accent); }
+  @media (max-width:430px) { .item { flex-wrap:wrap; } .bar button { flex:1 1 auto; } }
+  @media (min-width:900px) { main { max-width:720px; } .top { max-width:720px; } }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    .card:not([hidden]), .tabs:not([hidden]), main > div:first-child, .item { animation:rise .28s cubic-bezier(.22,.8,.3,1) both; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+  /* ---- form alignment: one field height, top-aligned columns, chips, upload zone ---- */
+  .row { align-items:flex-start; gap:12px; } .row input, .row select { width:100%; }
+  label { min-height:16px; line-height:1.3; }
+  input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], input[type=url], select { height:46px; min-height:46px; }
+  input[type=date] { appearance:none; -webkit-appearance:none; display:block; line-height:1.2; }
+  input[type=date]::-webkit-date-and-time-value { text-align:left; }
+  select { appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:32px; }
+  .hint { margin:4px 0 0; font-size:11.5px; line-height:1.3; color:var(--muted); }
+  .vh { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; clip:rect(0 0 0 0); }
+  .drop { display:grid; gap:2px; justify-items:center; text-align:center; margin:0; padding:16px 12px; min-height:72px; border:1.5px dashed var(--accent); border-radius:8px; background:var(--accent-soft); color:var(--ink); text-transform:none; letter-spacing:0; cursor:pointer; transition:background-color .12s, border-color .12s; }
+  .drop b { font-size:15px; color:var(--accent); } .drop span { font-size:12px; font-weight:400; color:var(--muted); }
+  .vh:focus-visible + .drop { outline:2px solid var(--accent); outline-offset:2px; }
+  .checks { gap:8px; }
+  .checks label { display:inline-flex; align-items:center; gap:8px; margin:0; min-height:44px; padding:0 14px; border:1px solid var(--line); border-radius:8px; font-size:14px; color:var(--ink); cursor:pointer; transition:border-color .12s, background-color .12s; }
+  .checks label:has(input:checked) { border-color:var(--accent); background:var(--accent-soft); font-weight:600; }
+  .checks.stack { display:grid; grid-template-columns:1fr; }
+  .checks.stack label { display:flex; }
+  input[type=checkbox] { width:20px; height:20px; flex:none; margin:0; accent-color:var(--accent); }
+  .chk { min-height:44px; align-items:center; }
+  .chk input { width:20px; height:20px; }
+  .consent { padding:6px 14px 14px; }
+  .consent h3 { font-size:14px; font-weight:700; margin:10px 0 0; }
+  .bar { margin-top:18px; } .bar button { min-height:46px; }
+  .bar button.primary { min-width:160px; }
+  @media (max-width:430px) { .bar button.primary { flex:1 1 100%; order:-1; } }
+  .top .menu { margin-left:auto; font-size:13px; font-weight:600; text-decoration:none; padding:10px 4px; }
+  /* responsive: 44 px tap targets on touch screens, text >= 12 px */
+  label, .hint, .pill, .cover, .mark { font-size:12px; }
+  @media (pointer:coarse) {
+    button, select, summary, .top .menu, input:not([type=checkbox]):not([type=radio]):not([type=file]) { min-height:44px; min-width:44px; }
+    .top .menu { display:inline-flex; align-items:center; justify-content:center; }
+    .ph .tools button { min-height:44px; }
+  }
+</style>
+</head>
+<body>
+<header class="top"><span class="brand">D&amp;B <i>Solutions</i></span><a class="menu" href="hub.html">Меню</a></header>
+<main>
+  <div>
+    <h1>Фото смонтированных объектов</h1>
+    <p class="sub">Для дилеров: отправьте фото объекта, офис проверит и опубликует.</p>
+  </div>
+
+  <form class="card" id="login" hidden>
+    <h2>Вход</h2>
+    <label for="em">E-mail</label><input id="em" type="email" autocomplete="username" required>
+    <label for="pw">Пароль</label><input id="pw" type="password" autocomplete="current-password" required>
+    <div class="msg" id="loginMsg" aria-live="polite"></div>
+    <div class="bar"><button class="primary" type="submit">Войти</button></div>
+  </form>
+
+  <div class="card" id="denied" hidden>Нет доступа: страница для дилеров. <button type="button" id="out1">Выйти</button></div>
+  <div class="card" id="unavail" hidden>Недоступно</div>
+
+  <div class="tabs" id="tabs" hidden><button type="button" id="tObj" class="on">Объекты</button><button type="button" id="tMine">Мои заявки</button></div>
+
+  <section class="card" id="objCard" hidden>
+    <h2>Смонтированные объекты</h2>
+    <div id="objs"></div>
+    <div class="bar"><button type="button" id="out2">Выйти</button></div>
+  </section>
+
+  <form class="card" id="form" hidden>
+    <h2 id="formTitle">Фото объекта</h2>
+    <p class="sub" id="formSub"></p>
+    <label for="files">Фото (3–12)</label>
+    <input id="files" type="file" accept="image/*" capture="environment" multiple class="vh"><label for="files" class="drop"><b>Выбрать фото</b><span>3–12 штук, можно сразу снять на камеру</span></label>
+    <p class="sub">Без людей и без номеров машин и дома. Лучше: общий вид, ламели вблизи, вид изнутри, вечером с подсветкой, опции.</p>
+    <div class="photos" id="previews"></div>
+    <div id="noteBox">
+      <label for="note">Что особенного в этом объекте?</label>
+      <textarea id="note" lang="de" spellcheck="true"></textarea>
+      <label class="chk"><input type="checkbox" id="assured"><span>Я снимал(а) эти фото на этом объекте, владелец знает, что фото могут быть опубликованы</span></label>
+    </div>
+    <progress id="prog" hidden max="1" value="0"></progress>
+    <div class="msg" id="msg" aria-live="polite"></div>
+    <div class="bar"><button class="primary" type="submit" id="send" disabled>Отправить</button><button type="button" id="cancel">Назад</button></div>
+  </form>
+
+  <section class="card" id="mineCard" hidden>
+    <h2>Мои заявки</h2>
+    <div class="msg" id="mineMsg" aria-live="polite"></div>
+    <div id="mine"></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  // same public Supabase project as the configurator; the session is shared with the CRM (same origin)
+  var BACKEND = { url: 'https://zypujyrvbegilvtvqras.supabase.co', anonKey: 'sb_publishable_1jTysmz6_Tz0zveMQN5GaQ_Pb8dHTL9' };
+  var SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
+  var BUCKET = 'project-photos';
+  var MAX_SIDE = 1800, QUALITY = 0.85, MIN_PH = 3, MAX_PH = 12;
+  var REASONS = { light: 'мало света', people: 'люди в кадре', plate: 'виден номер машины или дома', no_consent: 'нет согласия владельца',
+    no_order: 'нет заказа', wrong_project: 'не тот проект', consent_withdrawn: 'владелец отозвал согласие' };
+  var ERRORS = { FORBIDDEN: 'Нет прав на это действие', ASSURANCE_REQUIRED: 'Нужно подтвердить заверение (галочка)', ORDER_NOT_FOUND: 'Заказ не найден',
+    NOT_INSTALLED: 'Монтаж по этому заказу ещё не отмечен офисом', ALREADY_SUBMITTED: 'Заявка уже отправлена',
+    PROJECT_LOCKED: 'Заявка уже на проверке или опубликована, фото добавить нельзя', PROJECT_HAS_PHOTOS: 'К заявке уже прикреплены фото',
+    TOO_FEW_PHOTOS: 'Нужно хотя бы одно фото',
+    TOO_MANY_PHOTOS: 'Слишком много фото (максимум 12)', BAD_PATH: 'Ошибка загрузки фото, попробуйте ещё раз' };
+  var $ = function (id) { return document.getElementById(id); };
+  var sb = null, order = null, files = [], retry = null; // retry: {id} - project that exists but has no photos yet
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function show(id, on) { $(id).hidden = !on; }
+  function say(id, text, ok) { var m = $(id); m.textContent = text || ''; m.className = 'msg' + (text ? (ok ? ' ok' : ' err') : ''); }
+  function isDup(e) { var m = String((e && e.message) || ''); return /^\s*ALREADY_SUBMITTED\b/.test(m) || (e && e.code === '23505') || /duplicate key|23505/i.test(m); }
+  function humanError(e) {
+    var m = String((e && (e.message || e.error_description)) || e || '');
+    var c = m.match(/\b(FORBIDDEN|ASSURANCE_REQUIRED|ORDER_NOT_FOUND|NOT_INSTALLED|ALREADY_SUBMITTED|PROJECT_LOCKED|PROJECT_HAS_PHOTOS|TOO_FEW_PHOTOS|TOO_MANY_PHOTOS|BAD_PATH)\b/);
+    if (c) return ERRORS[c[1]];
+    if (isDup(e)) return ERRORS.ALREADY_SUBMITTED;
+    if (/Invalid login/i.test(m)) return 'Неверный e-mail или пароль';
+    if (/row-level|permission denied/i.test(m)) return 'Нет прав на это действие';
+    if (/Failed to fetch|network|NetworkError/i.test(m)) return 'Нет связи с сервером, попробуйте ещё раз';
+    return 'Ошибка. Попробуйте ещё раз';
+  }
+
+  /* ---------- photos: resize in the browser ---------- */
+  // Re-encoding through canvas drops EXIF and GPS (the owner's location never leaves the phone).
+  function resize(file) {
+    return new Promise(function (resolve, reject) {
+      var done = function (src, w, h) {
+        var k = Math.min(1, MAX_SIDE / Math.max(w, h)), c = document.createElement('canvas');
+        c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { b ? resolve(b) : reject(new Error('Не удалось обработать фото')); }, 'image/jpeg', QUALITY);
+      };
+      var viaImg = function () {
+        var u = URL.createObjectURL(file), im = new Image();
+        im.onload = function () { done(im, im.naturalWidth, im.naturalHeight); URL.revokeObjectURL(u); };
+        im.onerror = function () { URL.revokeObjectURL(u); reject(new Error('Не удалось открыть фото')); };
+        im.src = u;
+      };
+      if (window.createImageBitmap) {
+        createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (b) { done(b, b.width, b.height); }).catch(viaImg);
+      } else viaImg();
+    });
+  }
+  function refreshForm() {
+    var box = $('previews'); box.textContent = '';
+    files.forEach(function (f) { var im = el('img'); im.src = URL.createObjectURL(f); im.alt = ''; box.appendChild(im); });
+    var okN = files.length >= MIN_PH && files.length <= MAX_PH;
+    if (files.length && !okN) say('msg', 'Нужно от ' + MIN_PH + ' до ' + MAX_PH + ' фото (выбрано ' + files.length + ')');
+    else if (!retry || $('msg').className.indexOf('ok') < 0) say('msg', '');
+    $('send').disabled = !(okN && (retry || $('assured').checked));
+  }
+  $('files').addEventListener('change', function (e) { files = Array.prototype.slice.call(e.target.files); refreshForm(); });
+  $('assured').addEventListener('change', refreshForm);
+
+  /* ---------- screens ---------- */
+  function tab(which) {
+    $('tObj').className = which === 'obj' ? 'on' : ''; $('tMine').className = which === 'mine' ? 'on' : '';
+    show('objCard', which === 'obj'); show('mineCard', which === 'mine'); show('form', false); show('tabs', true);
+    return which === 'obj' ? loadObjs() : loadMine();
+  }
+  $('tObj').addEventListener('click', function () { tab('obj'); });
+  $('tMine').addEventListener('click', function () { tab('mine'); });
+  $('cancel').addEventListener('click', function () { tab(retry ? 'mine' : 'obj'); });
+
+  function loadObjs() {
+    var box = $('objs'); box.textContent = '';
+    return sb.rpc('list_my_installed_orders').then(function (r) {
+      if (r.error) { box.appendChild(el('p', 'sub', humanError(r.error))); return; }
+      var list = (r.data || []).map(function (x) { return { id: x.order_id, leads: { contact_name: x.contact_name, postcode: x.postcode } }; }); // the DB returns only orders without an active request
+      if (!list.length) { box.appendChild(el('p', 'sub', 'Пока нет смонтированных объектов. Когда офис отметит монтаж, объект появится здесь')); return; }
+      list.forEach(function (o) {
+        var l = o.leads || {}, it = el('div', 'item'), t = el('div', 't');
+        t.appendChild(el('b', null, l.contact_name || 'Клиент')); t.appendChild(el('span', null, l.postcode ? 'Индекс ' + l.postcode : ''));
+        it.appendChild(t);
+        var b = el('button', 'primary', 'Выбрать'); b.type = 'button'; b.addEventListener('click', function () { openForm(o); });
+        it.appendChild(b); box.appendChild(it);
+      });
+    });
+  }
+
+  function openForm(o, project) { // o: order for a new submission; project: existing one that needs photos
+    order = o || null; retry = project || null; files = [];
+    $('files').value = ''; $('note').value = ''; $('assured').checked = false; $('prog').hidden = true; say('msg', '');
+    var l = (o && o.leads) || {};
+    $('formTitle').textContent = project ? 'Добавить фото' : 'Фото объекта';
+    $('formSub').textContent = project ? project.title : [l.contact_name, l.postcode].filter(Boolean).join(' · ');
+    show('noteBox', !project);
+    show('objCard', false); show('mineCard', false); show('form', true); refreshForm(); $('form').scrollIntoView();
+  }
+
+  // steps 2-3: upload one by one (a phone connection), then attach; no upsert
+  function uploadAndAttach(id) {
+    var paths = [], n = files.length;
+    $('prog').hidden = false; $('prog').max = n; $('prog').value = 0;
+    return files.reduce(function (chain, f, i) {
+      return chain.then(function () {
+        say('msg', 'Загружаю фото ' + (i + 1) + ' из ' + n + '…', true);
+        return resize(f).then(function (blob) {
+          var path = id + '/' + crypto.randomUUID() + '.jpg';
+          return sb.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: false }).then(function (r) {
+            if (r.error) throw r.error; paths.push(path); $('prog').value = i + 1;
+          });
+        });
+      });
+    }, Promise.resolve()).then(function () {
+      return sb.rpc('attach_photos', { p_project: id, p_paths: paths });
+    }).then(function (r) { if (r && r.error) throw r.error; });
+  }
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if ($('send').disabled) return;
+    $('send').disabled = true; $('cancel').disabled = true; say('msg', 'Отправляю…', true);
+    var step = retry ? Promise.resolve(retry.id) : sb.rpc('submit_project', { p_order: order.id, p_note: $('note').value.trim() || null, p_assured: $('assured').checked })
+      .then(function (r) { if (r.error) throw r.error; if (!r.data) throw new Error('empty'); return r.data; });
+    step.then(function (id) {
+      if (!retry) retry = { id: id, title: $('formSub').textContent, created: true };
+      return uploadAndAttach(id).catch(function (err) {
+        err.afterSubmit = true; throw err;
+      });
+    }).then(function () {
+      $('cancel').disabled = false; retry = null; tab('mine').then(function () { say('mineMsg', 'Отправлено. Офис проверит фото.', true); });
+    }).catch(function (err) {
+      $('cancel').disabled = false;
+      if (!retry && isDup(err)) { tab('mine').then(function () { say('mineMsg', ERRORS.ALREADY_SUBMITTED); }); return; }
+      if (err && err.afterSubmit) {
+        // the application exists, only photos are missing: it stays in "Мои заявки" with an "add photos" button
+        say('msg', 'Заявка создана, но фото загрузились не полностью (' + humanError(err) + '). Откройте «Мои заявки» и нажмите «Добавить фото».');
+        retry = null; $('send').disabled = true;
+      } else { say('msg', humanError(err)); refreshForm(); }
+    });
+  });
+
+  function loadMine() {
+    var box = $('mine'); box.textContent = ''; say('mineMsg', '');
+    return Promise.all([
+      sb.from('projects').select('id,title,district,published,photos,created_at').order('created_at', { ascending: false }),
+      sb.from('project_private').select('project_id,order_id,submitted_by,rejected_reason,rejected_note')
+    ]).then(function (rs) {
+      var err = rs[0].error || rs[1].error;
+      if (err) { box.appendChild(el('p', 'sub', humanError(err))); return; }
+      var priv = {}; (rs[1].data || []).forEach(function (p) { priv[p.project_id] = p; });
+      var mine = rs[0].data.filter(function (p) { return priv[p.id]; }); // RLS also returns other dealers' published projects: show only my own requests
+      if (!mine.length) { box.appendChild(el('p', 'sub', 'Заявок пока нет.')); return; }
+      mine.forEach(function (p) {
+        var pr = priv[p.id], it = el('div', 'item'), t = el('div', 't'), st, cls = '', extra = null, btn = false;
+        if (p.published) { st = 'опубликовано'; cls = ' on'; }
+        else if (pr.rejected_reason) { st = 'отклонено'; cls = ' bad'; extra = 'Причина: ' + (REASONS[pr.rejected_reason] || 'другая причина') + (pr.rejected_note ? '. ' + pr.rejected_note : ''); }
+        else if (!p.photos || !p.photos.length) { st = 'без фото — добавьте'; btn = true; }
+        else st = 'на проверке';
+        t.appendChild(el('b', null, p.title || p.district || 'Объект'));
+        if (extra) t.appendChild(el('span', null, extra));
+        if (p.published) { var a = el('a', null, 'Смотреть на сайте'); a.href = 'landing.html#projekte'; var w = el('span'); w.appendChild(a); t.appendChild(w); }
+        it.appendChild(t); it.appendChild(el('span', 'pill' + cls, st));
+        if (btn) { var b = el('button', 'primary', 'Добавить фото'); b.type = 'button'; b.addEventListener('click', function () { openForm(null, p); }); it.appendChild(b); }
+        box.appendChild(it);
+      });
+    });
+  }
+
+  /* ---------- session ---------- */
+  function start() {
+    sb.auth.getSession().then(function (r) {
+      var s = r.data.session;
+      show('login', !s); ['denied', 'tabs', 'objCard', 'mineCard', 'form'].forEach(function (i) { show(i, false); });
+      if (!s) return;
+      return sb.from('profiles').select('role').eq('id', s.user.id).single().then(function (p) {
+        if (!p.data || p.data.role !== 'dealer') { show('denied', true); return; }
+        return tab('obj');
+      });
+    });
+  }
+  $('login').addEventListener('submit', function (e) {
+    e.preventDefault(); say('loginMsg', '…', true);
+    sb.auth.signInWithPassword({ email: $('em').value.trim(), password: $('pw').value }).then(function (r) {
+      if (r.error) { say('loginMsg', humanError(r.error)); return; }
+      say('loginMsg', ''); start();
+    });
+  });
+  var out = function () { sb.auth.signOut().then(start); };
+  $('out1').addEventListener('click', out); $('out2').addEventListener('click', out);
+
+  if (!BACKEND.url) { show('unavail', true); return; }
+  var s = document.createElement('script'); s.src = SDK; s.async = true;
+  s.onload = function () { sb = window.supabase.createClient(BACKEND.url, BACKEND.anonKey); start(); };
+  s.onerror = function () { show('unavail', true); };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>

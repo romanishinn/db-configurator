@@ -27,6 +27,7 @@
   .msg.err { display:block; background:color-mix(in srgb,var(--bad) 12%,transparent); color:var(--bad); border:1px solid var(--bad); }
   .msg.ok { display:block; background:color-mix(in srgb,var(--good) 14%,transparent); color:var(--good); border:1px solid var(--good); }
   a { color:var(--accent); }
+  @media (pointer:coarse) { button, input:not([type=checkbox]):not([type=radio]) { min-height:44px; } }
 </style>
 </head>
 <body>
@@ -154,6 +155,29 @@
       create_failed: "Ovaj e-mail već je registriran ili je došlo do pogreške.",
       errPrefix: "Pogreška: ", errUnknown: "nepoznato",
       netError: "Mreža nije dostupna. Pokušajte ponovno."
+    },
+    es: {
+      title: "Activación de acceso",
+      sub: "Introduzca sus datos y establezca una contraseña: así creará su cuenta de D&B Pergola.",
+      first: "Nombre", last: "Apellidos", email: "Correo electrónico", location: "Ubicación (ciudad, país)",
+      pw: "Contraseña", pw2: "Repita la contraseña",
+      reqLen: "al menos 8 caracteres", reqLetter: "letras", reqDigit: "dígitos", reqSpecial: "carácter especial (!@#$%…)",
+      create: "Crear cuenta",
+      linkIncomplete: "El enlace de invitación está incompleto o ha caducado. Solicite uno nuevo al administrador.",
+      pwMismatch: "Las contraseñas no coinciden.",
+      pwWeak: "La contraseña debe contener letras, dígitos y un carácter especial, al menos 8 caracteres.",
+      creating: "Creando la cuenta…",
+      created: "Cuenta creada. Ahora inicie sesión con su correo y su contraseña: ",
+      goLogin: "ir al inicio de sesión",
+      invite_invalid: "No se ha encontrado la invitación.",
+      invite_used: "Esta invitación ya se ha utilizado.",
+      invite_expired: "La invitación ha caducado: solicite una nueva.",
+      bad_email: "Compruebe el correo electrónico.",
+      weak_password: "Contraseña demasiado débil: se requieren letras, dígitos y un carácter especial, al menos 8 caracteres.",
+      fields_required: "Rellene todos los campos.",
+      create_failed: "Este correo ya está registrado o se ha producido un error.",
+      errPrefix: "Error: ", errUnknown: "desconocido",
+      netError: "Red no disponible. Inténtelo de nuevo."
     }
   };
   var lang = new URLSearchParams(location.search).get('lang') || 'ru';

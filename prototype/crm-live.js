@@ -10,7 +10,7 @@
   const C = window.CRM;
   if (!C || !BACKEND.url || !BACKEND.anonKey) return;
   const SDK = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.js';
-  const STAFF = ['seller', 'manager', 'dealer', 'superdealer', 'superadmin', 'architect'];
+  const STAFF = ['manager', 'dealer', 'superdealer', 'superadmin', 'architect'];
   const { $, $$, esc } = C;
   document.documentElement.classList.add('live');
 
@@ -549,7 +549,7 @@
     });
   }
   function transferDialog(l) {
-    const cands = users.filter((u) => ['seller', 'manager', 'dealer'].includes(u.role) && u.active !== false && u.id !== (me && me.id));
+    const cands = users.filter((u) => ['manager', 'dealer'].includes(u.role) && u.active !== false && u.id !== (me && me.id));
     if (!cands.length) return toast(_('Нет сотрудников, которым можно передать лид'), true);
     dialog({
       title: _('Передать лид'), sub: esc(l.contact_name || ''),
@@ -668,7 +668,7 @@
       const note = [wantSel.length ? _('Интересует: ') + wantSel.join(', ') : '', val(r, 'note').trim()].filter(Boolean).join('\n');
       const step = val(r, 't').trim();
       try {
-        const row = await run(sb.from('leads').insert({ created_by: me.id, source: me.role === 'dealer' ? 'dealer' : me.role === 'manager' ? 'manager' : me.role === 'seller' ? 'seller' : 'office', utm: { source: srcSel }, contact_name: name || null, phone: phone || null, email: email || null, object_address: addr || null, postcode: zip || null, note: note || null, next_action: step || null, next_action_at: step ? (val(r, 'd') || plusDays(1)) : null }).select('id').single());
+        const row = await run(sb.from('leads').insert({ created_by: me.id, source: me.role === 'dealer' ? 'dealer' : me.role === 'manager' ? 'manager' : 'office', utm: { source: srcSel }, contact_name: name || null, phone: phone || null, email: email || null, object_address: addr || null, postcode: zip || null, note: note || null, next_action: step || null, next_action_at: step ? (val(r, 'd') || plusDays(1)) : null }).select('id').single());
         if (sees()) { try { await run(sb.rpc('assign_lead', { p_lead: row.id, p_to: me.id, p_comment: _('Создал вручную') })); } catch (e) { /* stays unassigned: "Взять себе" is on the card */ } }
         close(); toast(_('Лид создан'));
         curLid = row.id; pinned.add(row.id); chip = 'all'; query = ''; const sq = $('#gsearch'); if (sq) sq.value = '';

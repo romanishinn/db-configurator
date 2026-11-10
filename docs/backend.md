@@ -37,6 +37,57 @@ Design and decisions: Project doc `claude/roles-crm-design.md`. This file: what 
   when the database is off, unreachable or has no published project, the static placeholder cards stay. `noindex` until the placeholders
   (photos, address, phone) are replaced with real data. The request form there is still a preview (not yet wired to `submit_request`).
 
+## Projects sent by dealers (migration 0017)
+- Table `project_private` (1:1 with `projects`; the public never reads it): order, sender (null = office), dealer note, rejection reason and note,
+  consent (time, who confirmed, channel call/form/paper, text version, district may be shown). No status column: published = `projects.published`,
+  rejected = `rejected_reason` is set, under review = sent by a dealer and neither. Date of the request = `projects.created_at`.
+  One active project per order (partial unique index): after a rejection for quality (`light` etc.) the dealer may send again, after `consent_withdrawn` not.
+- Rules in SQL: publishing ANY project needs a recorded consent (trigger, `CONSENT_REQUIRED`; also for projects added by the office, also a rejected one stays unpublishable);
+  without the district consent the trigger clears `projects.district` on publishing (it is publicly readable; `''`), and neither the district nor the order's postcode
+  may occur in the title (`DISTRICT_NOT_ALLOWED`; lower case, blanks/hyphens equal, whole words only, candidates of 2+ characters: `Au` does not block `Ausblick`, `Wien 13` catches `Villa in Wien-13.`).
+  Synonyms are not caught: the manager answers for the caption. Only the title is required when published
+  (a dealer's request starts with the title `Bioklimatische Pergola, <year>` and the postcode in `district`, which is cleared on publishing without consent).
+- `list_my_installed_orders()` (dealer only): his orders (same visibility rule as `submit_project`, helper `dealer_can_see_order`) in stage `done` confirmed by the office and without an active project.
+- `project_private` is write-protected for everybody (`authenticated` has only SELECT, no insert/update policies): only the functions below write it (security definer).
+  The dealer reads his own rows, staff read all.
+- Functions (all `security definer`, error code first in the message, `anon` has no execute on any of them): `submit_project` (dealer only; assurance; own order by the lead_read rule;
+  order `done` AND `order_installed_by_office`; the unique index decides "one active project per order", a unique violation becomes `ALREADY_SUBMITTED`; blank note = null),
+  `attach_photos` (author, once: `PROJECT_HAS_PHOTOS` when the list is not empty, `TOO_FEW_PHOTOS` for an empty list, max 12, paths `<project id>/<uuid>.jpg`; the row is locked),
+  `reject_project`, `unpublish_project` (sets `consent_withdrawn`; `ALREADY_SUBMITTED` if the order was sent again), `record_consent`,
+  `order_installed_by_office` (helper, not callable by users: the last `done` event of the order was written by a manager or superadmin; ASSUMPTION: a superdealer does not count,
+  owner: "монтаж подтверждает менеджер"), `complete_installation` (manager/superadmin: sets `done`, or, when a dealer set `done` himself, adds a confirming `lead_events` row
+  with comment `installation confirmed by the office`; idempotent), `list_orders_for_installation` (manager/superadmin: id, stage, contact name, postcode and
+  `needs_confirmation` of the orders that are not `done` or whose `done` is not confirmed by the office; the manager still sees no other lead data; ASSUMPTION: `needs_confirmation`
+  is true when the stage is already `done`). Notifications: `notify_managers` (managers and superadmins) on a request; the dealer on rejection or withdrawal.
+- Who can do what: the dealer sees only his own requests (`projects` and `project_private`), writes nothing directly, uploads only `<own open project id>/<uuid>.jpg`
+  and cannot read, change or delete files. A manager deletes files only of unpublished projects (files of published ones: superadmin only); update of files: superadmin only.
+- Known limit: an employee can technically publish a dealer's request past the queue and the photo re-encoding by a direct update over REST (the queue is kept by the page; staff are trusted).
+- Known limit: a dealer can insert an order straight in `done` and even on a foreign lead (old `order_insert` from 0005); the office's installation confirmation covers this for requests, but order data is not trusted.
+- Known limit: `record_consent` on a published project fails with `DISTRICT_NOT_ALLOWED` if the consent is narrowed while the district is still in the title: edit the title first.
+- Known limits: the test stub does not check real Storage (path helper `storage.foldername` is copied, upload/mime/size limits are not exercised);
+  `attach_photos` does not check that the files exist; photos of a project must live in the folder named by the project id for the manager's delete rule to apply;
+  EXIF/GPS is not stripped in SQL (the browser must do it); consent fields change only through `record_consent` (the manager has no direct write);
+  country is set to AT on a request (the office corrects it); not run on the production database yet.
+
+## Clean-up after the manager rename (migration 0018)
+- `leads_before_insert` no longer turns source `seller` into `manager`; the old value is refused by `leads_source_check`. Browser tabs opened before 0009 must be reloaded.
+- `transfer_lead` is recreated (definition of 0014) without the old role label; `assign_lead` (0009) already had none.
+- Discount group `agent` is renamed from "Агенты / продавцы" to "Агенты" (idempotent update).
+- The migration ends with the 0009 safety net: no function, policy, check, view, default or trigger mentions the old label (`orders.seller_id` is a different word and stays).
+
+## Callback request without a calculation (migration 0019)
+- `submit_callback(p_contact jsonb, p_utm jsonb, p_journey text, p_consent boolean) returns void`: requires `p_consent = true` (else `CONSENT_REQUIRED`) and stores the date in `leads.consent_at` (null for older leads; not writable by authenticated). For the Edge Function only (`service_role`; anon and authenticated are revoked explicitly). Creates a lead with source `web`, no quote.
+- Needs a phone or an e-mail (`CONTACT_REQUIRED`); at most 5 leads per day with the same phone or e-mail, any source (`TOO_MANY_REQUESTS`); empty strings become null; the input limits of 0015 apply.
+- The superadmin notification comes from the existing trigger on `leads`; a manager sees the new unassigned web lead by the rule of 0012.
+- Known limits: the limit counts all leads of that contact, not only callbacks; the rate limit is per contact, not per IP (Turnstile in the Edge Function is the bot protection); not yet run against a real Supabase.
+
+## Internal tool links (migration 0020)
+- `app_links(key, title, url, updated_at, updated_by)`: links shown in the internal tool; the first is the object gallery (Google Drive folder). The link itself is not in the repository: the superadmin enters it in the interface.
+- Read: manager, superadmin, dealer, superdealer (policy with `(select my_role())`); client and anon see nothing (anon has no grant at all). Write: superadmin only (RLS).
+- Column grants: insert `key, title, url`, update `title, url`; `updated_at` and `updated_by` are set by a trigger (`now()`, `auth.uid()`) and cannot be forged. `updated_by` references `profiles` (like `created_by` elsewhere).
+- Checks: key `^[a-z][a-z0-9_]{1,40}$`; title 1-80 characters after trim; url is https on drive.google.com, docs.google.com, photos.google.com, photos.app.goo.gl or goo.gl, no whitespace, at most 500 characters.
+- ASSUMPTION: the URL check limits the host only; it does not prove the folder exists or is shared correctly. Not yet run against a real Supabase.
+
 ## Switching it on (D&B)
 1. supabase.com → New project, region **Frankfurt (eu-central-1)**, free plan.
 2. GitHub → repository Settings → Secrets and variables → Actions → `SUPABASE_DB_URL` = Project Settings → Database →

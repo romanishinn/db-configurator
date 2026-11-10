@@ -67,5 +67,19 @@ select 'upgrade checks passed' as result;
 SQL
 # later migrations (after 0009), each in its own transaction as db/migrate.sh does
 for f in $(ls migrations/*.sql | sed -n '/0009_manager_role/,$p' | tail -n +2); do $P -1 -f "$f" >/dev/null; done
+
+# the dealer-flow migration (0017) was applied by the loop above: its table, functions and trigger exist, the order survived
+$P <<'SQL'
+do $$ declare f text; begin
+  if to_regclass('public.project_private') is null then raise exception 'FAILED: project_private missing after 0017'; end if;
+  foreach f in array array['submit_project(uuid,text,boolean)', 'attach_photos(uuid,text[])', 'reject_project(uuid,text,text)', 'unpublish_project(uuid,text)',
+      'record_consent(uuid,text,text,boolean,boolean)', 'complete_installation(uuid)', 'notify_managers(text,uuid,text)', 'list_orders_for_installation()', 'order_installed_by_office(uuid)'] loop
+    if to_regprocedure('public.' || f) is null then raise exception 'FAILED: function % missing after 0017', f; end if;
+  end loop;
+  if not exists (select 1 from pg_trigger where tgname = 'projects_consent_guard') then raise exception 'FAILED: consent trigger missing after 0017'; end if;
+  if (select count(*) from public.orders) <> 1 then raise exception 'FAILED: order lost by 0017'; end if;
+end $$;
+select 'migration 0017 applied' as result;
+SQL
 $P -c 'truncate public.leads, public.profiles, public.lead_events, public.notifications cascade; delete from auth.users' >/dev/null
 $P -f test/access.sql

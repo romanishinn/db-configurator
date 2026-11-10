@@ -41,6 +41,8 @@ jobs:
           # landing.html — German B2C landing, reads the published projects; projects.html — superadmin form that adds them
           cp apps/landing/index.html _site/landing.html
           cp apps/projects/index.html _site/projects.html
+          cp apps/submit/index.html _site/submit.html
+          cp apps/hub/index.html _site/hub.html
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
