@@ -155,6 +155,47 @@ SCALARS = {
 VERIFIED_BY_IMAGE = {'s500.postHeight': [155]}  # S500 p.42: 'from 2801mm up to 3200mm — 155 €' (image checked 12.10.2026)
 
 
+# Scalars typed in by hand, checked against the catalogue page IMAGE (owner's screenshot, 10.11.2026).
+# The PDFs were not available in the session, so the text cannot confirm them; with the PDFs present the text
+# reading is compared with the manual value and a difference is an error.
+# ASSUMPTION: the price is per relocated corner post (the catalogue says "the corner post", singular).
+MANUAL_SCALARS = {
+    's400.cornerPostToCentre': {'values': [239], 'file': S400, 'page': 17, 'verified': '10.11.2026',
+        'evidence': "owner's screenshot, p.17",
+        'quote': "Surcharge for relocating the corner post to the center of the pergola. The maximum shift is 1000mm or 1/4 of the pergola's projection, whichever comes first. The price includes water drainage."},
+    's500.cornerPostToCentre': {'values': [239], 'file': S500, 'page': 42, 'verified': '10.11.2026',
+        'evidence': "owner's screenshot, p.42",
+        'quote': "Surcharge for relocating the corner post to the center of the pergola or the central post in pergolas with a projection exceeding 7000mm. The maximum shift is 1000mm or 1/4 of the pergola's projection, whichever comes first."},
+}
+# Already imported from the text (build_slide.py); only the image check is recorded here, the value is not touched.
+VERIFIED_BY_IMAGE_EXISTING = {
+    'slide.cornerPostToCentre': {'values': [565], 'page': 11, 'verified': '10.11.2026', 'evidence': "owner's screenshot, p.11",
+        'quote': "Surcharge for moving the corner post to the center of the pergola - non-standard installation. Maximum displacement of 1000mm-1200mm or 1/4 of total pergola's projection, whichever comes first."},
+}
+
+
+def merge_manual_scalars():
+    """Add the hand-checked keys to options-scalars.json (other keys stay byte-identical). No PDF needed."""
+    path = f'{OUT}/options-scalars.json'
+    cur = json.load(open(path))
+    for k, v in VERIFIED_BY_IMAGE_EXISTING.items():
+        if cur[k]['values'] != v['values'] or cur[k]['source']['page'] != v['page']:
+            raise SystemExit(f'{k}: imported {cur[k]} differs from the image-checked {v["values"]}')
+    have_pdf = os.path.isdir(SRC)
+    for k, v in MANUAL_SCALARS.items():
+        if have_pdf:
+            m = re.search(r'relocating the corner post to the center of the pergola.*?(?<!\d)(\d{2,4}) ?€', norm(text_pp(v['file'], v['page'])))
+            if m and [int(m.group(1))] != v['values']:
+                raise SystemExit(f'{k}: text reading {m.group(1)} differs from the image-checked {v["values"]}')
+            if not m:
+                print(f'{k}: not found in the text layer, keeping the image-checked value')
+        else:
+            print(f'{k}: PDF dir missing, image-checked value only ({v["evidence"]}, {v["verified"]})')
+        cur[k] = {'values': v['values'], 'source': {'file': v['file'], 'page': v['page']}}
+    with open(path, 'w') as f:
+        json.dump(cur, f, ensure_ascii=False, indent=1)
+
+
 def norm(t):
     return re.sub(r'\s+', ' ', t)
 
@@ -252,6 +293,9 @@ def build_lighting():
 
 
 if __name__ == '__main__':
+    if not os.path.isdir(SRC):
+        merge_manual_scalars()
+        raise SystemExit(0)
     build_grids()
     sc = build_scalars()
     sc['heaters'] = build_heaters()
@@ -264,3 +308,4 @@ if __name__ == '__main__':
     import sys; sys.path.insert(0, os.path.dirname(__file__))
     import build_slide
     build_slide.merge_scalars(build_slide.build_scalars())
+    merge_manual_scalars()
