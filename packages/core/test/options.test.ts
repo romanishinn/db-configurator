@@ -136,9 +136,28 @@ describe('corner post relocation (S400 p.17, S500 p.42, Slide p.11: 239 / 239 / 
     expect(blocks(shift(s3, ['front-left'], 750))).toEqual([]);
     expect(blocks(shift(s3, ['front-left'], 751))).toEqual(['POST_SHIFT_TOO_FAR']);
   });
-  it('Slide: limit from the total projection', () => {
-    const f = cornerPostsOf(slide)[0]!;
-    expect(f.maxShiftMm).toBe(maxPostShiftMm(slide.depth));
+  it('Slide: limit from the total projection of two rows', () => {
+    const two = pick({ mount: 'free', width: 3000, depth: 9000 }, 'SLIDE');
+    expect(two.rows).toBeGreaterThan(1);
+    const f = cornerPostsOf(two)[0]!;
+    expect(f.projection).toBeGreaterThan(6948); // the sum over both rows, not one module
+    expect(f.maxShiftMm).toBe(1000);
+  });
+  it('louvres perpendicular to the wall: the limit never exceeds a quarter of the terrace depth (review 10.11)', () => {
+    // wall 6600 x 3500: the catalogue projection runs along the wall (6600), the terrace depth is 3500 -> 875, not 1000
+    const perp = compose({ mount: 'wall', width: 6600, depth: 3500, louvres: 'perpendicular' }, cat).options.find((o) => o.family === 'S400' || o.family === 'S500')!;
+    const f = cornerPostsOf(perp)[0]!;
+    expect(f.maxShiftMm).toBeLessThanOrEqual(875);
+    expect(blocks(shift(perp, ['front-left'], 876))).toEqual(['POST_SHIFT_TOO_FAR']);
+    expect(blocks(shift(perp, ['front-left'], 875))).toEqual([]);
+    // parallel louvres: unchanged (the two measures coincide)
+    const par = compose({ mount: 'wall', width: 6600, depth: 3500, louvres: 'parallel' }, cat).options.find((o) => o.family === 'S400' || o.family === 'S500')!;
+    expect(cornerPostsOf(par)[0]!.maxShiftMm).toBe(maxPostShiftMm(par.depth)); // built depth (rounded to the louvre step)
+  });
+  it('malformed input does not crash: no corners, non-integer mm', () => {
+    expect(() => priceOptions(free500, { postShift: { mm: 500 } as never }, cat)).not.toThrow();
+    expect(priceOptions(free500, { postShift: { mm: 500 } as never }, cat).lines.length).toBe(0);
+    expect(blocks(shift(free500, ['front-left'], 0.5))).toContain('POST_SHIFT_INVALID');
   });
   it('invalid mm, roof, wall back corners', () => {
     expect(blocks(shift(free500, ['front-left'], 0))).toContain('POST_SHIFT_INVALID');

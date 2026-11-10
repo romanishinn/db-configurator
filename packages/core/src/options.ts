@@ -130,6 +130,11 @@ function lighting(cat: Catalog, model: string): LightingScalars {
  * Projection per corner: S400 and S500 the (built) projection of the module standing at the corner;
  * Slide the total projection of the construction (sum of the module projections along the projection axis).
  * ASSUMPTION: S500 multi-row (and S400 free rows): projection of the corner module, not of the whole system.
+ * ASSUMPTION (review 10.11): the price list says "1/4 of the pergola's projection" and the owner chose the shift along the
+ * side wall (the depth of the terrace). With louvres perpendicular to the wall the catalogue "projection" runs ALONG the
+ * wall, so the two differ; the limit is taken from the SMALLER of the catalogue projection and the terrace depth of the
+ * same module (Slide: of the same column), so no reading of the price list is ever exceeded. To be confirmed with the manufacturer.
+ * Separate S400 pergolas side by side: the joints between them are not listed as corners (each has its own 4 posts) - a known limit.
  */
 export function cornerPostsOf(c: Composition): CornerPost[] {
   if (!c.modules.length || c.modules.some((m) => m.mount === 'roof')) return [];
@@ -140,9 +145,12 @@ export function cornerPostsOf(c: Composition): CornerPost[] {
     if (corner.startsWith('back') && wall) continue; // rows = 1: the front row is row 0 too
     const m = c.modules.find((x) => x.row === row && x.col === col);
     if (!m) continue;
-    const projection = c.family === 'SLIDE'
+    const catalogueProjection = c.family === 'SLIDE'
       ? c.modules.filter((x) => (c.louvres === 'parallel' ? x.col === col : x.row === row)).reduce((a, x) => a + x.projection, 0)
       : m.projection;
+    // physical depth of the terrace at this corner (the shift runs along the side, away from the corner)
+    const terraceDepth = c.family === 'SLIDE' ? c.modules.filter((x) => x.col === col).reduce((a, x) => a + x.depth, 0) : m.depth;
+    const projection = Math.min(catalogueProjection, terraceDepth);
     out.push({ corner, projection, maxShiftMm: maxPostShiftMm(projection) });
   }
   return out;
@@ -334,12 +342,12 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
       : model === 's400' ? (h <= 2800 ? s.values[0]! : h <= 3000 ? s.values[1]! : s.values[2]!) : h <= 2800 ? s.values[0]! : s.values[1]!;
     if (h <= 3200) add('OPT_INTERMEDIATE_POST', unit * o.intermediatePosts, { qty: o.intermediatePosts, height: h, unit }, s.source);
   }
-  if (o.postShift && o.postShift.corners.length > 0) {
+  if (o.postShift && Array.isArray(o.postShift.corners) && o.postShift.corners.length > 0) { // a hand-made link without corners is ignored, not a crash
     const mm = o.postShift.mm;
     const corners = [...new Set(o.postShift.corners)]; // duplicates collapse
     const before = issues.length;
     const have = cornerPostsOf(c);
-    if (!(typeof mm === 'number' && Number.isFinite(mm) && mm > 0)) issues.push({ severity: 'block', code: 'POST_SHIFT_INVALID', params: { mm: String(mm) } });
+    if (!(typeof mm === 'number' && Number.isInteger(mm) && mm > 0)) issues.push({ severity: 'block', code: 'POST_SHIFT_INVALID', params: { mm: String(mm) } });
     if (c.modules.some((m) => m.mount === 'roof')) issues.push({ severity: 'block', code: 'POST_SHIFT_ROOF' });
     else {
       for (const k of corners) {
