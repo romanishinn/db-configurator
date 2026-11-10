@@ -182,7 +182,6 @@
   function badText(id) {
     const t = L(), l = q().lines.find((x) => x.k === 'unbuilt' && x.id === id);
     if (!l) return t.notMade;
-    if (l.why === 'hang') return t.onRequest; // next to a corner without a post (moved corner post)
     if (l.fill === 'zip' && l.why === 'fabric') return t.zipFabricOnly(l.ok.map((fid) => { const f = cat.fabrics.collections.find((c) => c.id === fid); return `${f.name} (${f.openness} %)`; }).join(', '));
     if (l.fill === 'zip' && l.why === 'size' && l.max) return t.zipMax(metres(l.max), l.axis);
     return t.notMade;
@@ -203,12 +202,7 @@
     if ((side === 'left' || side === 'right') && o && o.rows > 1) s += ' · ' + L().row + ' ' + (n + 1);
     // a Slide side with a required post in the middle is two openings
     const op = o ? opsOf(o).find((x) => x.id === id) : null;
-    if (op && op.part) {
-      s += ' · ' + L().part + ' ' + op.part;
-      // the stub between a "free" corner and the moved post of a side that is already split in two (Slide with a required post):
-      // same part number as the main piece, so it says what it is
-      if (/-h[12]$/.test(id)) { const base = opsOf(o).find((x) => x.id === id.replace(/-h[12]$/, '')); if (base && base.part === op.part) s += ' · ' + L().onRequest; }
-    }
+    if (op && op.part) s += ' · ' + L().part + ' ' + op.part;
     return s;
   }
   // German colour names: the catalogue has English and Russian names; wood décors keep their catalogue names

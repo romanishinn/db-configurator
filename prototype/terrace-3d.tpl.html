@@ -842,7 +842,7 @@ function build() {
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(o.len, o.h), M.pick.clone());
     plane.position.set(o.cx, (o.y0 || 0) + o.h / 2, o.cz); plane.rotation.y = o.rotY; plane.userData = { opening: o }; o.pickPlane = plane;
     root.add(plane); pickables.push(plane);
-    if (!o.hang || fill === 'verto') addFill(o, fill); // a side next to a corner without a post stays open (see splitAtShifted)
+    addFill(o, fill);
   }
   drawVerto(opt, opsAll);
   applyAnim();
@@ -1004,25 +1004,17 @@ function openings(opt, sp) {
   }
   return splitAtShifted(splitAtPosts(out, requiredPostPositions(opt), sp), opt, sp);
 }
-/** ASSUMPTION (not confirmed with the manufacturer): an opening that touches a corner without a post (the side that ends there,
- *  and the stub of the other side between that corner and the moved post) cannot be closed by glass, ZIP or panels at a price:
- *  it is shown "on request" (o.hang), nothing is drawn in it. The rest of the side between the moved post and the next post
- *  is an ordinary opening. Stub ids end in -h1 (back end) / -h2 (front end) so the fill of the main part keeps its id. */
+/** Owner's decision 10.11.2026: when a corner post moves along a side, the glass, ZIP and panels of THAT side simply get shorter by
+ *  the shift (the piece between the corner and the moved post stays open and is not an opening of its own). The side that ends at the
+ *  corner without a post (front / back) is counted at its full width as usual, nothing is "on request".
+ *  ASSUMPTION (to be confirmed with the manufacturer): such a closing at a corner without a post is allowed. */
 function splitAtShifted(list, opt, sp) {
   const out = [], ps = state.po.postShift;
   for (const o of list) {
-    if (!o.hangA && !o.hangB) { out.push(o); continue; }
-    if (o.axis === 'x') { out.push({ ...o, hang: true }); continue; }
+    if ((!o.hangA && !o.hangB) || o.axis === 'x') { out.push(o); continue; }
     const a = o.cz - o.len / 2, b = o.cz + o.len / 2, mmv = ps ? ps.mm / 1000 : 0;
-    const rest = { ...o, hang: false }; let ra = a, rb = b;
-    const stubs = [];
-    if (o.hangA) { ra = a + mmv + sp.post / 2; stubs.push([a, a + mmv - sp.post / 2, '-h1']); }
-    if (o.hangB) { rb = b - mmv - sp.post / 2; stubs.push([b - mmv + sp.post / 2, b, '-h2']); }
-    rest.len = rb - ra; rest.cz = (ra + rb) / 2; out.push(rest);
-    const split = stubs.some(([s0, s1]) => s1 - s0 > 0.15);
-    if (split && !o.part) rest.part = o.hangA ? 2 : 1; // numbered back to front: [stub at the back] main [stub at the front]
-    if (split) rest.label = o.label + (o.part ? '' : ', часть ' + rest.part);
-    for (const [s0, s1, suf] of stubs) if (s1 - s0 > 0.15) out.push({ ...o, id: o.id + suf, label: o.label + ', участок у свободного угла', len: s1 - s0, cz: (s0 + s1) / 2, hang: true, part: o.part || (suf === '-h1' ? 1 : (o.hangA ? 3 : 2)) });
+    const ra = o.hangA ? a + mmv + sp.post / 2 : a, rb = o.hangB ? b - mmv - sp.post / 2 : b;
+    out.push({ ...o, len: rb - ra, cz: (ra + rb) / 2 });
   }
   return out;
 }
@@ -2081,10 +2073,7 @@ function renderEstimate() {
   for (const [id, f] of fills) {
     const op = ops.find((x) => x.id === id); if (!op) continue;
     const size = `${mm(Math.round(op.len * 1000))} × ${mm(Math.round(op.h * 1000))} мм`;
-    if (op.hang && (f === 'glass' || f === 'zip' || f === 'panels')) { // next to a corner without a post: not priced, "on request"
-      unbuilt.push(op); Q.push({ k: 'unbuilt', fill: f, id: op.id, w: Math.round(op.len * 1000), h: Math.round(op.h * 1000), why: 'hang' });
-      html += `<tr><td>${FILL[f]}, ${op.label.toLowerCase()}<span class="s">${size} · угол без стойки: по запросу, без цены</span></td><td class="a muted">—</td></tr>`;
-    } else if (f === 'glass') {
+    if (f === 'glass') {
       const g = glassFor(op);
       if (g.best) {
         const gz = glazingFor(op);
