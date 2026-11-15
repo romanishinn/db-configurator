@@ -2783,3 +2783,12 @@ $('hint').textContent = 'Пример: заполнения уже расста�
 </script>
 <script>/*BACKEND_JS*/</script>
 <script>/*FUNNEL_JS*/</script>
+<script>
+/* "in development" note (owner's request); not shown inside the CRM iframe */
+(function(){if(window.top!==window)return;
+var T={de:'Im Aufbau',en:'Work in progress',ru:'В процессе разработки',hr:'U izradi',es:'En desarrollo'};
+var l=(new URLSearchParams(location.search).get('lang')||document.documentElement.lang||navigator.language||'de').slice(0,2).toLowerCase();
+var d=document.createElement('div');d.className='devpill';d.setAttribute('role','note');d.textContent=T[l]||T.de;
+var st=document.createElement('style');st.textContent='.devpill{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:2147483000;background:#a9741f;color:#fff;font:600 12px/1.3 system-ui,-apple-system,sans-serif;padding:2px 12px;border-radius:0 0 8px 8px;pointer-events:none;white-space:nowrap;opacity:.92}';
+document.head.appendChild(st);document.body.appendChild(d);})();
+</script>

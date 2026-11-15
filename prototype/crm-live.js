@@ -366,6 +366,7 @@
     set('.rail a[data-s="orders"]', !isArch());              // an architect works with his own projects and quotes only
     set('.rail a[data-s="admin"]', sees());
     set('.rail a[data-s="settings"]', isAdmin());
+    set('.rail a[data-s="projects"]', !!me && (me.role === 'superadmin' || me.role === 'manager'));   // same rule as can_edit_projects() in the database
     const grp = $('.rail .grp'); if (grp) { grp.hidden = !sees(); grp.style.display = sees() ? '' : 'none'; }
     // top button: new lead (the configurator has its own menu item)
     const nb = $('#newCalcBtn');
