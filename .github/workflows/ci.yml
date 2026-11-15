@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,6 +21,9 @@ jobs:
         run: sh tools/harness/redlines.sh
         env:
           REDLINE_TERMS: ${{ secrets.REDLINE_TERMS }}
+          REDLINE_HISTORY: '1'
           REDLINE_BASE: ${{ github.event.pull_request.base.sha || github.event.before || 'origin/main' }}
+      - name: Language parity (every language has the same dictionary keys)
+        run: node tools/i18n-check.mjs
       - run: pnpm -r typecheck
       - run: pnpm -r test

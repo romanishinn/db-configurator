@@ -4,7 +4,8 @@
  * Texts are in T below (DE / EN / RU); the printable quote and the request e-mail use the same language.
  */
 (() => {
-  // ASSUMPTION: private customers in Austria, standard VAT 20 %. Catalogue prices are net suggested retail prices.
+  // Owner's decision (2026-11-04, docs/decisions.md): Austrian VAT 20 % for every language and country; for now every offer comes from the Austrian company.
+  // Catalogue prices are net suggested retail prices.
   const VAT = 0.2;
   // TODO(office): office e-mail and phone for requests and the quote footer. While empty, the mail opens without a recipient.
   // Brand hidden for a demo video: put the company name back into name to show it again (header, quote, tab title).
@@ -74,6 +75,20 @@
       ctlH: { pergola: 'bez drugog odašiljača – prijemni modul u stupu', remote: 'mali dodatni ručni odašiljač samo za screenove', smart: 'putem aplikacije na pametnom telefonu, i izvan kuće', switch: 'fiksni taster na zidu, samo s YOODA ili Somfy motorima', solar: 'motor sa solarnim panelom, bez strujnog kabela, vlastiti ručni odašiljač' },
       photo: 'Fotografija', photoT: 'Pogledajte pergolu na fotografiji svoje terase', photoHelp: 'Povucite 4 točke tamo gdje će stajati stupovi: 1 i 2 uz zid kuće (lijevo, desno), 3 i 4 sprijeda. Pergola se postavlja u perspektivu fotografije. Fotografija ostaje u vašem pregledniku.', photoBad: 'Točke su zamijenjene: 1 i 2 uz zid lijevo i desno, 3 i 4 sprijeda desno i lijevo.', photoPts: 'Točke', photoHelpS: 'Povucite 4 točke na uglove pergole', photoShot: 'Spremi sliku', photoNew: 'Druga fotografija', photoOff: 'Ukloni fotografiju', photoTip: 'Kako će izgledati kod vas? Učitajte fotografiju svoje terase – pergola se pojavljuje na njoj, i u ponudi.', photoBtn: '📷 Učitaj fotografiju',
     },
+    es: {
+      roofT: 'Cubierta', roofRot: 'Lamas orientables', roofSlide: 'Cubierta corredera',
+      roofRotD: 'Las lamas giran (hasta unos 135°): luz y aire a su gusto, y la cubierta permanece sobre usted.',
+      roofSlideD: 'Las lamas se inclinan y se pliegan juntas hacia un lado: el cielo se abre.',
+      slideStack: (st, rest, side) => `Con la cubierta totalmente abierta, las lamas plegadas quedan ${side}: unos ${st} m; ${rest} m quedan abiertos.`, sideWall: 'junto a la pared de la casa', sideEdge: 'en un lateral',
+      reqPosts: 'Postes adicionales (fondo superior a 6 m)', pergolaSlide: 'Cubierta corredera de lamas', part: 'parte',
+      lightG: { louvre: 'En las lamas', gutter: 'En el canalón, todo el perímetro', crown: 'Focos en el marco', posts: 'En los postes', zipled: 'En las guías ZIP' }, lightI: { none: 'Sin luz', white: 'Tira LED, blanco cálido', rgb: 'Tira LED, RGB', rgbw: 'Tira LED, RGBW', spots: 'Focos LED, 3 por lama', lamps: 'Luminarias LED, 2 por lama', bwhite: 'blanco cálido', brgb: 'RGB', brgbw: 'RGBW', cwhitergb: 'blanco + RGB', crown8: '8 focos LED', postsAll: 'una luz en cada poste', zipLedOn: 'Luz LED en las guías' }, zipLedT: 'Luz LED en las guías ZIP', zipLedD: 'guías con tira LED, fuente de alimentación e interruptor', crownNote: 'Solo en los lados sin cristal ni screen ZIP', perLouvre: 'por lama', lightsSlide: { none: 'Sin luz', bwhite: 'LED en el canalón, blanco cálido', brgb: 'LED en el canalón, RGB', brgbw: 'LED en el canalón, RGBW', cwhitergb: 'LED en el canalón, blanco + RGB' },
+      heatsSlide: { 's5.single': '1 calefactor de 1,5 kW (~10 m²)', 's5.double': 'Calefactor doble de 4 kW (~25 m²)' },
+      windSun: 'Viento + sol', stackLbl: (v) => `plegado ${v} mm`, tbRoof: 'Cubierta', roofClosed: 'cerrada', roofOpen: 'abierta',
+      reqPostH: 'Postes adicionales más altos',
+      glTypT: 'Apertura', glTyp: { ltr: 'hacia la derecha', rtl: 'hacia la izquierda', center: 'desde el centro' }, glOpen: 'abierto', ctaS: 'Toque ＋ para cerrar un lado', tones: ['antracita', 'grafito', 'gris', 'gris claro', 'blanco', 'beige', 'taupe', 'negro'], tbColor: 'Color', tbColorT: 'Color del cristal y del marco', noGlass: 'Aparece cuando un lado tiene cristal', tbLight: 'Luz', tbUnder: 'Desde abajo', tbInside: 'Desde dentro', tbExit: 'Salida', ctlNa: 'no disponible para este tamaño', ctlS: { pergola: 'Mando a distancia', switch: 'Pulsador de pared', smart: 'Smartphone', solar: 'Solar' },
+      ctlH: { pergola: 'sin segundo mando: módulo receptor en el poste', remote: 'pequeño mando adicional solo para los screens', smart: 'con la aplicación del móvil, también fuera de casa', switch: 'pulsador fijo en la pared, solo con motores YOODA o Somfy', solar: 'motor con panel solar, sin cable de alimentación, con mando propio' },
+      photo: 'Foto', photoT: 'Vea la pérgola en una foto de su terraza', photoHelp: 'Arrastre los 4 puntos a donde irán los postes: 1 y 2 junto a la pared de la casa (izquierda y derecha), 3 y 4 en la parte delantera. La pérgola adopta la perspectiva de la foto. La foto permanece en su navegador.', photoBad: 'Los puntos están cruzados: 1 y 2 junto a la pared, a izquierda y derecha; 3 y 4 delante, a derecha e izquierda.', photoPts: 'Puntos', photoHelpS: 'Arrastre los 4 puntos a las esquinas de la pérgola', photoShot: 'Guardar imagen', photoNew: 'Otra foto', photoOff: 'Quitar la foto', photoTip: '¿Cómo quedará en su casa? Suba una foto de su terraza: la pérgola aparece en ella y también en el presupuesto.', photoBtn: '📷 Subir una foto',
+    },
   };
   for (const [l, x] of Object.entries(EXTRA)) {
     Object.assign(T[l], x);
@@ -91,7 +106,8 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode: ignore */ } },
   };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  const metres = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const metres = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const metres3 = (mmv) => (mmv / 1000).toLocaleString(lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 3 }); // 0,875 m (a shift is not always a round number)
   const gross = (n) => n * (1 + VAT);
   const fe = (n) => eur(Math.round(n));
   const plusE = (n) => n > 0.5 ? '+' + fe(n) : L().incl;
@@ -101,10 +117,10 @@
     if (q && T[q]) return q;
     const s = Store.get('db.lang'); if (s && T[s]) return s;
     const n = (navigator.language || 'de').slice(0, 2).toLowerCase();
-    return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : 'de';
+    return n === 'ru' || n === 'uk' ? 'ru' : n === 'en' ? 'en' : n === 'es' && T.es ? 'es' : 'de';
   };
   let lang = pickLang();
-  let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false;
+  let step = 0, product = null, focusId = null, scrollFocus = false, resumeOffer = null, form = { name: '', email: '', phone: '', place: '', when: 0, mount: true, visit: true, msg: '' }, formErr = {}, sentOk = false, sending = false, reqErr = '', reqNo = '', dbNo = '';
   const isCust = () => document.body.classList.contains('cust');
   const curOpt = () => state.options[state.optIndex];
   const sysOf = (o) => famKey(o);
@@ -185,7 +201,7 @@
     if ((side === 'front' || side === 'back') && o && o.cols > 1) s += ' · ' + L().field + ' ' + (n + 1);
     if ((side === 'left' || side === 'right') && o && o.rows > 1) s += ' · ' + L().row + ' ' + (n + 1);
     // a Slide side with a required post in the middle is two openings
-    const op = o && o.family === 'SLIDE' ? opsOf(o).find((x) => x.id === id) : null;
+    const op = o ? opsOf(o).find((x) => x.id === id) : null;
     if (op && op.part) s += ' · ' + L().part + ' ' + op.part;
     return s;
   }
@@ -216,9 +232,10 @@
         if (l.code === 'OPT_INTERMEDIATE_POST') d = '× ' + p.qty;
         if (l.code === 'OPT_REQUIRED_POST_HEIGHT') d = `≤ ${metres(p.height)} ${t.m} · × ${p.posts}`;
         if (l.code === 'OPT_LED_GUTTER') d = t.lightI[p.type] || '';
+        if (l.code === 'OPT_CORNER_POST_SHIFT') d = `${String(p.corners).split(',').map((c) => t.shiftCorners[c]).join(', ')} · ${metres3(p.mm)} ${t.m}${p.qty > 1 ? ' · × ' + p.qty : ''}${p.includesDrainage ? ' · ' + t.shiftDrain : ''}`;
         if (l.code === 'OPT_SPOTS' || l.code === 'OPT_LAMPS') d = `${p.louvres} ${t.roof} × ${p.perLouvre} ${t.perLouvre}`;
         if (l.code === 'OPT_CROWN_SPOTS' || l.code === 'OPT_VERTICAL_LAMPS') d = '× ' + p.points;
-        const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST', 'OPT_REQUIRED_POST_HEIGHT'].includes(l.code) ? 'pergola' : 'comfort';
+        const g = ['OPT_POST_HEIGHT', 'OPT_INTERMEDIATE_POST', 'OPT_REQUIRED_POST_HEIGHT', 'OPT_CORNER_POST_SHIFT'].includes(l.code) ? 'pergola' : 'comfort';
         out.push({ g, t: t.opt[l.code] || l.code, d, a: l.a });
       } else if (l.k === 'glass') out.push({ g: 'sides', t: `${t.fills.glass} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${l.panels} ${t.panelsW} · ${t.tints[l.glazing]} ${l.thick} mm`, a: l.a });
       else if (l.k === 'zip') { const f = cat.fabrics.collections.find((x) => x.id === l.fabric), f0 = l.swapFrom && cat.fabrics.collections.find((x) => x.id === l.swapFrom); out.push({ g: 'sides', t: `${t.fills.zip} – ${sideLabel(l.id, o)}`, d: `${sz(l.w, l.h)} · ${f ? f.name + ' (OF ' + f.openness + ' %)' : ''}${f0 ? ' · ' + t.swapped(f.name, f0.name) : ''}`, a: l.a }); }
@@ -252,6 +269,13 @@
   function svcList() { const base = q().total, out = []; if (!(base > 0)) return out; if (svcOn('install')) out.push({ k: 'install', a: Math.floor(base * svcRate('install') / 10) * 10 }); if (svcOn('deliv')) out.push({ k: 'deliv', a: Math.floor(base * svcRate('deliv') / 10) * 10 }); return out; }
   function svcTotal() { return svcList().reduce((s, x) => s + x.a, 0); }
   function grandNet() { return q().total + svcTotal(); }
+  // request payload: the net sum the customer sees (with installation / delivery), the services as lines of their own
+  function requestLines() { return [...q().lines, ...svcList().map((x) => ({ k: 'svc_' + x.k, a: x.a }))]; }
+  // the stored number belongs to the configuration that was sent; after a change the offer gets a local number again
+  let dbSig = '';
+  const sigNow = () => JSON.stringify([snapshot(), svcOn('install'), svcOn('deliv')]);
+  const dbNoNow = () => (dbNo && dbSig === sigNow() ? dbNo : '');
+  const sentCur = () => sentOk && !!dbNoNow(); // after the configuration changes the request can be sent again
   function notInclNote(t) { const m = []; if (!svcOn('deliv')) m.push(t.deliveryLc); if (!svcOn('install')) m.push(t.montLc); return t.qExclPre + [...m, t.qExclBase].join(', ') + '.'; }
 
   /* ---------- rendering ---------- */
@@ -278,6 +302,9 @@
   T.hr.catT = 'Odaberite model'; T.hr.catL = 'Kakav krov ima vaša pergola. Zatim: veličina, strane, udobnost i boje.'; T.hr.catChange = 'promijeni';
   T.hr.kitT = 'Oprema'; T.hr.kitL = 'Strane, ostakljenje i udobnost — sve što isporučujemo.';
   T.hr.svcT = 'Montaža i dostava'; T.hr.svcHint = 'Uključeno po zadanom — odznačite da uklonite iz ponude.'; T.hr.svcInstallD = '10 % cijene'; T.hr.svcDelivD = '4 % cijene'; T.hr.montLc = 'montaža'; T.hr.deliveryLc = 'dostava'; T.hr.andW = 'i'; T.hr.qExclPre = 'Nije uključeno: '; T.hr.qExclBase = 'temelji, električni priključak, dozvole';
+  T.es.catT = 'Elija un modelo'; T.es.catL = 'Qué cubierta tendrá su pérgola. Después: tamaño, lados, confort y colores.'; T.es.catChange = 'cambiar';
+  T.es.kitT = 'Equipamiento'; T.es.kitL = 'Lados, acristalamiento y confort: todo lo que suministramos.';
+  T.es.svcT = 'Montaje y entrega'; T.es.svcHint = 'Incluidos por defecto: desmárquelos para quitarlos del presupuesto.'; T.es.svcInstallD = '10 % del precio'; T.es.svcDelivD = '4 % del precio'; T.es.montLc = 'montaje'; T.es.deliveryLc = 'entrega'; T.es.andW = 'y'; T.es.qExclPre = 'No incluido: '; T.es.qExclBase = 'cimentación, conexión eléctrica, permisos';
   const prodById = (id) => PRODUCTS.find((pp) => pp.id === id) || null;
   function pickProduct(id) {
     const pr = prodById(id); if (!pr || pr.locked) return;
@@ -291,39 +318,50 @@
     ru: { title: 'Выход в стене', no: 'Нет', yes: 'Есть', slide: 'Слайдинг', door: 'Дверь', hole: 'Проём', width: 'Ширина', height: 'Высота', center: 'По центру', left: 'Левее', right: 'Правее', panels: 'Полотен', opening: 'Открывание', mLeft: 'Влево', mRight: 'Вправо', both: 'Обе', pocket: 'В стену', doorOpen: 'Открывание двери', dIn: 'Внутрь', dOut: 'Наружу', dAside: 'В сторону', leaves: 'Створки', one: 'Одна', two: 'Две' },
     en: { title: 'Exit in the wall', no: 'No', yes: 'Yes', slide: 'Sliding', door: 'Door', hole: 'Opening', width: 'Width', height: 'Height', center: 'Centre', left: 'Left', right: 'Right', panels: 'Panels', opening: 'Opening', mLeft: 'Left', mRight: 'Right', both: 'Both', pocket: 'Into the wall', doorOpen: 'Door opening', dIn: 'Inward', dOut: 'Outward', dAside: 'To the side', leaves: 'Leaves', one: 'One', two: 'Two' },
     de: { title: 'Ausgang in der Wand', no: 'Nein', yes: 'Ja', slide: 'Schiebe', door: 'Tür', hole: 'Öffnung', width: 'Breite', height: 'Höhe', center: 'Mittig', left: 'Links', right: 'Rechts', panels: 'Elemente', opening: 'Öffnung', mLeft: 'Links', mRight: 'Rechts', both: 'Beide', pocket: 'In die Wand', doorOpen: 'Türöffnung', dIn: 'Nach innen', dOut: 'Nach außen', dAside: 'Zur Seite', leaves: 'Flügel', one: 'Eins', two: 'Zwei' },
-    hr: { title: 'Izlaz u zidu', no: 'Ne', yes: 'Da', slide: 'Klizna', door: 'Vrata', hole: 'Otvor', width: 'Širina', height: 'Visina', center: 'U sredini', left: 'Lijevo', right: 'Desno', panels: 'Elementi', opening: 'Otvaranje', mLeft: 'Lijevo', mRight: 'Desno', both: 'Oba', pocket: 'U zid', doorOpen: 'Otvaranje vrata', dIn: 'Prema unutra', dOut: 'Prema van', dAside: 'U stranu', leaves: 'Krila', one: 'Jedno', two: 'Dva' }
+    hr: { title: 'Izlaz u zidu', no: 'Ne', yes: 'Da', slide: 'Klizna', door: 'Vrata', hole: 'Otvor', width: 'Širina', height: 'Visina', center: 'U sredini', left: 'Lijevo', right: 'Desno', panels: 'Elementi', opening: 'Otvaranje', mLeft: 'Lijevo', mRight: 'Desno', both: 'Oba', pocket: 'U zid', doorOpen: 'Otvaranje vrata', dIn: 'Prema unutra', dOut: 'Prema van', dAside: 'U stranu', leaves: 'Krila', one: 'Jedno', two: 'Dva' },
+    es: { title: 'Salida en la pared', no: 'No', yes: 'Sí', slide: 'Corredera', door: 'Puerta', hole: 'Hueco', width: 'Ancho', height: 'Altura', center: 'Centrado', left: 'Izquierda', right: 'Derecha', panels: 'Hojas', opening: 'Apertura', mLeft: 'Izquierda', mRight: 'Derecha', both: 'Ambas', pocket: 'Dentro de la pared', doorOpen: 'Apertura de la puerta', dIn: 'Hacia dentro', dOut: 'Hacia fuera', dAside: 'Hacia un lado', leaves: 'Hojas', one: 'Una', two: 'Dos' }
   };
   const PROD_COPY = {
     louvered: {
-      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.' },
-      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'] }
+      desc: { ru: 'Крыша из поворотных ламелей: наклоняйте их под солнце и тень или полностью закройте от дождя.', en: 'A roof of rotating louvres: tilt them for sun and shade, or close them fully against the rain.', de: 'Dach aus drehbaren Lamellen: für Sonne und Schatten neigen oder ganz gegen Regen schließen.', hr: 'Krov od zakretnih lamela: nagnite ih za sunce i sjenu ili ih potpuno zatvorite od kiše.', es: 'Cubierta de lamas orientables: inclínelas para obtener sol y sombra o ciérrelas por completo frente a la lluvia.' },
+      feats: { ru: ['Солнце и тень', 'Защита от дождя', 'Открытое небо'], en: ['Sun & shade', 'Rain-proof', 'Open sky'], de: ['Sonne & Schatten', 'Regendicht', 'Offener Himmel'], hr: ['Sunce i sjena', 'Zaštita od kiše', 'Otvoreno nebo'], es: ['Sol y sombra', 'Estanca a la lluvia', 'Cielo abierto'] }
     },
     slide: {
-      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.' },
-      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'] }
+      desc: { ru: 'Ламели складываются в пакет к одной стороне — над вами полностью открытое небо.', en: 'The louvres fold into a stack on one side — a completely open sky above you.', de: 'Die Lamellen falten sich an einer Seite zusammen – über Ihnen der ganz offene Himmel.', hr: 'Lamele se slažu na jednu stranu – iznad vas potpuno otvoreno nebo.', es: 'Las lamas se pliegan en paquete hacia un lado: sobre usted, el cielo completamente abierto.' },
+      feats: { ru: ['Открывается полностью', 'Пакет сбоку', 'Максимум света'], en: ['Fully opens', 'Folds aside', 'Maximum light'], de: ['Öffnet ganz', 'Faltet zur Seite', 'Maximales Licht'], hr: ['Potpuno se otvara', 'Slaže se sa strane', 'Maksimum svjetla'], es: ['Se abre por completo', 'Se pliega a un lado', 'Máxima luz'] }
     }
   };
   const pick = (d) => (d && (d[lang] || d.en)) || '';
-  function artSlat(x, y, w, h, rot) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.6" transform="rotate(${rot} ${(x + w / 2).toFixed(1)} ${(y + h / 2).toFixed(1)})" class="art-slat"/>`; }
+  /* Model illustrations (160 x 92). One frame, one floor line (y = 83) and one shadow for every model, drawn with the
+   * theme colours (--ink / --muted / --accent / --panel) so they work in the light and the dark theme. On hover the
+   * louvres tilt and the sliding roof unfolds (CSS, only when motion is allowed). */
+  const ART_FLOOR = '<ellipse class="art-shadow" cx="80" cy="84.4" rx="66" ry="3.2"/><line class="art-ground" x1="9" y1="83" x2="151" y2="83"/><path class="art-tile" d="M30 83.8l-5 3M62 83.8l-3 3M98 83.8l3 3M130 83.8l5 3"/>';
+  const ART_FRAME = '<rect class="art-post back" x="34" y="30" width="3" height="53" rx="1.2"/><rect class="art-post back" x="123" y="30" width="3" height="53" rx="1.2"/>';
+  const ART_FRONT = '<rect class="art-post" x="22" y="37" width="4.6" height="46" rx="1.6"/><rect class="art-post" x="133.4" y="37" width="4.6" height="46" rx="1.6"/><rect class="art-beam" x="14" y="30" width="132" height="8" rx="2.4"/><rect class="art-hi" x="16" y="31.3" width="128" height="1.5" rx=".75"/>';
+  const artDefs = (id) => `<defs><linearGradient id="sl-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.58"/></linearGradient><radialGradient id="gl-${id}"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.5"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></radialGradient></defs>`;
+  const artSun = (id) => `<circle cx="146" cy="14" r="14" fill="url(#gl-${id})"/><circle cx="146" cy="14" r="4.8" class="art-sun"/>`;
   function prodArt(id) {
-    const sun = `<circle cx="135" cy="24" r="11" class="art-sun"/>`;
-    const frame = `<path class="art-frame" d="M24 37v45M136 37v45"/><rect x="15" y="30" width="130" height="7" rx="2" class="art-beam"/><line x1="9" y1="83" x2="151" y2="83" class="art-ground"/>`;
     if (id === 'louvered') {
-      let s = ''; for (let i = 0; i < 9; i++) s += artSlat(22 + i * 13.4, 14, 6, 17, 26);
-      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g>${frame}</svg>`;
+      let sl = ''; for (let i = 0; i < 9; i++) sl += `<rect class="art-slat" style="--i:${i}" x="${(22 + i * 13.4).toFixed(1)}" y="14" width="6" height="17" rx="1.6" fill="url(#sl-${id})"/>`;
+      return `<svg class="f-prod-svg louv" viewBox="0 0 160 92" fill="none" aria-hidden="true">${artDefs(id)}${artSun(id)}${ART_FLOOR}${ART_FRAME}<g>${sl}</g>${ART_FRONT}</svg>`;
     }
     if (id === 'slide') {
-      let s = ''; for (let i = 0; i < 6; i++) s += artSlat(21 + i * 5.4, 14, 4.4, 17, 0);
-      return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${sun}<g>${s}</g><line class="art-open" x1="56" y1="22" x2="128" y2="22" stroke-dasharray="3 6"/>${frame}</svg>`;
+      let sl = ''; for (let i = 0; i < 6; i++) sl += `<rect class="art-slat" style="--i:${i}" x="${(21 + i * 5.4).toFixed(1)}" y="14" width="4.4" height="17" rx="1.4" fill="url(#sl-${id})"/>`;
+      return `<svg class="f-prod-svg slid" viewBox="0 0 160 92" fill="none" aria-hidden="true">${artDefs(id)}${artSun(id)}${ART_FLOOR}${ART_FRAME}<line class="art-open" x1="52" y1="22" x2="128" y2="22" stroke-dasharray="3 6"/><g>${sl}</g>${ART_FRONT}</svg>`;
     }
-    // carport: a flat canopy over a simple car
-    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true"><rect x="13" y="26" width="134" height="9" rx="2" class="art-beam"/><path class="art-frame" d="M26 35v47M134 35v47"/><path class="art-car" d="M46 74c0-7 6-12 13-12h18l12 10h13c6 0 10 4 10 10v2H46z"/><circle cx="64" cy="80" r="6" class="art-wheel"/><circle cx="104" cy="80" r="6" class="art-wheel"/><line class="art-ground" x1="9" y1="86" x2="151" y2="86"/></svg>`;
+    // carport: a flat canopy; the car stands on the same floor between the posts (wheels r=6.5 centred at y=76 touch y=83)
+    const car = '<ellipse class="art-shadow dark" cx="80" cy="83.6" rx="46" ry="2"/>'
+      + '<path class="art-car" d="M38 75v-6c0-3 2-5 5-6l11-3 9-10c2-2 4-3 7-3h19c3 0 5 1 7 3l9 10 12 2c3 1 5 3 5 6v7z"/>'
+      + '<path class="art-win" d="M65.5 59l5.8-7.4c.8-1 1.8-1.6 3.1-1.6H82v9z"/><path class="art-win" d="M86 50h9c1.6 0 2.7.6 3.6 1.7l5.9 7.3H86z"/>'
+      + '<path class="art-line" d="M84 60v11"/><rect class="art-lamp" x="124.6" y="65.4" width="2.6" height="3.2" rx="1"/><rect class="art-lamp dim" x="38.8" y="66.6" width="2.4" height="3" rx="1"/>'
+      + '<circle class="art-tire" cx="54" cy="76" r="6.5"/><circle class="art-hub" cx="54" cy="76" r="2.6"/><circle class="art-tire" cx="106" cy="76" r="6.5"/><circle class="art-hub" cx="106" cy="76" r="2.6"/>';
+    return `<svg class="f-prod-svg" viewBox="0 0 160 92" fill="none" aria-hidden="true">${ART_FLOOR}${ART_FRAME}<path class="art-roof" d="M14 30l7-7h118l7 7z"/>${ART_FRONT}${car}</svg>`;
   }
   function catalogHTML(t) {
     const cards = PRODUCTS.map((pr) => {
       const art = `<span class="f-prod-art">${prodArt(pr.id)}</span>`;
       const title = `<b>${esc(pr.name[lang] || pr.name.en)}</b><span class="f-prod-tag">${esc(pr.tag[lang] || pr.tag.en)}</span>`;
-      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true">🔒</span>${art}${title}</div>`;
+      if (pr.locked) return `<div class="f-prod locked" aria-disabled="true"><span class="f-prod-lock" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="7" width="9.6" height="6.8" rx="1.8"/><path d="M5.4 7V5.2a2.6 2.6 0 0 1 5.2 0V7"/></svg></span>${art}${title}</div>`;
       const x = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: FAMILIES[pr.roof] }, cat).options[0];
       const price = x ? `<span class="f-prod-pr"><span class="from">${esc(t.from)}</span> ${fe(gross(x.total))}</span>` : '';
       const c = PROD_COPY[pr.id] || {};
@@ -339,12 +377,12 @@
     // catalog screen shows products only — hide the 3D stage/toolbar until a model is picked
     document.body.classList.toggle('cat-only', product === null);
     const t = L(), o = curOpt();
-    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski' };
+    const LANGNAME = { ru: 'Русский', en: 'English', de: 'Deutsch', hr: 'Hrvatski', es: 'Español' };
     const head = `<div class="f-head">${OFFICE.name ? `<span class="f-brand">${esc(OFFICE.name)}</span>` : ''}<span class="sp"></span>
       <details class="f-lang" aria-label="Language"><summary>${lang.toUpperCase()}<span class="f-lang-car" aria-hidden="true">▾</span></summary><div class="f-lang-menu">${Object.keys(T).map((k) => `<button type="button" data-lang="${k}" aria-pressed="${k === lang}">${esc(LANGNAME[k] || k.toUpperCase())}</button>`).join('')}</div></details>
       <button type="button" class="f-pro" data-mode="pro" title="${esc(t.proTitle)}">${t.pro}</button></div>`;
     if (product === null) { F.innerHTML = head + `<div class="f-body">${catalogHTML(t)}</div>`; return; }
-    const steps = `<ol class="f-steps">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
+    const steps = `<ol class="f-steps" style="--n:${t.steps.length}">${t.steps.map((s, i) => { const dn = i < 3 && stepDone(i); return `<li><button type="button" data-step="${i}" ${i === step ? 'aria-current="step"' : ''} data-done="${dn || i < step}" data-check="${dn}"><span class="n">${dn ? '✓' : i + 1}</span>${esc(s)}</button></li>`; }).join('')}</ol>`;
     const body = [stepSize, stepKit, stepColours, stepOffer][step](t, o);
     // keep the tapped control where the finger is: re-rendering the panel must not move the page
     const anchor = lastTap ? F.querySelector(lastTap) : null, y0 = anchor ? anchor.getBoundingClientRect().top : null;
@@ -362,8 +400,9 @@
     const price = ok ? `<b>${fe(total)}</b><span>${t.net}<span class="nt"> · ${fe(gross(total))} ${t.gross}</span></span>` : `<b>—</b><span>${t.priceNa}</span>`;
     // on a narrow phone the step name after "Next" is dropped, so the price never gets cut
     const to = step < 3 ? nextStep() : 3;
-    const nextLabel = step === 3 ? esc(t.send) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
-    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" data-go="${step === 3 ? 'form' : '1'}" ${ok ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
+    const noBE = !window.Backend; // without the database there is no request form: the offer step ends with the PDF
+    const nextLabel = step === 3 ? (noBE ? 'PDF' : sending ? esc(t.sending) : sentCur() ? esc(t.sentB(reqNo)) : esc(t.send)) : to === 3 ? esc(t.toOffer) : esc(t.next) + `<span class="nx">: ${esc(t.steps[to])}</span>`;
+    return `<div class="f-bar"><div class="p" id="f-price">${price}</div>${step > 0 ? `<button type="button" class="back" data-go="-1" aria-label="${esc(t.back)}"><span class="bk">${t.back}</span><span class="ar">←</span></button>` : '<span></span>'}<button type="button" class="next" ${step === 3 ? (noBE ? 'data-act="print"' : 'data-go="form"') : 'data-go="1"'} ${ok && !sending && !(step === 3 && sentCur() && !noBE) ? '' : 'disabled'}>${nextLabel}${step < 3 ? ' →' : ''}</button></div>`;
   }
 
   /** motors + control devices of all ZIP screens if each screen used modeFor(id) with the given motor brand — the same rules as the estimate */
@@ -438,11 +477,44 @@
   }
   const head = (title, desc) => `<div class="f-h3"><span>${title}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${desc}</span></div>`;
 
+  /** corner post relocation (option): chips of the corners that exist, shift field, price per post from the engine */
+  function shiftHtml(t, o, idp) {
+    const have = o ? DBCore.cornerPostsOf(o) : [];
+    if (!have.length) return '';
+    window.fixPostShift();
+    const ps = state.po.postShift, on = (c) => !!ps && ps.corners.includes(c);
+    const unit = optDelta({ postShift: { corners: [have[0].corner], mm: have[0].maxShiftMm } });
+    let h = `<div class="f-h3"><span>${t.shiftT}${unit > 0.5 ? ` · +${fe(unit)}` : ''}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.shiftD)}</span></div>`;
+    h += `<div class="f-chips"><button type="button" class="f-chip" data-psc="none" aria-pressed="${!ps}">${esc(t.shiftNone)}</button>${have.map((c) => `<button type="button" class="f-chip" data-psc="${c.corner}" aria-pressed="${on(c.corner)}">${esc(t.shiftCorners[c.corner])}</button>`).join('')}</div>`;
+    if (ps) {
+      const max = Math.min(...have.filter((c) => on(c.corner)).map((c) => c.maxShiftMm));
+      h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="${idp}-psm">${esc(t.shiftMm)} · ${esc(t.shiftMax(metres3(max)))}</label><div class="f-step"><button type="button" data-psn="-50" aria-label="−">−</button><input id="${idp}-psm" type="number" inputmode="decimal" step="0.05" min="0.05" max="${max / 1000}" value="${(ps.mm / 1000).toFixed(3).replace(/0$/, '')}" data-psin="1"><button type="button" data-psn="50" aria-label="+">+</button></div></div></div>`;
+      if (o.family === 'S400') h += `<p class="f-lead" style="font-size:12.5px;margin:6px 0 0">${esc(t.shiftDrain)}</p>`;
+    }
+    return h;
+  }
+  /** one place for the option's side effects: journal (Russian, for the manager) and analytics without personal data */
+  function onShiftSet() {
+    const ps = state.po.postShift;
+    logEv(ps ? `перенос стойки: ${ps.corners.map((c) => ({ 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' })[c]).join(', ')}, сдвиг ${ps.mm} мм` : 'перенос стойки: нет');
+    A.track('post_shift', { corners: ps ? ps.corners.length : 0, mm: ps ? ps.mm : 0 });
+  }
+  window.onPostShift = () => onShiftSet();
+  function actShift(d) { // returns true when handled
+    if (d.psc === undefined && d.psn === undefined) return false;
+    if (d.psc !== undefined) {
+      const cur = (state.po.postShift && state.po.postShift.corners) || [];
+      if (d.psc === 'none') window.setPostShift([]);
+      else window.setPostShift(cur.includes(d.psc) ? cur.filter((c) => c !== d.psc) : [...cur, d.psc]);
+    } else if (state.po.postShift) { const c = state.po.postShift.mm, s = Number(d.psn); window.setPostShift(state.po.postShift.corners, s < 0 ? Math.ceil(c / 50) * 50 - 50 : Math.floor(c / 50) * 50 + 50); } // from a limit that is not a multiple of 50 to the next full step
+    onShiftSet(); rebuild(); applyAnim(); return true;
+  }
+
   /* step 1: size */
   function stepSize(t, o) {
     const wall = state.mount === 'wall';
     let h = resumeOffer ? `<div class="f-resume"><span>${t.resume}</span><span><button type="button" class="f-link" data-resume="yes">${t.resumeYes}</button> · <button type="button" class="f-link" data-resume="no">${t.resumeNo}</button></span></div>` : '';
-    h += `<p class="f-lead" style="margin-top:0">${t.intro}</p><h2>${t.s1}</h2><p class="f-lead">${t.s1l}</p>`;
+    h += `<p class="f-lead" style="margin-top:0">${t.intro.replace('5', t.steps.length)}</p><h2>${t.s1}</h2><p class="f-lead">${t.s1l}</p>`;
     h += `<div class="f-cards">
       <button type="button" class="f-card" data-mount="wall" aria-pressed="${wall}">${ICON.wall}<b>${t.wall}</b><span class="d">${t.wallD}</span></button>
       <button type="button" class="f-card" data-mount="free" aria-pressed="${!wall}">${ICON.free}<b>${t.free}</b><span class="d">${t.freeD}</span></button></div>`;
@@ -464,6 +536,7 @@
       h += `<div class="f-chips">${`<button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${t.parNone}</button>`}${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${t.sides[f]}</button>`).join('')}</div>`;
       if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="f-ph">${t.parH}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="f-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
     }
+    h += shiftHtml(t, o, 'f');
     // size problems: plain-language fix buttons
     const r = DBCore.compose({ mount: state.mount, width: state.width, depth: state.depth, louvres: state.louvres, families: famFilter() }, cat);
     for (const s of r.suggestions) h += `<div class="f-note">${t.sugg[s.code] || s.code}${s.params && s.params.suggested ? ` <button type="button" class="f-link" data-fix="${s.code}" data-v="${s.params.suggested}">${t.suggFix(metres(s.params.suggested))}</button>` : ''}</div>`;
@@ -688,8 +761,11 @@
     h += `<div class="f-h3" style="margin-top:22px"><span>${t.faqT}</span></div><div class="f-faq">${t.faq.map(([qq, a]) => `<details><summary>${qq}</summary><p>${a}</p></details>`).join('')}</div>`;
     return h;
   }
+  const RETRY = ['server_error', 'turnstile_failed', 'turnstile_missing', 'network']; // errors where trying again makes sense (a new token is fetched each time)
   function formHtml(t) {
-    if (sentOk) return `<div class="f-done" id="f-form"><b>${t.sentT}</b><p style="margin:6px 0 8px">${t.sent}</p><div style="display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="f-link" data-act="reopen">${t.reopen}</button><button type="button" class="f-link" data-act="copytext">${t.noMail}</button></div></div>`;
+    const more = `<p class="f-more"><button type="button" class="f-link" data-act="print">${t.printS}</button> · <button type="button" class="f-link" data-act="share">${t.share}</button></p>`;
+    if (!window.Backend) return more; // no database: no request form, only PDF and link
+    if (sentCur()) return `<div class="f-done" id="f-form" role="status"><b>${t.sentT(esc(reqNo))}</b><p style="margin:6px 0 0">${t.sent}</p></div>${more}`;
     const err = (k) => formErr[k] ? `<span class="err">${formErr[k]}</span>` : '';
     // one action on this step: "Send request" in the bar; the form keeps an invisible submit so Enter works
     return `<form class="f-form" id="f-form" novalidate><div class="f-h3" style="margin:22px 0 0"><span>${t.formT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${t.requestS}</span></div>
@@ -700,14 +776,14 @@
       <label>${t.when}<select name="when">${t.whens.map((w, i) => `<option value="${i}" ${form.when === i ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
       <label class="chk"><input type="checkbox" name="visit" ${form.visit ? 'checked' : ''}> ${t.wantVisit}</label>
       <label>${t.msg}<textarea name="msg">${esc(form.msg)}</textarea></label>
+      ${sending ? `<p class="f-note" role="status">${t.sending}</p>` : ''}${reqErr ? `<div class="f-note" role="alert">${esc(t.errs[reqErr] || t.errs.server_error)}${RETRY.includes(reqErr) ? ` <button type="button" class="f-link" data-act="retry">${t.retry}</button>` : ''}</div>` : ''}
       <p class="f-priv">${t.privacy}</p>
-      <button type="submit" class="f-sr" tabindex="-1">${t.send}</button></form>
-      <p class="f-more"><button type="button" class="f-link" data-act="print">${t.printS}</button> · <button type="button" class="f-link" data-act="share">${t.share}</button></p>`;
+      <button type="submit" class="f-sr" tabindex="-1">${t.send}</button></form>${more}`;
   }
 
 
   /* ---------- the visitor's path on the site (goes with the request, nothing is sent anywhere else) ----------
-   * Kept in the browser only; the customer sees this block in the e-mail before sending it.
+   * Kept in the browser only; it is sent with the request and stored in the CRM, never shown to the customer.
    * ASSUMPTION: "active" time = page visible and a tap, key or scroll in the last 60 s; interest points below are a first guess. */
   /* ---------- visitor analytics (PostHog) ----------
    * Loaded only in the customer view and only after the visitor accepted the banner (consent kept in Store 'db.consent').
@@ -717,9 +793,11 @@
     const key = ANALYTICS.posthogKey, on = () => !!key && Store.get('db.consent') === 'yes';
     let started = false;
     const AT = {
-      de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', yes: 'Einverstanden', no: 'Ablehnen' },
-      en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', yes: 'Accept', no: 'Decline' },
-      ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', yes: 'Согласен', no: 'Отказаться' },
+      de: { t: 'Dürfen wir anonym auswerten, wie Sie den Konfigurator nutzen, um ihn zu verbessern? Eingaben wie Name oder Telefon werden nie aufgezeichnet.', s: 'Anonyme Analyse erlauben?', yes: 'Einverstanden', no: 'Ablehnen' },
+      en: { t: 'May we anonymously analyse how you use the configurator to improve it? Entries like your name or phone are never recorded.', s: 'Allow anonymous analytics?', yes: 'Accept', no: 'Decline' },
+      hr: { t: 'Smijemo li anonimno analizirati kako koristite konfigurator kako bismo ga poboljšali? Unosi poput imena ili telefona nikada se ne bilježe.', s: 'Dopustiti anonimnu analitiku?', yes: 'Prihvaćam', no: 'Odbij' },
+      es: { t: '¿Podemos analizar de forma anónima cómo utiliza el configurador para mejorarlo? Datos como su nombre o su teléfono no se registran nunca.', s: '¿Permitir análisis anónimo?', yes: 'Aceptar', no: 'Rechazar' },
+      ru: { t: 'Можно анонимно анализировать, как вы пользуетесь конфигуратором, чтобы его улучшить? Имя, телефон и другие поля никогда не записываются.', s: 'Разрешить анонимную аналитику?', yes: 'Согласен', no: 'Отказаться' },
     };
     function load() {
       if (started || !on() || !isCust()) return; started = true;
@@ -743,10 +821,10 @@
       banner() {
         if (!key || !isCust() || Store.get('db.consent')) { const b = $('f-consent'); if (b) b.remove(); return; }
         let b = $('f-consent');
-        if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); $('view').parentElement.appendChild(b);
+        if (!b) { b = document.createElement('div'); b.id = 'f-consent'; b.setAttribute('role', 'dialog'); if (matchMedia('(max-width: 1100px), (orientation: landscape) and (max-height: 560px)').matches && document.querySelector('.app')) { b.classList.add('in-flow'); document.querySelector('.app').before(b); } else $('view').parentElement.appendChild(b);
           b.addEventListener('click', (e) => { const x = e.target.closest('[data-consent]'); if (!x) return; Store.set('db.consent', x.dataset.consent); b.remove(); if (x.dataset.consent === 'yes') { load(); A.track('consent_given'); } }); }
         const t = AT[lang] || AT.de;
-        b.innerHTML = `<p>${esc(t.t)}</p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;
+        b.innerHTML = `<p title="${esc(t.t)}"><span class="cl">${esc(t.t)}</span><span class="cs">${esc(t.s)}</span></p><div><button type="button" data-consent="no">${esc(t.no)}</button><button type="button" class="y" data-consent="yes">${esc(t.yes)}</button></div>`;
       },
       /** the manager view is never recorded */
       mode(cust) { if (!loaded()) return; try { if (cust) window.posthog.startSessionRecording(); else window.posthog.stopSessionRecording(); } catch (e) { /* older loader */ } },
@@ -780,14 +858,14 @@
   })();
   document.addEventListener('click', (e) => { // the buttons on the 3D view
     const b = e.target.closest('button'); if (!b) return;
-    if (b.closest('#tb-views')) J.views.add(b.id);
-    else if (b.id === 'evening') J.night += 1;
+    if (b.closest('#tb-views')) { J.views.add(b.id); logEv('3D-вид: ' + b.id.replace(/^v-/, '')); }
+    else if (b.id === 'evening') { J.night += 1; logEv('вечерний вид'); }
     else if (b.closest('#tb-colors') && (b.dataset.qcol !== undefined || b.dataset.tone || b.dataset.gtint || b.dataset.qof)) J.colours += 1;
     else if (b.closest('#tb-lights') && b.dataset.light) J.lights += 1;
     else if (b.id === 'louv-dir') J.layouts += 1;
   }, true);
-  const photoIn = $('photo-in'); if (photoIn) photoIn.addEventListener('change', () => { J.photo += 1; A.track('photo_uploaded'); });
-  window.addEventListener('beforeprint', () => { if (isCust()) J.printed += 1; });
+  const photoIn = $('photo-in'); if (photoIn) photoIn.addEventListener('change', () => { J.photo += 1; logEv('загрузил фото террасы'); A.track('photo_uploaded'); });
+  window.addEventListener('beforeprint', () => { if (isCust()) { J.printed += 1; logEv('PDF / печать'); } });
   function trackAct(d) {
     // the same actions as named events for the analytics (no personal data, only what was chosen)
     if (d.step !== undefined) A.track('step_opened', { step: Number(d.step) + 1, via: 'tab' });
@@ -800,7 +878,17 @@
     if (d.vpreset !== undefined || d.vpos) A.track('decor_changed');
     if (d.act === 'share') A.track('link_copied');
     if (d.act === 'photo') A.track('photo_clicked');
-    if (d.nudge || d.preset || d.fix) setTimeout(() => J.sizes.add(state.width + 'x' + state.depth), 0);
+    if (d.nudge || d.preset || d.fix) setTimeout(() => { J.sizes.add(state.width + 'x' + state.depth); logEv(`размер ${(state.width / 1000).toFixed(2)} × ${(state.depth / 1000).toFixed(2)} м`); }, 0);
+    if (d.step !== undefined) logEv(`открыл шаг «${JTR.stepN[Number(d.step)] || d.step}»`);
+    if (d.fill) logEv(`сторона: ${JTR.fills[d.fill] || d.fill}`);
+    if (d.all) logEv(`все стороны: ${JTR.fills[d.all] || d.all}`);
+    if (d.rooft) logEv(`крыша: ${JTR.roofs[d.rooft] || d.rooft}`);
+    if (d.mount) logEv(`установка: ${d.mount === 'wall' ? 'у стены' : 'отдельно стоящая'}`);
+    if (d.light) logEv('свет');
+    if (d.of || d.gl || d.cl || d.frame || d.roofc || d.roof === 'same' || d.tone) logEv('цвет');
+    if (d.heat || d.sensor || d.smart || d.thermal || d.audio || d.sock !== undefined) logEv('комфорт');
+    if (d.act === 'share') logEv('скопировал ссылку');
+    if (d.act === 'photo') logEv('фото: нажал «загрузить»');
     if (d.rooft) J.roofs.add(d.rooft);
     if (d.mount) J.mounts.add(d.mount);
     if (d.opt !== undefined || d.louv || d.spl) J.layouts += 1;
@@ -827,73 +915,74 @@
     if (J.rot >= 5) p += 1;
     return { p, lvl: p >= 9 ? 'high' : p >= 5 ? 'mid' : 'low' };
   }
-  const JT = {
-    de: { head: 'So habe ich den Konfigurator genutzt (für Ihre Beratung)', replay: 'Sitzungsaufzeichnung (intern)', visit: (n, d) => n > 1 ? `${n}. Besuch, erster am ${d}` : 'Erster Besuch', src: 'Gefunden über', direct: 'direkt', active: 'Aktive Zeit', open: 'Seite offen', steps: 'Zeit je Schritt', stepN: ['Größe', 'Ausstattung', 'Farben', 'Angebot'], tried: 'Ausprobiert', sizes: 'Größen', roofs: { rotating: 'drehbare Lamellen', sliding: 'Schiebedach' }, sides: 'Änderungen an Seiten', colours: 'Farbwechsel', lights: 'Licht gewählt', comfort: 'Komfort-Änderungen', layouts: 'Varianten/Ausrichtung', range: 'Gesehene Preise', looked: '3D', rot: 'gedreht', views: 'Ansichten', night: 'Abendansicht', printed: 'Angebot gedruckt/PDF', link: 'Link kopiert', photo: 'Foto der Terrasse geladen', yes: 'ja', no: 'nein', interest: 'Interesse', lvl: { high: 'hoch', mid: 'mittel', low: 'niedrig' }, pts: 'Punkte', min: 'Min.', s: 's' },
-    en: { head: 'How I used the configurator (for your advice)', replay: 'Session recording (internal)', visit: (n, d) => n > 1 ? `Visit ${n}, first on ${d}` : 'First visit', src: 'Found via', direct: 'direct', active: 'Active time', open: 'page open', steps: 'Time per step', stepN: ['Size', 'Equipment', 'Colours', 'Offer'], tried: 'Tried', sizes: 'sizes', roofs: { rotating: 'rotating louvres', sliding: 'sliding roof' }, sides: 'side changes', colours: 'colour changes', lights: 'light choices', comfort: 'comfort changes', layouts: 'layouts/direction', range: 'Prices seen', looked: '3D', rot: 'turned', views: 'views', night: 'evening view', printed: 'Offer printed/PDF', link: 'link copied', photo: 'terrace photo loaded', yes: 'yes', no: 'no', interest: 'Interest', lvl: { high: 'high', mid: 'medium', low: 'low' }, pts: 'points', min: 'min', s: 's' },
-    ru: { head: 'Как я пользовался конфигуратором (для консультации)', replay: 'Запись сессии (для офиса)', visit: (n, d) => n > 1 ? `${n}-й визит, первый ${d}` : 'Первый визит', src: 'Откуда пришёл', direct: 'напрямую', active: 'Активное время', open: 'страница открыта', steps: 'Время по шагам', stepN: ['Размер', 'Комплектация', 'Цвета', 'Предложение'], tried: 'Пробовал', sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, sides: 'изменений сторон', colours: 'смен цвета', lights: 'выборов света', comfort: 'изменений комфорта', layouts: 'вариантов/направлений', range: 'Видел цены', looked: '3D', rot: 'вращал', views: 'виды', night: 'вечерний вид', printed: 'КП распечатано/PDF', link: 'ссылка скопирована', photo: 'загрузил фото террасы', yes: 'да', no: 'нет', interest: 'Интерес', lvl: { high: 'высокий', mid: 'средний', low: 'низкий' }, pts: 'баллов', min: 'мин', s: 'с' },
-    hr: { head: 'Kako sam koristio konfigurator (za vaše savjetovanje)', replay: 'Snimka sesije (interno)', visit: (n, d) => n > 1 ? `${n}. posjet, prvi ${d}` : 'Prvi posjet', src: 'Pronađeno putem', direct: 'izravno', active: 'Aktivno vrijeme', open: 'stranica otvorena', steps: 'Vrijeme po koraku', stepN: ['Veličina', 'Oprema', 'Boje', 'Ponuda'], tried: 'Isprobano', sizes: 'veličina', roofs: { rotating: 'zakretne lamele', sliding: 'klizni krov' }, sides: 'promjena strana', colours: 'promjena boja', lights: 'odabira svjetla', comfort: 'promjena udobnosti', layouts: 'rasporeda/smjerova', range: 'Viđene cijene', looked: '3D', rot: 'okretano', views: 'prikaza', night: 'večernji prikaz', printed: 'Ponuda ispisana/PDF', link: 'poveznica kopirana', photo: 'učitana fotografija terase', yes: 'da', no: 'ne', interest: 'Interes', lvl: { high: 'visok', mid: 'srednji', low: 'nizak' }, pts: 'bodova', min: 'min', s: 's' },
-  };
+  /* The log goes to the manager only (stored with the request in the database): always Russian, whatever language the visitor uses.
+   * Retail prices only. Short timeline (consecutive duplicates collapsed) + totals. */
+  const JTR = { sizes: 'размеров', roofs: { rotating: 'поворотные ламели', sliding: 'раздвижная крыша' }, fills: { zip: 'ZIP-штора', glass: 'стекло', verto: 'Decor', panels: 'панели', none: 'открыто' }, stepN: ['Размер', 'Комплектация', 'Цвета', 'Предложение'], lvl: { high: 'высокий', mid: 'средний', low: 'низкий' } };
+  const evLog = []; // { s: seconds from the start, x: text }
+  function logEv(x) { if (evLog.length < 500) evLog.push({ s: Math.round((Date.now() - J.t0) / 1000), x }); }
+  const mmss = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  const durRu = (sec) => sec >= 60 ? `${Math.floor(sec / 60)} мин ${String(sec % 60).padStart(2, '0')} с` : `${sec} с`;
+  function timeline() {
+    const out = [];
+    for (const e of evLog) { const l = out[out.length - 1]; if (l && (l.x === e.x || (l.x.startsWith('размер') && e.x.startsWith('размер')))) { l.x = e.x; l.n += 1; } else out.push({ s: e.s, x: e.x, n: 1 }); }
+    const MAX = 40, cut = out.length > MAX ? out.length - MAX : 0;
+    const keep = cut ? [...out.slice(0, 10), null, ...out.slice(10 + cut)] : out;
+    return keep.map((e) => (e ? `${mmss(e.s)} ${e.x}${e.n > 1 ? ` ×${e.n}` : ''}` : `… (пропущено ${cut})`));
+  }
   function journeyText() {
     trackPrice();
-    const j = JT[lang] || JT.de, v = J.visit || { n: 1, first: Date.now(), src: '' };
-    const dur = (sec) => sec >= 60 ? `${Math.floor(sec / 60)} ${j.min} ${String(sec % 60).padStart(2, '0')} ${j.s}` : `${sec} ${j.s}`;
-    const dt = new Date(v.first).toLocaleDateString(lang === 'en' ? 'en-GB' : 'de-AT');
-    const src = v.src && v.now && v.now !== v.src ? `${v.src} (${v.now})` : v.src || v.now || j.direct;
-    const tried = [`${J.sizes.size} ${j.sizes}`, [...J.roofs].map((r) => j.roofs[r] || r).join(' + ')];
-    for (const [k, n] of [['sides', J.sides], ['colours', J.colours], ['lights', J.lights], ['comfort', J.comfort], ['layouts', J.layouts]]) if (n) tried.push(`${n} ${j[k]}`);
-    const look = [`${j.rot} ${J.rot}×`]; if (J.views.size) look.push(`${j.views} ${J.views.size}`); if (J.night) look.push(j.night);
-    const yn = (n) => (n ? j.yes : j.no), it = interest();
-    return [`— ${j.head} —`,
-      `${j.visit(v.n, dt)} · ${j.src}: ${src}`,
-      `${j.active}: ${dur(J.active)} (${j.open} ${dur(J.open)})`,
-      `${j.steps}: ${J.stepSec.map((sec, i) => (sec ? `${j.stepN[i]} ${dur(sec)}` : '')).filter(Boolean).join(' · ')}`,
-      `${j.tried}: ${tried.filter(Boolean).join(', ')}`,
-      J.maxP ? `${j.range}: ${fe(J.minP)} – ${fe(J.maxP)}` : '',
-      `${j.looked}: ${look.join(', ')}`,
-      `${j.printed}: ${yn(J.printed)} · ${j.link}: ${yn(J.linkCopied)} · ${j.photo}: ${yn(J.photo)}`,
-      `${j.interest}: ${j.lvl[it.lvl]} (${it.p} ${j.pts})`,
-      A.replayUrl() ? `${j.replay}: ${A.replayUrl()}` : ''].filter(Boolean).join('\n');
+    const v = J.visit || { n: 1, first: Date.now(), src: '' }, it = interest();
+    const dt = new Date(v.first).toLocaleDateString('ru-RU');
+    const src = v.src && v.now && v.now !== v.src ? `${v.src} (${v.now})` : v.src || v.now || 'напрямую';
+    const tried = [`${J.sizes.size} ${JTR.sizes}`, [...J.roofs].map((r) => JTR.roofs[r] || r).join(' + ')];
+    for (const [k, n] of [['сторон изменено', J.sides], ['смен цвета', J.colours], ['выборов света', J.lights], ['изменений комфорта', J.comfort], ['вариантов/направлений', J.layouts]]) if (n) tried.push(`${n} ${k}`);
+    const yn = (n) => (n ? 'да' : 'нет');
+    const out = ['— Ход работы клиента в конфигураторе —',
+      `${v.n > 1 ? `${v.n}-й визит, первый ${dt}` : 'Первый визит'} · откуда: ${src} · язык клиента: ${lang}`,
+      `Активное время: ${durRu(J.active)} (страница открыта ${durRu(J.open)})`,
+      `Время по шагам: ${J.stepSec.map((sec, i) => (sec ? `${JTR.stepN[i]} ${durRu(sec)}` : '')).filter(Boolean).join(' · ')}`,
+      `Пробовал: ${tried.filter(Boolean).join(', ')}`,
+      J.maxP ? `Видел цены (розница, брутто): ${fe(J.minP)} – ${fe(J.maxP)}` : '',
+      `3D: вращал ${J.rot}×, видов ${J.views.size}, вечерний вид ${J.night}×`,
+      `PDF: ${yn(J.printed)} · ссылка скопирована: ${yn(J.linkCopied)} · фото террасы: ${yn(J.photo)}`,
+      `Интерес: ${JTR.lvl[it.lvl]} (${it.p} баллов)`,
+      A.replayUrl() ? `Запись сессии: ${A.replayUrl()}` : '',
+      '', 'Хронология (мин:сек от входа):', ...timeline()].filter((x, i) => x !== '' || i > 9);
+    return out.join('\n').slice(0, 18000);
   }
   window.journeyText = journeyText; // for the manager: journeyText() in the console
 
   /* ---------- request e-mail and quote ---------- */
   function sizeText() { const o = curOpt(); return o ? `${metres(o.width)} × ${metres(o.depth)} ${L().m}` : ''; } // as built (louvre spacing may round the size)
-  function mailText() {
-    const t = L(), lines = quoteLines(), total = grandNet();
-    const parts = [t.mailHi, '', `${t.qFacts.size}: ${sizeText()} (${state.mount === 'wall' ? t.wall : t.free})`];
-    for (const l of lines) parts.push(`- ${l.t}${l.d ? ' (' + l.d + ')' : ''}: ${l.a == null ? '—' : fe(gross(l.a))}`);
-    parts.push('', `${t.qGross}: ${fe(gross(total))} (${t.net} ${fe(total)})`, '');
-    parts.push(`${t.name}: ${form.name}`, `${t.email}: ${form.email}`);
-    if (form.phone) parts.push(`${t.phone.replace(/ \(.*\)/, '')}: ${form.phone}`);
-    if (form.place.trim()) parts.push(`${t.place.replace(/ \(.*\)/, '')}: ${form.place}`);
-    parts.push(`${t.when}: ${t.whens[form.when]}`);
-    if (form.mount) parts.push('✓ ' + t.wantMount);
-    if (form.visit) parts.push('✓ ' + t.wantVisit);
-    if (form.msg) parts.push('', form.msg);
-    parts.push('', `${t.qLink}: ${shareUrl()}`, '', journeyText(), '', t.mailBye, form.name);
-    return parts.join('\n');
-  }
-  let lastMailto = '';
-  function openMail() { window.__lastMailto = lastMailto; const a = document.createElement('a'); a.href = lastMailto; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
   /** take the values straight from the fields (browser autofill does not always send input events) */
   function syncForm() {
     const f = F.querySelector('#f-form'); if (!f || f.tagName !== 'FORM') return; // after sending it is the confirmation box
     for (const el of Array.from(f.elements)) if (el.name && el.name in form) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
   }
-  function sendRequest() {
+  async function sendRequest() {
+    if (sending || !window.Backend) return; // one request at a time; without the database there is no request at all
     syncForm();
     const t = L(); formErr = {};
     if (!form.name.trim()) formErr.name = t.required;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
     // postcode / town: optional for now
     if (Object.keys(formErr).length) { render(); const f = F.querySelector('#f-form'); if (f) f.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
-    const subj = t.mailSubj(sizeText(), fe(gross(grandNet())));
-    lastMailto = `mailto:${OFFICE.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(mailText())}`;
-    openMail();
-    // with the database switched on the request is also stored as a lead (the office sees it on its board)
-    if (window.Backend) window.Backend.submitRequest({ name: form.name, phone: form.phone, email: form.email, address: form.place, postcode: (String(form.place || '').match(/\b\d{4}\b/) || [''])[0], note: [form.msg, form.mount ? t.wantMount : '', form.visit ? t.wantVisit : ''].filter(Boolean).join(' · ') }, journeyText());
-    A.track('request_sent', { total_gross: Math.round(gross(grandNet())), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
-    sentOk = true; render();
+    sending = true; reqErr = ''; logEv('отправляет заявку'); render();
+    const contact = { name: form.name, phone: form.phone, email: form.email, address: form.place, postcode: (String(form.place || '').match(/\b\d{4}\b/) || [''])[0], note: [form.msg, form.mount ? t.wantMount : '', form.visit ? t.wantVisit : ''].filter(Boolean).join(' · ') };
+    let r; try { r = await window.Backend.submitRequest(contact, journeyText()); } catch (e) { r = { ok: false, error: 'network' }; }
+    sending = false;
+    if (r && r.ok) {
+      sentOk = true; reqNo = r.number; dbNo = r.number; dbSig = sigNow(); logEv('заявка № ' + r.number);
+      A.track('request_sent', { total_gross: Math.round(gross(grandNet())), size: state.width + 'x' + state.depth, roof: state.roof, mount: state.mount, interest: interest().lvl, has_postcode: !!String(form.place || '').trim() });
+    } else {
+      reqErr = (r && r.error) || 'server_error'; logEv('ошибка отправки: ' + reqErr);
+      A.track('request_failed', { code: reqErr });
+      if (reqErr === 'contact_required' || reqErr === 'invalid_payload') { // mark the field that fails the same check as the form's
+        if (!form.name.trim()) formErr.name = t.required;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) formErr.email = form.email.trim() ? t.badEmail : t.required;
+      }
+    }
+    render();
   }
   const copy = (txt, msg) => { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast(msg), () => { window.prompt('', txt); }); };
   function quoteNo() { const d = new Date(), s = enc(snapshot()); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return (OFFICE.name ? 'DB-' : '') + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + (h % 46656).toString(36).toUpperCase().padStart(3, '0'); }
@@ -911,7 +1000,10 @@
     // on the customer's photo: exactly what they set up (photo + pergola), no camera change
     if (PHOTO.url) { try { return (lastImg = compositeImage()); } catch (e) { return lastImg; } }
     // a sharp picture for A4: render off-screen at 1600 × 900 in the 3D view, then put everything back
+    // a glide in progress would be cut by setView() and leave the camera half-way: finish it first, then keep everything instant
+    const ci = window.__camInstant; window.__camInstant = true; try { endTr(); } catch (e) { /* older 3D page */ }
     const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved, asp = camera.aspect;
+    const lim = [controls.minDistance, controls.maxDistance, controls.maxPolarAngle]; // setView() resets them; without restoring, update() pushes a view like 'under' up to the default limit
     const size = renderer.getSize(new THREE.Vector2()), pr = renderer.getPixelRatio();
     try {
       renderer.setPixelRatio(1); renderer.setSize(1680, 600, false); camera.aspect = 1680 / 600; camera.updateProjectionMatrix(); // the A4 picture's own proportion
@@ -931,7 +1023,7 @@
     } catch (e) { return lastImg; }
     finally {
       renderer.setPixelRatio(pr); renderer.setSize(size.x, size.y, false); camera.aspect = asp; camera.updateProjectionMatrix();
-      camera.position.copy(pos); controls.target.copy(tgt); controls.update(); lastView = lv; userMoved = um;
+      [controls.minDistance, controls.maxDistance, controls.maxPolarAngle] = lim; camera.position.copy(pos); controls.target.copy(tgt); controls.update(); lastView = lv; userMoved = um; window.__camInstant = ci;
     }
   }
   function buildQuote() {
@@ -946,7 +1038,7 @@
       [t.qFacts.sides, ops.length ? ops.map((x) => `${sideLabel(x.id, o)}: ${t.fills[state.fills[x.id]]}`).join('; ') : t.open],
       [t.qFacts.colours, `${t.frame}: ${cname(e.construction)}${state.colors.roof ? '; ' + t.roof + ': ' + cname(e.roof) : ''}`],
     ];
-    const img = snapshotImage(), date = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : lang === 'ru' ? 'ru-RU' : 'de-AT');
+    const img = snapshotImage(), date = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : lang === 'ru' ? 'ru-RU' : lang === 'es' ? 'es-ES' : 'de-AT');
     // one line per item (details in grey on the same line), grouped like on the screen — fits one A4 page
     const rows = groupsOrder.map((g) => {
       const ls = lines.filter((l) => l.g === g); if (!ls.length) return '';
@@ -959,7 +1051,7 @@
     // top left: the customer from the request form (empty lines to fill in by hand when nothing is typed yet)
     const cl = [form.name, form.phone, form.email].map((x) => String(x || '').trim());
     const client = `<div class="client"><div class="lb">${t.qClient}</div>${cl.some(Boolean) ? `${cl[0] ? `<b>${esc(cl[0])}</b>` : ''}${cl[1] ? `<div>${esc(cl[1])}</div>` : ''}${cl[2] ? `<div>${esc(cl[2])}</div>` : ''}` : '<div class="ln"></div><div class="ln"></div><div class="ln"></div>'}</div>`;
-    const no = quoteNum || nextQuoteNo(false);
+    const no = quoteNum || dbNoNow() || nextQuoteNo(false); // after a stored request the offer carries the database number
     return `<div class="q"><div class="hdr">${client}<div class="meta">${logoImg}<h1>${t.qTitle}</h1>${t.qNo} ${no} · ${t.qDate} ${date}${BR.name ? `<div class="brand">${esc(BR.name)}</div>` : ''}${contact ? `<div>${esc(contact)}</div>` : ''}</div></div>
       ${img ? `<img src="${img}" alt="">` : ''}
       <h2>${t.qConfig}</h2><table class="facts"><tbody>${facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
@@ -985,8 +1077,8 @@
   let titleBefore = null;
   function pdfTitle() { if (titleBefore === null) titleBefore = document.title; document.title = 'Quotation ' + quoteNum; }
   function printQuote() {
-    quoteNum = nextQuoteNo(true); // every generated PDF gets its own number
-    pdfTitle(); A.track('pdf_generated', { quote_no: quoteNum, total_gross: Math.round(gross(q().total)) });
+    quoteNum = dbNoNow() || nextQuoteNo(true); // the request number once stored; else every generated PDF gets its own local number
+    pdfTitle(); A.track('pdf_generated', { quote_no: quoteNum, total_gross: Math.round(gross(grandNet())) });
     $('quote').innerHTML = buildQuote(); fitQuote();
     document.body.classList.add('printing');
     setTimeout(() => window.print(), 60);
@@ -996,7 +1088,7 @@
   window.addEventListener('beforeprint', () => {
     if (!isCust() || !curOpt()) return;
     // printed from the browser menu: this PDF needs its own number too (the button has already taken one)
-    if (!quoteNum) { quoteNum = nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
+    if (!quoteNum) { quoteNum = dbNoNow() || nextQuoteNo(true); $('quote').innerHTML = buildQuote(); fitQuote(); }
     pdfTitle();
     document.body.classList.add('printing');
   });
@@ -1029,7 +1121,7 @@
   function nextStep() { for (let i = step + 1; i < 3; i++) if (!stepDone(i)) return i; return 3; }
   function go(d) {
     if (d > 0) { visited.add(step); step = nextStep(); } else step = Math.max(0, step - 1);
-    A.track('step_opened', { step: step + 1, via: d > 0 ? 'next' : 'back' });
+    A.track('step_opened', { step: step + 1, via: d > 0 ? 'next' : 'back' }); logEv(`шаг «${JTR.stepN[step]}»`);
     focusId = null; lastTap = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   let dimT = 0;
@@ -1065,15 +1157,16 @@
     if (d.go) {
       if (d.go === 'form') { // "Send request" in the bar: send when the form is filled, otherwise go to the first missing field
         syncForm();
-        const okMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+        const okMail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim());
         const missing = !form.name.trim() ? 'name' : !okMail ? 'email' : null;
-        if (!missing && !sentOk) { sendRequest(); return; }
+        if (!missing && !sentCur()) { sendRequest(); return; }
         const f = F.querySelector('#f-form'); if (f) { const i = f.querySelector(`[name="${missing || 'name'}"]`) || f; i.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (missing && i !== f) setTimeout(() => i.focus(), 400); }
         return;
       } go(Number(d.go)); return; }
     if (d.resume) { const s = resumeOffer; resumeOffer = null; if (d.resume === 'yes' && s) restore(s); else { dirty = true; render(); persist(); } return; }
     if (d.mount) { setMount(d.mount); return; }
     if (d.par) { const pp = state.parapet; if (d.par === 'none') pp.sides = []; else { const st = new Set(pp.sides); if (st.has(d.par)) st.delete(d.par); else st.add(d.par); pp.sides = [...st]; } rebuild(); applyAnim(); return; }
+    if (actShift(d)) return;
     if (d.parh) { state.parapet.h = Math.max(100, Math.min(1500, state.parapet.h + Number(d.parh))); rebuild(); applyAnim(); return; }
     // house-wall opening (door / sliding exit): visual context only
     if (d.openon) { state.opening.on = d.openon === '1'; rebuild(); applyAnim(); return; }
@@ -1146,8 +1239,7 @@
     if (d.act === 'share') { copy(shareUrl(), L().copied); return; }
     if (d.act === 'save') { saveFile(); return; }
     if (d.act === 'open') { $('f-file').click(); return; }
-    if (d.act === 'reopen') { if (lastMailto) openMail(); return; }
-    if (d.act === 'copytext') { copy(mailText(), L().textCopied); return; }
+    if (d.act === 'retry') { sendRequest(); return; }
   }
   F.addEventListener('input', (ev) => {
     const el = ev.target;
@@ -1164,6 +1256,7 @@
     if (el.dataset.sel) { if (el.value !== '') { dirty = true; lastTap = selOf(el); act({ [el.dataset.sel]: el.value }); } return; } // "More …" dropdown
     if (el.form && el.form.id === 'f-form' && el.name) form[el.name] = el.type === 'checkbox' ? el.checked : el.name === 'when' ? Number(el.value) : el.value;
     if (el.dataset.dim) { clearTimeout(dimT); applyDim(el); }
+    if (el.dataset.psin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0 && state.po.postShift) { window.setPostShift(state.po.postShift.corners, v); onShiftSet(); rebuild(); applyAnim(); el.value = (state.po.postShift.mm / 1000).toFixed(3).replace(/0$/, ''); } }
     if (el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } }
     if (el.id === 'f-file' && el.files && el.files[0]) { const r = new FileReader(); r.onload = () => { try { restore(JSON.parse(r.result)); } catch (e) { toast('JSON?'); } }; r.readAsText(el.files[0]); }
   });
@@ -1278,7 +1371,7 @@
   CTA.addEventListener('click', () => { step = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
   // 3D toolbar popups built from the funnel: louvre direction + per-side glass opening, and the comfort equipment
-  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.' };
+  const KIT_EMPTY = { ru: 'Сначала закройте сторону стеклом — тогда появится выбор открывания.', en: 'Close a side with glass first — then the opening choice appears.', de: 'Zuerst eine Seite mit Glas schließen – dann erscheint die Öffnungswahl.', hr: 'Prvo zatvorite stranu staklom – tada se pojavljuje izbor otvaranja.', es: 'Primero cierre un lado con cristal: entonces aparecerá la elección de apertura.' };
   function renderLouvPop() {
     const pop = $('tb-louv'); if (!pop) return;
     const t = L(), o = curOpt(); if (!o) { pop.innerHTML = ''; return; }
@@ -1310,6 +1403,7 @@
     h += `<div class="f-h3"><span>${t.parT}</span><span style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t.parD)}</span></div>`;
     h += `<div class="f-chips"><button type="button" class="f-chip" data-par="none" aria-pressed="${!pp.sides.length}">${esc(t.parNone)}</button>${faces.map((f) => `<button type="button" class="f-chip" data-par="${f}" aria-pressed="${pp.sides.includes(f)}">${esc(t.sides[f])}</button>`).join('')}</div>`;
     if (pp.sides.length) h += `<div class="f-dims" style="margin-top:8px"><div class="f-dim"><label for="tb-ph">${esc(t.parH)}, ${t.m}</label><div class="f-step"><button type="button" data-parh="-50" aria-label="−">−</button><input id="tb-ph" type="number" inputmode="decimal" step="0.05" min="0.1" max="1.5" value="${(pp.h / 1000).toFixed(2)}" data-parin="1"><button type="button" data-parh="50" aria-label="+">+</button></div></div></div>`;
+    h += shiftHtml(t, curOpt(), 'tb');
     // house-wall opening (door / sliding exit) — wall-mount only; visual context, not in the price
     if (wall) {
       const op = state.opening, ot = OPEN_T[lang] || OPEN_T.en;
@@ -1349,6 +1443,7 @@
       const el = ev.target;
       if (el.dataset && el.dataset.dim) { applyDim(el); return; } // size field: update model/3D, keep the field focused (no re-render)
       if (el.dataset && el.dataset.parin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0) { state.parapet.h = Math.max(100, Math.min(1500, Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
+      if (el.dataset && el.dataset.psin) { const v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000); if (v > 0 && state.po.postShift) { window.setPostShift(state.po.postShift.corners, v); onShiftSet(); rebuild(); applyAnim(); POP_RENDER[id](); } return; }
       if (el.dataset && el.dataset.odim) { const k = el.dataset.odim, v = Math.round(parseFloat(String(el.value).replace(',', '.')) * 1000), lim = k === 'w' ? [600, 6000] : [600, 3200]; if (v > 0) { state.opening[k] = Math.max(lim[0], Math.min(lim[1], Math.round(v / 10) * 10)); rebuild(); applyAnim(); } return; }
       const s = el.closest && el.closest('select'); if (!s || !s.dataset.sel || s.value === '') return;
       act({ [s.dataset.sel]: s.value }); if (!pop.hidden) POP_RENDER[id]();
@@ -1413,6 +1508,6 @@
     if (saved && JSON.stringify(saved) !== JSON.stringify(snapshot())) resumeOffer = saved;
   }
   // what the partner login (backend.js) needs from the configurator
-  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 3) render(); } catch (e) { /* not ready */ } } };
+  window.DBApp = { snapshot, restore, setMode, isCust, toast, VAT, catalog: 'catalog-2026-07', totalNet: () => q().total, lines: () => q().lines, requestTotal: () => grandNet(), requestLines, utm: () => (J.visit ? { source: J.visit.now || J.visit.src || '' } : {}), rerenderQuote: () => { try { if (step === 3) render(); } catch (e) { /* not ready */ } } };
   setMode(mode);
 })();

@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths: ['supabase/functions/**', '.github/workflows/functions.yml']
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,14 +24,17 @@ jobs:
             echo "::notice::SUPABASE_ACCESS_TOKEN secret not set yet: nothing to deploy. Add it in Settings → Secrets → Actions, then re-run this workflow."
             exit 0
           fi
-          # The public request endpoint is called by anonymous visitors (no JWT); Turnstile is the gate.
-          supabase functions deploy submit-request --project-ref "$PROJECT_REF" --no-verify-jwt
           # create-invite requires a signed-in superadmin (JWT verified by the platform, superadmin re-checked in code)
           supabase functions deploy create-invite --project-ref "$PROJECT_REF"
           # accept-invite is public: there is no login yet, the invite token is the gate
           supabase functions deploy accept-invite --project-ref "$PROJECT_REF" --no-verify-jwt
-          # Turnstile secret for server-side verification. Falls back to Cloudflare's "always passes" TEST
-          # secret until the real one is set, so the flow is testable; set the real TURNSTILE_SECRET to enforce.
-          supabase secrets set --project-ref "$PROJECT_REF" \
-            TURNSTILE_SECRET="${TURNSTILE_SECRET:-1x0000000000000000000000000000000AA}"
-          echo "::notice::Deployed submit-request. Turnstile secret: ${TURNSTILE_SECRET:+real secret set}${TURNSTILE_SECRET:-TEST secret (always passes) — set TURNSTILE_SECRET to enforce}"
+          # The public request endpoint is called by anonymous visitors (no JWT); Turnstile is the gate.
+          # It is deployed ONLY with the real secret: a missing secret used to be replaced by Cloudflare's test secret,
+          # which lets every bot through. Without the secret the existing deployment stays as it is.
+          if [ -n "$TURNSTILE_SECRET" ]; then
+            supabase functions deploy submit-request --project-ref "$PROJECT_REF" --no-verify-jwt
+            supabase secrets set --project-ref "$PROJECT_REF" TURNSTILE_SECRET="$TURNSTILE_SECRET"
+            echo "::notice::Deployed submit-request with the real Turnstile secret."
+          else
+            echo "::warning::TURNSTILE_SECRET is not set: submit-request was NOT deployed (a test secret would let every bot through). Add the secret in Settings → Secrets → Actions and re-run."
+          fi

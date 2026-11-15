@@ -28,7 +28,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--f-body); fon
 h1 { font-family: var(--f-display); font-size: 19px; margin: 0 0 2px; letter-spacing: -0.01em; }
 h2 { font-family: var(--f-display); font-size: 14px; margin: 18px 0 10px; }
 .sub { color: var(--muted); font-size: 12.5px; margin: 0; }
-label.l { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
+label.l { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
 .dims { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; align-items: end; }
 .dims label.l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 input[type=number] { width: 100%; font-family: var(--f-mono); font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; }
@@ -47,28 +47,28 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 .opt .meta { color: var(--muted); font-size: 12.5px; }
 .opt .delta { color: var(--muted); font-family: var(--f-mono); font-size: 12px; }
 .tags { display: flex; gap: 4px; flex-wrap: wrap; }
-.tag { font-size: 11px; border-radius: 3px; padding: 1px 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.tag { font-size: 12px; border-radius: 3px; padding: 1px 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
 .spl { display: grid; gap: 6px; margin: 8px 0 4px; font-size: 13px; }
 .spl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .spl-l { color: var(--muted); font-size: 12px; min-width: 76px; }
 .spl-p { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
 .spl-b { display: inline-flex; align-items: center; gap: 2px; }
-.spl-b i { font-style: normal; font-size: 11px; color: var(--muted); margin-right: 2px; }
+.spl-b i { font-style: normal; font-size: 12px; color: var(--muted); margin-right: 2px; }
 .spl button { border: 1px solid var(--line); background: var(--bg, #fff); color: inherit; border-radius: 6px; padding: 4px 9px; font: inherit; font-size: 12.5px; cursor: pointer; }
 .spl button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .spl button:disabled { opacity: .35; cursor: default; }
 .spl .spl-auto { justify-self: start; }
-.spl-n { font-size: 11.5px; color: var(--muted); }
+.spl-n { font-size: 12px; color: var(--muted); }
 .tag.cheapest { color: var(--good); border-color: var(--good); }
 .note { font-size: 12.5px; border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 7px 10px; border-radius: 4px; margin-top: 8px; }
-.stage { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); height: calc(100vh - 32px); min-height: 520px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); align-self: start; display: flex; flex-direction: column; }
+.stage { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); height: calc(100vh - 32px); min-height: 520px; border-radius: 6px; overflow: hidden; overflow: clip; border: 1px solid var(--line); background: var(--panel); align-self: start; display: flex; flex-direction: column; }
 .vp { position: relative; flex: 1; min-height: 0; background: #cfd8de; }
 #view { position: absolute; inset: 0; }
 #view canvas { display: block; width: 100%; height: 100%; }
 .labels { position: absolute; inset: 0; pointer-events: none; }
-.dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 11.5px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
+.dim { position: absolute; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 12px; background: rgba(255,255,255,0.9); color: #1c2226; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 .dim.total { font-weight: 600; font-size: 12.5px; background: #1c2226; color: #fff; }
-.dim.stack { background: #a87714; color: #fff; font-size: 10.5px; padding: 1px 4px; }
+.dim.stack { background: #a87714; color: #fff; font-size: 12px; padding: 1px 4px; }
 /* the customer's own photo behind the 3D (canvas is transparent then) */
 .vp.photo { background: #222 center / cover no-repeat; }
 #photo-bar { position: absolute; left: 12px; right: 12px; top: 12px; z-index: 4; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: rgba(255,255,255,.94); color: #1c2226; border-radius: 10px; padding: 8px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.2); font-size: 12.5px; }
@@ -85,9 +85,9 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 #photo-marks.done polygon { fill: none; stroke-opacity: .55; }
 #photo-marks.hide { display: none; }
 body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside only while a point is being dragged */
-@media (max-width: 760px) { #photo-bar { left: 6px; right: 6px; top: 6px; padding: 5px 6px; font-size: 11px; gap: 4px 6px; flex-wrap: nowrap; } #photo-bar .txt { display: none; } #photo-bar .txt-s { display: block; flex: 1 1 auto; min-width: 0; line-height: 1.25; } #photo-bar button { font-size: 11.5px; padding: 5px 7px; white-space: nowrap; } #photo-new { display: none; } }
+@media (max-width: 760px) { #photo-bar { left: 6px; right: 6px; top: 6px; padding: 5px 6px; font-size: 12px; gap: 4px 6px; flex-wrap: nowrap; } #photo-bar .txt { display: none; } #photo-bar .txt-s { display: block; flex: 1 1 auto; min-width: 0; line-height: 1.25; } #photo-bar button { font-size: 12px; padding: 5px 7px; white-space: nowrap; } #photo-new { display: none; } }
 .toolbar { position: relative; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: #fff; color: #1c2226; border-top: 1px solid var(--line); padding: 8px 12px; font-size: 12.5px; }
-.toolbar .tb-row { display: flex; gap: 6px; flex: 1 1 100%; }
+.toolbar .tb-row { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 100%; }
 .toolbar .ib { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; }
 .toolbar .ib svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .toolbar .ib[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
@@ -104,7 +104,7 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar #tb-lights button[aria-pressed="true"] { background: #a87714; border-color: #a87714; color: #fff; }
 .toolbar #tb-colors { display: grid; gap: 6px; }
 .toolbar #tb-colors[hidden] { display: none; }
-.toolbar #tb-colors .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
+.toolbar #tb-colors .t { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
 .toolbar #tb-colors .row { display: flex; flex-wrap: wrap; gap: 6px; }
 .toolbar :is(#tb-colors, #tb-vertos) .row button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px 5px 5px; border-radius: 6px; }
 .toolbar :is(#tb-colors, #tb-vertos) .row button .sw { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #9aa4ab; flex: none; }
@@ -112,7 +112,7 @@ body.photo-dragging #hotspots { display: none; } /* side "+" buttons step aside 
 .toolbar #tb-lights { display: grid; gap: 6px; }
 .toolbar .ib .cap { white-space: nowrap; }
 /* fold the columns and the panels under the 3D (desktop): triangles on the edges of the 3D view */
-.fold { position: absolute; z-index: 4; display: none; place-items: center; border: 1px solid rgba(0,0,0,.12); background: rgba(255,255,255,.82); color: #1c2226; cursor: pointer; padding: 0; font-size: 11px; line-height: 1; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.fold { position: absolute; z-index: 4; display: none; place-items: center; border: 1px solid rgba(0,0,0,.12); background: rgba(255,255,255,.82); color: #1c2226; cursor: pointer; padding: 0; font-size: 12px; line-height: 1; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
 .fold:hover, .fold:focus-visible { background: #fff; }
 #fold-left { left: 0; top: 50%; width: 20px; height: 48px; margin-top: -24px; border-left: 0; border-radius: 0 8px 8px 0; }
 #fold-right { right: 0; top: 50%; width: 20px; height: 48px; margin-top: -24px; border-right: 0; border-radius: 8px 0 0 8px; }
@@ -140,7 +140,7 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 @keyframes pop-up { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
 .toolbar #tb-vertos { display: grid; gap: 6px; }
 .toolbar #tb-vertos[hidden] { display: none; }
-.toolbar #tb-vertos .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
+.toolbar #tb-vertos .t { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
 .toolbar #tb-vertos .row { display: flex; flex-wrap: wrap; gap: 6px; }
 /* the types in one row, left to right, scrolling sideways: the panel stays low and the 3D stays visible */
 .toolbar #tb-vertos { grid-template-columns: minmax(0, 1fr); justify-content: stretch; }
@@ -153,7 +153,7 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 .toolbar #tb-vertos .row.vn span { font-size: 13px; white-space: nowrap; }
 .toolbar #tb-vertos .hint2 { font-size: 12px; color: #5b666e; }
 .toolbar #tb-lights[hidden] { display: none; }
-.toolbar #tb-lights .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
+.toolbar #tb-lights .t { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #5b666e; font-weight: 600; }
 .toolbar #tb-lights .row { display: flex; flex-wrap: wrap; gap: 6px; }
 .toolbar #tb-colors .hint2 { font-size: 12px; color: #5b666e; }
 .toolbar :is(#tb-colors, #tb-vertos) .t .cur { text-transform: none; letter-spacing: 0; font-weight: 400; color: #1c2226; }
@@ -161,7 +161,7 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 .toolbar :is(#tb-colors, #tb-vertos) .row button.more svg { width: 14px; height: 14px; transition: transform .15s; }
 .toolbar :is(#tb-colors, #tb-vertos) .row button.more[aria-expanded="true"] svg { transform: rotate(180deg); }
 .toolbar :is(#tb-colors, #tb-vertos) .more-list { display: grid; gap: 4px; padding: 6px 8px 8px; border: 1px solid #d5dbe0; border-radius: 10px; background: #fff; }
-.toolbar :is(#tb-colors, #tb-vertos) .more-list .g { font-size: 11px; color: #5b666e; }
+.toolbar :is(#tb-colors, #tb-vertos) .more-list .g { font-size: 12px; color: #5b666e; }
 .toolbar :is(#tb-colors, #tb-vertos) .dots { display: flex; flex-wrap: wrap; gap: 6px; }
 .toolbar :is(#tb-colors, #tb-vertos) .dots button { width: 30px; height: 30px; min-width: 0; padding: 0; border-radius: 50%; border: 1px solid #9aa4ab; }
 .toolbar :is(#tb-colors, #tb-vertos) .dots button[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #a87714; }
@@ -186,13 +186,13 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 .toolbar .ib[aria-pressed="true"] { background: #f7efdd; color: #a87714; border-color: #a87714; box-shadow: inset 0 0 0 1px #a87714; }
 .toolbar .ib[aria-pressed="true"] svg { stroke: #a87714; }
 .hint { position: absolute; left: 12px; top: 12px; background: rgba(255,255,255,0.92); color: #1c2226; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; max-width: min(70%, 420px); }
-@media (max-width: 760px) { .hint { font-size: 11.5px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: auto; min-height: 0; } .vp { flex: none; height: 400px; }  }
+@media (max-width: 760px) { .hint { font-size: 12px; max-width: calc(100% - 24px); } .stage { position: relative; top: 0; height: auto; min-height: 0; } .vp { flex: none; height: 400px; }  }
 .menu { position: absolute; background: #fff; color: #1c2226; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); padding: 8px; display: grid; gap: 4px; min-width: 170px; z-index: 5; }
-.menu .t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #5b666e; padding: 2px 6px 4px; }
+.menu .t { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #5b666e; padding: 2px 6px 4px; }
 .menu button { text-align: left; font: inherit; font-size: 13.5px; border: 0; background: transparent; color: #1c2226; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
 .menu button:hover, .menu button:focus-visible { background: #f7efdd; }
 .menu button[aria-current="true"] { font-weight: 600; background: #f7efdd; }
-.menu .same { font-size: 10.5px; font-weight: 600; color: #2f7d4f; background: #e6f3ea; border-radius: 3px; padding: 0 5px; margin-left: 4px; white-space: nowrap; }
+.menu .same { font-size: 12px; font-weight: 600; color: #2f7d4f; background: #e6f3ea; border-radius: 3px; padding: 0 5px; margin-left: 4px; white-space: nowrap; }
 .align { font: inherit; font-size: 12px; margin-left: 6px; padding: 2px 8px; border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 4px; cursor: pointer; }
 .menu .sep { border-top: 1px solid #e2e6e9; margin: 4px 0 2px; }
 .menu.card { min-width: 300px; max-width: 340px; max-height: 70vh; display: flex; flex-direction: column; padding: 0; }
@@ -212,17 +212,17 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 .menu .rrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 4px; padding: 4px 0 10px; justify-items: center; }
 .menu .rc { display: grid; justify-items: center; align-content: start; gap: 4px; border: 0; background: transparent; cursor: pointer; font: inherit; color: #1c2226; width: 76px; padding: 2px; }
 .menu .rc .dot { width: 48px; height: 48px; border-radius: 50%; border: 1px solid #c9d1d6; display: grid; place-items: center; font-size: 17px; background: #f4f6f7; box-sizing: border-box; }
-.menu .rc .cap { text-align: center; line-height: 1.15; font-size: 11px; height: 26px; width: 76px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.menu .rc .cap { font-size: 11px; color: #5b666e; }
+.menu .rc .cap { text-align: center; line-height: 1.15; font-size: 12px; height: 26px; width: 76px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.menu .rc .cap { font-size: 12px; color: #5b666e; }
 .menu .rc:disabled { opacity: .38; cursor: not-allowed; }
 .menu .rc[aria-current="true"] .dot { border: 2px solid #a87714; box-shadow: 0 0 0 2px #f7efdd; }
 .menu .rc[aria-current="true"] .cap { color: #1c2226; font-weight: 600; }
 .menu .list { display: grid; gap: 6px; padding: 2px 0 8px; }
 .menu .li { display: grid; gap: 2px; text-align: left; font: inherit; font-size: 13.5px; color: #1c2226; background: #fff; border: 1px solid #c9d1d6; border-radius: 10px; padding: 9px 12px; cursor: pointer; }
-.menu .li .li-hint { font-size: 11.5px; color: #5b666e; }
+.menu .li .li-hint { font-size: 12px; color: #5b666e; }
 .menu .li[aria-current="true"] { background: #f7efdd; border-color: #a87714; font-weight: 600; }
 .menu .li:hover, .menu .li:focus-visible { background: #f7efdd; }
-.menu .ctl .d { display: block; font-size: 11.5px; color: #5b666e; font-weight: 400; }
+.menu .ctl .d { display: block; font-size: 12px; color: #5b666e; font-weight: 400; }
 .zl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; font-size: 12px; color: var(--muted); margin-top: 4px; }
 .glz { display: grid; gap: 4px; }
 .glz .gl { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; font: inherit; font-size: 13px; text-align: left; background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; cursor: pointer; color: var(--ink); }
@@ -239,14 +239,14 @@ body.fold-bottom #fold-bottom { bottom: 56px; }
 table.lines { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.lines td { padding: 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 table.lines td.a { text-align: right; font-family: var(--f-mono); white-space: nowrap; padding-left: 10px; font-variant-numeric: tabular-nums; }
-table.lines .s { display: block; font-size: 11.5px; color: var(--muted); }
+table.lines .s { display: block; font-size: 12px; color: var(--muted); }
 table.lines tr.nb td { border-bottom: 0; padding-bottom: 0; }
 table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; font-size: 15px; }
 /* manager's own lines under the catalogue total: Montage + free text positions (net €) */
 #extras { margin-top: 6px; }
 #extras table { table-layout: fixed; }
 #extras td.a { width: 92px; }
-#extras .exh td { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding-top: 12px; }
+#extras .exh td { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding-top: 12px; }
 #extras .exr td { padding: 4px 0; vertical-align: middle; }
 #extras .exr .tx { display: flex; gap: 6px; align-items: center; }
 #extras input { font: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg, #fff); color: inherit; min-width: 0; }
@@ -279,7 +279,7 @@ table.lines tr.t td { font-weight: 600; border-bottom: 0; padding-top: 10px; fon
 .chip30 { width: 30px; height: 30px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.18); }
 .body { padding: 2px 10px 10px; }
 .link { display: flex; gap: 6px; align-items: center; font-size: 12.5px; margin: 2px 0 8px; cursor: pointer; }
-.pg { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; margin: 10px 0 5px; display: flex; justify-content: space-between; }
+.pg { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; margin: 10px 0 5px; display: flex; justify-content: space-between; }
 .pal { display: flex; flex-wrap: wrap; gap: 4px; }
 .sw { width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.2); cursor: pointer; padding: 0; }
 .sw[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -432,7 +432,7 @@ const FABRIC_TONES = [['#3a3d40', 'антрацит'], ['#55585b', 'графит
 const colorOf = (id) => { const c = PALETTE.find((x) => x.id === id); if (c) return c; const [g, code] = id.split(':'); const cg = CUSTOM.find((x) => x[0] === g); return { id, group: g, name: cg[1], nameRu: (code ? code + ' · ' : '') + cg[1].toLowerCase(), hex: '#8c9196', finish: g === 'ralMetallic' ? 'metallic' : 'structured', custom: true }; };
 const colorsEff = () => { const c = state.colors; return { construction: c.construction, roof: c.roof || c.construction, slide: c.slide || c.construction, zip: c.zip || c.construction, verto: c.verto || c.construction }; };
 
-const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0 }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, opening: { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' }, openOpen: 0, split: null, extra: { mont: 0, items: [] } };
+const state = { po: { postHeight: 2800, ledLouvres: null, ledGutter: null, thermal: false, sensors: null, smart: null, heaters: null, audio: 0, sockets: { power: 0, usb: 0 }, spots: null, lamps: null, crownSpots: 0, verticalLamps: 0, intermediatePosts: 0, postShift: null }, panelOpt: {}, brand: 'wincontrol', custom: { name: '', motor: 0, controls: 0 }, zipCtl: {}, remote: '', wind: true, colors: { construction: '04', roof: null, slide: null, zip: null, verto: null, fabric: 'soltis-7635', tone: '#3a3d40' }, colorOpen: null, louvres: 'perpendicular', roof: 'rotating', slideOpen: 0, mount: 'wall', width: 6600, depth: 3500, optIndex: 0, options: [], angle: 90, drop: 70, evening: false, color: 'anth', fills: {}, glass: { type: 'float' }, glassOf: {}, glassCfg: {}, zipFab: {}, glassOpen: 0, glassSide: 'right', verto: { mount: 'B', packs: {}, preset: null }, parapet: { sides: [], h: 900 }, opening: { on: false, kind: 'slide', w: 2200, h: 2100, cx: null, doorDir: 'in', doorLeaves: 1, slidePanels: 3, slideActive: 'left' }, openOpen: 0, split: null, extra: { mont: 0, items: [] } };
 // Example fillings so the first view shows what the tool does (marked as example in the hint).
 const EXAMPLE_FILLS = { 'front-0': 'glass', 'left-0': 'zip' };
 
@@ -481,8 +481,72 @@ const hemi = new THREE.HemisphereLight(0xdfe9f0, 0x8a8a80, 0.85); scene.add(hemi
 const sun = new THREE.DirectionalLight(0xffffff, 0.95);
 sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
 scene.add(sun); scene.add(sun.target);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0xb9bdb5, roughness: 1 }));
+// lawn: one plain material, a slow colour variation in the vertex colours (no pictures)
+const lawnGeo = new THREE.PlaneGeometry(200, 200, 50, 50);
+{ const pos = lawnGeo.attributes.position, col = new Float32Array(pos.count * 3), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), n = 0.5 + 0.25 * Math.sin(x * 0.9 + y * 0.35) + 0.25 * Math.sin(y * 1.3 - x * 0.45 + 2); // 0..1
+    c.setRGB(0.12 + 0.04 * n, 0.28 + 0.07 * n, 0.09 + 0.03 * n); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  }
+  lawnGeo.setAttribute('color', new THREE.BufferAttribute(col, 3)); }
+const ground = new THREE.Mesh(lawnGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1 }));
 ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+/* Low fence round the plot (4 sides, one InstancedMesh each: pickets + 2 rails). The side the camera stands behind fades out,
+ * so it never hides the pergola. Hidden completely on the customer's photo. Not part of bounds() / the "fits the frame" test.
+ * ASSUMPTION: plot = pergola + 3.5 m each side, 3 m behind, 4 m in front; fence 0.95 m, light wood; tile joints every 0.6 m. */
+const envGroup = new THREE.Group(); scene.add(envGroup);
+const fenceBox = new THREE.BoxGeometry(1, 1, 1), fenceSides = [];
+const FENCE_DAY = new THREE.Color(0xeee9de), FENCE_NIGHT = new THREE.Color(0x3a3d43);
+function buildEnv(W, D) {
+  for (const f of fenceSides) { envGroup.remove(f.mesh); f.mesh.dispose(); f.mesh.material.dispose(); }
+  fenceSides.length = 0;
+  const x0 = -3.5, x1 = W + 3.5, z0 = -3, z1 = D + 4, h = 0.95, pitch = 0.14, m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(), pp = new THREE.Vector3();
+  // side: along = 'x' or 'z'; fixed = coordinate on the other axis; face = outward normal axis/sign for the fade test
+  for (const sd of [{ n: 'back', al: 'x', a: x0, b: x1, f: z0, ax: 'z', sg: -1 }, { n: 'front', al: 'x', a: x0, b: x1, f: z1, ax: 'z', sg: 1 }, { n: 'left', al: 'z', a: z0, b: z1, f: x0, ax: 'x', sg: -1 }, { n: 'right', al: 'z', a: z0, b: z1, f: x1, ax: 'x', sg: 1 }]) {
+    const L = sd.b - sd.a, n = Math.floor(L / pitch), mat = new THREE.MeshStandardMaterial({ color: FENCE_DAY, roughness: 0.8, transparent: true, depthWrite: false });
+    const mesh = new THREE.InstancedMesh(fenceBox, mat, n + 2);
+    const put = (i, along, y, sA, sY, sF, off) => { // along = position along the fence, off = shift across it
+      pp.set(sd.al === 'x' ? along : sd.f + off, y, sd.al === 'x' ? sd.f + off : along);
+      one.set(sd.al === 'x' ? sA : sF, sY, sd.al === 'x' ? sF : sA); m4.compose(pp, q, one); mesh.setMatrixAt(i, m4);
+    };
+    for (let i = 0; i < n; i++) put(i, sd.a + pitch / 2 + i * pitch, h / 2, 0.08, h, 0.02, 0);
+    put(n, (sd.a + sd.b) / 2, 0.3, L, 0.05, 0.03, 0.025 * -sd.sg); put(n + 1, (sd.a + sd.b) / 2, 0.7, L, 0.05, 0.03, 0.025 * -sd.sg);
+    mesh.instanceMatrix.needsUpdate = true; mesh.frustumCulled = false; mesh.renderOrder = 1;
+    mat.opacity = 1; envGroup.add(mesh); fenceSides.push({ mesh, ax: sd.ax, sg: sd.sg, at: sd.f });
+  }
+}
+function fadeFence(dt) { // a side fades out while the camera stands outside of it (between the viewer and the pergola)
+  for (const f of fenceSides) {
+    const d = f.sg * (camera.position[f.ax] - f.at), out = d > -1; // camera beyond (or near) this side
+    const goal = out ? 0 : 1, o = f.mesh.material.opacity;
+    if (goal < o && d > 0) f.mesh.material.opacity = 0; // side already between camera and pergola: hide at once, never overlap
+    else f.mesh.material.opacity = o + Math.max(-dt / 50, Math.min(dt / 300, goal - o)); // fade out fast, back in smoothly
+    f.mesh.visible = !PHOTO.url && f.mesh.material.opacity > 0.02;
+  }
+}
+/** day / evening look of the surroundings; envK 0 = day, 1 = evening, eased in the loop so the night does not switch on abruptly */
+let envK = 0, envGoalInit = false, envT = 0;
+const BG_DAY = new THREE.Color(0xc5d1d9), BG_NIGHT = new THREE.Color(0x1b2530), GR_NIGHT = new THREE.Color(0x56606a), bgTmp = new THREE.Color(), bgPhoto = new THREE.Color(), TILE_NIGHT = new THREE.Color(0x14181c);
+const envFog = new THREE.Fog(0x1b2530, 200, 400);
+function applyEnv() {
+  const k = envK;
+  bgTmp.copy(BG_DAY).lerp(BG_NIGHT, k);
+  scene.background = PHOTO.url ? null : bgPhoto.copy(bgTmp);
+  hemi.intensity = 0.85 + (0.25 - 0.85) * k; sun.intensity = 0.95 + (0.12 - 0.95) * k;
+  groundMat.color.setRGB(1, 1, 1).lerp(GR_NIGHT, k);
+  for (const f of fenceSides) f.mesh.material.color.copy(FENCE_DAY).lerp(FENCE_NIGHT, k);
+  if (M.tileLine) M.tileLine.color.setRGB(0.46, 0.42, 0.36).lerp(TILE_NIGHT, k);
+  // light haze only in the evening, eased in (near/far come in from far away)
+  // fog distances are relative to the viewing distance: the pergola itself stays clear
+  if (k > 0.01 && !PHOTO.url) { envFog.color.copy(bgTmp); const dd = Math.max(8, camera.position.distanceTo(controls.target)); envFog.near = dd * (20 + (1.6 - 20) * k); envFog.far = dd * (40 + (6 - 40) * k); scene.fog = envFog; } else scene.fog = null;
+}
+function stepEnv(now) {
+  const dt = Math.min(100, envT ? now - envT : 16); envT = now;
+  const goal = state.evening ? 1 : 0;
+  if (envK !== goal) { envK += Math.max(-dt / 500, Math.min(dt / 500, goal - envK)); if (Math.abs(goal - envK) < 0.002) envK = goal; if (window.__camInstant) envK = goal; applyEnv(); }
+  else if (envK > 0 && !PHOTO.url) applyEnv(); // the viewing distance changes the haze
+  fadeFence(dt);
+}
 let root = new THREE.Group(); scene.add(root);
 let pickables = [];
 let animated = { louvers: [], screens: [], leds: [], glass: [], opening: [] };
@@ -496,6 +560,7 @@ const M = {
   wall: new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.95 }),
   parapet: new THREE.MeshStandardMaterial({ color: 0xcdc6ba, roughness: 0.95 }),
   deck: new THREE.MeshStandardMaterial({ color: 0x9c8f7d, roughness: 0.9 }),
+  tileLine: new THREE.LineBasicMaterial({ color: 0x756b5c }),
   fabric: new THREE.MeshStandardMaterial({ color: 0x2b2f31, roughness: 0.95, transparent: true, opacity: 0.78, side: THREE.DoubleSide }),
   glass: new THREE.MeshPhysicalMaterial({ color: 0xcfe3ea, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.22, side: THREE.DoubleSide }),
   rail: new THREE.MeshStandardMaterial({ color: 0x2a2e31, roughness: 0.5, metalness: 0.4 }),
@@ -629,6 +694,7 @@ function build() {
   scene.remove(root); root = new THREE.Group(); scene.add(root);
   pickables = []; animated = { louvers: [], screens: [], leds: [], glass: [], opening: [] };
   const opt = state.options[state.optIndex];
+  fixPostShift();
   fitOptions(opt);
   H = state.po.postHeight / 1000;
   syncRoofControls(opt); syncGlassControls();
@@ -640,6 +706,14 @@ function build() {
   // deck + wall
   // on the customer's photo their own terrace and wall are in the picture: no drawn deck and wall
   if (!PHOTO.url) box(W + 1.2, 0.04, D + 1.2, M.deck, W / 2, 0.02, D / 2 + (state.mount === 'wall' ? 0.6 : 0));
+  if (!PHOTO.url) { // tile joints on the deck, every 0.6 m from the deck corner (ASSUMPTION: 600 mm tiles, shown as lines only)
+    const zA = state.mount === 'wall' ? 0 : -0.6, xA = -0.6, w = W + 1.2, d = D + 1.2, v = [];
+    for (let x = 0.6; x < w - 0.01; x += 0.6) v.push(xA + x, 0.0405, zA, xA + x, 0.0405, zA + d);
+    for (let z = 0.6; z < d - 0.01; z += 0.6) v.push(xA, 0.0405, zA + z, xA + w, 0.0405, zA + z);
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+    root.add(new THREE.LineSegments(g, M.tileLine));
+  }
+  buildEnv(W, D); envGroup.visible = !PHOTO.url;
   if (state.mount === 'wall' && !PHOTO.url) buildWall(W);
   const yTop = H, yC = H - sp.crown / 2;
   for (const m of opt.modules) {
@@ -820,7 +894,49 @@ function intermediatePositions(opt, sp) {
   return out;
 }
 
+/** Corner post relocation (option): state.po.postShift = { corners, mm }. Keeps only corners that exist in the current layout
+ *  and mm within [50 .. limit of the engine] (step 50, the limit itself is allowed); nothing left → the option is off. */
+function fixPostShift() {
+  const ps = state.po.postShift; if (!ps) return;
+  if (typeof ps !== 'object' || !Array.isArray(ps.corners)) { state.po.postShift = null; return; } // a damaged link must not blank the page
+  const o = state.options[state.optIndex], have = o ? DBCore.cornerPostsOf(o) : [];
+  const corners = [...new Set(ps.corners)].filter((c) => have.some((h) => h.corner === c));
+  if (!corners.length) { state.po.postShift = null; return; }
+  const max = Math.min(...have.filter((h) => corners.includes(h.corner)).map((h) => h.maxShiftMm));
+  const v = Math.round((Number(ps.mm) || max) / 50) * 50;
+  state.po.postShift = { corners, mm: Math.max(Math.min(50, max), Math.min(max, v)) };
+}
+window.fixPostShift = fixPostShift;
+/** [[corner, mm]] of the corner posts that are moved in the current layout */
+function shiftedCorners(opt) {
+  fixPostShift();
+  const ps = state.po.postShift; if (!ps || !opt) return [];
+  return ps.corners.map((c) => [c, ps.mm]);
+}
+/** the one place where the option is switched: corners = [] → off; a newly switched-on option starts at the largest allowed shift */
+window.setPostShift = function (corners, mmv) {
+  if (!Array.isArray(corners)) corners = [];
+  const o = state.options[state.optIndex], have = o ? DBCore.cornerPostsOf(o) : [];
+  const cs = corners.filter((c) => have.some((h) => h.corner === c));
+  if (!cs.length) { state.po.postShift = null; return; }
+  const max = Math.min(...have.filter((h) => cs.includes(h.corner)).map((h) => h.maxShiftMm));
+  const prev = state.po.postShift;
+  state.po.postShift = { corners: cs, mm: mmv || (prev ? prev.mm : max) };
+  fixPostShift();
+};
 function postPositions(opt) {
+  const out = postPositionsBase(opt);
+  // moved corner posts: along the side, away from the corner (front: towards the wall; back of a free pergola: forwards)
+  const xs = out.map((q) => q[0]), zs = out.map((q) => q[1]);
+  for (const [corner, mmv] of shiftedCorners(opt)) {
+    const left = corner.endsWith('left'), front = corner.startsWith('front');
+    const xe = left ? Math.min(...xs) : Math.max(...xs), ze = front ? Math.max(...zs) : Math.min(...zs);
+    const i = out.findIndex((q) => Math.abs(q[0] - xe) < 1e-6 && Math.abs(q[1] - ze) < 1e-6);
+    if (i >= 0) out[i] = [out[i][0], out[i][1] + (front ? -1 : 1) * mmv / 1000];
+  }
+  return out;
+}
+function postPositionsBase(opt) {
   const p = SPEC[famKey(opt)].post / 2, out = [];
   if (opt.family === 'S400') {
     // every S400 is a separate pergola: 2 front posts, plus 2 back posts unless it hangs on the wall
@@ -879,7 +995,28 @@ function openings(opt, sp) {
     });
   }
   for (const o of out) { const ph = parapetOf(faceOf(o.id)) / 1000; if (ph > 0) { o.y0 = ph; o.h = Math.max(0.3, h - ph); } }
-  return splitAtPosts(out, requiredPostPositions(opt), sp);
+  // ends of a side that touch a corner whose post was moved ("hanging" corner)
+  const hung = new Set(shiftedCorners(opt).map((c) => c[0])), free = state.mount === 'free';
+  for (const o of out) {
+    const [face, rest] = o.id.split('-'), n = Number(rest), m = o.mod;
+    if (face === 'front' || face === 'back') { const r = face === 'front' ? 'front' : 'back'; o.hangA = hung.has(r + '-left') && m.col === 0; o.hangB = hung.has(r + '-right') && m.col === opt.cols - 1; }
+    else if (face === 'left' || face === 'right') { const s = face; o.hangA = hung.has('back-' + s) && n === 0 && free; o.hangB = hung.has('front-' + s) && n === opt.rows - 1; }
+  }
+  return splitAtShifted(splitAtPosts(out, requiredPostPositions(opt), sp), opt, sp);
+}
+/** Owner's decision 10.11.2026: when a corner post moves along a side, the glass, ZIP and panels of THAT side simply get shorter by
+ *  the shift (the piece between the corner and the moved post stays open and is not an opening of its own). The side that ends at the
+ *  corner without a post (front / back) is counted at its full width as usual, nothing is "on request".
+ *  ASSUMPTION (to be confirmed with the manufacturer): such a closing at a corner without a post is allowed. */
+function splitAtShifted(list, opt, sp) {
+  const out = [], ps = state.po.postShift;
+  for (const o of list) {
+    if ((!o.hangA && !o.hangB) || o.axis === 'x') { out.push(o); continue; }
+    const a = o.cz - o.len / 2, b = o.cz + o.len / 2, mmv = ps ? ps.mm / 1000 : 0;
+    const ra = o.hangA ? a + mmv + sp.post / 2 : a, rb = o.hangB ? b - mmv - sp.post / 2 : b;
+    out.push({ ...o, len: rb - ra, cz: (ra + rb) / 2 });
+  }
+  return out;
 }
 /* ---------- parapet (a low wall) on one or more sides ----------
  * The posts stand on the ground right inside the parapet; glass, ZIP or panels of that side stand on the parapet, so the
@@ -909,7 +1046,7 @@ function splitAtPosts(list, posts, sp) {
     if (!hit) { out.push(o); continue; }
     const at = along === 0 ? hit[0] : hit[1];
     const l1 = at - sp.post / 2 - a, l2 = b - (at + sp.post / 2);
-    const part = (len, cc, id, k) => ({ ...o, id, label: o.label + ', часть ' + k, len, ...(along === 0 ? { cx: cc } : { cz: cc }), part: k });
+    const part = (len, cc, id, k) => ({ ...o, id, label: o.label + ', часть ' + k, len, ...(along === 0 ? { cx: cc } : { cz: cc }), part: k, hangA: k === 1 && o.hangA, hangB: k === 2 && o.hangB });
     out.push(part(l1, a + l1 / 2, o.id, 1), part(l2, b - l2 / 2, o.id + '-b', 2));
   }
   return out;
@@ -1180,8 +1317,8 @@ function applyAnim() {
   M.heater.emissiveIntensity = state.evening ? 1.3 : 0.8; // heaters are drawn only when chosen: always shown on
   for (const pl of animated.heat || []) pl.intensity = state.evening ? 1.2 : 0.4;
   for (const pl of animated.lights || []) pl.intensity = state.evening ? 1.6 : 0;
-  scene.background = PHOTO.url ? null : new THREE.Color(state.evening ? 0x1b2530 : 0xc5d1d9);
-  hemi.intensity = state.evening ? 0.25 : 0.85; sun.intensity = state.evening ? 0.12 : 0.95;
+  if (!envGoalInit || PHOTO.url) { envK = state.evening ? 1 : 0; envGoalInit = true; } // first draw / photo: no easing
+  applyEnv();
 }
 
 /**
@@ -1374,9 +1511,79 @@ function bounds() { const o = state.options[state.optIndex]; if (!o) return { W:
 let lastView = 'under', userMoved = false;
 /** after a rebuild: a view the customer turned by hand stays exactly as it is; otherwise the chosen view
  *  (3D / front / top) is fitted to the new pergola — never a forced jump back to the 3D view */
-function refit() { if (!userMoved) setView(lastView); }
-function setView(kind) {
+function refit() { scheduleSettle(); }
+/** Camera moves. setView(kind) is instant (old callers, the PDF picture); setView(kind, {smooth:true}) glides ~0.5 s;
+ *  window.__camInstant = true makes every move instant (snapshots, tests). */
+let camReady = false, camTr = null, settleT = 0;
+function stopInertia() { // OrbitControls damping keeps a leftover rotation/pan after a programmatic move and the view "drifts": drop it, keep the pose
+  const p = camera.position.clone(), t = controls.target.clone();
+  controls.enableDamping = false; controls.update(); controls.enableDamping = true;
+  camera.position.copy(p); controls.target.copy(t); camera.lookAt(t);
+}
+function endTr() {
+  if (!camTr) return;
+  const t = camTr; camTr = null;
+  controls.minDistance = 3; controls.maxPolarAngle = t.maxPolar; controls.maxDistance = t.maxDist;
+  camera.position.copy(t.pos); controls.target.copy(t.tgt); controls.update();
+}
+/** the user grabbed the camera mid-glide: stop where it is (final limits back, pose untouched) */
+function stopTr() { if (!camTr) return; const g = camTr; camTr = null; // keep the limits wide enough for the pose the camera is in right now, otherwise update() pushes it (a jump)
+  const v = camera.position.clone().sub(controls.target), d = v.length(), pol = Math.acos(Math.min(1, Math.max(-1, v.y / (d || 1)))); // not getPolarAngle(): it is stale while update() is skipped during the glide
+  controls.minDistance = Math.min(3, d); controls.maxPolarAngle = Math.max(g.maxPolar, pol); controls.maxDistance = Math.max(g.maxDist, d); }
+function glideTo(pos, tgt, maxPolar, maxDist, ms) {
+  const instant = !camReady || window.__camInstant;
+  if (instant || (camera.position.distanceTo(pos) < 1e-3 && controls.target.distanceTo(tgt) < 1e-3)) {
+    controls.maxPolarAngle = maxPolar; controls.maxDistance = maxDist; camera.position.copy(pos); controls.target.copy(tgt); controls.update(); return;
+  }
+  stopInertia();
+  camTr = { p0: camera.position.clone(), t0: controls.target.clone(), pos: pos.clone(), tgt: tgt.clone(), maxPolar, maxDist, s: performance.now(), ms: ms || 500 };
+  controls.minDistance = 0; controls.maxPolarAngle = Math.PI; controls.maxDistance = 1000; // free limits while gliding; the final ones are set at the end
+}
+function stepTr(now) {
+  const t = camTr; if (!t) return;
+  const u = Math.min(1, (now - t.s) / t.ms), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; // ease in-out
+  if (u >= 1) { endTr(); return; }
+  camera.position.lerpVectors(t.p0, t.pos, e); controls.target.lerpVectors(t.t0, t.tgt, e); camera.lookAt(controls.target);
+}
+/** do the pergola and its dimension labels fit the frame with the margin m (1 = frame edge)? */
+function fitsFrame(kind, m, minFill) {
+  if (!state.options.length) return true;
+  const { W, D } = bounds(), pts = [];
+  if (kind === 'under') { for (const x of [-0.1, W + 0.1]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z)); for (const x of [0, W]) pts.push(new THREE.Vector3(x, 0.3, D)); }
+  else if (kind === 'box' || kind === 'inside') { for (const x of [0, W]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z)); }
+  else for (const x of [-0.9, W + 0.3]) for (const y of [0, H + 0.25]) for (const z of [-0.2, D + 1.35]) pts.push(new THREE.Vector3(x, y, z));
+  camera.updateMatrixWorld();
+  let mx = 0;
+  const inside = pts.every((p) => { const v = p.clone().project(camera); mx = Math.max(mx, Math.abs(v.x), Math.abs(v.y)); return v.z <= 1 && Math.abs(v.x) <= m && Math.abs(v.y) <= m; });
+  return inside && mx >= (minFill || 0); // minFill: the object must not be lost far away either (e.g. a frame that was 0 px wide)
+}
+/** after changes settle: nothing moves while the object is in frame; a view the user turned only backs away; otherwise a soft re-fit */
+function scheduleSettle() { clearTimeout(settleT); settleT = setTimeout(settleCamera, camReady ? 300 : 0); }
+function settleCamera() {
+  if (PHOTO.pts || !state.options.length) return;
+  if (!camReady) { setView(lastView); return; }
+  if (camTr) { const g = camTr; camTr = null; controls.minDistance = 3; controls.maxPolarAngle = g.maxPolar; controls.maxDistance = g.maxDist; } // restart from where it is
+  if (fitsFrame(userMoved ? 'box' : lastView, 0.95, userMoved ? 0 : 0.3)) return;
+  if (!userMoved) { setView(lastView, { smooth: true }); return; }
+  const tgt = controls.target.clone(), off = camera.position.clone().sub(tgt), keep = camera.position.clone();
+  let k = 1;
+  for (let i = 0; i < 30 && !fitsFrame('box', 0.86); i++) { k *= 1.06; camera.position.copy(tgt).addScaledVector(off, k); camera.updateMatrixWorld(); }
+  const to = camera.position.clone(); camera.position.copy(keep); camera.updateMatrixWorld();
+  if (k > 1) glideTo(to, tgt, controls.maxPolarAngle, Math.max(controls.maxDistance, off.length() * k * 2.5), 500);
+}
+function setView(kind, o) {
   if (PHOTO.pts) { applyPhotoCamera(); return; } // on the customer's photo the view is the photo's own camera
+  stopInertia(); endTr(); clearTimeout(settleT);
+  const p0 = camera.position.clone(), t0 = controls.target.clone();
+  applyView(kind);
+  const smooth = o && o.smooth && camReady && !window.__camInstant;
+  camReady = true;
+  if (!smooth) return;
+  const pos = camera.position.clone(), tgt = controls.target.clone(), mp = controls.maxPolarAngle, md = controls.maxDistance;
+  camera.position.copy(p0); controls.target.copy(t0); camera.lookAt(t0);
+  glideTo(pos, tgt, mp, md, 500);
+}
+function applyView(kind) {
   if (kind === 'inside' && !(state.mount === 'wall' && state.opening && state.opening.on && OPENING_GEO)) kind = 'under'; // no opening → fall back
   lastView = kind; userMoved = false;
   { const vp = $('tb-views'); if (vp) for (const x of vp.children) x.setAttribute('aria-pressed', String(x.id === 'v-' + kind)); }
@@ -1396,10 +1603,11 @@ function setView(kind) {
   const pts = [];
   for (const x of [-0.9, W + 0.3]) for (const y of [0, H + 0.25]) for (const z of [-0.2, D + 1.35]) pts.push(new THREE.Vector3(x, y, z));
   let d = dist;
-  for (let i = 0; i < 30; i++) {
+  const lim = matchMedia('(min-width: 761px) and (max-width: 1100px) and (orientation: portrait)').matches ? 0.66 : 0.86; // tablet portrait: the pergola takes ~60% of the scene width
+  for (let i = 0; i < 60; i++) {
     camera.position.copy(c).addScaledVector(dir, d); camera.lookAt(c); camera.updateMatrixWorld();
     const m = Math.max(...pts.map((p) => { const v = p.clone().project(camera); return Math.max(Math.abs(v.x), Math.abs(v.y)); }));
-    if (m <= 0.86) break;
+    if (m <= lim) break;
     d *= 1.06;
   }
   sun.position.set(W / 2 - 6, 14, D + 8); sun.target.position.copy(c);
@@ -1415,10 +1623,13 @@ function underView() {
   for (const x of [-0.1, W + 0.1]) for (const z of [0, D]) pts.push(new THREE.Vector3(x, H, z));
   for (const x of [0, W]) pts.push(new THREE.Vector3(x, 0.3, D));
   let d = D * 0.6 + 1.5;
-  for (let i = 0; i < 40; i++) {
+  const phone = matchMedia('(max-width: 760px)').matches;
+  for (let i = 0; i < 60; i++) {
     camera.position.set(W / 2, 1.5, D + d); camera.lookAt(t); camera.updateMatrixWorld();
     const m = Math.max(...pts.map((p) => { const v = p.clone().project(camera); return Math.max(Math.abs(v.x), Math.abs(v.y)); }));
-    if (m <= 0.9) break;
+    // phones: the width label on the ground in front of the pergola must clear the toolbar under the scene (label half-height + ~12 px gap)
+    const lab = phone ? new THREE.Vector3(W / 2, 0.02, D + 1.15).project(camera).y : 0, labOk = !phone || lab >= -(1 - 26 / Math.max(120, view.getBoundingClientRect().height / 2));
+    if (labOk && m <= (matchMedia('(min-width: 761px) and (max-width: 1100px) and (orientation: portrait)').matches ? 0.66 : 0.9)) break; // tablet portrait: ~60% of the scene width
     d *= 1.08;
   }
   controls.target.copy(t);
@@ -1439,7 +1650,7 @@ function insideView() {
   controls.maxDistance = D + 4;
   controls.update();
 }
-controls.addEventListener('start', () => { userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
+controls.addEventListener('start', () => { stopTr(); userMoved = true; const h = document.getElementById('hint'); if (h) h.hidden = true; });
 const labels = $('labels');
 let labelDefs = [];
 function renderLabels(opt) {
@@ -1485,13 +1696,14 @@ function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.w
   // the camera is re-framed only when the width really changes (window, phone turned); a panel opening under the 3D
   // or a choice (Verto, colour, light) changes only the height — the view stays exactly where it is
   const widthChanged = Math.abs(r.width - lastFitW) > 2; lastFitW = r.width;
-  if (PHOTO.pts) applyPhotoCamera(); else if (widthChanged && !userMoved && state.options.length) setView(lastView); }
+  if (PHOTO.pts) applyPhotoCamera(); else if (widthChanged && state.options.length) scheduleSettle(); }
 new ResizeObserver(resize).observe(view);
 (function loop(t) {
   requestAnimationFrame(loop);
   // heat shimmer: the warm glow breathes slowly
   if (animated.heat && animated.heat.length) { const f = 0.85 + 0.15 * Math.sin((t || 0) / 450), k = state.evening ? 1.6 : 1; M.heatCone.opacity = 0.25 * f * k; M.heatFloor.opacity = 0.9 * f * k; }
-  if (!PHOTO.pts) controls.update(); renderer.render(scene, camera); placeLabels(); })();
+  stepTr(performance.now()); stepEnv(performance.now());
+  if (!PHOTO.pts && !camTr) controls.update(); renderer.render(scene, camera); placeLabels(); })();
 
 /* ---------- picking sides ---------- */
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
@@ -1821,7 +2033,7 @@ function renderEstimate() {
   const sys = famKey(o);
   const op = DBCore.priceOptions(o, poFor(o), cat);
   {
-    const OPN = { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'Подсветка в ламелях', OPT_LED_GUTTER: 'Подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка конструкции под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб (BOX)', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'Точечные LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме (короне)', OPT_VERTICAL_LAMPS: 'Вертикальные LED-светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные промежуточные стойки', OPT_REQUIRED_POST_HEIGHT: 'Обязательные стойки Slide выше стандарта' };
+    const OPN = { OPT_POST_HEIGHT: 'Стойки выше стандарта', OPT_LED_LOUVRES: 'Подсветка в ламелях', OPT_LED_GUTTER: 'Подсветка в желобе', OPT_THERMAL: 'Термовставка в ламелях', OPT_SENSOR: 'Датчики погоды', OPT_SMART: 'Управление со смартфона', OPT_HEATERS: 'Обогреватели', OPT_HEATER_PREP: 'Подготовка конструкции под обогреватели', OPT_INTERNAL_BOX: 'Внутренний короб (BOX)', OPT_AUDIO: 'Аудиосистема', OPT_SOCKET: 'Розетки в стойке', OPT_SPOTS: 'Точечные LED-споты в ламелях', OPT_LAMPS: 'LED-лампы в ламелях', OPT_CROWN_SPOTS: 'LED-споты в раме (короне)', OPT_VERTICAL_LAMPS: 'Вертикальные LED-светильники на стойках', OPT_INTERMEDIATE_POST: 'Дополнительные промежуточные стойки', OPT_REQUIRED_POST_HEIGHT: 'Обязательные стойки Slide выше стандарта', OPT_CORNER_POST_SHIFT: 'Перенос угловой стойки' };
     const groups = {};
     for (const l of op.lines) { const k = l.code + (l.params.kind || ''); (groups[k] = groups[k] || []).push(l); }
     for (const ls of Object.values(groups)) {
@@ -1844,6 +2056,7 @@ function renderEstimate() {
       if (l0.code === 'OPT_CROWN_SPOTS') det = `${p.points} ${plural(p.points, 'спот', 'спота', 'спотов')} ${o.family === 'S400' ? 'на перголу' : 'на модуль'}${p.billed !== p.points ? ` (по прайсу — ${p.billed})` : ''}, симметрично по сторонам · ${byModule(ls)}`;
       if (l0.code === 'OPT_VERTICAL_LAMPS') det = `${p.points} шт.${p.billed !== p.points ? ` (по прайсу — ${p.billed})` : ''}, 4,6 Вт, 3000 K, на половине высоты стойки или 30 см от низа`;
       if (l0.code === 'OPT_INTERMEDIATE_POST') det = `${p.qty} × ${eur(p.unit)} · высота до ${mm(p.height)} мм`;
+      if (l0.code === 'OPT_CORNER_POST_SHIFT') det = `${String(p.corners).split(',').map((c) => ({ 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' })[c]).join(', ')} · сдвиг ${mm(p.mm)} мм · ${p.qty} × ${eur(p.unit)}${p.includesDrainage ? ' · водоотвод в цене' : ''}`;
       if (l0.code === 'OPT_SOCKET') det = `${p.kind === 'usb' ? 'USB' : '230 В'} × ${p.qty}`;
       html += `<tr><td>${OPN[l0.code]}<span class="s">${det}${l0.source ? ' · стр. ' + l0.source.page : ''}</span></td><td class="a">${eur(amt)}</td></tr>`;
       Q.push({ k: 'opt', code: l0.code, p, n, a: amt });
@@ -2088,9 +2301,13 @@ function renderPergolaOptions() {
   const litSum = optDelta({ ledLouvres: po.ledLouvres, ledGutter: po.ledGutter, spots: po.spots, lamps: po.lamps, crownSpots: po.crownSpots, verticalLamps: po.verticalLamps });
   const spotN = po.spots ? po.spots.louvres : 5, lampN = po.lamps ? po.lamps.louvres : 4, dbl = o.family === 'S500_DOUBLE';
   const pp = state.parapet, pfaces = state.mount === 'free' ? ['front', 'left', 'right', 'back'] : ['front', 'left', 'right'], PF = { front: 'спереди', left: 'слева', right: 'справа', back: 'сзади' };
+  fixPostShift();
+  const ps = po.postShift, shiftCorners = DBCore.cornerPostsOf(o), PS = { 'front-left': 'спереди слева', 'front-right': 'спереди справа', 'back-left': 'сзади слева', 'back-right': 'сзади справа' };
   $('popts').innerHTML = `
     <label>Парапет (стойки рядом, стекло / ZIP на парапете)<span class="row2">${pfaces.map((f) => `<label class="chk" style="display:inline-flex;gap:4px;margin-right:8px"><input type="checkbox" id="o-pp-${f}" ${pp.sides.includes(f) ? 'checked' : ''}> ${PF[f]}</label>`).join('')}</span></label>
     <label>Высота парапета, мм<input type="number" id="o-pph" min="100" max="1500" step="50" value="${pp.h}"></label>
+    ${shiftCorners.length ? `<label>Перенос угловой стойки (за каждую · ${pr(optDelta({ postShift: { corners: [shiftCorners[0].corner], mm: shiftCorners[0].maxShiftMm } }))}${o.family === 'S400' ? ', водоотвод в цене' : ''})<span class="row2">${shiftCorners.map((c) => `<label class="chk" style="display:inline-flex;gap:4px;margin-right:8px"><input type="checkbox" id="o-ps-${c.corner}" ${ps && ps.corners.includes(c.corner) ? 'checked' : ''}> ${PS[c.corner]}</label>`).join('')}</span></label>
+    ${ps ? `<label>Сдвиг, мм (до ${mm(Math.min(...shiftCorners.filter((c) => ps.corners.includes(c.corner)).map((c) => c.maxShiftMm)))})<input type="number" id="o-psm" min="50" step="50" value="${ps.mm}"></label>` : ''}` : ''}
     <label>Высота стоек<select id="o-h">${hs.map((h, i) => `<option value="${h}" ${po.postHeight === h ? 'selected' : ''}>${i === 0 ? 'до ' + mm(h) + ' мм — стандарт' : 'до ' + mm(h) + ' мм'} · ${pr(optDelta({ postHeight: h }))}</option>`).join('')}</select></label>
     <label>Доп. промежуточные стойки<select id="o-ip">${[0, 1, 2, 3, 4, 5, 6].map((k) => `<option value="${k}" ${po.intermediatePosts === k ? 'selected' : ''}>${k ? k + ' шт. · +' + eur(optDelta({ intermediatePosts: k, postHeight: po.postHeight }) - optDelta({ postHeight: po.postHeight })) : 'нет'}</option>`).join('')}</select></label>
     <details class="lightbox"${litItems ? ' open' : ''}><summary>Освещение${litItems ? ` · ${litItems} ${plural(litItems, 'вид', 'вида', 'видов')} · ${pr(litSum)}` : ' · нет'}</summary>
@@ -2117,6 +2334,12 @@ $('popts').addEventListener('change', (e) => {
   if (id === 'o-h') po.postHeight = Number(v);
   if (id.startsWith('o-pp-')) { const f = id.slice(5), set = new Set(state.parapet.sides); if (e.target.checked) set.add(f); else set.delete(f); state.parapet.sides = [...set]; }
   if (id === 'o-pph') state.parapet.h = Math.max(100, Math.min(1500, Math.round((Number(v) || 0) / 10) * 10));
+  if (id.startsWith('o-ps-')) {
+    const c = id.slice(5), set = new Set((po.postShift && po.postShift.corners) || []);
+    if (e.target.checked) set.add(c); else set.delete(c);
+    window.setPostShift([...set]); if (window.onPostShift) window.onPostShift();
+  }
+  if (id === 'o-psm' && po.postShift) { po.postShift.mm = Number(v) || 50; fixPostShift(); if (window.onPostShift) window.onPostShift(); }
   if (id === 'o-led') po.ledLouvres = v ? { colour: v, louvres: Number($('o-ledn').value) } : null;
   if (id === 'o-ledn') { if (po.ledLouvres) po.ledLouvres.louvres = Number(v); else po.ledLouvres = { colour: 'white', louvres: Number(v) }; }
   if (id === 'o-gut') po.ledGutter = v || null;
@@ -2182,6 +2405,7 @@ function keepCamera(fn) {
   const pos = camera.position.clone(), tgt = controls.target.clone(), lv = lastView, um = userMoved;
   fn();
   camera.position.copy(pos); controls.target.copy(tgt); lastView = lv; userMoved = um; controls.update();
+  scheduleSettle(); // the camera stays, but backs away if the rebuilt object no longer fits
 }
 $('louv-dir').onclick = () => { if (window.renderLouvPop) window.renderLouvPop(); togglePop($('louv-dir'), $('tb-louv')); };
 $('tb-kit').onclick = () => { if (window.renderKitPop) window.renderKitPop(); togglePop($('tb-kit'), $('tb-kit-pop')); };
@@ -2401,8 +2625,9 @@ $('tb-move').onclick = () => togglePop($('tb-move'), $('tb-sliders'));
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#tb-views, #tb-sliders, #tb-view, #tb-move')) { togglePop($('tb-view'), $('tb-views'), false); } });
 $('clr-btn').onclick = () => { const pop = $('clr-pop'); pop.hidden = !pop.hidden; $('clr-btn').setAttribute('aria-pressed', String(!pop.hidden)); renderColorPop(); };
 $('clr-pop').onclick = (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; state.colorOpen = b.dataset.pick; renderColors(); $('clr').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
-$('v-under').onclick = () => setView('under');
-$('v-iso').onclick = () => setView('iso'); $('v-front').onclick = () => setView('front'); $('v-top').onclick = () => setView('top'); $('v-inside').onclick = () => setView('inside');
+const SM = { smooth: true };
+$('v-under').onclick = () => setView('under', SM);
+$('v-iso').onclick = () => setView('iso', SM); $('v-front').onclick = () => setView('front', SM); $('v-top').onclick = () => setView('top', SM); $('v-inside').onclick = () => setView('inside', SM);
 /* ---------- colour picker ---------- */
 const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); const f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map((v) => f(v).toString(16).padStart(2, '0')).join(''); };
 const swatchBg = (c) => c.finish === 'wood' ? `repeating-linear-gradient(100deg, ${c.hex} 0 3px, ${shade(c.hex, 0.82)} 3px 4px, ${c.hex} 4px 7px, ${shade(c.hex, 1.1)} 7px 8px)` : c.custom ? `repeating-linear-gradient(45deg, #9aa0a5 0 4px, #c4c8cb 4px 8px)` : c.finish === 'metallic' ? `linear-gradient(135deg, ${shade(c.hex, 1.25)}, ${c.hex} 55%, ${shade(c.hex, 0.8)})` : c.hex;

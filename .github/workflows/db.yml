@@ -6,6 +6,8 @@ on:
   pull_request:
     paths: ['db/**', '.github/workflows/db.yml']
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest

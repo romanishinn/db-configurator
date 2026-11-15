@@ -38,7 +38,24 @@ export interface PergolaOptions {
   verticalLamps?: number;
   /** additional intermediate / divider posts */
   intermediatePosts?: number;
+  /** relocate corner posts towards the centre of the pergola by `mm`; null / absent = off */
+  postShift?: { corners: PostCorner[]; mm: number } | null;
 }
+
+export type PostCorner = 'front-left' | 'front-right' | 'back-left' | 'back-right';
+
+/** A corner post of the whole construction (not a post at a joint of modules). */
+export interface CornerPost {
+  corner: PostCorner;
+  /** projection the shift limit refers to, mm */
+  projection: number;
+  /** largest allowed shift, mm */
+  maxShiftMm: number;
+}
+
+/** Catalogue (S400 p.17, S500 p.42, Slide p.11): shift at most 1000 mm or 1/4 of the projection, whichever is smaller.
+ * ASSUMPTION: Slide p.11 says "1000mm-1200mm"; the lower bound is taken (the page does not say what decides). */
+export const maxPostShiftMm = (projectionMm: number): number => Math.min(1000, Math.floor(projectionMm / 4));
 
 interface LightingGrid { [perLouvre: string]: number[] }
 interface CountTable { counts: number[]; prices: number[]; additional: number }
@@ -104,6 +121,39 @@ function lighting(cat: Catalog, model: string): LightingScalars {
   const L = (cat.optionScalars?.lighting as unknown as { [m: string]: LightingScalars } | undefined)?.[model];
   if (!L) throw new Error(`lighting scalars for ${model} missing`);
   return L;
+}
+
+/**
+ * Corner posts of a composition, in terrace axes (row 0 = wall side = "back"; left/right along the wall).
+ * Roof mount: no posts. At the wall (row-0 modules hang on the wall) only the front corners have posts.
+ * Posts at joints of S500 / Slide modules are not corners and are not listed.
+ * Projection per corner: S400 and S500 the (built) projection of the module standing at the corner;
+ * Slide the total projection of the construction (sum of the module projections along the projection axis).
+ * ASSUMPTION: S500 multi-row (and S400 free rows): projection of the corner module, not of the whole system.
+ * ASSUMPTION (review 10.11): the price list says "1/4 of the pergola's projection" and the owner chose the shift along the
+ * side wall (the depth of the terrace). With louvres perpendicular to the wall the catalogue "projection" runs ALONG the
+ * wall, so the two differ; the limit is taken from the SMALLER of the catalogue projection and the terrace depth of the
+ * same module (Slide: of the same column), so no reading of the price list is ever exceeded. To be confirmed with the manufacturer.
+ * Separate S400 pergolas side by side: the joints between them are not listed as corners (each has its own 4 posts) - a known limit.
+ */
+export function cornerPostsOf(c: Composition): CornerPost[] {
+  if (!c.modules.length || c.modules.some((m) => m.mount === 'roof')) return [];
+  const rows = c.rows, cols = c.cols;
+  const wall = c.modules.filter((m) => m.row === 0).every((m) => m.mount === 'wall');
+  const out: CornerPost[] = [];
+  for (const [corner, row, col] of [['back-left', 0, 0], ['back-right', 0, cols - 1], ['front-left', rows - 1, 0], ['front-right', rows - 1, cols - 1]] as const) {
+    if (corner.startsWith('back') && wall) continue; // rows = 1: the front row is row 0 too
+    const m = c.modules.find((x) => x.row === row && x.col === col);
+    if (!m) continue;
+    const catalogueProjection = c.family === 'SLIDE'
+      ? c.modules.filter((x) => (c.louvres === 'parallel' ? x.col === col : x.row === row)).reduce((a, x) => a + x.projection, 0)
+      : m.projection;
+    // physical depth of the terrace at this corner (the shift runs along the side, away from the corner)
+    const terraceDepth = c.family === 'SLIDE' ? c.modules.filter((x) => x.col === col).reduce((a, x) => a + x.depth, 0) : m.depth;
+    const projection = Math.min(catalogueProjection, terraceDepth);
+    out.push({ corner, projection, maxShiftMm: maxPostShiftMm(projection) });
+  }
+  return out;
 }
 
 export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): OptionsResult {
@@ -291,6 +341,28 @@ export function priceOptions(c: Composition, o: PergolaOptions, cat: Catalog): O
     const unit = slide ? (h <= 2600 ? s.values[0]! : h <= 3000 ? s.values[1]! : s.values[2]!)
       : model === 's400' ? (h <= 2800 ? s.values[0]! : h <= 3000 ? s.values[1]! : s.values[2]!) : h <= 2800 ? s.values[0]! : s.values[1]!;
     if (h <= 3200) add('OPT_INTERMEDIATE_POST', unit * o.intermediatePosts, { qty: o.intermediatePosts, height: h, unit }, s.source);
+  }
+  if (o.postShift && Array.isArray(o.postShift.corners) && o.postShift.corners.length > 0) { // a hand-made link without corners is ignored, not a crash
+    const mm = o.postShift.mm;
+    const corners = [...new Set(o.postShift.corners)]; // duplicates collapse
+    const before = issues.length;
+    const have = cornerPostsOf(c);
+    if (!(typeof mm === 'number' && Number.isInteger(mm) && mm > 0)) issues.push({ severity: 'block', code: 'POST_SHIFT_INVALID', params: { mm: String(mm) } });
+    if (c.modules.some((m) => m.mount === 'roof')) issues.push({ severity: 'block', code: 'POST_SHIFT_ROOF' });
+    else {
+      for (const k of corners) {
+        const f = have.find((x) => x.corner === k);
+        if (!f) issues.push({ severity: 'block', code: 'POST_SHIFT_NO_CORNER', params: { corner: k } });
+        else if (mm > f.maxShiftMm) issues.push({ severity: 'block', code: 'POST_SHIFT_TOO_FAR', params: { corner: k, mm, max: f.maxShiftMm, projection: f.projection } });
+      }
+    }
+    // price = catalogue surcharge × relocated corner posts. ASSUMPTION: per post ("the corner post", singular).
+    // S400 includes water drainage (p.17); S500 p.42 and Slide p.11 say nothing about it.
+    // TODO: S500 "central post in pergolas with a projection exceeding 7000 mm" is a separate case, not covered here.
+    const s = sc(cat, `${model}.cornerPostToCentre`)!;
+    if (issues.length === before) {
+      add('OPT_CORNER_POST_SHIFT', s.values[0]! * corners.length, { corners: corners.join(','), mm, qty: corners.length, unit: s.values[0]!, includesDrainage: model === 's400' ? 1 : 0 }, s.source);
+    }
   }
   if (o.sockets && (model === 's500' || slide) && (o.sockets.power || o.sockets.usb)) {
     const s = sc(cat, `${model}.sockets`)!;

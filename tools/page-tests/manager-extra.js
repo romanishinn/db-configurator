@@ -1,0 +1,56 @@
+const { chromium } = require('playwright'); const fs=require('fs');
+const path=require('path'), os=require('os'); const S=__dirname, R=path.resolve(__dirname,'../..'); const O=n=>path.join(process.env.OUT||os.tmpdir(),n); const stub=fs.readFileSync(S+'/manager-stub.txt','utf8');
+const ok=(n,c)=>console.log((c?'PASS ':'FAIL ')+n);
+async function open(b,w,html){
+ const ctx=await b.newContext({viewport:{width:w,height:844}}); const page=await ctx.newPage();
+ page.on('pageerror',e=>console.log('PAGEERROR',e.message)); page.on('dialog',d=>d.accept());
+ await page.addInitScript('window.__role="manager"');
+ await page.route('**/supabase.js',r=>r.fulfill({contentType:'application/javascript',body:stub}));
+ await page.route('https://*.supabase.co/storage/**',r=>r.fulfill({contentType:'image/jpeg',headers:{'access-control-allow-origin':'*'},body:fs.readFileSync(S+'/fixtures/photo.jpg')}));
+ await page.goto('file://'+(html||R+'/apps/projects/index.html')); return page;}
+async function login(p){await p.waitForSelector('#login:not([hidden])');await p.fill('#em','a@b.c');await p.fill('#pw','x');await p.click('#login button.primary');await p.waitForTimeout(300);}
+(async()=>{const b=await chromium.launch();
+ for (const w of [390,1100]) { console.log('==',w);
+  let p=await open(b,w); await login(p);
+  const txt=await p.textContent('#list'); ok('dealer draft hidden, published + office draft shown', !txt.includes('Draft dealer')&&txt.includes('Pub')&&txt.includes('Office draft'));
+  await p.click('#tabOrders'); await p.waitForTimeout(100);
+  const o=await p.textContent('#orders'); ok('orders: name, postcode, stage ru, awaiting office', o.includes('1130')&&o.includes('монтаж')&&o.includes('ждёт подтверждения офиса'));
+  const btns=await p.$$eval('#orders .item button',e=>e.map(x=>x.textContent)); ok('buttons', btns.join()==='Монтаж завершён,Подтвердить монтаж');
+  await p.screenshot({path:O(`r6-orders-${w}.png`)});
+  await p.click('#orders .item:nth-child(2) button'); await p.waitForTimeout(200);
+  let l=await p.evaluate(()=>window.__log); ok('confirm done order -> complete_installation(o2), list refreshed', l.some(x=>x.rpc==='complete_installation'&&x.args.p_order==='o2')&&(await p.$$('#orders .item')).length===1);
+  await p.evaluate(()=>{window.__db.orders=[]}); await p.click('#tabList'); await p.click('#tabOrders'); await p.waitForTimeout(100);
+  ok('empty', (await p.textContent('#orders')).includes('Заказов пока нет'));
+  await p.close();
+  p=await open(b,w); await login(p); await p.click('#tabQueue'); await p.click('#queue button'); await p.waitForSelector('#review:not([hidden])');
+  ok('no hint initially', await p.$eval('#rvDistHint',e=>e.hidden));
+  await p.fill('#rvTitle','Villa in wien 13'); ok('hint shown case-insens', !(await p.$eval('#rvDistHint',e=>e.hidden)));
+  await p.screenshot({path:O(`r6-hint-${w}.png`),fullPage:true});
+  await p.check('#rvConsent .checks input'); ok('hint hidden after allow', await p.$eval('#rvDistHint',e=>e.hidden));
+  await p.uncheck('#rvConsent .checks input'); ok('hint back', !(await p.$eval('#rvDistHint',e=>e.hidden)));
+  ok('district field disabled+empty when unchecked', (await p.$eval('#rvDistrict',e=>e.disabled&&e.value===''))); ok('hint has extra text', (await p.textContent('#rvDistHint')).includes('за подпись отвечает менеджер'));
+  await p.fill('#rvConsent input[type=text]','v1'); await p.click('#rvConsent button'); await p.waitForTimeout(100);
+  let n0=(await p.evaluate(()=>window.__log)).length; await p.click('#rvPublish'); await p.waitForTimeout(300);
+  ok('publish stops before any file/update', (await p.textContent('#rvMsg')).includes('Район нельзя указывать в названии')&&(await p.evaluate(()=>window.__log)).length===n0&&!(await p.$eval('#rvPublish',e=>e.disabled)));
+  await p.fill('#rvTitle','Villa Wien 130'); await p.click('#rvPublish'); await p.waitForSelector('#queueCard:not([hidden])');
+  let lg=await p.evaluate(()=>window.__log); ok('no false positive (Wien 130); district sent empty', lg.find(x=>x.update&&x.update.photos).update.district==='');
+  await p.close();
+  p=await open(b,w); await login(p); await p.click('#tabQueue'); await p.click('#queue button'); await p.waitForSelector('#review:not([hidden])');
+  await p.fill('#rvTitle','Villa in wien-13!'); ok('hyphen/punct normalised hint', !(await p.$eval('#rvDistHint',e=>e.hidden)));
+  await p.check('#rvConsent .checks input'); ok('district enabled after check', !(await p.$eval('#rvDistrict',e=>e.disabled)));
+  await p.fill('#rvDistrict','Wien 13');
+  await p.fill('#rvConsent input[type=text]','v1'); await p.click('#rvConsent button'); await p.waitForTimeout(100);
+  await p.evaluate(()=>{window.__rmShort=1}); await p.click('#rvPublish'); await p.waitForSelector('#queueCard:not([hidden])'); await p.waitForTimeout(200);
+  ok('warning on short remove, published anyway', (await p.textContent('#queueMsg')).includes('часть файлов не удалена, сообщите суперадмину') && (await p.evaluate(()=>window.__log)).some(x=>x.update&&x.update.published));
+  await p.screenshot({path:O(`r6-warn-${w}.png`)});
+  await p.click('#tabList'); ok('warning cleared on tab change', (await p.textContent('#queueMsg'))==='');
+  await p.close();
+  p=await open(b,w); await login(p); await p.evaluate(()=>{window.__rpcErr={reject_project:'DISTRICT_NOT_ALLOWED'}}); await p.click('#tabQueue'); await p.click('#queue button'); await p.click('#rvReject'); await p.waitForTimeout(200);
+  ok('DISTRICT_NOT_ALLOWED ru text', (await p.textContent('#rvMsg')).includes('Район нельзя указывать в названии без согласия владельца'));
+  await p.close();
+ }
+ const src=fs.readFileSync(R+'/apps/projects/index.html','utf8').replace(/url: 'https:\/\/zypujyrvbegilvtvqras\.supabase\.co'/,"url: ''"); fs.writeFileSync(O('nourl.html'),src);
+ let p=await open(b,390,O('nourl.html')); await p.waitForTimeout(400);
+ ok('empty url: Недоступно, no login, no client', !(await p.$eval('#unavail',e=>e.hidden))&&(await p.$eval('#login',e=>e.hidden))&&(await p.evaluate(()=>!window.supabase)));
+ await p.screenshot({path:O('r6-nourl.png')});
+ await b.close();})();

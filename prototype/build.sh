@@ -16,6 +16,8 @@ t = t.replace('/*CORE*/', open('prototype/dist/dbcore.js').read()).replace('/*CA
 t = t.replace('/*SHARED*/', open('prototype/dist/dbshared.js').read()).replace('/*PRODUCTS*/', open('prototype/dist/dbproducts.js').read())
 t = t.replace('/*I18N*/', open('prototype/dist/dbi18n.js').read())
 t = t.replace('/*THREE_MIN*/', open('prototype/vendor/three.min.js').read()).replace('/*ORBIT_CONTROLS*/', open('prototype/vendor/OrbitControls.js').read())
+# the 3D view polish (sky, fog, textures) runs after the scene exists: a plain script in front of the backend script
+t = t.replace('<script>/*BACKEND_JS*/</script>', '<script>' + open('prototype/scene-polish.js').read() + '</script>\n<script>/*BACKEND_JS*/</script>')
 t = t.replace('/*FUNNEL_CSS*/', open('prototype/funnel.css').read()).replace('/*FUNNEL_JS*/', open('prototype/funnel.js').read()).replace('/*BACKEND_JS*/', open('prototype/backend.js').read())
 open('prototype/dist/terrace-3d.html', 'w').write(t)
 PY
